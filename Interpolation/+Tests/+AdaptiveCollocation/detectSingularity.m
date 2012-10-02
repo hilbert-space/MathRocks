@@ -1,6 +1,14 @@
+% clear all;
+setup;
+
 f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
 
-interpolant = ASGC.Interpolant(f, 'dimension', 2, 'maxLevel', 8);
+interpolant = AdaptiveCollocation(f);
+
+display(interpolant);
+plot(interpolant);
+
+return;
 
 figure;
 interpolant.plot();
