@@ -3,7 +3,8 @@ setup;
 
 f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
 
-interpolant = AdaptiveCollocation(f);
+interpolant = AdaptiveCollocation(f, ...
+  'maxLevel', 16);
 
 display(interpolant);
 plot(interpolant);
