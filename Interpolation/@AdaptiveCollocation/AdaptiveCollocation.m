@@ -17,7 +17,7 @@ classdef AdaptiveCollocation < handle
         'Only two-dimensional grids are supported.');
 
       plot(nodes(:, 1), nodes(:, 2), ...
-        'Marker', 'o', 'LineStyle', 'None');
+        'Marker', '.', 'Color', 'k', 'LineStyle', 'None');
     end
 
     function display(this)

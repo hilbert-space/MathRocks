@@ -1,49 +1,61 @@
 function construct(this, f, options)
   dimensionCount = 2;
   tolerance = 1e-3;
-  maxLevel = 5;
+  maxLevel = 10;
+
+  bufferScale = 0.5;
+  iBufferSize = 10 * dimensionCount;
+  jBufferSize = 20 * dimensionCount;
+  newBufferSize = 10 * 2 * dimensionCount;
+
+  %
+  % Allocate some memory.
+  %
+  iIndex = zeros(iBufferSize, dimensionCount, 'uint8');
+  jIndex = zeros(jBufferSize, dimensionCount, 'uint8');
+  iMapping = zeros(jBufferSize, 1, 'uint8');
+  nodes = zeros(jBufferSize, dimensionCount);
+  values = zeros(jBufferSize, 1);
+
+  newIIndex = zeros(newBufferSize, dimensionCount, 'uint8');
+  newJIndex = zeros(newBufferSize, dimensionCount, 'uint8');
+  newNodes = zeros(newBufferSize, dimensionCount);
 
   %
   % The first two levels.
   %
-  indexI = ones(1 + dimensionCount, dimensionCount, 'uint8');
-  indexJ = ones(1 + 2 * dimensionCount, dimensionCount, 'uint8');
-  nodes = 0.5 * ones(1 + 2 * dimensionCount, dimensionCount);
-  mappingI = ones(1 + 2 * dimensionCount, 1, 'uint8');
+  nodeCount = 1 + 2 * dimensionCount;
+  iIndexCount = 1 + dimensionCount;
 
-  %
-  % One node is already in place.
-  %
-  nodeCount = 1;
+  iIndex(1:iIndexCount, :) = 1;
+  jIndex(1:nodeCount, :) = 1;
+
+  iMapping(1) = 1;
+  iMapping(1 + (1:2:(2 * dimensionCount))    ) = 2:(dimensionCount + 1);
+  iMapping(1 + (1:2:(2 * dimensionCount)) + 1) = 2:(dimensionCount + 1);
+
+  nodes(1:nodeCount, :) = 0.5;
 
   for i = 1:dimensionCount
-    indexI(1 + i, i) = 2;
+    iIndex(1 + i, i) = 2;
 
     %
     % The left most.
     %
-    nodeCount = nodeCount + 1;
-
-    indexJ(nodeCount, i) = 1;
-    nodes(nodeCount, i) = 0.0;
-    mappingI(nodeCount) = 1 + i;
+    jIndex(1 + 2 * (i - 1) + 1, i) = 1;
+    nodes (1 + 2 * (i - 1) + 1, i) = 0.0;
 
     %
     % The right most.
     %
-    nodeCount = nodeCount + 1;
-
-    indexJ(nodeCount, i) = 3;
-    nodes(nodeCount, i) = 1.0;
-    mappingI(nodeCount) = 1 + i;
+    jIndex(1 + 2 * (i - 1) + 2, i) = 3;
+    nodes (1 + 2 * (i - 1) + 2, i) = 1.0;
   end
-
-  mappingI(2:end) = 2;
 
   %
   % Evaluate the functions on the first two levels.
   %
-  values = f(nodes);
+  values(1:nodeCount) = f(nodes(1:nodeCount, :));
 
   passiveCount = 1;
   activeCount = 2 * dimensionCount;
@@ -51,32 +63,45 @@ function construct(this, f, options)
   %
   % The other levels.
   %
-  level = 3;
-  while level <= maxLevel
+  level = 2;
+  while level < maxLevel
     %
     % NOTE: We skip the first one since it represents the very first level
     % where all the basis functions are equal to one.
     %
     passiveNodes = nodes(2:passiveCount, :);
-    passiveIntervals = double(2.^(indexI(mappingI(2:passiveCount), :) - 1));
-    activeIntervals = double(2^(level - 1));
-
-    %
-    % NOTE: When we go from the second level to the third one
-    % there is only one child; otherwise, two.
-    %
-    childrenCount = (level == 3) + 2 * (level > 3);
+    passiveIntervals = double(2.^(iIndex(iMapping(2:passiveCount), :) - 1));
 
     %
     % Evaluate the interpolant, which was constructed on the passive points,
     % at the active points.
     %
-    increasedI = zeros(size(indexI), 'uint8');
+    newNodeCount = 0;
+
+    if newBufferSize < activeCount * 2 * dimensionCount
+      %
+      % We need more space.
+      %
+      addition = floor(bufferScale * newBufferSize);
+      newBufferSize = newBufferSize + addition;
+
+      newIIndex = zeros(newBufferSize, dimensionCount, 'uint8');
+      newJIndex = zeros(newBufferSize, dimensionCount, 'uint8');
+      newNodes = zeros(newBufferSize, dimensionCount);
+    end
+
     for i = (passiveCount + 1):(passiveCount + activeCount)
-      delta = abs(repmat(nodes(i, :), passiveCount - 1, 1) - passiveNodes);
-      mask = delta < 1 ./ passiveIntervals;
-      basis = [ 1; prod((1 - passiveIntervals .* delta) .* mask, 2) ];
-      surplus = abs(values(i) - sum(values(1:passiveCount) .* basis));
+      if level > 2
+        delta = abs(repmat(nodes(i, :), passiveCount - 1, 1) - passiveNodes);
+        mask = delta < 1 ./ passiveIntervals;
+        basis = [ 1; prod((1 - passiveIntervals .* delta) .* mask, 2) ];
+        surplus = abs(values(i) - sum(values(1:passiveCount) .* basis));
+      else
+        %
+        % We always refine low levels.
+        %
+        surplus = Inf;
+      end
 
       if surplus > tolerance
         %
@@ -85,102 +110,115 @@ function construct(this, f, options)
         % the current node except a small change.
         %
 
-        iIndexI = mappingI(i);
-
-        indexJ = [ indexJ; ...
-          zeros(childrenCount * dimensionCount, dimensionCount, 'uint8') ];
-
-        nodes = [ nodes; ...
-          zeros(childrenCount * dimensionCount, dimensionCount) ];
-
-        mappingI = [ mappingI; ...
-          zeros(childrenCount * dimensionCount, 1, 'uint8') ];
-
+        iI = iMapping(i);
         for j = 1:dimensionCount
           %
-          % Add a new i-index if needed.
+          % The indexes of the children across all the nodes.
           %
-          if increasedI(iIndexI, j) == 0
-            increasedI(iIndexI, j) = size(indexI, 1) + 1;
-            indexI = [ indexI; indexI(iIndexI, :) ];
-            indexI(end, j) = indexI(end, j) + 1;
-          end
+          [ childJIndex, childNodes ] = computeNeighbors( ...
+            iIndex(iI, j), jIndex(i, j));
 
-          %
-          % The left one.
-          %
-          nodeCount = nodeCount + 1;
+          childCount = length(childJIndex);
+          newNodeCount = newNodeCount + childCount;
 
-          indexJ(nodeCount, :) = indexJ(i, :);
-          if childrenCount > 1
-            indexJ(nodeCount, j) = 2 * indexJ(i, j) - 2;
-          else
-            %
-            % NOTE: Once again, there is one special case when we
-            % go from the second level to the third one.
-            %
-            switch indexJ(i, j)
-            case 1
-              indexJ(nodeCount, j) = 2;
-            case 3
-              indexJ(nodeCount, j) = 4;
-            otherwise
-              assert(false);
-            end
-          end
+          assert(newNodeCount <= activeCount * 2 * dimensionCount);
 
-          nodes(nodeCount, :) = nodes(i, :);
-          nodes(nodeCount, j) = ...
-            double(indexJ(nodeCount, j) - 1) / activeIntervals;
+          range = (newNodeCount - childCount + 1):newNodeCount;
 
-          mappingI(nodeCount) = increasedI(iIndexI, j);
+          newIIndex(range, :) = repmat(iIndex(iI, :), childCount, 1);
+          newIIndex(range, j) = newIIndex(range, j) + 1;
 
-          if childrenCount == 1, continue; end
+          newJIndex(range, :) = repmat(jIndex(i, :), childCount, 1);
+          newJIndex(range, j) = childJIndex;
 
-          %
-          % The right one.
-          %
-          nodeCount = nodeCount + 1;
-
-          indexJ(nodeCount, :) = indexJ(i, :);
-          indexJ(nodeCount, j) = 2 * indexJ(i, j);
-
-          nodes(nodeCount, :) = nodes(i, :);
-          nodes(nodeCount, j) = ...
-            double(indexJ(nodeCount, j) - 1) / activeIntervals;
-
-          mappingI(nodeCount) = increasedI(iIndexI, j);
+          newNodes(range, :) = repmat(nodes(i, :), childCount, 1);
+          newNodes(range, j) = childNodes;
         end
       end
     end
 
+    [ uniqueNewNodes, J ] = unique(newNodes(1:newNodeCount, :), 'rows');
+    newNodeCount = length(J);
+
+    uniqueNewIIndex = newIIndex(J, :);
+    uniqueNewJIndex = newJIndex(J, :);
+
+    [ uniqueNewIIndex, I, II ] = unique(uniqueNewIIndex, 'rows');
+    newIIndexCount = length(I);
+
+    uniqueNewIMapping = II + iIndexCount;
+
+    %
+    % Process the i-indexes.
+    %
+    iIndexCount = iIndexCount + newIIndexCount;
+    while iIndexCount > iBufferSize
+      %
+      % We need more space.
+      %
+      addition = floor(bufferScale * iBufferSize);
+
+      iIndex = [ iIndex; zeros(addition, dimensionCount, 'uint8') ];
+
+      iBufferSize = iBufferSize + addition;
+    end
+
+    iIndex((iIndexCount - newIIndexCount + 1):iIndexCount, :) = uniqueNewIIndex;
+
+    %
+    % Process the nodes.
+    %
+    nodeCount = nodeCount + newNodeCount;
+    while nodeCount > jBufferSize
+      %
+      % We need more space.
+      %
+      addition = floor(bufferScale * jBufferSize);
+
+      jIndex = [ jIndex; zeros(addition, dimensionCount, 'uint8') ];
+      iMapping = [ iMapping; zeros(addition, 1, 'uint8') ];
+      nodes = [ nodes; zeros(addition, dimensionCount) ];
+      values = [ values; zeros(addition, 1) ];
+
+      jBufferSize = jBufferSize + addition;
+    end
+
+    range = (nodeCount - newNodeCount + 1):nodeCount;
+
+    jIndex(range, :) = uniqueNewJIndex;
+    iMapping(range) = uniqueNewIMapping;
+    nodes(range, :) = uniqueNewNodes;
+    values(range) = f(uniqueNewNodes);
+
     activeCount = nodeCount - passiveCount - activeCount;
-
-    if activeCount == 0, break; end
-
     passiveCount = nodeCount - activeCount;
 
-    %
-    % Compute the function in the new points.
-    %
-    values = [ values; f(nodes((passiveCount + 1):end, :)) ];
-
     level = level + 1;
+
+    if activeCount == 0, break; end
   end
 
   this.nodes = nodes;
 end
 
-function [ nodes, J ] = computeNodes(i)
+function [ jIndex, nodes ] = computeNeighbors(i, j)
   if i == 1
-    J = uint8([ 1 ]);
-    nodes = [ 0.5 ];
-  elseif i == 2
-    J = uint8([ 1; 3 ]);
+    assert(j == 1);
+    jIndex = uint8([ 1; 3 ]);
     nodes = [ 0.0; 1.0 ];
+  elseif i == 2
+    if j == 1
+      jIndex = uint8(2);
+      nodes = 0.25;
+    elseif j == 3
+      jIndex = uint8(4);
+      nodes = 0.75;
+    else
+      assert(false);
+    end
   else
-    count = 2^(i - 1) + 1;
-    J = transpose(uint8(2:2:(count - 1)));
-    nodes = (J - 1) / (count - 1);
+    jIndex = uint8([ 2 * j - 2; 2 * j ]);
+    count = 2^((i + 1) - 1) + 1;
+    nodes = double(jIndex - 1) / double(count - 1);
   end
 end
