@@ -3,16 +3,12 @@ setup;
 
 f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
 
-interpolant = AdaptiveCollocation(f, ...
-  'maxLevel', 16);
+tic
+interpolant = AdaptiveCollocation(f, 'maxLevel', 12);
+toc
 
 display(interpolant);
 plot(interpolant);
-
-return;
-
-figure;
-interpolant.plot();
 title('Sparse grid');
 
 [ X, Y ] = meshgrid(linspace(0, 1), linspace(0, 1));
@@ -21,7 +17,12 @@ title('Sparse grid');
 XY = [ X(:), Y(:) ];
 
 Z0 = reshape(f(XY), M, N);
-Z1 = reshape(interpolant.compute(XY), M, N);
+
+tic
+Z1 = interpolant.evaluate(XY);
+toc
+
+Z1 = reshape(Z1, M, N);
 
 figure;
 

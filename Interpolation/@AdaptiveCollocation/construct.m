@@ -200,6 +200,11 @@ function construct(this, f, options)
   this.nodeCount = nodeCount;
   this.lastNodeCount = oldNodeCount;
   this.nodes = nodes(1:nodeCount, :);
+
+  this.evaluationNodes = nodes(2:nodeCount, :);
+  this.evaluationIntervals = ...
+    double(2.^(levelIndex(levelMapping(2:nodeCount), :) - 1));
+  this.surpluses = surpluses(1:nodeCount, :);
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)
