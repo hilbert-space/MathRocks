@@ -1,5 +1,5 @@
 function construct(this, f, options)
-  dimensionCount = 2;
+  dimensionCount = options.dimensionCount;
   tolerance = options.get('tolerance', 1e-3);
   maxLevel = options.get('maxLevel', 10);
 
