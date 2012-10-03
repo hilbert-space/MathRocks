@@ -1,6 +1,10 @@
 function values = evaluate(this, newNodes)
-  nodes = this.evaluationNodes;
-  intervals = this.evaluationIntervals;
+  dimensionCount = this.dimensionCount;
+
+  nodes = this.nodes;
+  intervals = this.intervals;
+
+  offset = this.offset;
   surpluses = this.surpluses;
 
   nodeCount = size(nodes, 1);
@@ -8,10 +12,14 @@ function values = evaluate(this, newNodes)
   newNodeCount = size(newNodes, 1);
   values = zeros(newNodeCount, 1);
 
+  delta = zeros(nodeCount, dimensionCount);
+
   for i = 1:newNodeCount
-    delta = abs(repmat(newNodes(i, :), nodeCount, 1) - nodes);
-    mask = delta < 1.0 ./ intervals;
-    basis = [ 1; prod((1.0 - intervals .* delta) .* mask, 2) ];
-    values(i) = sum(surpluses .* basis);
+    for j = 1:dimensionCount
+      delta(:, j) = abs(nodes(:, j) - newNodes(i, j));
+    end
+    I = find(all(delta < 1.0 ./ intervals, 2));
+    bases = prod(1.0 - intervals(I, :) .* delta(I, :), 2);
+    values(i) = offset + sum(surpluses(I) .* bases);
   end
 end

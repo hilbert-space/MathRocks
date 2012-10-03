@@ -2,10 +2,11 @@ clear all;
 setup;
 
 f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
+% f = @(x) exp(-x(:, 1).^2 + sign(x(:, 2)));
 
 tic
 interpolant = AdaptiveCollocation(f, ...
-  'maxLevel', 14, 'tolerance', 1e-3);
+  'maxLevel', 20, 'tolerance', 1e-2);
 toc
 
 display(interpolant);

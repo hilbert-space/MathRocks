@@ -25,45 +25,44 @@ function construct(this, f, options)
   %
   % The first two levels.
   %
-  nodeCount = 1 + 2 * dimensionCount;
-   levelIndexCount = 1 + dimensionCount;
+  nodeCount = 2 * dimensionCount;
+  levelIndexCount = dimensionCount;
 
   levelIndex(1:levelIndexCount, :) = 1;
   orderIndex(1:nodeCount, :) = 1;
 
-  levelMapping(1) = 1;
-  levelMapping(1 + (1:2:(2 * dimensionCount))    ) = 2:(dimensionCount + 1);
-  levelMapping(1 + (1:2:(2 * dimensionCount)) + 1) = 2:(dimensionCount + 1);
+  levelMapping((1:2:(2 * dimensionCount))    ) = 1:dimensionCount;
+  levelMapping((1:2:(2 * dimensionCount)) + 1) = 1:dimensionCount;
 
   nodes(1:nodeCount, :) = 0.5;
 
   for i = 1:dimensionCount
-    levelIndex(1 + i, i) = 2;
+    levelIndex(i, i) = 2;
 
     %
     % The left most.
     %
-    orderIndex(1 + 2 * (i - 1) + 1, i) = 1;
-    nodes(1 + 2 * (i - 1) + 1, i) = 0.0;
+    orderIndex(2 * (i - 1) + 1, i) = 1;
+    nodes(2 * (i - 1) + 1, i) = 0.0;
 
     %
     % The right most.
     %
-    orderIndex(1 + 2 * (i - 1) + 2, i) = 3;
-    nodes(1 + 2 * (i - 1) + 2, i) = 1.0;
+    orderIndex(2 * (i - 1) + 2, i) = 3;
+    nodes(2 * (i - 1) + 2, i) = 1.0;
   end
 
   %
   % Evaluate the function on the first two levels.
   %
+  offset = f(0.5 * ones(1, dimensionCount));
   values(1:nodeCount) = f(nodes(1:nodeCount, :));
-  surpluses(1) = values(1);
 
   %
   % Summarize what we have done up until now.
   %
   level = 2;
-  gridNodeCount = 1;
+  gridNodeCount = 0;
   oldNodeCount = 2 * dimensionCount;
 
   %
@@ -87,14 +86,17 @@ function construct(this, f, options)
     % NOTE: We skip the first node here since it represents the very
     % first level where all the basis functions are equal to one.
     %
-    gridNodes = nodes(2:gridNodeCount, :);
-    gridIntervals = 2.^(double(levelIndex(levelMapping(2:gridNodeCount), :)) - 1);
+    gridNodes = nodes(1:gridNodeCount, :);
+    gridIntervals = 2.^(double(levelIndex(levelMapping(1:gridNodeCount), :)) - 1);
 
+    delta = zeros(gridNodeCount, dimensionCount);
     for i = oldNodeRange
-      delta = abs(repmat(nodes(i, :), gridNodeCount - 1, 1) - gridNodes);
-      mask = delta < 1.0 ./ gridIntervals;
-      basis = [ 1; prod((1.0 - gridIntervals .* delta) .* mask, 2) ];
-      surpluses(i) = values(i) - sum(surpluses(1:gridNodeCount) .* basis);
+      for j = 1:dimensionCount
+        delta(:, j) = abs(gridNodes(:, j) - nodes(i, j));
+      end
+      I = find(all(delta < 1.0 ./ gridIntervals, 2));
+      bases = prod(1.0 - gridIntervals(I, :) .* delta(I, :), 2);
+      surpluses(i) = values(i) - offset - sum(surpluses(I) .* bases);
     end
 
     %
@@ -233,13 +235,16 @@ function construct(this, f, options)
   end
 
   this.dimensionCount = dimensionCount;
+
+  this.level = level;
   this.nodeCount = nodeCount;
   this.lastNodeCount = oldNodeCount;
-  this.nodes = nodes(1:nodeCount, :);
 
-  this.evaluationNodes = nodes(2:nodeCount, :);
-  this.evaluationIntervals = ...
-    2.^(double(levelIndex(levelMapping(2:nodeCount), :)) - 1);
+  this.nodes = nodes(1:nodeCount, :);
+  this.intervals = ...
+    2.^(double(levelIndex(levelMapping(1:nodeCount), :)) - 1);
+
+  this.offset = offset;
   this.surpluses = surpluses(1:nodeCount, :);
 end
 
