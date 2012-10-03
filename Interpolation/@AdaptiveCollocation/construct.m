@@ -12,7 +12,7 @@ function construct(this, f, options)
   % Allocate some memory.
   %
   levelIndex = zeros(levelBufferSize, dimensionCount, 'uint8');
-  orderIndex = zeros(pointBufferSize, dimensionCount, 'uint8');
+  orderIndex = zeros(pointBufferSize, dimensionCount, 'uint16');
   levelMapping = zeros(pointBufferSize, 1, 'uint8');
   nodes = zeros(pointBufferSize, dimensionCount);
   values = zeros(pointBufferSize, 1);
@@ -60,7 +60,7 @@ function construct(this, f, options)
   surpluses(1) = values(1);
 
   %
-  % Summarize.
+  % Summarize what we have done up until now.
   %
   level = 2;
   gridNodeCount = 1;
@@ -88,7 +88,7 @@ function construct(this, f, options)
     % first level where all the basis functions are equal to one.
     %
     gridNodes = nodes(2:gridNodeCount, :);
-    gridIntervals = double(2.^(levelIndex(levelMapping(2:gridNodeCount), :) - 1));
+    gridIntervals = 2.^(double(levelIndex(levelMapping(2:gridNodeCount), :)) - 1);
 
     for i = oldNodeRange
       delta = abs(repmat(nodes(i, :), gridNodeCount - 1, 1) - gridNodes);
@@ -210,7 +210,7 @@ function construct(this, f, options)
       %
       addition = floor(bufferIncreaseFactor * pointBufferSize);
 
-      orderIndex = [ orderIndex; zeros(addition, dimensionCount, 'uint8') ];
+      orderIndex = [ orderIndex; zeros(addition, dimensionCount, 'uint16') ];
       levelMapping = [ levelMapping; zeros(addition, 1, 'uint8') ];
       nodes = [ nodes; zeros(addition, dimensionCount) ];
       values = [ values; zeros(addition, 1) ];
@@ -239,21 +239,20 @@ function construct(this, f, options)
 
   this.evaluationNodes = nodes(2:nodeCount, :);
   this.evaluationIntervals = ...
-    double(2.^(levelIndex(levelMapping(2:nodeCount), :) - 1));
+    2.^(double(levelIndex(levelMapping(2:nodeCount), :)) - 1);
   this.surpluses = surpluses(1:nodeCount, :);
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)
   if level > 2
-    orderIndex = uint8([ 2 * order - 2; 2 * order ]);
-    count = 2^((level + 1) - 1) + 1;
-    nodes = double(orderIndex - 1) / double(count - 1);
+    orderIndex = uint16([ 2 * order - 2; 2 * order ]);
+    nodes = double(orderIndex - 1) / 2^((double(level) + 1) - 1);
   elseif level == 2
     if order == 1
-      orderIndex = uint8(2);
+      orderIndex = uint16(2);
       nodes = 0.25;
     elseif order == 3
-      orderIndex = uint8(4);
+      orderIndex = uint16(4);
       nodes = 0.75;
     else
       assert(false);

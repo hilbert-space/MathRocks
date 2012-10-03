@@ -1,4 +1,4 @@
-% clear all;
+clear all;
 setup;
 
 f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
@@ -10,9 +10,6 @@ toc
 
 display(interpolant);
 plot(interpolant);
-title('Sparse grid');
-
-return;
 
 [ X, Y ] = meshgrid(linspace(0, 1), linspace(0, 1));
 [ M, N ] = size(X);
