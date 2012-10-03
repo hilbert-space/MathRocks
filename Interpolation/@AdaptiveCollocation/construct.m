@@ -1,12 +1,12 @@
 function construct(this, f, options)
   dimensionCount = 2;
-  tolerance = 1e-3;
+  tolerance = options.get('tolerance', 1e-3);
   maxLevel = options.get('maxLevel', 10);
 
-  bufferScale = 0.5;
-  levelBufferSize = 10 * dimensionCount;
-  pointBufferSize = 20 * dimensionCount;
-  newBufferSize = 10 * 2 * dimensionCount;
+  bufferIncreaseFactor = 1;
+  levelBufferSize = 100 * dimensionCount;
+  pointBufferSize = 200 * dimensionCount;
+  newBufferSize = 100 * 2 * dimensionCount;
 
   %
   % Allocate some memory.
@@ -26,7 +26,7 @@ function construct(this, f, options)
   % The first two levels.
   %
   nodeCount = 1 + 2 * dimensionCount;
-  levelIndexCount = 1 + dimensionCount;
+   levelIndexCount = 1 + dimensionCount;
 
   levelIndex(1:levelIndexCount, :) = 1;
   orderIndex(1:nodeCount, :) = 1;
@@ -54,38 +54,71 @@ function construct(this, f, options)
   end
 
   %
-  % Evaluate the functions on the first two levels.
+  % Evaluate the function on the first two levels.
   %
   values(1:nodeCount) = f(nodes(1:nodeCount, :));
   surpluses(1) = values(1);
 
+  %
+  % Summarize.
+  %
+  level = 2;
   gridNodeCount = 1;
   oldNodeCount = 2 * dimensionCount;
 
   %
-  % The other levels.
+  % Now, the other levels.
   %
-  level = 2;
-  while level < maxLevel
+  while true
     %
-    % NOTE: We skip the first one since it represents the very first level
-    % where all the basis functions are equal to one.
+    % First, we always compute the surpluses of the old nodes.
+    % These surpluses determine the parent nodes that are to be
+    % refined. Consequently, if there are no old nodes, there
+    % are no parents to refine, and we stop.
+    %
+    if oldNodeCount == 0, break; end
+
+    %
+    % Otherwise, the following range is to be processed.
+    %
+    oldNodeRange = (gridNodeCount + 1):(gridNodeCount + oldNodeCount);
+
+    %
+    % NOTE: We skip the first node here since it represents the very
+    % first level where all the basis functions are equal to one.
     %
     gridNodes = nodes(2:gridNodeCount, :);
     gridIntervals = double(2.^(levelIndex(levelMapping(2:gridNodeCount), :) - 1));
 
+    for i = oldNodeRange
+      delta = abs(repmat(nodes(i, :), gridNodeCount - 1, 1) - gridNodes);
+      mask = delta < 1.0 ./ gridIntervals;
+      basis = [ 1; prod((1.0 - gridIntervals .* delta) .* mask, 2) ];
+      surpluses(i) = values(i) - sum(surpluses(1:gridNodeCount) .* basis);
+    end
+
     %
-    % Evaluate the interpolant, which was constructed on the passive points,
-    % at the new points.
+    % If the current level is the last one, we do not try to add any
+    % more nodes; just exit the loop.
+    %
+    if ~(level < maxLevel), break; end
+
+    %
+    % Since we are allowed to go to the next level, we seek
+    % for new nodes defined as children of the old nodes where
+    % the corresponding surpluses violate the accuracy constraint.
     %
     newNodeCount = 0;
-
     newBufferLimit = oldNodeCount * 2 * dimensionCount;
+
+    %
+    % Ensure that we have enough space.
+    %
     if newBufferSize < newBufferLimit
       %
       % We need more space.
       %
-      addition = floor(bufferScale * newBufferSize);
+      addition = floor(bufferIncreaseFactor * newBufferSize);
       newBufferSize = newBufferSize + addition;
 
       newLevelIndex = zeros(newBufferSize, dimensionCount, 'uint8');
@@ -93,50 +126,55 @@ function construct(this, f, options)
       newNodes = zeros(newBufferSize, dimensionCount);
     end
 
-    for i = (gridNodeCount + 1):(gridNodeCount + oldNodeCount)
-      delta = abs(repmat(nodes(i, :), gridNodeCount - 1, 1) - gridNodes);
-      mask = delta < 1.0 ./ gridIntervals;
-      basis = [ 1; prod((1.0 - gridIntervals .* delta) .* mask, 2) ];
-      surpluses(i) = values(i) - sum(surpluses(1:gridNodeCount) .* basis);
+    for i = oldNodeRange
+      if ~(abs(surpluses(i)) > tolerance), continue; end
 
-      if abs(surpluses(i)) > tolerance
-        %
-        % The threshold is violated; hence, we need to add all
-        % the neighbors.
-        %
+      %
+      % So, the threshold is violated; hence, we need to add
+      % all the neighbors.
+      %
 
-        k = levelMapping(i);
-        for j = 1:dimensionCount
-          %
-          % The indexes of the children across all the nodes.
-          %
-          [ childOrderIndex, childNodes ] = computeNeighbors( ...
-            levelIndex(k, j), orderIndex(i, j));
+      currentOrderIndex = orderIndex(i, :);
+      currentLevelIndex = levelIndex(levelMapping(i), :);
 
-          childCount = length(childOrderIndex);
-          newNodeCount = newNodeCount + childCount;
+      for j = 1:dimensionCount
+        [ childOrderIndex, childNodes ] = computeNeighbors( ...
+          currentLevelIndex(j), currentOrderIndex(j));
 
-          assert(newNodeCount <= newBufferLimit);
+        childCount = length(childOrderIndex);
+        newNodeCount = newNodeCount + childCount;
 
-          range = (newNodeCount - childCount + 1):newNodeCount;
+        assert(newNodeCount <= newBufferLimit);
 
-          newLevelIndex(range, :) = repmat(levelIndex(k, :), childCount, 1);
-          newLevelIndex(range, j) = newLevelIndex(range, j) + 1;
+        for k = 1:childCount
+          l = newNodeCount - childCount + k;
 
-          newOrderIndex(range, :) = repmat(orderIndex(i, :), childCount, 1);
-          newOrderIndex(range, j) = childOrderIndex;
+          newLevelIndex(l, :) = currentLevelIndex;
+          newLevelIndex(l, j) = currentLevelIndex(j) + 1;
 
-          newNodes(range, :) = repmat(nodes(i, :), childCount, 1);
-          newNodes(range, j) = childNodes;
+          newOrderIndex(l, :) = currentOrderIndex;
+          newOrderIndex(l, j) = childOrderIndex(k);
+
+          newNodes(l, :) = nodes(i, :);
+          newNodes(l, j) = childNodes(k);
         end
       end
     end
 
-    [ uniqueNewNodes, J ] = unique(newNodes(1:newNodeCount, :), 'rows');
-    newNodeCount = length(J);
+    %
+    % The new nodes have been identify, but they might not be unique.
+    % Therefore, we filter out the duplicates.
+    %
+    [ uniqueNewNodes, J1 ] = unique(newNodes(1:newNodeCount, :), 'rows');
+    [ uniqueNewNodes, J2 ] = setdiff(uniqueNewNodes, nodes(1:nodeCount, :), 'rows');
 
-    uniqueNewLevelIndex = newLevelIndex(J, :);
-    uniqueNewOrderIndex = newOrderIndex(J, :);
+    newNodeCount = size(uniqueNewNodes, 1);
+
+    uniqueNewLevelIndex = newLevelIndex(J1, :);
+    uniqueNewLevelIndex = uniqueNewLevelIndex(J2, :);
+
+    uniqueNewOrderIndex = newOrderIndex(J1, :);
+    uniqueNewOrderIndex = uniqueNewOrderIndex(J2, :);
 
     [ uniqueNewLevelIndex, I, II ] = ...
       unique(uniqueNewLevelIndex, 'rows');
@@ -152,7 +190,7 @@ function construct(this, f, options)
       %
       % We need more space.
       %
-      addition = floor(bufferScale * levelBufferSize);
+      addition = floor(bufferIncreaseFactor * levelBufferSize);
 
       levelIndex = [ levelIndex; zeros(addition, dimensionCount, 'uint8') ];
 
@@ -170,7 +208,7 @@ function construct(this, f, options)
       %
       % We need more space.
       %
-      addition = floor(bufferScale * pointBufferSize);
+      addition = floor(bufferIncreaseFactor * pointBufferSize);
 
       orderIndex = [ orderIndex; zeros(addition, dimensionCount, 'uint8') ];
       levelMapping = [ levelMapping; zeros(addition, 1, 'uint8') ];
@@ -192,8 +230,6 @@ function construct(this, f, options)
     gridNodeCount = nodeCount - oldNodeCount;
 
     level = level + 1;
-
-    if oldNodeCount == 0, break; end
   end
 
   this.dimensionCount = dimensionCount;
@@ -208,10 +244,10 @@ function construct(this, f, options)
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)
-  if level == 1
-    assert(order == 1);
-    orderIndex = uint8([ 1; 3 ]);
-    nodes = [ 0.0; 1.0 ];
+  if level > 2
+    orderIndex = uint8([ 2 * order - 2; 2 * order ]);
+    count = 2^((level + 1) - 1) + 1;
+    nodes = double(orderIndex - 1) / double(count - 1);
   elseif level == 2
     if order == 1
       orderIndex = uint8(2);
@@ -222,9 +258,11 @@ function [ orderIndex, nodes ] = computeNeighbors(level, order)
     else
       assert(false);
     end
+  elseif level == 1;
+    assert(order == 1);
+    orderIndex = uint8([ 1; 3 ]);
+    nodes = [ 0.0; 1.0 ];
   else
-    orderIndex = uint8([ 2 * order - 2; 2 * order ]);
-    count = 2^((level + 1) - 1) + 1;
-    nodes = double(orderIndex - 1) / double(count - 1);
+    assert(false);
   end
 end
