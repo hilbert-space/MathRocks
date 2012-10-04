@@ -25,6 +25,9 @@ function construct(this, f, options)
   %
   % The first two levels.
   %
+  % NOTE: We do not keep the very first point, which we treat
+  % separately; see `ofset' down below.
+  %
   nodeCount = 2 * dimensionCount;
   levelIndexCount = dimensionCount;
 
@@ -129,7 +132,7 @@ function construct(this, f, options)
     end
 
     for i = oldNodeRange
-      if ~(abs(surpluses(i)) > tolerance), continue; end
+      if abs(surpluses(i)) < tolerance, continue; end
 
       %
       % So, the threshold is violated; hence, we need to add

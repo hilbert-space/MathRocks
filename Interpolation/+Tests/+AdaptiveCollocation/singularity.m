@@ -29,11 +29,11 @@ Z1 = reshape(Z1, M, N);
 figure;
 
 subplot(1, 2, 1);
-mesh(X, Y, Z0);
+meshc(X, Y, Z0);
 
 title('Original');
 
 subplot(1, 2, 2);
-mesh(X, Y, Z1);
+meshc(X, Y, Z1);
 
 title(sprintf('Interpolant at level %d', interpolant.level));
