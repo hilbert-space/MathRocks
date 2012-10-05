@@ -4,12 +4,11 @@ classdef AdaptiveCollocation < handle
 
     level
     nodeCount
-    lastNodeCount
+    levelNodeCount
 
     nodes
-    intervals
+    levelIndex
 
-    offset
     surpluses
   end
 
@@ -19,32 +18,12 @@ classdef AdaptiveCollocation < handle
       this.initialize(f, options);
     end
 
-    function plot(this)
-      assert(this.dimensionCount == 2, ...
-        'Only two-dimensional grids are supported.');
-
-      nodes = this.nodes;
-      nodeCount = this.nodeCount;
-      lastCount = this.lastNodeCount;
-
-      line( ...
-        [ 0.5; nodes(1:(nodeCount - lastCount - 1), 1) ], ...
-        [ 0.5; nodes(1:(nodeCount - lastCount - 1), 2) ], ...
-        'Marker', '.', 'MarkerSize', 10, ...
-        'Color', [ 1 1 1 ] / 6, 'LineStyle', 'None');
-      line( ...
-        nodes((this.nodeCount - this.lastNodeCount):end, 1), ...
-        nodes((this.nodeCount - this.lastNodeCount):end, 2), ...
-        'Marker', '.', 'MarkerSize', 10, ...
-        'Color', 'r', 'LineStyle', 'None');
-    end
-
     function display(this)
       fprintf('Adaptive sparse grid collocation:\n');
       fprintf('  Dimensions: %d\n', this.dimensionCount);
       fprintf('  Level:      %d\n', this.level);
-      fprintf('  Nodes:      %d\n', this.nodeCount + 1);
-      fprintf('  Last nodes: %d\n', this.lastNodeCount);
+      fprintf('  Nodes:      %d\n', this.nodeCount);
+      fprintf('  Last nodes: %d\n', this.levelNodeCount(end));
     end
   end
 

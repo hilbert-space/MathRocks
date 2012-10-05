@@ -2,10 +2,10 @@ function values = evaluate(this, newNodes)
   dimensionCount = this.dimensionCount;
 
   nodes = this.nodes;
-  intervals = this.intervals;
-
-  offset = this.offset;
+  levelIndex = this.levelIndex;
   surpluses = this.surpluses;
+
+  intervals = 2.^(double(levelIndex) - 1);
 
   nodeCount = size(nodes, 1);
 
@@ -19,7 +19,11 @@ function values = evaluate(this, newNodes)
       delta(:, j) = abs(nodes(:, j) - newNodes(i, j));
     end
     I = find(all(delta < 1.0 ./ intervals, 2));
-    bases = prod(1.0 - intervals(I, :) .* delta(I, :), 2);
-    values(i) = offset + sum(surpluses(I) .* bases);
+
+    bases = 1.0 - intervals(I, :) .* delta(I, :);
+    bases(find(levelIndex(I) == 1)) = 1;
+    bases = prod(bases, 2);
+
+    values(i) = sum(surpluses(I) .* bases);
   end
 end

@@ -1,6 +1,7 @@
 function construct(this, f, options)
   dimensionCount = options.dimensionCount;
   tolerance = options.get('tolerance', 1e-3);
+  minLevel = options.get('minLevel', 2);
   maxLevel = options.get('maxLevel', 10);
 
   bufferIncreaseFactor = 1;
@@ -17,6 +18,7 @@ function construct(this, f, options)
   nodes = zeros(pointBufferSize, dimensionCount);
   values = zeros(pointBufferSize, 1);
   surpluses = zeros(pointBufferSize, 1);
+  surpluses2 = zeros(pointBufferSize, 1);
 
   newLevelIndex = zeros(newBufferSize, dimensionCount, 'uint8');
   newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint8');
@@ -25,48 +27,51 @@ function construct(this, f, options)
   %
   % The first two levels.
   %
-  % NOTE: We do not keep the very first point, which we treat
-  % separately; see `ofset' down below.
-  %
-  nodeCount = 2 * dimensionCount;
-  levelIndexCount = dimensionCount;
+  nodeCount = 1 + 2 * dimensionCount;
+  levelIndexCount = 1 + dimensionCount;
 
   levelIndex(1:levelIndexCount, :) = 1;
   orderIndex(1:nodeCount, :) = 1;
 
-  levelMapping((1:2:(2 * dimensionCount))    ) = 1:dimensionCount;
-  levelMapping((1:2:(2 * dimensionCount)) + 1) = 1:dimensionCount;
+  levelMapping(1) = 1;
+  levelMapping(1 + (1:2:(2 * dimensionCount))    ) = 1 + (1:dimensionCount);
+  levelMapping(1 + (1:2:(2 * dimensionCount)) + 1) = 1 + (1:dimensionCount);
 
   nodes(1:nodeCount, :) = 0.5;
 
   for i = 1:dimensionCount
-    levelIndex(i, i) = 2;
+    levelIndex(1 + i, i) = 2;
 
     %
     % The left most.
     %
-    orderIndex(2 * (i - 1) + 1, i) = 1;
-    nodes(2 * (i - 1) + 1, i) = 0.0;
+    orderIndex(1 + 2 * (i - 1) + 1, i) = 1;
+    nodes     (1 + 2 * (i - 1) + 1, i) = 0.0;
 
     %
     % The right most.
     %
-    orderIndex(2 * (i - 1) + 2, i) = 3;
-    nodes(2 * (i - 1) + 2, i) = 1.0;
+    orderIndex(1 + 2 * (i - 1) + 2, i) = 3;
+    nodes     (1 + 2 * (i - 1) + 2, i) = 1.0;
   end
 
   %
   % Evaluate the function on the first two levels.
   %
-  offset = f(0.5 * ones(1, dimensionCount));
   values(1:nodeCount) = f(nodes(1:nodeCount, :));
+  surpluses (1) = values(1);
+  surpluses2(1) = values(1).^2;
 
   %
   % Summarize what we have done up until now.
   %
   level = 2;
-  gridNodeCount = 0;
+  gridNodeCount = 1;
   oldNodeCount = 2 * dimensionCount;
+
+  levelNodeCount = zeros(maxLevel, 1);
+  levelNodeCount(1) = 1;
+  levelNodeCount(2) = 2 * dimensionCount;
 
   %
   % Now, the other levels.
@@ -85,12 +90,9 @@ function construct(this, f, options)
     %
     oldNodeRange = (gridNodeCount + 1):(gridNodeCount + oldNodeCount);
 
-    %
-    % NOTE: We skip the first node here since it represents the very
-    % first level where all the basis functions are equal to one.
-    %
     gridNodes = nodes(1:gridNodeCount, :);
-    gridIntervals = 2.^(double(levelIndex(levelMapping(1:gridNodeCount), :)) - 1);
+    gridLevels = levelIndex(levelMapping(1:gridNodeCount), :);
+    gridIntervals = 2.^(double(gridLevels) - 1);
 
     delta = zeros(gridNodeCount, dimensionCount);
     for i = oldNodeRange
@@ -98,8 +100,17 @@ function construct(this, f, options)
         delta(:, j) = abs(gridNodes(:, j) - nodes(i, j));
       end
       I = find(all(delta < 1.0 ./ gridIntervals, 2));
-      bases = prod(1.0 - gridIntervals(I, :) .* delta(I, :), 2);
-      surpluses(i) = values(i) - offset - sum(surpluses(I) .* bases);
+
+      %
+      % Ensure that all the (one-dimensional) bases function at
+      % the first level are equal to one.
+      %
+      bases = 1.0 - gridIntervals(I, :) .* delta(I, :);
+      bases(find(gridLevels(I) == 1)) = 1;
+      bases = prod(bases, 2);
+
+      surpluses(i) = values(i) - sum(surpluses(I) .* bases);
+      surpluses2(i) = values(i).^2 - sum(surpluses2(I) .* bases);
     end
 
     %
@@ -132,11 +143,11 @@ function construct(this, f, options)
     end
 
     for i = oldNodeRange
-      if abs(surpluses(i)) < tolerance, continue; end
+      if level >= minLevel && abs(surpluses2(i)) < tolerance, continue; end
 
       %
-      % So, the threshold is violated; hence, we need to add
-      % all the neighbors.
+      % So, the threshold is violated (or the minimal level has not been
+      % reached yet); hence, we need to add all the neighbors.
       %
 
       currentOrderIndex = orderIndex(i, :);
@@ -220,6 +231,7 @@ function construct(this, f, options)
       nodes = [ nodes; zeros(addition, dimensionCount) ];
       values = [ values; zeros(addition, 1) ];
       surpluses = [ surpluses; zeros(addition, 1) ];
+      surpluses2 = [ surpluses2; zeros(addition, 1) ];
 
       pointBufferSize = pointBufferSize + addition;
     end
@@ -235,19 +247,19 @@ function construct(this, f, options)
     gridNodeCount = nodeCount - oldNodeCount;
 
     level = level + 1;
+
+    levelNodeCount(level) = newNodeCount;
   end
 
   this.dimensionCount = dimensionCount;
 
   this.level = level;
   this.nodeCount = nodeCount;
-  this.lastNodeCount = oldNodeCount;
+  this.levelNodeCount = levelNodeCount(1:level);
 
   this.nodes = nodes(1:nodeCount, :);
-  this.intervals = ...
-    2.^(double(levelIndex(levelMapping(1:nodeCount), :)) - 1);
+  this.levelIndex = levelIndex(levelMapping(1:nodeCount), :);
 
-  this.offset = offset;
   this.surpluses = surpluses(1:nodeCount, :);
 end
 
