@@ -251,16 +251,43 @@ function construct(this, f, options)
     levelNodeCount(level) = newNodeCount;
   end
 
+  %
+  % Summarize.
+  %
+  range = 1:nodeCount;
+
+  levelIndex = levelIndex(levelMapping(range), :);
+  surpluses = surpluses(range, :);
+  surpluses2 = surpluses2(range, :);
+
+  %
+  % Compute expectation and variance.
+  %
+  integrals = 2.^(1 - double(levelIndex));
+  integrals(find(levelIndex == 1)) = 1;
+  integrals(find(levelIndex == 2)) = 1 / 4;
+  integrals = prod(integrals, 2);
+
+  expectation = sum(surpluses .* integrals);
+  variance = sum(surpluses2 .* integrals) - expectation.^2;
+
+  %
+  % Save.
+  %
   this.dimensionCount = dimensionCount;
 
   this.level = level;
+
   this.nodeCount = nodeCount;
   this.levelNodeCount = levelNodeCount(1:level);
 
-  this.nodes = nodes(1:nodeCount, :);
-  this.levelIndex = levelIndex(levelMapping(1:nodeCount), :);
+  this.nodes = nodes(range, :);
+  this.levelIndex = levelIndex;
 
-  this.surpluses = surpluses(1:nodeCount, :);
+  this.surpluses = surpluses;
+
+  this.expectation = expectation;
+  this.variance = variance;
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)

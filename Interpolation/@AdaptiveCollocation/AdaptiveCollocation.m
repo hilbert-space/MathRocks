@@ -10,6 +10,9 @@ classdef AdaptiveCollocation < handle
     levelIndex
 
     surpluses
+
+    expectation
+    variance
   end
 
   methods
@@ -20,10 +23,12 @@ classdef AdaptiveCollocation < handle
 
     function display(this)
       fprintf('Adaptive sparse grid collocation:\n');
-      fprintf('  Dimensions: %d\n', this.dimensionCount);
-      fprintf('  Level:      %d\n', this.level);
-      fprintf('  Nodes:      %d\n', this.nodeCount);
-      fprintf('  Last nodes: %d\n', this.levelNodeCount(end));
+      fprintf('  Dimensions:  %d\n', this.dimensionCount);
+      fprintf('  Level:       %d\n', this.level);
+      fprintf('  Nodes:       %d\n', this.nodeCount);
+      fprintf('  Last nodes:  %d\n', this.levelNodeCount(end));
+      fprintf('  Expectation: %e\n', this.expectation);
+      fprintf('  Variance:    %e\n', this.variance);
     end
   end
 

@@ -2,41 +2,125 @@ function discontinuity
   clear all;
   setup;
 
-  f = 2;
-  x0 = 0.05;
-  dx = 0.2;
-  t = 0:0.001:10;
-
-  options = odeset( ...
+  odeOptions = odeset( ...
     'Vectorized', 'on', ...
     'AbsTol', 1e-6, ...
     'RelTol', 1e-3);
 
-  z = -1:0.1:1;
+  acOptions = Options( ...
+    'dimensionCount', 1, ...
+    'minLevel', 4, ...
+    'maxLevel', 10, ...
+    'tolerance', 1e-3);
 
+  f = 2;
+  x0 = 0.05;
+  dx = 0.2;
+
+  %
+  % A small test before anything else.
+  %
+  t = 25;
+  u = 0.375;
+  y = solve([ 0 t ], [ x0 + dx * (2 * u - 1), 0 ], odeOptions, f);
+  fprintf('Fixed point function value: %.e\n', y(end, 1));
+
+  t = 0:0.001:25;
   steps = length(t);
+
+  %
+  % Enumeration of `all' possible scenarious.
+  %
+  z = -1:0.1:1;
   samples = length(z);
 
-  Y = zeros(steps, samples);
+  filename = sprintf('discontinuity_steps_%d_samples_%d.mat', steps, samples);
+
+  if exist(filename, 'file')
+    load(filename);
+  else
+    Y = zeros(steps, samples);
+
+    tic;
+    for i = 1:samples
+      Y(:, i) = solve(t, [ x0 + dx * z(i), 0 ], odeOptions, f);
+    end
+    time = toc;
+
+    save(filename, 'Y', 'time', '-v7.3');
+  end
+
+  fprintf('Simulation time for %d samples: %.2f s\n', samples, time);
+
+  % [ T, Z ] = meshgrid(t, z);
+  % plotTransient(T, Z, Y);
+
+  %
+  % Adaptive sparse grid collocation.
+  %
+
+  k = steps;
+  t = t(k);
 
   tic;
-  for i = 1:samples
-    [ ~, y ] = ode45(@rightHandSide, t, ...
-      [ x0 + dx * z(i), 0 ], options, f);
-    Y(:, i) = y(:, 1);
-  end
-  fprintf('Simulation time for %d samples: %.2f s\n', samples, toc);
+  interpolant = AdaptiveCollocation( ...
+    @(u) solvePointwise([ 0, t ], ...
+      [ x0 + dx * (2 * u - 1), zeros(size(u)) ], odeOptions, f), acOptions);
+  fprintf('Interpolant construction: %.2f s\n', toc);
 
-  [ T, Z ] = meshgrid(t, z);
+  display(interpolant);
+
+  figure;
+  plot(interpolant);
+  title('Sparse grid');
+
+  tic;
+  y = interpolant.evaluate(transpose((z + 1) / 2));
+  fprintf('Interpolant evaluation at %d points: %.2f s\n', samples, toc);
+
+  plotSlice(t, z, y, Y(k, :));
+end
+
+function y = solve(t, y0, options, f)
+  [ ~, y ] = ode45(@rightHandSide, t, y0, options, f);
+  y = y(:, 1);
+end
+
+function values = solvePointwise(t, y0, options, f)
+  points = size(y0, 1);
+  values = zeros(points, 1);
+  for i = 1:points
+    y = solve(t, y0(i, :), options, f);
+    values(i) = y(end, 1);
+  end
+end
+
+function dy = rightHandSide(t, y, f)
+  dy = [ y(2, :); - f * y(2, :) - (35 / 2) * y(1, :).^3 + (15 / 2) * y(1, :) ];
+end
+
+function plotTransient(T, Z, Y)
+  figure;
 
   meshc(T, Z, transpose(Y));
   view([ 35, 45 ]);
 
+  title('Transient solution');
   xlabel('Time');
   ylabel('Uncertain parameter');
   zlabel('Solution');
 end
 
-function dy = rightHandSide(t, y, f)
-  dy = [ y(2, :); - f * y(2, :) - (35 / 2) * y(1, :).^3 + (15 / 2) * y(1, :) ];
+function plotSlice(t, z, y, y0)
+  figure;
+
+  line(z, y, 'Color', Color.pick(1));
+  title(sprintf('Solution at time %.2f s', t));
+  xlabel('Uncertain parameter');
+  ylabel('Solution');
+
+  if nargin > 3
+    line(z, y0, 'Color', Color.pick(2));
+    legend('Approximated', 'Exact');
+  end
 end
