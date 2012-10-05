@@ -21,7 +21,7 @@ function values = evaluate(this, newNodes)
     I = find(all(delta < 1.0 ./ intervals, 2));
 
     bases = 1.0 - intervals(I, :) .* delta(I, :);
-    bases(find(levelIndex(I) == 1)) = 1;
+    bases(levelIndex(I) == 1) = 1;
     bases = prod(bases, 2);
 
     values(i) = sum(surpluses(I) .* bases);

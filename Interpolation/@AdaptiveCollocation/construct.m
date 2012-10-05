@@ -13,7 +13,7 @@ function construct(this, f, options)
   % Allocate some memory.
   %
   levelIndex = zeros(levelBufferSize, dimensionCount, 'uint8');
-  orderIndex = zeros(pointBufferSize, dimensionCount, 'uint16');
+  orderIndex = zeros(pointBufferSize, dimensionCount, 'uint32');
   levelMapping = zeros(pointBufferSize, 1, 'uint8');
   nodes = zeros(pointBufferSize, dimensionCount);
   values = zeros(pointBufferSize, 1);
@@ -21,7 +21,7 @@ function construct(this, f, options)
   surpluses2 = zeros(pointBufferSize, 1);
 
   newLevelIndex = zeros(newBufferSize, dimensionCount, 'uint8');
-  newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint8');
+  newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint32');
   newNodes = zeros(newBufferSize, dimensionCount);
 
   %
@@ -106,7 +106,7 @@ function construct(this, f, options)
       % the first level are equal to one.
       %
       bases = 1.0 - gridIntervals(I, :) .* delta(I, :);
-      bases(find(gridLevels(I) == 1)) = 1;
+      bases(gridLevels(I) == 1) = 1;
       bases = prod(bases, 2);
 
       surpluses(i) = values(i) - sum(surpluses(I) .* bases);
@@ -138,7 +138,7 @@ function construct(this, f, options)
       newBufferSize = newBufferSize + addition;
 
       newLevelIndex = zeros(newBufferSize, dimensionCount, 'uint8');
-      newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint8');
+      newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint32');
       newNodes = zeros(newBufferSize, dimensionCount);
     end
 
@@ -226,7 +226,7 @@ function construct(this, f, options)
       %
       addition = floor(bufferIncreaseFactor * pointBufferSize);
 
-      orderIndex = [ orderIndex; zeros(addition, dimensionCount, 'uint16') ];
+      orderIndex = [ orderIndex; zeros(addition, dimensionCount, 'uint32') ];
       levelMapping = [ levelMapping; zeros(addition, 1, 'uint8') ];
       nodes = [ nodes; zeros(addition, dimensionCount) ];
       values = [ values; zeros(addition, 1) ];
@@ -264,8 +264,8 @@ function construct(this, f, options)
   % Compute expectation and variance.
   %
   integrals = 2.^(1 - double(levelIndex));
-  integrals(find(levelIndex == 1)) = 1;
-  integrals(find(levelIndex == 2)) = 1 / 4;
+  integrals(levelIndex == 1) = 1;
+  integrals(levelIndex == 2) = 1 / 4;
   integrals = prod(integrals, 2);
 
   expectation = sum(surpluses .* integrals);
@@ -292,21 +292,21 @@ end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)
   if level > 2
-    orderIndex = uint16([ 2 * order - 2; 2 * order ]);
+    orderIndex = uint32([ 2 * order - 2; 2 * order ]);
     nodes = double(orderIndex - 1) / 2^((double(level) + 1) - 1);
   elseif level == 2
     if order == 1
-      orderIndex = uint16(2);
+      orderIndex = uint32(2);
       nodes = 0.25;
     elseif order == 3
-      orderIndex = uint16(4);
+      orderIndex = uint32(4);
       nodes = 0.75;
     else
       assert(false);
     end
   elseif level == 1;
     assert(order == 1);
-    orderIndex = uint8([ 1; 3 ]);
+    orderIndex = uint32([ 1; 3 ]);
     nodes = [ 0.0; 1.0 ];
   else
     assert(false);

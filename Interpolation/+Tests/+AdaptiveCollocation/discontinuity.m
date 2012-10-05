@@ -10,7 +10,7 @@ function discontinuity
   acOptions = Options( ...
     'dimensionCount', 1, ...
     'minLevel', 4, ...
-    'maxLevel', 10, ...
+    'maxLevel', 20, ...
     'tolerance', 1e-3);
 
   f = 2;
@@ -79,6 +79,9 @@ function discontinuity
   fprintf('Interpolant evaluation at %d points: %.2f s\n', samples, toc);
 
   plotSlice(t, z, y, Y(k, :));
+
+  data = interpolant.evaluate(rand(10^3, 1));
+  Stats.observe(data, 'draw', true, 'method', 'histogram');
 end
 
 function y = solve(t, y0, options, f)
