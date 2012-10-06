@@ -1,7 +1,7 @@
 function values = evaluate(this, newNodes)
   zeros = @uninit;
 
-  assert(all(newNodes >= 0) && all(newNodes <= 1));
+  assert(all(all(newNodes >= 0)) && all(all(newNodes <= 1)));
 
   inputDimension = this.inputDimension;
   outputDimension = this.outputDimension;
