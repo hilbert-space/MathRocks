@@ -1,5 +1,6 @@
 function initialize
   addLibrary('Helpers');
+  addLibrary('Vendor/uninit');
 end
 
 function addLibrary(name)

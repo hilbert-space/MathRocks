@@ -6,7 +6,7 @@ f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
 
 tic;
 interpolant = AdaptiveCollocation(f, ...
-  'dimensionCount', 2, 'maxLevel', 15, 'tolerance', 1e-2);
+  'inputDimension', 2, 'maxLevel', 15, 'tolerance', 1e-2);
 fprintf('Interpolant construction: %.2f s\n', toc);
 
 display(interpolant);

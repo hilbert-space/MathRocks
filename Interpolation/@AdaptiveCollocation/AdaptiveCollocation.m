@@ -1,6 +1,7 @@
 classdef AdaptiveCollocation < handle
   properties (SetAccess = 'protected')
-    dimensionCount
+    inputDimension
+    outputDimension
 
     level
     nodeCount
@@ -23,12 +24,11 @@ classdef AdaptiveCollocation < handle
 
     function display(this)
       fprintf('Adaptive sparse grid collocation:\n');
-      fprintf('  Dimensions:  %d\n', this.dimensionCount);
-      fprintf('  Level:       %d\n', this.level);
-      fprintf('  Nodes:       %d\n', this.nodeCount);
-      fprintf('  Last nodes:  %d\n', this.levelNodeCount(end));
-      fprintf('  Expectation: %.4f\n', this.expectation);
-      fprintf('  Variance:    %.4f\n', this.variance);
+      fprintf('  Input dimension:  %d\n', this.inputDimension);
+      fprintf('  Output dimension: %d\n', this.outputDimension);
+      fprintf('  Level:            %d\n', this.level);
+      fprintf('  Nodes:            %d\n', this.nodeCount);
+      fprintf('  Last nodes:       %d\n', this.levelNodeCount(end));
     end
   end
 

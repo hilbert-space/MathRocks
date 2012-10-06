@@ -3,7 +3,7 @@ function plot(this)
   nodeCount = this.nodeCount;
   levelNodeCount = this.levelNodeCount;
 
-  switch this.dimensionCount
+  switch this.inputDimension
   case 1
     k = 1;
     for level = 1:this.level

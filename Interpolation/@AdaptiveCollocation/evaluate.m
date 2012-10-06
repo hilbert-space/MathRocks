@@ -1,5 +1,8 @@
 function values = evaluate(this, newNodes)
-  dimensionCount = this.dimensionCount;
+  zeros = @uninit;
+
+  inputDimension = this.inputDimension;
+  outputDimension = this.outputDimension;
 
   nodes = this.nodes;
   levelIndex = this.levelIndex;
@@ -8,15 +11,15 @@ function values = evaluate(this, newNodes)
   nodeCount = size(nodes, 1);
 
   newNodeCount = size(newNodes, 1);
-  values = zeros(newNodeCount, 1);
+  values = zeros(newNodeCount, outputDimension);
 
-  delta = zeros(nodeCount, dimensionCount);
+  delta = zeros(nodeCount, inputDimension);
 
   intervals = 2.^(double(levelIndex) - 1);
   inverseIntervals = 1.0 ./ intervals;
 
   for i = 1:newNodeCount
-    for j = 1:dimensionCount
+    for j = 1:inputDimension
       delta(:, j) = abs(nodes(:, j) - newNodes(i, j));
     end
     I = find(all(delta < inverseIntervals, 2));
@@ -25,6 +28,6 @@ function values = evaluate(this, newNodes)
     bases(levelIndex(I) == 1) = 1;
     bases = prod(bases, 2);
 
-    values(i) = sum(surpluses(I) .* bases);
+    values(i, :) = sum(bsxfun(@times, surpluses(I, :), bases));
   end
 end

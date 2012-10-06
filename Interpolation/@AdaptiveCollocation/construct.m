@@ -1,36 +1,40 @@
 function construct(this, f, options)
-  dimensionCount = options.dimensionCount;
+  zeros = @uninit;
+
+  inputDimension = options.inputDimension;
+  outputDimension = options.get('outputDimension', 1);
+
   tolerance = options.get('tolerance', 1e-3);
   minLevel = options.get('minLevel', 2);
   maxLevel = options.get('maxLevel', 10);
 
   bufferIncreaseFactor = 1;
-  bufferSize = 200 * dimensionCount;
-  stepBufferSize = 100 * 2 * dimensionCount;
+  bufferSize = 200 * inputDimension;
+  stepBufferSize = 100 * 2 * inputDimension;
 
   %
   % Allocate some memory.
   %
-  levelIndex = zeros(bufferSize, dimensionCount, 'uint8');
-  nodes      = zeros(bufferSize, dimensionCount);
-  values     = zeros(bufferSize, 1);
-  surpluses  = zeros(bufferSize, 1);
-  surpluses2 = zeros(bufferSize, 1);
+  levelIndex = zeros(bufferSize, inputDimension, 'uint8');
+  nodes      = zeros(bufferSize, inputDimension);
+  values     = zeros(bufferSize, outputDimension);
+  surpluses  = zeros(bufferSize, outputDimension);
+  surpluses2 = zeros(bufferSize, outputDimension);
 
-  oldOrderIndex = zeros(stepBufferSize, dimensionCount, 'uint32');
-  newLevelIndex = zeros(stepBufferSize, dimensionCount, 'uint8');
-  newOrderIndex = zeros(stepBufferSize, dimensionCount, 'uint32');
-  newNodes      = zeros(stepBufferSize, dimensionCount);
+  oldOrderIndex = zeros(stepBufferSize, inputDimension, 'uint32');
+  newLevelIndex = zeros(stepBufferSize, inputDimension, 'uint8');
+  newOrderIndex = zeros(stepBufferSize, inputDimension, 'uint32');
+  newNodes      = zeros(stepBufferSize, inputDimension);
 
   %
   % The first two levels.
   %
-  nodeCount = 1 + 2 * dimensionCount;
+  nodeCount = 1 + 2 * inputDimension;
 
   levelIndex(1:nodeCount, :) = 1;
   nodes     (1:nodeCount, :) = 0.5;
 
-  for i = 1:dimensionCount
+  for i = 1:inputDimension
     %
     % The left and right most nodes.
     %
@@ -42,19 +46,19 @@ function construct(this, f, options)
   %
   % Evaluate the function on the first two levels.
   %
-  values(1:nodeCount) = f(nodes(1:nodeCount, :));
-  surpluses (1) = values(1);
-  surpluses2(1) = values(1).^2;
+  values(1:nodeCount, :) = f(nodes(1:nodeCount, :));
+  surpluses (1, :) = values(1, :);
+  surpluses2(1, :) = values(1, :).^2;
 
   %
   % Summarize what we have done so far.
   %
   level = 2;
   gridNodeCount = 1;
-  oldNodeCount = 2 * dimensionCount;
+  oldNodeCount = 2 * inputDimension;
 
   oldOrderIndex(1:oldNodeCount, :) = 1;
-  for i = 1:dimensionCount
+  for i = 1:inputDimension
     %
     % NOTE: The order of the left node is already one;
     % therefore, we initialize only the right node.
@@ -64,7 +68,7 @@ function construct(this, f, options)
 
   levelNodeCount = zeros(maxLevel, 1);
   levelNodeCount(1) = 1;
-  levelNodeCount(2) = 2 * dimensionCount;
+  levelNodeCount(2) = 2 * inputDimension;
 
   %
   % Now, the other levels.
@@ -88,9 +92,9 @@ function construct(this, f, options)
     gridIntervals = 2.^(double(gridLevelIndex) - 1);
     inverseGridIntervals = 1.0 ./ gridIntervals;
 
-    delta = zeros(gridNodeCount, dimensionCount);
+    delta = zeros(gridNodeCount, inputDimension);
     for i = oldNodeRange
-      for j = 1:dimensionCount
+      for j = 1:inputDimension
         delta(:, j) = abs(gridNodes(:, j) - nodes(i, j));
       end
       I = find(all(delta < inverseGridIntervals, 2));
@@ -103,8 +107,10 @@ function construct(this, f, options)
       bases(gridLevelIndex(I) == 1) = 1;
       bases = prod(bases, 2);
 
-      surpluses(i) = values(i) - sum(surpluses(I) .* bases);
-      surpluses2(i) = values(i).^2 - sum(surpluses2(I) .* bases);
+      surpluses (i, :) = ...
+        values(i, :) - sum(bsxfun(@times, surpluses(I, :), bases));
+      surpluses2(i, :) = ...
+        values(i, :).^2 - sum(bsxfun(@times, surpluses2(I, :), bases));
     end
 
     %
@@ -119,7 +125,7 @@ function construct(this, f, options)
     % the corresponding surpluses violate the accuracy constraint.
     %
     newNodeCount = 0;
-    stepBufferLimit = oldNodeCount * 2 * dimensionCount;
+    stepBufferLimit = oldNodeCount * 2 * inputDimension;
 
     %
     % Ensure that we have enough space.
@@ -128,17 +134,17 @@ function construct(this, f, options)
       %
       % We need more space.
       %
-      addition = floor(bufferIncreaseFactor * stepBufferSize);
+      addition = max(stepBufferLimit, floor(bufferIncreaseFactor * stepBufferSize));
       stepBufferSize = stepBufferSize + addition;
 
-      oldOrderIndex = [ oldOrderIndex; zeros(addition, dimensionCount, 'uint32') ];
-      newLevelIndex = zeros(stepBufferSize, dimensionCount, 'uint8');
-      newOrderIndex = zeros(stepBufferSize, dimensionCount, 'uint32');
-      newNodes      = zeros(stepBufferSize, dimensionCount);
+      oldOrderIndex = [ oldOrderIndex; zeros(addition, inputDimension, 'uint32') ];
+      newLevelIndex = zeros(stepBufferSize, inputDimension, 'uint8');
+      newOrderIndex = zeros(stepBufferSize, inputDimension, 'uint32');
+      newNodes      = zeros(stepBufferSize, inputDimension);
     end
 
     for i = oldNodeRange
-      if level >= minLevel && abs(surpluses2(i)) < tolerance, continue; end
+      if level >= minLevel && all(abs(surpluses2(i, :)) < tolerance), continue; end
 
       %
       % So, the threshold is violated (or the minimal level has not been
@@ -148,7 +154,7 @@ function construct(this, f, options)
       currentLevelIndex = levelIndex(i, :);
       currentOrderIndex = oldOrderIndex(i - gridNodeCount, :);
 
-      for j = 1:dimensionCount
+      for j = 1:inputDimension
         [ childOrderIndex, childNodes ] = computeNeighbors( ...
           currentLevelIndex(j), currentOrderIndex(j));
 
@@ -191,17 +197,17 @@ function construct(this, f, options)
 
     nodeCount = nodeCount + newNodeCount;
 
-    while nodeCount > bufferSize
+    if bufferSize < nodeCount
       %
       % We need more space.
       %
-      addition = floor(bufferIncreaseFactor * bufferSize);
+      addition = max(nodeCount, floor(bufferIncreaseFactor * bufferSize));
 
-      levelIndex = [ levelIndex; zeros(addition, dimensionCount, 'uint8') ];
-      nodes      = [ nodes;      zeros(addition, dimensionCount) ];
-      values     = [ values;     zeros(addition, 1) ];
-      surpluses  = [ surpluses;  zeros(addition, 1) ];
-      surpluses2 = [ surpluses2; zeros(addition, 1) ];
+      levelIndex = [ levelIndex; zeros(addition, inputDimension, 'uint8') ];
+      nodes      = [ nodes;      zeros(addition, inputDimension) ];
+      values     = [ values;     zeros(addition, outputDimension) ];
+      surpluses  = [ surpluses;  zeros(addition, outputDimension) ];
+      surpluses2 = [ surpluses2; zeros(addition, outputDimension) ];
 
       bufferSize = bufferSize + addition;
     end
@@ -210,7 +216,7 @@ function construct(this, f, options)
 
     levelIndex(range, :) = uniqueNewLevelIndex;
     nodes     (range, :) = uniqueNewNodes;
-    values    (range   ) = f(uniqueNewNodes);
+    values    (range, :) = f(uniqueNewNodes);
 
     oldNodeCount  = nodeCount - gridNodeCount - oldNodeCount;
     gridNodeCount = nodeCount - oldNodeCount;
@@ -237,13 +243,14 @@ function construct(this, f, options)
   integrals(levelIndex == 2) = 1 / 4;
   integrals = prod(integrals, 2);
 
-  expectation = sum(surpluses .* integrals);
-  variance = sum(surpluses2 .* integrals) - expectation.^2;
+  expectation = sum(bsxfun(@times, surpluses, integrals));
+  variance = sum(bsxfun(@times, surpluses2, integrals)) - expectation.^2;
 
   %
   % Save.
   %
-  this.dimensionCount = dimensionCount;
+  this.inputDimension = inputDimension;
+  this.outputDimension = outputDimension;
 
   this.level = level;
 

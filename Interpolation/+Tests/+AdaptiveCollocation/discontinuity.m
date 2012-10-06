@@ -8,7 +8,7 @@ function discontinuity
     'RelTol', 1e-3);
 
   acOptions = Options( ...
-    'dimensionCount', 1, ...
+    'inputDimension', 1, ...
     'minLevel', 4, ...
     'maxLevel', 20, ...
     'tolerance', 1e-3);
@@ -52,8 +52,8 @@ function discontinuity
 
   fprintf('Simulation time for %d samples: %.2f s\n', samples, time);
 
-  % [ T, Z ] = meshgrid(t, z);
-  % plotTransient(T, Z, Y);
+  [ T, Z ] = meshgrid(t, z);
+  plotTransient(T, Z, Y);
 
   %
   % Adaptive sparse grid collocation.
