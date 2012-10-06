@@ -27,8 +27,8 @@ classdef AdaptiveCollocation < handle
       fprintf('  Level:       %d\n', this.level);
       fprintf('  Nodes:       %d\n', this.nodeCount);
       fprintf('  Last nodes:  %d\n', this.levelNodeCount(end));
-      fprintf('  Expectation: %e\n', this.expectation);
-      fprintf('  Variance:    %e\n', this.variance);
+      fprintf('  Expectation: %.4f\n', this.expectation);
+      fprintf('  Variance:    %.4f\n', this.variance);
     end
   end
 

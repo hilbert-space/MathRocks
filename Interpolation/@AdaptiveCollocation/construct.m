@@ -5,54 +5,49 @@ function construct(this, f, options)
   maxLevel = options.get('maxLevel', 10);
 
   bufferIncreaseFactor = 1;
-  levelBufferSize = 100 * dimensionCount;
-  pointBufferSize = 200 * dimensionCount;
+  bufferSize = 200 * dimensionCount;
   newBufferSize = 100 * 2 * dimensionCount;
 
   %
   % Allocate some memory.
   %
-  levelIndex = zeros(levelBufferSize, dimensionCount, 'uint8');
-  orderIndex = zeros(pointBufferSize, dimensionCount, 'uint32');
-  levelMapping = zeros(pointBufferSize, 1, 'uint8');
-  nodes = zeros(pointBufferSize, dimensionCount);
-  values = zeros(pointBufferSize, 1);
-  surpluses = zeros(pointBufferSize, 1);
-  surpluses2 = zeros(pointBufferSize, 1);
+  levelIndex = zeros(bufferSize, dimensionCount, 'uint8');
+  orderIndex = zeros(bufferSize, dimensionCount, 'uint32');
+  nodes      = zeros(bufferSize, dimensionCount);
+  values     = zeros(bufferSize, 1);
+  surpluses  = zeros(bufferSize, 1);
+  surpluses2 = zeros(bufferSize, 1);
 
   newLevelIndex = zeros(newBufferSize, dimensionCount, 'uint8');
   newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint32');
-  newNodes = zeros(newBufferSize, dimensionCount);
+  newNodes      = zeros(newBufferSize, dimensionCount);
 
   %
   % The first two levels.
   %
   nodeCount = 1 + 2 * dimensionCount;
-  levelIndexCount = 1 + dimensionCount;
 
-  levelIndex(1:levelIndexCount, :) = 1;
+  levelIndex(1:nodeCount, :) = 1;
   orderIndex(1:nodeCount, :) = 1;
-
-  levelMapping(1) = 1;
-  levelMapping(1 + (1:2:(2 * dimensionCount))    ) = 1 + (1:dimensionCount);
-  levelMapping(1 + (1:2:(2 * dimensionCount)) + 1) = 1 + (1:dimensionCount);
 
   nodes(1:nodeCount, :) = 0.5;
 
   for i = 1:dimensionCount
-    levelIndex(1 + i, i) = 2;
+    k = 1 + 2 * (i - 1);
 
     %
     % The left most.
     %
-    orderIndex(1 + 2 * (i - 1) + 1, i) = 1;
-    nodes     (1 + 2 * (i - 1) + 1, i) = 0.0;
+    levelIndex(k + 1, i) = 2;
+    orderIndex(k + 1, i) = 1;
+    nodes     (k + 1, i) = 0.0;
 
     %
     % The right most.
     %
-    orderIndex(1 + 2 * (i - 1) + 2, i) = 3;
-    nodes     (1 + 2 * (i - 1) + 2, i) = 1.0;
+    levelIndex(k + 2, i) = 2;
+    orderIndex(k + 2, i) = 3;
+    nodes     (k + 2, i) = 1.0;
   end
 
   %
@@ -91,22 +86,23 @@ function construct(this, f, options)
     oldNodeRange = (gridNodeCount + 1):(gridNodeCount + oldNodeCount);
 
     gridNodes = nodes(1:gridNodeCount, :);
-    gridLevels = levelIndex(levelMapping(1:gridNodeCount), :);
-    gridIntervals = 2.^(double(gridLevels) - 1);
+    gridLevelIndex = levelIndex(1:gridNodeCount, :);
+    gridIntervals = 2.^(double(gridLevelIndex) - 1);
+    inverseGridIntervals = 1.0 ./ gridIntervals;
 
     delta = zeros(gridNodeCount, dimensionCount);
     for i = oldNodeRange
       for j = 1:dimensionCount
         delta(:, j) = abs(gridNodes(:, j) - nodes(i, j));
       end
-      I = find(all(delta < 1.0 ./ gridIntervals, 2));
+      I = find(all(delta < inverseGridIntervals, 2));
 
       %
       % Ensure that all the (one-dimensional) bases function at
       % the first level are equal to one.
       %
       bases = 1.0 - gridIntervals(I, :) .* delta(I, :);
-      bases(gridLevels(I) == 1) = 1;
+      bases(gridLevelIndex(I) == 1) = 1;
       bases = prod(bases, 2);
 
       surpluses(i) = values(i) - sum(surpluses(I) .* bases);
@@ -139,7 +135,7 @@ function construct(this, f, options)
 
       newLevelIndex = zeros(newBufferSize, dimensionCount, 'uint8');
       newOrderIndex = zeros(newBufferSize, dimensionCount, 'uint32');
-      newNodes = zeros(newBufferSize, dimensionCount);
+      newNodes      = zeros(newBufferSize, dimensionCount);
     end
 
     for i = oldNodeRange
@@ -151,7 +147,7 @@ function construct(this, f, options)
       %
 
       currentOrderIndex = orderIndex(i, :);
-      currentLevelIndex = levelIndex(levelMapping(i), :);
+      currentLevelIndex = levelIndex(i, :);
 
       for j = 1:dimensionCount
         [ childOrderIndex, childNodes ] = computeNeighbors( ...
@@ -184,64 +180,37 @@ function construct(this, f, options)
     [ uniqueNewNodes, J1 ] = unique(newNodes(1:newNodeCount, :), 'rows');
     [ uniqueNewNodes, J2 ] = setdiff(uniqueNewNodes, nodes(1:nodeCount, :), 'rows');
 
-    newNodeCount = size(uniqueNewNodes, 1);
-
     uniqueNewLevelIndex = newLevelIndex(J1, :);
-    uniqueNewLevelIndex = uniqueNewLevelIndex(J2, :);
-
     uniqueNewOrderIndex = newOrderIndex(J1, :);
+
+    uniqueNewLevelIndex = uniqueNewLevelIndex(J2, :);
     uniqueNewOrderIndex = uniqueNewOrderIndex(J2, :);
 
-    [ uniqueNewLevelIndex, I, II ] = ...
-      unique(uniqueNewLevelIndex, 'rows');
+    newNodeCount = size(uniqueNewNodes, 1);
+    nodeCount = nodeCount + newNodeCount;
 
-    newLevelIndexCount = length(I);
-    uniqueNewLevelMapping = II + levelIndexCount;
-
-    %
-    % Process the level index.
-    %
-    levelIndexCount = levelIndexCount + newLevelIndexCount;
-    while levelIndexCount > levelBufferSize
+    while nodeCount > bufferSize
       %
       % We need more space.
       %
-      addition = floor(bufferIncreaseFactor * levelBufferSize);
+      addition = floor(bufferIncreaseFactor * bufferSize);
 
       levelIndex = [ levelIndex; zeros(addition, dimensionCount, 'uint8') ];
-
-      levelBufferSize = levelBufferSize + addition;
-    end
-
-    levelIndex((levelIndexCount - newLevelIndexCount + 1):levelIndexCount, :) = ...
-      uniqueNewLevelIndex;
-
-    %
-    % Process the nodes and the rest.
-    %
-    nodeCount = nodeCount + newNodeCount;
-    while nodeCount > pointBufferSize
-      %
-      % We need more space.
-      %
-      addition = floor(bufferIncreaseFactor * pointBufferSize);
-
       orderIndex = [ orderIndex; zeros(addition, dimensionCount, 'uint32') ];
-      levelMapping = [ levelMapping; zeros(addition, 1, 'uint8') ];
-      nodes = [ nodes; zeros(addition, dimensionCount) ];
-      values = [ values; zeros(addition, 1) ];
-      surpluses = [ surpluses; zeros(addition, 1) ];
+      nodes      = [ nodes;      zeros(addition, dimensionCount) ];
+      values     = [ values;     zeros(addition, 1) ];
+      surpluses  = [ surpluses;  zeros(addition, 1) ];
       surpluses2 = [ surpluses2; zeros(addition, 1) ];
 
-      pointBufferSize = pointBufferSize + addition;
+      bufferSize = bufferSize + addition;
     end
 
     range = (nodeCount - newNodeCount + 1):nodeCount;
 
+    levelIndex(range, :) = uniqueNewLevelIndex;
     orderIndex(range, :) = uniqueNewOrderIndex;
-    levelMapping(range) = uniqueNewLevelMapping;
-    nodes(range, :) = uniqueNewNodes;
-    values(range) = f(uniqueNewNodes);
+    nodes     (range, :) = uniqueNewNodes;
+    values    (range   ) = f(uniqueNewNodes);
 
     oldNodeCount  = nodeCount - gridNodeCount - oldNodeCount;
     gridNodeCount = nodeCount - oldNodeCount;
@@ -256,7 +225,7 @@ function construct(this, f, options)
   %
   range = 1:nodeCount;
 
-  levelIndex = levelIndex(levelMapping(range), :);
+  levelIndex = levelIndex(range, :);
   surpluses = surpluses(range, :);
   surpluses2 = surpluses2(range, :);
 

@@ -5,8 +5,6 @@ function values = evaluate(this, newNodes)
   levelIndex = this.levelIndex;
   surpluses = this.surpluses;
 
-  intervals = 2.^(double(levelIndex) - 1);
-
   nodeCount = size(nodes, 1);
 
   newNodeCount = size(newNodes, 1);
@@ -14,11 +12,14 @@ function values = evaluate(this, newNodes)
 
   delta = zeros(nodeCount, dimensionCount);
 
+  intervals = 2.^(double(levelIndex) - 1);
+  inverseIntervals = 1.0 ./ intervals;
+
   for i = 1:newNodeCount
     for j = 1:dimensionCount
       delta(:, j) = abs(nodes(:, j) - newNodes(i, j));
     end
-    I = find(all(delta < 1.0 ./ intervals, 2));
+    I = find(all(delta < inverseIntervals, 2));
 
     bases = 1.0 - intervals(I, :) .* delta(I, :);
     bases(levelIndex(I) == 1) = 1;
