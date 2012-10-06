@@ -13,7 +13,7 @@ function interpolant = multidimensional
     'inputDimension', 1, ...
     'outputDimension', 3, ...
     'maxLevel', 20, ...
-    'tolerance', 1e-1);
+    'tolerance', 1e-2);
 
   t = 0:0.01:30;
   steps = length(t);
@@ -43,7 +43,7 @@ function interpolant = multidimensional
 
   Variance = var(Y, [], 3);
 
-  figure;
+  solutionFigure = figure;
   xlabel('Uncertain parameter');
   title('Solution');
   plotTransient(z, transpose(squeeze(Y(end, :, :))));
@@ -72,6 +72,11 @@ function interpolant = multidimensional
 
   figure;
   plot(interpolant);
+
+  figure(solutionFigure);
+  plotTransient(z, interpolant.evaluate((z.' + 1) / 2), 'LineStyle', '--');
+  legend('Exact 1', 'Exact 2', 'Exact 3', ...
+    'Approximated 1', 'Approximated 2', 'Approximated 3');
 end
 
 function y = solve(t, y0, options)
@@ -94,10 +99,10 @@ function dy = rightHandSide(t, y)
     - y(1, :).^2 + y(2, :).^2 ];
 end
 
-function plotTransient(t, y)
+function plotTransient(t, y, varargin)
   count = size(y, 2);
   for i = 1:count
-    line(t, y(:, i), 'Color', Color.pick(i));
+    line(t, y(:, i), 'Color', Color.pick(i), varargin{:});
   end
 end
 

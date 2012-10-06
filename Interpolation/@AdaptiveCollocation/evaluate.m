@@ -1,6 +1,8 @@
 function values = evaluate(this, newNodes)
   zeros = @uninit;
 
+  assert(all(newNodes >= 0) && all(newNodes <= 1));
+
   inputDimension = this.inputDimension;
   outputDimension = this.outputDimension;
 
@@ -28,6 +30,6 @@ function values = evaluate(this, newNodes)
     bases(levelIndex(I) == 1) = 1;
     bases = prod(bases, 2);
 
-    values(i, :) = sum(bsxfun(@times, surpluses(I, :), bases));
+    values(i, :) = sum(bsxfun(@times, surpluses(I, :), bases), 1);
   end
 end

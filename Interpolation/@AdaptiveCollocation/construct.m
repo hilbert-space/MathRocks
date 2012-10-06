@@ -108,9 +108,9 @@ function construct(this, f, options)
       bases = prod(bases, 2);
 
       surpluses (i, :) = ...
-        values(i, :) - sum(bsxfun(@times, surpluses(I, :), bases));
+        values(i, :) - sum(bsxfun(@times, surpluses(I, :), bases), 1);
       surpluses2(i, :) = ...
-        values(i, :).^2 - sum(bsxfun(@times, surpluses2(I, :), bases));
+        values(i, :).^2 - sum(bsxfun(@times, surpluses2(I, :), bases), 1);
     end
 
     %
@@ -144,7 +144,7 @@ function construct(this, f, options)
     end
 
     for i = oldNodeRange
-      if level >= minLevel && all(abs(surpluses2(i, :)) < tolerance), continue; end
+      if level >= minLevel && max(abs(surpluses2(i, :))) < tolerance, continue; end
 
       %
       % So, the threshold is violated (or the minimal level has not been
@@ -243,8 +243,8 @@ function construct(this, f, options)
   integrals(levelIndex == 2) = 1 / 4;
   integrals = prod(integrals, 2);
 
-  expectation = sum(bsxfun(@times, surpluses, integrals));
-  variance = sum(bsxfun(@times, surpluses2, integrals)) - expectation.^2;
+  expectation = sum(bsxfun(@times, surpluses, integrals), 1);
+  variance = sum(bsxfun(@times, surpluses2, integrals), 1) - expectation.^2;
 
   %
   % Save.
