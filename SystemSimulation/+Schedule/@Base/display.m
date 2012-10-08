@@ -8,4 +8,6 @@ function display(this)
       i, this.priority(i), this.mapping(i), this.order(i), ...
       this.startTime(i), this.executionTime(i));
   end
+
+  fprintf('Duration: %.2f s\n', duration(this));
 end
