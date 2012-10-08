@@ -1,5 +1,5 @@
 function includeLibrary(name)
-  root = traceLocation();
+  root = File.trace();
   path = [ root, filesep, name ];
   hook = [ path, filesep, 'setup.m' ];
   if exist(path, 'dir')
