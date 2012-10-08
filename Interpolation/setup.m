@@ -1,13 +1,4 @@
-function initialize
-  addLibrary('Helpers');
-  addLibrary('Vendor/uninit');
-end
-
-function addLibrary(name)
-  addpath([ rootPath, '/', name ]);
-end
-
-function path = rootPath
-  chunks = regexp(mfilename('fullpath'), '^(.*)/[^/]+/[^/]+$', 'tokens');
-  path = chunks{1}{1};
+function setup
+  includeLibrary('Helpers');
+  includeLibrary('Vendor/uninit');
 end
