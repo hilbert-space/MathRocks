@@ -1,0 +1,27 @@
+SELF_DIRECTORY = $(dir $(lastword $(MAKEFILE_LIST)))
+
+HOTSPOT_VERSION   = 5.02
+HOTSPOT_URL       = http://lava.cs.virginia.edu/HotSpot/grab/HotSpot-$(HOTSPOT_VERSION).tar.gz
+HOTSPOT_ARCHIVE   = $(SELF_DIRECTORY)HotSpot-$(HOTSPOT_VERSION).tar.gz
+HOTSPOT_DIRECTORY = $(SELF_DIRECTORY)HotSpot-$(HOTSPOT_VERSION)/
+HOTSPOT_LIBRARY   = libhotspot.a
+
+UNAME = $(shell uname -s)
+ifeq ($(UNAME),Linux)
+	DOWNLOAD = wget -O
+endif
+ifeq ($(UNAME),Darwin)
+	DOWNLOAD = curl -o
+endif
+
+all: $(HOTSPOT_LIBRARY)
+
+$(HOTSPOT_LIBRARY): $(HOTSPOT_DIRECTORY)
+	$(MAKE) -C $(HOTSPOT_DIRECTORY)
+
+$(HOTSPOT_DIRECTORY): $(HOTSPOT_ARCHIVE)
+	tar -xzf $(HOTSPOT_ARCHIVE) -C $(SELF_DIRECTORY)
+	ln -sfn $(HOTSPOT_DIRECTORY) $(SELF_DIRECTORY)hotspot
+
+$(HOTSPOT_ARCHIVE):
+	$(DOWNLOAD) $(HOTSPOT_ARCHIVE) $(HOTSPOT_URL)
