@@ -81,7 +81,7 @@ function discontinuity
   plotSlice(t, z, y, Y(k, :));
 
   data = interpolant.evaluate(rand(10^3, 1));
-  Stats.observe(data, 'draw', true, 'method', 'histogram');
+  observeData(data, 'draw', true, 'method', 'histogram');
 end
 
 function y = solve(t, y0, options, f)

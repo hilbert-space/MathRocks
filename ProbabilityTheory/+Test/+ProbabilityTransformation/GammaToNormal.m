@@ -37,4 +37,4 @@ Correlation.Pearson.compute(data)
 
 %% Draw the result.
 %
-Statistics.observe(data, 'method', 'histogram', 'draw', true);
+observeData(data, 'method', 'histogram', 'draw', true);

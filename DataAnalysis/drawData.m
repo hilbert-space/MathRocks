@@ -1,4 +1,4 @@
-function draw(x, varargin)
+function drawData(x, varargin)
   [ data, options ] = Options.extract(varargin{:});
   method = options.get('method', 'smooth');
 
