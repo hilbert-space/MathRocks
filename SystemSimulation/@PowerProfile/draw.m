@@ -1,14 +1,14 @@
-function draw(this)
+function draw(this, powerProfile)
   figure;
 
-  [ stepCount, processorCount ] = size(this.values);
+  [ processorCount, stepCount ] = size(powerProfile);
 
   time = this.samplingInterval * ((1:stepCount) - 1);
 
   labels = cell(1, processorCount);
 
   for i = 1:processorCount
-    line(time, this.values(:, i), 'Color', Color.pick(i));
+    line(time, powerProfile(i, :), 'Color', Color.pick(i));
     labels{i} = sprintf('PE %d', i);
   end
 

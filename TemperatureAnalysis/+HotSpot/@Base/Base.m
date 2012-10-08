@@ -50,14 +50,9 @@ classdef Base < handle
         this.processorCount, this.samplingInterval, this.ambientTemperature ] = ...
         HotSpot.constructModel(floorplanFilename, configFilename, configLine);
     end
+  end
 
-    function display(this)
-      fprintf('%s:\n', class(this));
-      fprintf('  Processing elements: %d\n', this.processorCount);
-      fprintf('  Thermal nodes:       %d\n', this.nodeCount);
-      fprintf('  Sampling interval:   %.2e s\n', this.samplingInterval);
-      fprintf('  Ambient temperature: %.2f C\n', ...
-        convertKelvinToCelsius(this.ambientTemperature));
-    end
+  methods (Abstract)
+    temperatureProfile = compute(this, powerProfile)
   end
 end

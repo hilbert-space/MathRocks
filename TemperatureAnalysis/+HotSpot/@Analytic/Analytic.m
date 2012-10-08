@@ -79,7 +79,7 @@ classdef Analytic < HotSpot.Base
       this.D = this.Q * diag((exp(dt * this.L) - 1) ./ this.L) * this.QT * B;
     end
 
-    function T = solve(this, P)
+    function T = compute(this, P)
       [ processorCount, stepCount ] = size(P);
 
       assert(processorCount == this.processorCount, ...

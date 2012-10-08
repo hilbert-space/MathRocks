@@ -1,5 +1,6 @@
 function display(this)
   fprintf('Schedule:\n');
+  fprintf('  Duration: %.2f s\n', duration(this));
   fprintf('  %4s %8s %8s %8s %8s %8s\n', ...
     'id', 'priority', 'mapping', 'order', 'start', 'duration');
 
@@ -8,6 +9,4 @@ function display(this)
       i, this.priority(i), this.mapping(i), this.order(i), ...
       this.startTime(i), this.executionTime(i));
   end
-
-  fprintf('Duration: %.2f s\n', duration(this));
 end

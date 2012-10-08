@@ -20,7 +20,7 @@ classdef Numeric < HotSpot.Base
       this.Bt = Cm1 * M;
     end
 
-    function T = solve(this, P)
+    function T = compute(this, P)
       [ processorCount, stepCount ] = size(P);
 
       assert(processorCount == this.processorCount, ...
