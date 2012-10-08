@@ -1,7 +1,7 @@
 function includeLibrary(name)
   root = traceLocation();
-  path = [ root, '/', name ];
-  hook = [ path, '/', 'setup.m' ];
+  path = [ root, filesep, name ];
+  hook = [ path, filesep, 'setup.m' ];
   if exist(path, 'dir')
     addpath(path);
     if exist(hook, 'file')

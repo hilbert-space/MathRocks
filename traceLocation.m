@@ -3,9 +3,8 @@ function [ path, file, name, line ] = traceLocation()
   if length(stack) < 2
     error('Is not supposed to be called from the console.');
   else
-    chunks = regexp(stack(2).file, '^(.*)/([^/]+)$', 'tokens');
-    path = chunks{1}{1};
-    file = chunks{1}{2};
+    [ path, name, extension ] = fileparts(stack(2).file);
+    file = [ name, extension ];
     name = stack(2).name;
     line = stack(2).line;
   end
