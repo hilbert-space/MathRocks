@@ -1,4 +1,32 @@
 function values = map(localData, globalMin, globalMax)
+  values = jet;
+
+  if nargin == 0, return; end
+
+  count = size(values, 1);
+
+  localMin = min(min(localData));
+  localMax = max(max(localData));
+
+  lower = floor(count * (localMin - globalMin) / (globalMax - globalMin));
+  upper = floor(count * (globalMax - localMax) / (globalMax - globalMin));
+
+  if lower < 0
+    values = [ 0 0 0; values ];
+    count = count + 1;
+    lower = 0;
+  end
+
+  if upper < 0
+    values = [ values; 0 0 0 ];
+    count = count + 1;
+    upper = 0;
+  end
+
+  values = values((1 + lower):(end - upper), :);
+end
+
+function values = jet
   values = [ ...
          0         0    0.5625; ...
          0         0    0.6250; ...
@@ -65,16 +93,4 @@ function values = map(localData, globalMin, globalMax)
     0.5625         0         0; ...
     0.5000         0         0; ...
   ];
-
-  if nargin == 0, return; end
-
-  count = size(values, 1);
-
-  localMin = min(min(localData));
-  localMax = max(max(localData));
-
-  lower = floor(count * (localMin - globalMin) / (globalMax - globalMin));
-  upper = floor(count * (globalMax - localMax) / (globalMax - globalMin));
-
-  values = values((1 + lower):(end - upper), :);
 end
