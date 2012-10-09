@@ -10,6 +10,8 @@ classdef Color < handle
   end
 
   methods (Static)
+    values = map(localData, globalMin, globalMax)
+
     function color = pick(i)
       if nargin == 0, i = randi(10); end
       palette = Color.palette;
