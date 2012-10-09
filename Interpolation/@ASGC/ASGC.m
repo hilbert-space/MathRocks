@@ -1,4 +1,4 @@
-classdef AdaptiveCollocation < handle
+classdef ASGC < handle
   properties (SetAccess = 'protected')
     inputDimension
     outputDimension
@@ -17,7 +17,7 @@ classdef AdaptiveCollocation < handle
   end
 
   methods
-    function this = AdaptiveCollocation(f, varargin)
+    function this = ASGC(f, varargin)
       options = Options(varargin{:});
       this.initialize(f, options);
     end

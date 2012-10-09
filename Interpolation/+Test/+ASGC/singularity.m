@@ -5,7 +5,7 @@ f = @(x) 1 ./ (abs(0.3 - x(:, 1).^2 - x(:, 2).^2) + 0.1);
 % f = @(x) exp(-x(:, 1).^2 + sign(x(:, 2)));
 
 tic;
-interpolant = AdaptiveCollocation(f, ...
+interpolant = ASGC(f, ...
   'inputDimension', 2, 'maxLevel', 15, 'tolerance', 1e-2);
 fprintf('Interpolant construction: %.2f s\n', toc);
 
