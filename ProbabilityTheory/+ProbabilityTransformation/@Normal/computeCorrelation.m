@@ -12,7 +12,9 @@ function correlation = computeCorrelation(this, rvs)
   %
   % Just to eliminate unnecessary work if the RVs are independent.
   %
-  if norm(matrix - rvs.correlation.matrix, Inf) == 0, dimension = 0; end
+  if dimension == 1 || norm(matrix - rvs.correlation.matrix, Inf) == 0
+    dimension = 0;
+  end
 
   for i = 1:dimension
     for j = (i + 1):dimension
