@@ -9,6 +9,11 @@ function correlation = computeCorrelation(this, rvs)
 
   matrix = diag(ones(1, dimension));
 
+  %
+  % Just to eliminate unnecessary work if the RVs are independent.
+  %
+  if norm(matrix - rvs.correlation.matrix, Inf) == 0, dimension = 0; end
+
   for i = 1:dimension
     for j = (i + 1):dimension
       rv1 = rvs{i};
