@@ -3,7 +3,7 @@ function varargout = constructModel(varargin)
 
   mex = sprintf('%s%sbin%smex', matlabroot, filesep, filesep);
 
-  if system(sprintf('cd %s; MEX="%s" make constructModel', traceLocation, mex)) ~= 0
+  if system(sprintf('cd %s; MEX="%s" make constructModel', File.trace, mex)) ~= 0
     error('Cannot compile the HotSpot interface.');
   end
 
