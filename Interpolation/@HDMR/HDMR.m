@@ -22,6 +22,7 @@ classdef HDMR < handle
       fprintf('  Output dimension: %d\n', this.outputDimension);
       fprintf('  Order:            %d\n', this.order);
       fprintf('  Nodes:            %d\n', this.nodeCount);
+      fprintf('  Interpolants:     %d\n', length(this.interpolants));
     end
   end
 

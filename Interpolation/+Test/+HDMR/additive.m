@@ -5,26 +5,27 @@ function additive
   inputDimension = 10;
 
   f = @(u) sum(u.^2, 2);
-
-  tic;
-  interpolant = HDMR(f, ...
-    'inputDimension', inputDimension, ...
-    'maxOrder', 3, 'tolerance', 1e-4);
-  fprintf('Interpolant construction: %.2f s\n', toc);
-
-  display(interpolant);
-
   u = rand(sampleCount, inputDimension);
 
-  tic
-  approximatedData = interpolant.evaluate(u);
-  fprintf('Evaluation: %.2f s\n', toc);
+  for order = [ 1, 2, 3 ];
+    tic;
+    interpolant = HDMR(f, ...
+      'inputDimension', inputDimension, ...
+      'maxOrder', order, 'tolerance', 1e-4);
+    fprintf('Interpolant construction: %.2f s\n', toc);
 
-  exactData = f(u);
+    display(interpolant);
 
-  e1 = sqrt(sum((approximatedData - exactData).^2)) / sqrt(sum(exactData.^2));
-  e2 = computeNRMSE(exactData, approximatedData);
+    tic
+    approximatedData = interpolant.evaluate(u);
+    fprintf('Evaluation: %.2f s\n', toc);
 
-  fprintf('Normalized L2:   %e\n', e1);
-  fprintf('Normalized RMSE: %e\n', e2);
+    exactData = f(u);
+
+    e1 = sqrt(sum((approximatedData - exactData).^2)) / sqrt(sum(exactData.^2));
+    e2 = computeNRMSE(exactData, approximatedData);
+
+    fprintf('Normalized L2:   %e\n', e1);
+    fprintf('Normalized RMSE: %e\n', e2);
+  end
 end
