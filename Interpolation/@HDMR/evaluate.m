@@ -1,20 +1,45 @@
 function values = evaluate(this, newNodes)
   assert(all(all(newNodes >= 0)) && all(all(newNodes <= 1)));
 
-  inputDimension = this.inputDimension;
-  outputDimension = this.outputDimension;
+  [ newNodeCount, inputDimension ] = size(newNodes);
+  assert(inputDimension == this.inputDimension);
 
-  offset = this.offset;
   interpolants = this.interpolants;
+  offset = repmat(this.offset, newNodeCount, 1);
 
-  newNodeCount = size(newNodes, 1);
-  interpolantCount = length(interpolants);
+  values = offset;
 
-  assert(length(offset) == outputDimension);
+  cache = Map('char');
 
-  values = repmat(offset, newNodeCount, 1);
+  %
+  % Loop through all the orders of the HDMR algorithm.
+  %
+  for i = 1:length(interpolants)
+    orderInterpolants = interpolants(i);
+    orderKeys = orderInterpolants.keys;
 
-  for i = 1:interpolantCount
-    values = values + interpolants(i).evaluate(newNodes(:, i));
+    %
+    % Loop through all the interpolants of the current order.
+    %
+    for j = 1:length(orderKeys)
+      key = orderKeys{j};
+      index = uint16(key);
+      cardinality = length(index);
+
+      %
+      % Take into consideration the `cardinality'-order interpolant
+      % and the correction due to the zero-order interpolant.
+      %
+      values = values + (-1)^cardinality * offset + ...
+        orderInterpolants(key).evaluate(newNodes(:, j));
+
+      %
+      % Now, the corrections due to the `cardinality - 1'-order
+      % interpolants.
+      %
+      for k = 1:(i - 1)
+
+      end
+    end
   end
 end

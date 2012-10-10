@@ -5,7 +5,11 @@ function construct(this, f, options)
   outputDimension = options.get('outputDimension', 1);
 
   tolerance = options.get('tolerance', 1e-3);
+
+  minOrder = options.get('minOrder', 1);
   maxOrder = options.get('maxOrder', 10);
+
+  minLevel = options.get('minLevel', 2);
   maxLevel = options.get('maxLevel', 10);
 
   interpolants = Map('uint32');
@@ -16,15 +20,24 @@ function construct(this, f, options)
   offset = f(0.5 * ones(1, inputDimension));
 
   %
-  % The first order.
+  % The first and other orders.
   %
-  for i = 1:inputDimension
-    interpolants(i) = ASGC( ...
-      @(nodes) evaluate(f, nodes, i, inputDimension, offset), ...
-      'inputDimension', 1, ...
-      'outputDimension', outputDimension, ...
-      'tolerance', tolerance, ...
-      'maxLevel', maxLevel);
+  order = 1;
+  while order <= maxOrder
+    orderIndex = uint16(combnk(1:inputDimension, order));
+
+    orderInterpolants = Map('char');
+    for i = 1:size(orderIndex, 1)
+      index = orderIndex(i, :);
+      key = char(index);
+      orderInterpolants(key) = ASGC( ...
+        @(nodes) evaluate(f, nodes, index, inputDimension), ...
+        'inputDimension', order, 'outputDimension', outputDimension, ...
+        'tolerance', tolerance, 'maxLevel', maxLevel);
+    end
+    interpolants(order) = orderInterpolants;
+
+    order = order + 1;
   end
 
   %
@@ -37,7 +50,8 @@ function construct(this, f, options)
   this.interpolants = interpolants;
 end
 
-function result = evaluate(f, nodes, index, inputDimension, offset)
+function result = evaluate(f, nodes, index, inputDimension)
+
   %
   % Reshape the nodes.
   %
@@ -50,9 +64,4 @@ function result = evaluate(f, nodes, index, inputDimension, offset)
   % Evaluate the function.
   %
   result = f(result);
-
-  %
-  % Shift the result.
-  %
-  result = bsxfun(@minus, result, offset);
 end
