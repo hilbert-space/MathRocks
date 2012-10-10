@@ -1,4 +1,4 @@
-function draw(this, powerProfile)
+function plot(this, powerProfile)
   figure;
 
   [ processorCount, stepCount ] = size(powerProfile);
@@ -12,8 +12,8 @@ function draw(this, powerProfile)
     labels{i} = sprintf('PE %d', i);
   end
 
-  xlabel('Time, s', 'FontSize', 14);
-  ylabel('Dynamic power, W', 'FontSize', 14);
+  Plot.title('Power profile');
+  Plot.label('Time, s', 'Dynamic power, W');
   xlim([ 0, time(end) ]);
   legend(labels{:});
 end

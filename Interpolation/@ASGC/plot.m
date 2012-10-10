@@ -1,4 +1,6 @@
 function plot(this)
+  figure;
+
   nodes = this.nodes;
   nodeCount = this.nodeCount;
   levelNodeCount = this.levelNodeCount;
@@ -15,6 +17,9 @@ function plot(this)
     end
 
     ylim([ 0, this.level ]);
+
+    Plot.title('Adaptive sparse grid');
+    Plot.label('Random variable', 'Approximation level');
   case 2
     lastNodeCount = levelNodeCount(end);
 
@@ -31,6 +36,9 @@ function plot(this)
       nodes((nodeCount - lastNodeCount + 1):end, 2), ...
       'Marker', '.', 'MarkerSize', 10, ...
       'Color', 'r', 'LineStyle', 'None');
+
+    Plot.title('Adaptive sparse grid');
+    Plot.label('Random variable 1', 'Random variable 2');
   otherwise
     error('Only one- and two-dimensional grids are supported.');
   end

@@ -1,11 +1,11 @@
-function draw(this)
+function plot(this)
   figure;
 
   processorCount = length(this.platform);
   taskCount = length(this.application);
 
-  title('Schedule', 'FontSize', 16);
-  xlabel('Time, s', 'FontSize', 14);
+  Plot.title('Schedule');
+  Plot.label('Time, s');
   set(gca,'YTick', [], 'YTickLabel', []);
 
   last = max(this.startTime + this.executionTime);

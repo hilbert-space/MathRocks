@@ -1,4 +1,4 @@
-function draw(this, temperatureProfile)
+function plot(this, temperatureProfile)
   figure;
 
   [ processorCount, stepCount ] = size(temperatureProfile);
@@ -14,8 +14,8 @@ function draw(this, temperatureProfile)
     labels{i} = sprintf('PE %d', i);
   end
 
-  xlabel('Time, s', 'FontSize', 14);
-  ylabel('Temperature, C', 'FontSize', 14);
+  Plot.title('Temperature profile');
+  Plot.label('Time, s', 'Temperature, C');
   xlim([ 0, time(end) ]);
   legend(labels{:});
 end
