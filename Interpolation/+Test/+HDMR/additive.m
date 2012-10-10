@@ -9,8 +9,10 @@ function additive
   tic;
   interpolant = HDMR(f, ...
     'inputDimension', inputDimension, ...
-    'maxOrder', 1, 'tolerance', 1e-4);
+    'maxOrder', 3, 'tolerance', 1e-4);
   fprintf('Interpolant construction: %.2f s\n', toc);
+
+  display(interpolant);
 
   u = rand(sampleCount, inputDimension);
 

@@ -13,6 +13,7 @@ function construct(this, f, options)
   maxLevel = options.get('maxLevel', 10);
 
   interpolants = Map('uint32');
+  nodeCount = 1; % Due to the zeroth order below.
 
   %
   % The zeroth order.
@@ -34,6 +35,7 @@ function construct(this, f, options)
         @(nodes) evaluate(f, nodes, index, inputDimension), ...
         'inputDimension', order, 'outputDimension', outputDimension, ...
         'tolerance', tolerance, 'maxLevel', maxLevel);
+      nodeCount = nodeCount + orderInterpolants(key).nodeCount;
     end
     interpolants(order) = orderInterpolants;
 
@@ -45,6 +47,9 @@ function construct(this, f, options)
   %
   this.inputDimension = inputDimension;
   this.outputDimension = outputDimension;
+
+  this.order = order;
+  this.nodeCount = nodeCount;
 
   this.offset = offset;
   this.interpolants = interpolants;

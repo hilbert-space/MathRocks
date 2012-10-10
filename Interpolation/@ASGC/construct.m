@@ -253,7 +253,6 @@ function construct(this, f, options)
   this.outputDimension = outputDimension;
 
   this.level = level;
-
   this.nodeCount = nodeCount;
   this.levelNodeCount = levelNodeCount(1:level);
 
