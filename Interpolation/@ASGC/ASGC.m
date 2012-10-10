@@ -19,7 +19,7 @@ classdef ASGC < handle
   methods
     function this = ASGC(f, varargin)
       options = Options(varargin{:});
-      this.initialize(f, options);
+      this.construct(f, options);
     end
 
     function display(this)
@@ -34,9 +34,5 @@ classdef ASGC < handle
 
   methods (Access = 'protected')
     construct(this, f, options)
-
-    function initialize(this, f, options)
-      this.construct(f, options);
-    end
   end
 end

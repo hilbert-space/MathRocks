@@ -247,7 +247,7 @@ function construct(this, f, options)
   variance = sum(bsxfun(@times, surpluses2, integrals), 1) - expectation.^2;
 
   %
-  % Save.
+  % Save the result.
   %
   this.inputDimension = inputDimension;
   this.outputDimension = outputDimension;
