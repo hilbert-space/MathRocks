@@ -10,8 +10,8 @@ function additive
   for order = [ 1, 2, 3 ];
     tic;
     interpolant = HDMR(f, ...
-      'inputDimension', inputDimension, ...
-      'maxOrder', order, 'tolerance', 1e-2);
+      'inputDimension', inputDimension, 'maxOrder', order, ...
+      'dimensionTolerance', 1e-2, 'orderTolerance', 1e-2);
     fprintf('Interpolant construction: %.2f s\n', toc);
 
     display(interpolant);

@@ -2,7 +2,8 @@ function construct(this, f, options)
   inputDimension = options.inputDimension;
   outputDimension = options.get('outputDimension', 1);
 
-  tolerance = options.get('tolerance', 1e-4);
+  orderTolerance = options.get('orderTolerance', 1e-2);
+  dimensionTolerance = options.get('dimensionTolerance', 1e-2);
   maxOrder = options.get('maxOrder', 10);
 
   interpolantOptions = Options( ...
@@ -30,15 +31,17 @@ function construct(this, f, options)
   % The first and other orders.
   %
   order = 1;
-  orderIndex = uint16(combnk(1:inputDimension, order));
-  orderIndexCount = size(orderIndex, 1);
+  orderIndex = combnk(uint16(1:inputDimension), order);
   while true
     %
     % Adaptivity control.
     %
     groundNorm = norm(expectation);
+    refinemendIsNeeded = false;
 
-    for i = 1:orderIndexCount
+    orderExpectation = zeros(1, outputDimension);
+
+    for i = 1:size(orderIndex, 1)
       index = orderIndex(i, :);
       key = char(index);
 
@@ -56,37 +59,60 @@ function construct(this, f, options)
       %
       % Adaptivity control.
       %
-      importance = norm(newInterpolant.expectation) / groundNorm;
+      dimensionImportance = ...
+        norm(newInterpolant.expectation) / groundNorm;
 
-      if importance == 0.0
+      if dimensionImportance == 0.0
         %
         % If it is exactly zero, there will probably be no contribution
         % from the interpolant. However, it introduces new points
         % to consider in the future; skip it for now.
         %
         continue;
-      elseif importance >= tolerance
+      elseif dimensionImportance >= dimensionTolerance
         refine(key) = true;
+        refinemendIsNeeded = true;
       end
 
       %
       % Keep track of the statistics.
       %
       nodeCount = nodeCount + newInterpolant.nodeCount;
-      expectation = expectation + newInterpolant.expectation;
+      orderExpectation = ...
+        orderExpectation + newInterpolant.expectation;
 
       assert(~interpolants.isKey(key));
       interpolants(key) = newInterpolant;
     end
 
-    if order == maxOrder, break; end
+    %
+    % Adaptivity control FIRST.
+    %
+    orderBenefit = norm(orderExpectation) / norm(expectation);
 
+    %
+    % Advance the expectation ONLY after the step above.
+    %
+    expectation = expectation + orderExpectation;
+
+    %
+    % How to stop?
+    %
+    % 1. The maximal order is reached.
+    % 2. The gain from the order is too small.
+    % 3. There have not been identified any `inaccurate' indexes.
+    %
+
+    if ...
+      (order == maxOrder) || ...
+      (orderBenefit < orderTolerance) || ...
+      ~refinemendIsNeeded, break; end
+
+    %
+    % Go to the next order.
+    %
     order = order + 1;
-
     orderIndex = constructOrderIndex(inputDimension, order, refine);
-    orderIndexSize = size(orderIndex, 1);
-
-    if orderIndexSize == 0, break; end
   end
 
   %
@@ -150,7 +176,7 @@ function [ lowIndex, lowInterpolants ] = ...
   k = 0;
 
   for i = 1:(order - 1)
-    keys = char(uint16(combnk(index, i)));
+    keys = char(combnk(index, i));
     for j = 1:size(keys, 1)
       key = keys(j, :);
 
