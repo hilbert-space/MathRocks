@@ -2,34 +2,45 @@ function construct(this, f, options)
   inputDimension = options.inputDimension;
   outputDimension = options.get('outputDimension', 1);
 
-  tolerance = options.get('tolerance', 1e-3);
-
+  tolerance = options.get('tolerance', 1e-4);
   maxOrder = options.get('maxOrder', 10);
-  maxLevel = options.get('maxLevel', 10);
+
+  interpolantOptions = Options( ...
+    'tolerance', 1e-4, ...
+    'maxLevel', 10, ...
+    options.get('interpolantOptions', []), ...
+    'outputDimension', outputDimension, ...
+    'inputDimension', 1);
 
   interpolants = Map('char');
   nodeCount = 1; % Due to the zeroth order below.
 
   %
+  % Adaptivity control.
+  %
+  refine = Map('char', 'logical');
+
+  %
   % The zeroth order.
   %
   offset = f(0.5 * ones(1, inputDimension));
+  expectation = offset;
 
   %
   % The first and other orders.
   %
   order = 1;
+  orderIndex = uint16(combnk(1:inputDimension, order));
+  orderIndexCount = size(orderIndex, 1);
   while true
-    orderIndex = uint16(combnk(1:inputDimension, order));
+    %
+    % Adaptivity control.
+    %
+    groundNorm = norm(expectation);
 
-    for i = 1:size(orderIndex, 1)
+    for i = 1:orderIndexCount
       index = orderIndex(i, :);
       key = char(index);
-
-      %
-      % Make sure we do not do anything bad.
-      %
-      assert(~interpolants.isKey(key));
 
       %
       % We need to subtract the low-lever interpolants.
@@ -37,16 +48,45 @@ function construct(this, f, options)
       [ lowIndex, lowInterpolants ] = ...
         selectLowInterpolants(interpolants, order, index);
 
-      interpolants(key) = ASGC(@(cutNodes) compute(f, cutNodes, ...
+      interpolantOptions.inputDimension = order;
+      newInterpolant = ASGC(@(cutNodes) compute(f, cutNodes, ...
         index, inputDimension, order, offset, lowIndex, lowInterpolants), ...
-        'inputDimension', order, 'outputDimension', outputDimension, ...
-        'tolerance', tolerance, 'maxLevel', maxLevel);
+        interpolantOptions);
 
-      nodeCount = nodeCount + interpolants(key).nodeCount;
+      %
+      % Adaptivity control.
+      %
+      importance = norm(newInterpolant.expectation) / groundNorm;
+
+      if importance == 0.0
+        %
+        % If it is exactly zero, there will probably be no contribution
+        % from the interpolant. However, it introduces new points
+        % to consider in the future; skip it for now.
+        %
+        continue;
+      elseif importance >= tolerance
+        refine(key) = true;
+      end
+
+      %
+      % Keep track of the statistics.
+      %
+      nodeCount = nodeCount + newInterpolant.nodeCount;
+      expectation = expectation + newInterpolant.expectation;
+
+      assert(~interpolants.isKey(key));
+      interpolants(key) = newInterpolant;
     end
 
     if order == maxOrder, break; end
+
     order = order + 1;
+
+    orderIndex = constructOrderIndex(inputDimension, order, refine);
+    orderIndexSize = size(orderIndex, 1);
+
+    if orderIndexSize == 0, break; end
   end
 
   %
@@ -60,6 +100,8 @@ function construct(this, f, options)
 
   this.offset = offset;
   this.interpolants = interpolants;
+
+  this.expectation = expectation;
 end
 
 function values = compute(f, cutNodes, index, inputDimension, ...
@@ -127,4 +169,48 @@ function [ lowIndex, lowInterpolants ] = ...
   %
   lowIndex = lowIndex(1:k);
   lowInterpolants = lowInterpolants(1:k);
+end
+
+function orderIndex = constructOrderIndex(inputDimension, order, refine)
+  %
+  % All possible multi-indexes of order `order'.
+  %
+  orderIndex = combnk(uint16(1:inputDimension), order);
+
+  %
+  % Now, we need to check each index whether it is admissible,
+  % e.g., whether all its subindexes belong to the refinement map.
+  %
+
+  totalCount = size(orderIndex, 1);
+  invalid = logical(zeros(totalCount, 1));
+
+  %
+  % For all candidate indexes.
+  %
+  for i = 1:totalCount
+    %
+    % For all low orders.
+    %
+    for j = 1:(order - 1)
+      %
+      % All possible multi-indexes of order `j'.
+      %
+      lowOrderIndex = combnk(orderIndex(i, :), j);
+
+      %
+      % For all low-dimensional indexes.
+      %
+      for k = 1:size(lowOrderIndex, 1)
+        if ~refine.isKey(char(lowOrderIndex(k, :)))
+          invalid(i) = true;
+          break;
+        end
+      end
+
+      if invalid(i), break; end
+    end
+  end
+
+  orderIndex(invalid, :) = [];
 end

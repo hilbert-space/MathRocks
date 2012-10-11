@@ -11,7 +11,7 @@ function additive
     tic;
     interpolant = HDMR(f, ...
       'inputDimension', inputDimension, ...
-      'maxOrder', order, 'tolerance', 1e-4);
+      'maxOrder', order, 'tolerance', 1e-2);
     fprintf('Interpolant construction: %.2f s\n', toc);
 
     display(interpolant);

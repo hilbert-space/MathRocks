@@ -8,6 +8,8 @@ classdef HDMR < handle
 
     offset
     interpolants
+
+    expectation
   end
 
   methods
