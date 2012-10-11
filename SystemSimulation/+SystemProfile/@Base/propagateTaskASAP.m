@@ -10,7 +10,7 @@ function propagateTaskASAP(this, i, time)
   %
   % Shift the data-dependent tasks.
   %
-  for j = this.application.mapChildren(i)
+  for j = find(this.application.links(i, :)) % children
     this.propagateTaskASAP(j, time);
   end
 end

@@ -2,33 +2,26 @@ classdef Application < handle
   properties (SetAccess = 'private')
     tasks
 
-    %
-    % We need to maintain the following vectors and maps
-    % to gain some computational speed up.
-    %
-
     roots
     leaves
 
-    mapParents
-    mapChildren
+    links
   end
 
   properties (Access = 'private')
-    mapNames
+    names
   end
 
   methods
     function this = Application()
       this.tasks = {};
 
-      this.mapParents = Map('uint32');
-      this.mapChildren = Map('uint32');
-
-      this.mapNames = Map('char');
+      this.names = Map('char');
 
       this.roots = [];
       this.leaves = [];
+
+      this.links = uint8([]);
     end
 
     function count = length(this)
@@ -41,10 +34,7 @@ classdef Application < handle
       task = Task(id, type);
       this.tasks{end + 1} = task;
 
-      this.mapParents(id) = [];
-      this.mapChildren(id) = [];
-
-      this.mapNames(name) = task;
+      this.names(name) = task;
 
       %
       % The task is a new one; therefore, without additional
@@ -52,19 +42,19 @@ classdef Application < handle
       %
       this.roots = uint16([ this.roots, id ]);
       this.leaves = uint16([ this.leaves, id ]);
+
+      %
+      % Extend the link matrix by one row and one column.
+      %
+      this.links(id, id) = 0;
     end
 
     function addLink(this, parentName, childName)
-      parent = this.mapNames(parentName);
-      child = this.mapNames(childName);
+      parent = this.names(parentName);
+      child = this.names(childName);
 
       parent.addChild(child);
       child.addParent(parent);
-
-      this.mapParents(child.id) = ...
-        uint16([ this.mapParents(child.id), parent.id ]);
-      this.mapChildren(parent.id) = ...
-        uint16([ this.mapChildren(parent.id), child.id ]);
 
       %
       % Exclude the parent from the leaves and
@@ -72,6 +62,11 @@ classdef Application < handle
       %
       this.roots(this.roots == child.id) = [];
       this.leaves(this.leaves == parent.id) = [];
+
+      %
+      % Keep track of all the links.
+      %
+      this.links(parent.id, child.id) = 1;
     end
   end
 end

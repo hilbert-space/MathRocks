@@ -5,8 +5,7 @@ function perform(this)
   tasks = this.application.tasks;
   processors = this.platform.processors;
 
-  mapParents = this.application.mapParents;
-  mapChildren = this.application.mapChildren;
+  links = this.application.links;
 
   processorCount = length(processors);
   taskCount = length(tasks);
@@ -94,7 +93,7 @@ function perform(this)
     % Append new tasks that are ready, and ensure that
     % there are no repetitions.
     %
-    for childId = mapChildren(id)
+    for childId = find(links(id, :)) % children
       taskTime(childId) = max(taskTime(childId), finish);
 
       %
@@ -106,7 +105,7 @@ function perform(this)
       % All the parents should be ordered.
       %
       ready = true;
-      for parentId = mapParents(childId)
+      for parentId = find(links(:, childId)).' % parents
         if ~ordered(parentId)
           ready = false;
           break;
