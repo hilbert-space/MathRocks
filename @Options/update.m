@@ -4,6 +4,11 @@ function update(this, varargin)
   while i <= length(varargin)
     item = varargin{i};
 
+    if isempty(item)
+      i = i + 1;
+      continue;
+    end
+
     if isa(item, 'Options')
       names = properties(item);
       for j = 1:length(names)
