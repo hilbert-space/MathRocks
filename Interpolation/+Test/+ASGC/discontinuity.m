@@ -70,9 +70,7 @@ function discontinuity
 
   display(interpolant);
 
-  figure;
   plot(interpolant);
-  title('Sparse grid');
 
   tic;
   y = interpolant.evaluate(transpose((z + 1) / 2));
@@ -108,19 +106,16 @@ function plotTransient(T, Z, Y)
   meshc(T, Z, transpose(Y));
   view([ 35, 45 ]);
 
-  title('Transient solution');
-  xlabel('Time');
-  ylabel('Uncertain parameter');
-  zlabel('Solution');
+  Plot.title('Transient solution');
+  Plot.label('Time', 'Uncertain parameter', 'Solution');
 end
 
 function plotSlice(t, z, y, y0)
   figure;
 
   line(z, y, 'Color', Color.pick(1));
-  title(sprintf('Solution at time %.2f s', t));
-  xlabel('Uncertain parameter');
-  ylabel('Solution');
+  Plot.title('Solution at time %.2f s', t);
+  Plot.label('Uncertain parameter', 'Solution');
 
   if nargin > 3
     line(z, y0, 'Color', Color.pick(2));

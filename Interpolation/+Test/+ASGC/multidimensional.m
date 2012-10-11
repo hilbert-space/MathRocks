@@ -44,13 +44,13 @@ function interpolant = multidimensional
   Variance = var(Y, [], 3);
 
   solutionFigure = figure;
-  xlabel('Uncertain parameter');
-  title('Solution');
+  Plot.label('Uncertain parameter');
+  Plot.title('Solution');
   plotTransient(z, transpose(squeeze(Y(end, :, :))));
 
   figure;
-  xlabel('Time');
-  title('Variance');
+  Plot.label('Time');
+  Plot.title('Variance');
   plotTransient(t, Variance);
 
   %
@@ -69,8 +69,6 @@ function interpolant = multidimensional
   plotMarkers(t(k), interpolant.variance);
 
   display(interpolant);
-
-  figure;
   plot(interpolant);
 
   figure(solutionFigure);

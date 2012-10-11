@@ -11,7 +11,7 @@ fprintf('Interpolant construction: %.2f s\n', toc);
 
 display(interpolant);
 plot(interpolant);
-title(sprintf('Sparse grid at level %d', interpolant.level));
+Plot.title('Sparse grid at level %d', interpolant.level);
 
 [ X, Y ] = meshgrid(linspace(0, 1), linspace(0, 1));
 [ M, N ] = size(X);
@@ -31,9 +31,9 @@ figure;
 subplot(1, 2, 1);
 meshc(X, Y, Z0);
 
-title('Original');
+Plot.title('Original');
 
 subplot(1, 2, 2);
 meshc(X, Y, Z1);
 
-title(sprintf('Interpolant at level %d', interpolant.level));
+Plot.title('Interpolant at level %d', interpolant.level);
