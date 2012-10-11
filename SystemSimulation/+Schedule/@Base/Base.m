@@ -19,15 +19,15 @@ classdef Base < handle
       this.platform = platform;
       this.application = application;
 
-      nan = ones(1, length(application)) * NaN;
+      count = length(application);
 
-      this.priority = nan;
+      this.priority = ones(1, count) * NaN;
 
-      this.mapping = nan;
-      this.order = nan;
+      this.mapping = uint16(zeros(1, count));
+      this.order   = uint16(zeros(1, count));
 
-      this.executionTime = nan;
-      this.startTime = nan;
+      this.executionTime = ones(1, count) * NaN;
+      this.startTime     = ones(1, count) * NaN;
 
       this.perform();
     end

@@ -1,8 +1,11 @@
 function plot(this)
   figure;
 
-  processorCount = length(this.platform);
-  taskCount = length(this.application);
+  processors = this.platform.processors;
+  tasks = this.application.tasks;
+
+  processorCount = length(processors);
+  taskCount = length(tasks);
 
   Plot.title('Schedule');
   Plot.label('Time, s');
@@ -12,7 +15,7 @@ function plot(this)
 
   taskPower = zeros(taskCount, 1);
   for i = 1:taskCount
-    taskPower(i) = this.platform{this.mapping(i)}.dynamicPower(this.application{i}.type);
+    taskPower(i) = processors{this.mapping(i)}.dynamicPower(tasks{i}.type);
   end
   taskPower = taskPower ./ max(taskPower);
 

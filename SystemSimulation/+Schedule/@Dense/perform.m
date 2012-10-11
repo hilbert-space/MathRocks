@@ -2,30 +2,40 @@ function perform(this)
   %
   % Some shortcuts.
   %
-  platform = this.platform;
-  application = this.application;
+  tasks = this.application.tasks;
+  processors = this.platform.processors;
 
-  processorCount = length(platform);
-  taskCount = length(application);
+  mapParents = this.application.mapParents;
+  mapChildren = this.application.mapChildren;
 
-  zero = zeros(1, taskCount);
+  processorCount = length(processors);
+  taskCount = length(tasks);
+
+  priority = this.priority;
+
+  mapping = this.mapping;
+  order = this.order;
+
+  startTime = this.startTime;
+  executionTime = this.executionTime;
 
   %
   % Ensure that we have a vector of priorities.
   %
-  if any(isnan(this.priority))
-    profile = SystemProfile.Average(platform, application);
-    this.priority = profile.taskMobility;
+  if any(isnan(priority))
+    profile = SystemProfile.Average(this.platform, this.application);
+    priority = profile.taskMobility;
   end
 
   %
-  % Obtain roots and sort them according to their priority.
+  % Obtain roots and sort them according to their priority,
+  % and these tasks initialize the schedulig pool.
   %
-  ids = application.getRoots();
-  [ dummy, I ] = sort(this.priority(ids));
-  ids = ids(I);
+  pool = this.application.roots;
+  [ ~, I ] = sort(priority(pool));
+  pool = pool(I);
 
-  pool = application(ids);
+  zero = zeros(1, taskCount);
 
   processed = zero;
   ordered = zero;
@@ -34,14 +44,13 @@ function perform(this)
   processorTime = zeros(1, processorCount);
 
   position = 0;
-  processed(ids) = 1;
+  processed(pool) = 1;
 
   while ~isempty(pool)
     %
     % The pool is always sorted according to the priority.
     %
-    task = pool{1};
-    id = task.id;
+    id = pool(1);
 
     %
     % Exclude the task.
@@ -52,14 +61,14 @@ function perform(this)
     % Append to the schedule.
     %
     position = position + 1;
-    this.order(id) = position;
+    order(id) = position;
     ordered(id) = 1;
 
     %
     % Find the earliest processor if needed.
     %
-    pid = this.mapping(id);
-    if isnan(pid)
+    pid = mapping(id);
+    if pid == 0
       pid = 1;
       earliestTime = processorTime(1);
       for i = 2:processorCount
@@ -68,16 +77,16 @@ function perform(this)
           pid = i;
         end
       end
-      this.mapping(id) = pid;
+      mapping(id) = pid;
     end
 
-    this.startTime(id) = max(taskTime(id), processorTime(pid));
+    startTime(id) = max(taskTime(id), processorTime(pid));
 
-    if isnan(this.executionTime(id))
-      this.executionTime(id) = platform{pid}.executionTime(task.type);
+    if isnan(executionTime(id))
+      executionTime(id) = processors{pid}.executionTime(tasks{id}.type);
     end
 
-    finish = this.startTime(id) + this.executionTime(id);
+    finish = startTime(id) + executionTime(id);
 
     processorTime(pid) = finish;
 
@@ -85,21 +94,20 @@ function perform(this)
     % Append new tasks that are ready, and ensure that
     % there are no repetitions.
     %
-    for i = task.getChildren()
-      child = application{i};
-      taskTime(child.id) = max(taskTime(child.id), finish);
+    for childId = mapChildren(id)
+      taskTime(childId) = max(taskTime(childId), finish);
 
       %
       % Do not do it twice.
       %
-      if processed(child.id), continue; end
+      if processed(childId), continue; end
 
       %
       % All the parents should be ordered.
       %
       ready = true;
-      for j = child.getParents()
-        if ~ordered(application{j}.id)
+      for parentId = mapParents(childId)
+        if ~ordered(parentId)
           ready = false;
           break;
         end
@@ -115,23 +123,36 @@ function perform(this)
       % to keep the pool sorted by the priority.
       %
       index = 1;
-      childPriority = this.priority(child.id);
-      for competitor = pool
-        competitor = competitor{1};
-        if this.priority(competitor.id) > childPriority
+      childPriority = priority(childId);
+      for competitorId = pool
+        if priority(competitorId) > childPriority
           break;
         end
         index = index + 1;
       end
-      if index > length(pool), pool{end + 1} = child;
-      elseif index == 1, pool = { child pool{:} };
-      else pool = { pool{1:index - 1} child pool{index:end} };
+      if index > length(pool)
+          pool(end + 1) = childId;
+      elseif index == 1
+        pool = [ childId pool ];
+      else
+        pool = [ pool(1:index - 1) childId pool(index:end) ];
       end
 
       %
       % We are done with this one.
       %
-      processed(child.id) = 1;
+      processed(childId) = 1;
     end
   end
+
+  %
+  % Save our achievements.
+  %
+  this.priority = priority;
+
+  this.mapping = mapping;
+  this.order = order;
+
+  this.startTime = startTime;
+  this.executionTime = executionTime;
 end

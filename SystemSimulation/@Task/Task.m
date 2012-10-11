@@ -31,21 +31,5 @@ classdef Task < handle
       this.children{end + 1} = child;
       this.isLeaf = false;
     end
-
-    function ids = getParents(this)
-      count = length(this.parents);
-      ids = zeros(1, count);
-      for i = 1:count
-        ids(i) = this.parents{i}.id;
-      end
-    end
-
-    function ids = getChildren(this)
-      count = length(this.children);
-      ids = zeros(1, count);
-      for i = 1:count
-        ids(i) = this.children{i}.id;
-      end
-    end
   end
 end

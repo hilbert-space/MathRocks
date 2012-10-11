@@ -8,6 +8,6 @@ schedule = Schedule.Dense(platform, application)
 
 %% Draw.
 %
-schedule.draw()
+plot(schedule);
 
 fprintf('Duration: %.4f s\n', duration(schedule));

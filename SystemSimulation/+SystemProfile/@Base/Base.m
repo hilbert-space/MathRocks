@@ -55,21 +55,21 @@ classdef Base < handle
     propagateTaskALAP(this, i, time)
 
     function assignTaskASAP(this)
-      for i = this.application.getRoots()
+      for i = this.application.roots
         this.propagateTaskASAP(i, 0);
       end
     end
 
     function assignTaskALAP(this)
       time = this.computeApplicationASAP();
-      for i = this.application.getLeaves()
+      for i = this.application.leaves
         this.propagateTaskALAP(i, time);
       end
     end
 
     function time = computeApplicationASAP(this)
       time = zeros(1, length(this.application));
-      for i = this.application.getLeaves()
+      for i = this.application.leaves
         time(i) = this.taskASAP(i) + this.taskExecutionTime(i);
       end
       time = max(time);

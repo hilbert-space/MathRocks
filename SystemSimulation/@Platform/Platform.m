@@ -11,21 +11,6 @@ classdef Platform < handle
       count = length(this.processors);
     end
 
-    function varargout = subsref(this, S)
-      switch S(1).type
-      case '{}'
-        o = this.processors;
-      otherwise
-        o = this;
-      end
-      varargout = cell(1, nargout);
-      if nargout == 0
-        builtin('subsref', o, S);
-      else
-        [ varargout{:} ] = builtin('subsref', o, S);
-      end
-    end
-
     function processor = addProcessor(this)
       id = length(this) + 1;
       processor = Processor(id);

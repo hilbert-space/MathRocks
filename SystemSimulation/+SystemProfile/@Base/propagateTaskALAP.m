@@ -19,7 +19,7 @@ function propagateTaskALAP(this, i, time)
   %
   % Shift the data-dependent tasks.
   %
-  for j = this.application{i}.getParents()
+  for j = this.application.mapParents(i)
     this.propagateTaskALAP(j, time);
   end
 end
