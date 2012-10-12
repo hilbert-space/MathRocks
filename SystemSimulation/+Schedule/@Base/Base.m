@@ -15,19 +15,24 @@ classdef Base < handle
   end
 
   methods
-    function this = Base(platform, application)
+    function this = Base(platform, application, varargin)
+      options = Options(varargin{:});
+
       this.platform = platform;
       this.application = application;
 
       count = length(application);
 
-      this.priority = ones(1, count) * NaN;
+      this.priority = ...
+        options.get('priority', @() ones(1, count) * NaN);
 
-      this.mapping = uint16(zeros(1, count));
-      this.order   = uint16(zeros(1, count));
+      this.mapping = ...
+        options.get('mapping', @() zeros(1, count, 'uint16'));
+      this.order = ...
+        options.get('order', @() zeros(1, count, 'uint16'));
 
       this.executionTime = ones(1, count) * NaN;
-      this.startTime     = ones(1, count) * NaN;
+      this.startTime = ones(1, count) * NaN;
 
       this.perform();
     end
