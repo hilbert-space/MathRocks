@@ -37,7 +37,8 @@ function construct(this, f, options)
     % Adaptivity control.
     %
     baseNorm = norm(expectation);
-    assert(baseNorm > 0);
+    if baseNorm == 0, baseNorm = 1; end
+
     refinemendIsNeeded = false;
 
     orderExpectation = zeros(1, outputDimension);
@@ -54,7 +55,7 @@ function construct(this, f, options)
 
       interpolantOptions.inputDimension = order;
       newInterpolant = ASGC(@(cutNodes) compute(f, cutNodes, ...
-        index, inputDimension, order, offset, lowIndex, lowInterpolants), ...
+        index, inputDimension, offset, lowIndex, lowInterpolants), ...
         interpolantOptions);
 
       %
@@ -132,7 +133,7 @@ function construct(this, f, options)
 end
 
 function values = compute(f, cutNodes, index, inputDimension, ...
-  order, offset, lowIndex, lowInterpolants)
+  offset, lowIndex, lowInterpolants)
 
   nodeCount = size(cutNodes, 1);
 
@@ -150,7 +151,7 @@ function values = compute(f, cutNodes, index, inputDimension, ...
   values = bsxfun(@minus, values, offset);
 
   %
-  % Take care about the orders from one to `order - 1'.
+  % Take care of the low-order interpolants.
   %
   for i = 1:length(lowIndex)
     index = lowIndex{i};

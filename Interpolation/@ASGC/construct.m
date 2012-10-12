@@ -118,7 +118,7 @@ function construct(this, f, options)
     % the norm of the current expectation for the future error control.
     %
     baseNorm = norm(expectation);
-    assert(baseNorm > 0);
+    if baseNorm == 0, baseNorm = 1; end
 
     oldLevelIndex = levelIndex(oldNodeRange, :);
 
