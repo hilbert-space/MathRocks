@@ -24,15 +24,15 @@ classdef Base < handle
       count = length(application);
 
       this.priority = ...
-        options.get('priority', @() ones(1, count) * NaN);
+        options.get('priority', @() NaN(1, count));
 
       this.mapping = ...
         options.get('mapping', @() zeros(1, count, 'uint16'));
       this.order = ...
         options.get('order', @() zeros(1, count, 'uint16'));
 
-      this.executionTime = ones(1, count) * NaN;
-      this.startTime = ones(1, count) * NaN;
+      this.executionTime = NaN(1, count);
+      this.startTime = NaN(1, count);
 
       this.perform();
     end
