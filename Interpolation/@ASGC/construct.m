@@ -54,7 +54,7 @@ function construct(this, f, options)
   % Summarize what we have done so far.
   %
   level = 2;
-  gridNodeCount = 1;
+  stableNodeCount = 1;
   oldNodeCount = 2 * inputDimension;
 
   oldOrderIndex(1:oldNodeCount, :) = 1;
@@ -71,47 +71,76 @@ function construct(this, f, options)
   levelNodeCount(2) = 2 * inputDimension;
 
   %
+  % The first statistics.
+  %
+  expectation = surpluses(1, :);
+  variance    = surpluses2(1, :);
+
+  %
   % Now, the other levels.
   %
   while true
     %
     % First, we always compute the surpluses of the old nodes.
     % These surpluses determine the parent nodes that are to be
-    % refined. Consequently, if there are no old nodes, there
-    % are no parents to refine, and we stop.
+    % refined.
     %
-    if oldNodeCount == 0, break; end
+    oldNodeRange = (stableNodeCount + 1):(stableNodeCount + oldNodeCount);
 
-    %
-    % Otherwise, the following range is to be processed.
-    %
-    oldNodeRange = (gridNodeCount + 1):(gridNodeCount + oldNodeCount);
+    stableLevelIndex = levelIndex(1:stableNodeCount, :);
+    intervals = 2.^(double(stableLevelIndex) - 1);
+    inverseIntervals = 1.0 ./ intervals;
 
-    gridNodes = nodes(1:gridNodeCount, :);
-    gridLevelIndex = levelIndex(1:gridNodeCount, :);
-    gridIntervals = 2.^(double(gridLevelIndex) - 1);
-    inverseGridIntervals = 1.0 ./ gridIntervals;
-
-    delta = zeros(gridNodeCount, inputDimension);
+    delta = zeros(stableNodeCount, inputDimension);
     for i = oldNodeRange
       for j = 1:inputDimension
-        delta(:, j) = abs(gridNodes(:, j) - nodes(i, j));
+        delta(:, j) = abs(nodes(1:stableNodeCount, j) - nodes(i, j));
       end
-      I = find(all(delta < inverseGridIntervals, 2));
+      I = find(all(delta < inverseIntervals, 2));
 
       %
       % Ensure that all the (one-dimensional) bases function at
       % the first level are equal to one.
       %
-      bases = 1.0 - gridIntervals(I, :) .* delta(I, :);
-      bases(gridLevelIndex(I) == 1) = 1;
+      bases = 1.0 - intervals(I, :) .* delta(I, :);
+      bases(stableLevelIndex(I) == 1) = 1;
       bases = prod(bases, 2);
 
-      surpluses (i, :) = ...
-        values(i, :) - sum(bsxfun(@times, surpluses(I, :), bases), 1);
-      surpluses2(i, :) = ...
-        values(i, :).^2 - sum(bsxfun(@times, surpluses2(I, :), bases), 1);
+      surpluses (i, :) = values(i, :) - ...
+        sum(bsxfun(@times, surpluses(I, :), bases), 1);
+      surpluses2(i, :) = values(i, :).^2 - ...
+        sum(bsxfun(@times, surpluses2(I, :), bases), 1);
     end
+
+    %
+    % Now, we take care about the expected value and variance, which
+    % also surve error estimates. But, BEFORE doing so, we should compute
+    % the norm of the current expectation for the future error control.
+    %
+    baseNorm = norm(expectation);
+    assert(baseNorm > 0);
+
+    oldLevelIndex = levelIndex(oldNodeRange, :);
+
+    integrals = 2.^(1 - double(oldLevelIndex));
+    integrals(oldLevelIndex == 1) = 1;
+    integrals(oldLevelIndex == 2) = 0.25;
+    integrals = prod(integrals, 2);
+
+    %
+    % Expectations and variances from each `old' node individually.
+    %
+    oldExpectations = bsxfun(@times, surpluses(oldNodeRange, :), integrals);
+    oldVariances = bsxfun(@times, surpluses2(oldNodeRange, :), integrals);
+
+    %
+    % Add the individual statistics to the overall ones.
+    %
+    % NOTE: `variance' is not yet a variance: it is the second raw
+    % moment until we subtruct the squared expectation.
+    %
+    expectation = expectation + sum(oldExpectations, 1);
+    variance = variance + sum(oldVariances, 1);
 
     %
     % If the current level is the last one, we do not try to add any
@@ -144,15 +173,26 @@ function construct(this, f, options)
     end
 
     for i = oldNodeRange
-      if level >= minLevel && max(abs(surpluses2(i, :))) < tolerance, continue; end
+      if level >= minLevel
+        %
+        % Adaptivity control. Options:
+        %
+        % 1. max(abs(surpluses(i, :)))
+        % 2. max(abs(surpluses2(i, :)))
+        % 3. norm(oldExpectations(i - stableNodeCount, :)) / baseNorm
+        %
+        nodeContribution = ...
+          norm(oldExpectations(i - stableNodeCount, :)) / baseNorm;
+        if nodeContribution < tolerance, continue; end
+      end
 
       %
       % So, the threshold is violated (or the minimal level has not been
       % reached yet); hence, we need to add all the neighbors.
       %
-
       currentLevelIndex = levelIndex(i, :);
-      currentOrderIndex = oldOrderIndex(i - gridNodeCount, :);
+      currentOrderIndex = oldOrderIndex(i - stableNodeCount, :);
+      currentNode = nodes(i, :);
 
       for j = 1:inputDimension
         [ childOrderIndex, childNodes ] = computeNeighbors( ...
@@ -172,7 +212,7 @@ function construct(this, f, options)
           newOrderIndex(l, :) = currentOrderIndex;
           newOrderIndex(l, j) = childOrderIndex(k);
 
-          newNodes(l, :) = nodes(i, :);
+          newNodes(l, :) = currentNode;
           newNodes(l, j) = childNodes(k);
         end
       end
@@ -218,37 +258,27 @@ function construct(this, f, options)
     nodes     (range, :) = uniqueNewNodes;
     values    (range, :) = f(uniqueNewNodes);
 
-    oldNodeCount  = nodeCount - gridNodeCount - oldNodeCount;
-    gridNodeCount = nodeCount - oldNodeCount;
+    oldNodeCount  = nodeCount - stableNodeCount - oldNodeCount;
+    stableNodeCount = nodeCount - oldNodeCount;
 
+    %
+    % If there are no more `old' nodes, there is nothing to refine,
+    % and we stop.
+    %
+    if oldNodeCount == 0, break; end
+
+    %
+    % We go to the next level.
+    %
     level = level + 1;
-
     levelNodeCount(level) = newNodeCount;
   end
 
   %
-  % Summarize.
+  % Save the result.
   %
   range = 1:nodeCount;
 
-  levelIndex = levelIndex(range, :);
-  surpluses = surpluses(range, :);
-  surpluses2 = surpluses2(range, :);
-
-  %
-  % Compute expectation and variance.
-  %
-  integrals = 2.^(1 - double(levelIndex));
-  integrals(levelIndex == 1) = 1;
-  integrals(levelIndex == 2) = 1 / 4;
-  integrals = prod(integrals, 2);
-
-  expectation = sum(bsxfun(@times, surpluses, integrals), 1);
-  variance = sum(bsxfun(@times, surpluses2, integrals), 1) - expectation.^2;
-
-  %
-  % Save the result.
-  %
   this.inputDimension = inputDimension;
   this.outputDimension = outputDimension;
 
@@ -257,12 +287,12 @@ function construct(this, f, options)
   this.levelNodeCount = levelNodeCount(1:level);
 
   this.nodes = nodes(range, :);
-  this.levelIndex = levelIndex;
+  this.levelIndex = levelIndex(range, :);
 
-  this.surpluses = surpluses;
+  this.surpluses = surpluses(range, :);
 
   this.expectation = expectation;
-  this.variance = variance;
+  this.variance = variance - expectation.^2; % Now, it is a true variance.
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)

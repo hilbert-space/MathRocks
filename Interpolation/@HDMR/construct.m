@@ -36,7 +36,8 @@ function construct(this, f, options)
     %
     % Adaptivity control.
     %
-    groundNorm = norm(expectation);
+    baseNorm = norm(expectation);
+    assert(baseNorm > 0);
     refinemendIsNeeded = false;
 
     orderExpectation = zeros(1, outputDimension);
@@ -60,7 +61,7 @@ function construct(this, f, options)
       % Adaptivity control.
       %
       dimensionImportance = ...
-        norm(newInterpolant.expectation) / groundNorm;
+        norm(newInterpolant.expectation) / baseNorm;
 
       if dimensionImportance == 0.0
         %
@@ -88,7 +89,7 @@ function construct(this, f, options)
     %
     % Adaptivity control FIRST.
     %
-    orderBenefit = norm(orderExpectation) / norm(expectation);
+    orderContribution = norm(orderExpectation) / norm(expectation);
 
     %
     % Advance the expectation ONLY after the step above.
@@ -105,7 +106,7 @@ function construct(this, f, options)
 
     if ...
       (order == maxOrder) || ...
-      (orderBenefit < orderTolerance) || ...
+      (orderContribution < orderTolerance) || ...
       ~refinemendIsNeeded, break; end
 
     %
