@@ -28,46 +28,53 @@ classdef Base < handle
 
   properties (Access = 'protected')
     %
-    % The nodes themselves.
+    % The integration nodes.
     %
     nodes
 
     %
     % The projection matrix.
     %
+    % A (# of polynomial terms) x (# of integration nodes) matrix.
+    %
     projectionMatrix
 
     %
     % The evaluation matrix.
     %
+    % A (# of integration nodes) x (# of polynomial terms) matrix.
+    %
     evaluationMatrix
 
     %
-    % A (dimension x monomial terms) matrix of the exponents
-    % of each of the RVs in each of the monomials.
+    % A (# of monomial terms) x (# of stochastic dimension) matrix
+    % of the exponents of each of the RVs in each of the monomials.
     %
     rvPower
 
     %
-    % A (expansion terms x monomial terms) matrix that maps the PC expansion
-    % coefficients to the coefficients of the monomials.
+    % A (# of monomial terms) x (# of polynomial terms) matrix that
+    % maps the PC expansion coefficients to the coefficients of
+    % the monomials.
     %
     rvMap
   end
 
   methods
     function this = Base(varargin)
-      options = Options('dimension', 1, ...
-        'codimension', 1, 'method', 'totalOrder', varargin{:});
+      options = Options( ...
+        'dimension', 1, 'codimension', 1, ...
+        'method', 'totalOrder', varargin{:});
 
       this.initialize(options);
     end
 
-    function next = expand(this, f, last)
+    function nextCoefficients = expand(this, f, previousCoefficients)
       if nargin > 2
-        next = f(this.nodes, last * this.evaluationMatrix) * this.projectionMatrix;
+        nextCoefficients = this.projectionMatrix * ...
+          f(this.nodes, this.evaluationMatrix * previousCoefficients);
       else
-        next = f(this.nodes) * this.projectionMatrix;
+        nextCoefficients = this.projectionMatrix * f(this.nodes);
       end
     end
   end

@@ -13,7 +13,7 @@ variables = RandomVariables.Single(distribution);
 transformation = ProbabilityTransformation.SingleNormal(variables);
 
 %% Construct the PC expansion.
-
+%
 quadratureOptions = Options('rules', 'GaussHermite', 'level', 10);
 chaos = PolynomialChaos.Hermite('order', 5, ...
   'quadratureName', 'Sparse', ...

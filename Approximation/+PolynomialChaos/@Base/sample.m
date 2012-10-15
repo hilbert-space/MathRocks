@@ -11,13 +11,13 @@ function [ Exp, Var, Data ] = sample(this, f, points)
   %
   % Straight-forward stats.
   %
-  Exp = coefficients(:, 1);
-  Var = diag(sum(coefficients(:, 2:end).^2 .* ...
-    Utils.replicate(this.norm(2:end), codimension, 1), 2));
+  Exp = coefficients(1, :);
+  Var = diag(sum(coefficients(2:end, :).^2 .* ...
+    Utils.replicate(this.norm(2:end), 1, codimension), 1));
 
   %
   % Now, sample.
   %
-  Data = transpose(this.evaluate(coefficients, ...
-    this.distribution.sample(this.dimension, points)));
+  Data = this.evaluate(coefficients, ...
+    this.distribution.sample(points, this.dimension));
 end
