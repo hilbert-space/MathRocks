@@ -88,12 +88,12 @@ function construct(this, f, options)
     end
 
     %
-    % Adaptivity control FIRST.
+    % Adaptivity control.
     %
-    orderContribution = norm(orderExpectation) / norm(expectation);
+    orderContribution = norm(orderExpectation) / baseNorm;
 
     %
-    % Advance the expectation ONLY after the step above.
+    % Advance the expectation.
     %
     expectation = expectation + orderExpectation;
 

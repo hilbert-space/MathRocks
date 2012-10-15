@@ -7,13 +7,36 @@ function construct(this, f, options)
   tolerance = options.get('tolerance', 1e-3);
   minLevel = options.get('minLevel', 2);
   maxLevel = options.get('maxLevel', 10);
+  adaptivityControl = options.get('adaptivityControl', 'norm');
 
-  bufferIncreaseFactor = 1;
+  %
+  % NOTE: Converting to number for a possible speedup later on.
+  %
+  switch lower(adaptivityControl)
+  case 'expectation'
+    adaptivityControl = uint8(1);
+  case 'variance'
+    adaptivityControl = uint8(2);
+  case 'norm'
+    adaptivityControl = uint8(3);
+  otherwise
+    error('The specified adaptivity control method is unknown.');
+  end
+
+  verbose = @(varargin) [];
+  if options.get('verbose', false)
+    verbose = @(varargin) fprintf(varargin{:});
+  end
+
   bufferSize = 200 * inputDimension;
   stepBufferSize = 100 * 2 * inputDimension;
 
   %
-  % Allocate some memory.
+  % Preallocate some memory such that we do need to reallocate
+  % it at low levels. For high levels, we reallocate the memory
+  % each time; however, since going from one high level to the
+  % next one does not happen too often, we do not lose too much
+  % of speed.
   %
   levelIndex = zeros(bufferSize, inputDimension, 'uint8');
   nodes      = zeros(bufferSize, inputDimension);
@@ -80,6 +103,9 @@ function construct(this, f, options)
   % Now, the other levels.
   %
   while true
+    verbose('Level %2d, stable %6d, old %6d, total %6d, buffer %6d, step buffer %6d.\n', ...
+      level, stableNodeCount, oldNodeCount, nodeCount, bufferSize, stepBufferSize);
+
     %
     % First, we always compute the surpluses of the old nodes.
     % These surpluses determine the parent nodes that are to be
@@ -159,32 +185,36 @@ function construct(this, f, options)
     %
     % Ensure that we have enough space.
     %
-    if stepBufferSize < stepBufferLimit
+    addition = stepBufferLimit - stepBufferSize;
+    if addition > 0
       %
       % We need more space.
       %
-      addition = max(stepBufferLimit, floor(bufferIncreaseFactor * stepBufferSize));
-      stepBufferSize = stepBufferSize + addition;
-
       oldOrderIndex = [ oldOrderIndex; zeros(addition, inputDimension, 'uint32') ];
-      newLevelIndex = zeros(stepBufferSize, inputDimension, 'uint8');
-      newOrderIndex = zeros(stepBufferSize, inputDimension, 'uint32');
-      newNodes      = zeros(stepBufferSize, inputDimension);
+      newLevelIndex = [ newLevelIndex; zeros(addition, inputDimension, 'uint8') ];
+      newOrderIndex = [ newOrderIndex; zeros(addition, inputDimension, 'uint32') ];
+      newNodes      = [ newNodes;      zeros(addition, inputDimension) ];
+
+      stepBufferSize = stepBufferSize + addition;
+    end
+
+    %
+    % Adaptivity control.
+    %
+    switch adaptivityControl
+    case 1 % Expectation
+      nodeContribution = max(abs(surpluses(oldNodeRange, :)), [], 2);
+    case 2 % Variance
+      nodeContribution = max(abs(surpluses2(oldNodeRange, :)), [], 2);
+    case 3 % Norm
+      nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / baseNorm;
+    otherwise
+      assert(false);
     end
 
     for i = oldNodeRange
-      if level >= minLevel
-        %
-        % Adaptivity control. Options:
-        %
-        % 1. max(abs(surpluses(i, :)))
-        % 2. max(abs(surpluses2(i, :)))
-        % 3. norm(oldExpectations(i - stableNodeCount, :)) / baseNorm
-        %
-        nodeContribution = ...
-          norm(oldExpectations(i - stableNodeCount, :)) / baseNorm;
-        if nodeContribution < tolerance, continue; end
-      end
+      if level >= minLevel && ...
+        nodeContribution(i - stableNodeCount) < tolerance, continue; end
 
       %
       % So, the threshold is violated (or the minimal level has not been
@@ -237,12 +267,11 @@ function construct(this, f, options)
 
     nodeCount = nodeCount + newNodeCount;
 
-    if bufferSize < nodeCount
+    addition = nodeCount - bufferSize;
+    if addition > 0
       %
       % We need more space.
       %
-      addition = max(nodeCount, floor(bufferIncreaseFactor * bufferSize));
-
       levelIndex = [ levelIndex; zeros(addition, inputDimension, 'uint8') ];
       nodes      = [ nodes;      zeros(addition, inputDimension) ];
       values     = [ values;     zeros(addition, outputDimension) ];
