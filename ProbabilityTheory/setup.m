@@ -1,4 +1,4 @@
 function setup
-  includeLibrary('DataAnalysis');
-  includeLibrary('Integration');
+  use('DataAnalysis');
+  use('Approximation');
 end

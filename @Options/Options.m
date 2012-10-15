@@ -18,6 +18,10 @@ classdef Options < dynamicprops
       if ~isprop(this, name), this.addprop(name); end
       this.(name) = value;
     end
+
+    function result = has(this, name)
+      result = isprop(this, name);
+    end
   end
 
   methods (Static)

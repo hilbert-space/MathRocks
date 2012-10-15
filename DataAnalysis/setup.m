@@ -1,3 +1,3 @@
 function setup
-  includeLibrary('Visualization');
+  use('Visualization');
 end

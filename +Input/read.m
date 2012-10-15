@@ -7,7 +7,7 @@ function output = read(varargin)
     output = input('');
   end
 
-  if isempty(output)
+  if isempty(output) && options.has('default')
     output = options.default;
   end
 

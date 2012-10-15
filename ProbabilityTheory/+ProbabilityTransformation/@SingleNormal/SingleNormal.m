@@ -31,6 +31,18 @@ classdef SingleNormal < ProbabilityTransformation.Base
       %
       data = this.variables.invert(data);
     end
+
+    function data = evaluateUniform(this, data)
+      %
+      % Independent normal RVs.
+      %
+      data = this.normal.invert(data);
+
+      %
+      % Dependent RVs with the desired distributions.
+      %
+      data = this.evaluateNative(data);
+    end
   end
 
   methods (Access = 'protected')
