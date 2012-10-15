@@ -6,9 +6,14 @@ function use(varargin)
   end
 
   name = File.join(varargin{:});
-  root = File.trace();
-  path = [ root, filesep, name ];
-  hook = [ path, filesep, 'setup.m' ];
+
+  if File.isAbsolute(name)
+    path = name;
+  else
+    path = File.join(File.trace, name);
+  end
+
+  hook = File.join(path, 'setup.m');
 
   if exist(path, 'dir')
     addpath(path);

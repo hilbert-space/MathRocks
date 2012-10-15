@@ -7,7 +7,7 @@ function plot(this, temperatureProfile)
 
   labels = cell(1, processorCount);
 
-  temperatureProfile = convertKelvinToCelsius(temperatureProfile);
+  temperatureProfile = Utils.toCelsius(temperatureProfile);
 
   for i = 1:processorCount
     line(time, temperatureProfile(i, :), 'Color', Color.pick(i));

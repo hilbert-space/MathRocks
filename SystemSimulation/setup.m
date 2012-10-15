@@ -1,4 +1,4 @@
 function setup
-  includeLibrary('Visualization');
-  includeLibrary('DataStructure');
+  use('Visualization');
+  use('DataStructure');
 end

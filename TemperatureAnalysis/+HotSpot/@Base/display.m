@@ -4,5 +4,5 @@ function display(this)
   fprintf('  Thermal nodes:       %d\n', this.nodeCount);
   fprintf('  Sampling interval:   %.2e s\n', this.samplingInterval);
   fprintf('  Ambient temperature: %.2f C\n', ...
-    convertKelvinToCelsius(this.ambientTemperature));
+    Utils.toCelsius(this.ambientTemperature));
 end
