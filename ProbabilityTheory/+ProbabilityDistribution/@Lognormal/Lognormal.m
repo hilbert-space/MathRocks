@@ -1,33 +1,33 @@
 classdef Lognormal < ProbabilityDistribution.Base
   properties (SetAccess = 'private')
-    normalMu
-    normalSigma
+    mu
+    sigma
   end
 
   methods
     function this = Lognormal(varargin)
       this = this@ProbabilityDistribution.Base();
 
-      options = Options('normalMu', 0, 'normalSigma', 1, varargin{:});
+      options = Options('mu', 0, 'sigma', 1, varargin{:});
 
-      this.normalMu = options.normalMu;
-      this.normalSigma = options.normalSigma;
+      this.mu = options.mu;
+      this.sigma = options.sigma;
 
-      this.mu = exp(this.normalMu + this.normalSigma^2 / 2);
-      this.sigma = sqrt((exp(this.normalSigma^2) - 1) * ...
-        exp(2 * this.normalMu + this.normalSigma^2));
+      this.expectation = exp(this.mu + this.sigma^2 / 2);
+      this.variance = (exp(this.sigma^2) - 1) * ...
+        exp(2 * this.mu + this.sigma^2);
     end
 
     function data = sample(this, samples, dimension)
-      data = lognrnd(this.normalMu, this.normalSigma, samples, dimension);
+      data = lognrnd(this.mu, this.sigma, samples, dimension);
     end
 
     function data = apply(this, data)
-      data = logncdf(data, this.normalMu, this.normalSigma);
+      data = logncdf(data, this.mu, this.sigma);
     end
 
     function data = invert(this, data)
-      data = logninv(data, this.normalMu, this.normalSigma);
+      data = logninv(data, this.mu, this.sigma);
     end
   end
 end

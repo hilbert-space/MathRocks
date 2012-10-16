@@ -18,13 +18,13 @@ classdef Beta < ProbabilityDistribution.Base
       this.a = options.a;
       this.b = options.b;
 
-      this.mu = this.alpha / (this.alpha + this.beta);
-      this.mu = this.mu * (this.b - this.a) + this.a;
+      this.expectation = this.alpha / (this.alpha + this.beta);
+      this.expectation = this.expectation * (this.b - this.a) + this.a;
 
-      this.sigma = this.alpha * this.beta / ...
+      this.variance = this.alpha * this.beta / ...
         (this.alpha + this.beta)^2 / ...
         (this.alpha + this.beta + 1);
-      this.sigma = this.sigma * (this.b - this.a)^2;
+      this.variance = this.variance * (this.b - this.a)^2;
     end
 
     function data = sample(this, samples, dimension)

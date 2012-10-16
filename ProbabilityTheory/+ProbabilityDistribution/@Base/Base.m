@@ -1,7 +1,7 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
-    mu
-    sigma
+    expectation
+    variance
   end
 
   methods
@@ -16,8 +16,8 @@ classdef Base < handle
 
     function display(this)
       fprintf('Probability distribution:\n');
-      fprintf('  Expectation: %.2f\n', this.mu);
-      fprintf('  Variance:    %.2f\n', this.sigma);
+      fprintf('  Expectation: %.2f\n', this.expectation);
+      fprintf('  Variance:    %.2f\n', this.variance);
     end
   end
 

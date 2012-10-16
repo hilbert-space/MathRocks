@@ -13,8 +13,8 @@ classdef Gamma < ProbabilityDistribution.Base
       this.a = options.a;
       this.b = options.b;
 
-      this.mu = this.a * this.b;
-      this.sigma = sqrt(this.a * this.b^2);
+      this.expectation = this.a * this.b;
+      this.variance = this.a * this.b^2;
     end
 
     function data = sample(this, samples, dimension)

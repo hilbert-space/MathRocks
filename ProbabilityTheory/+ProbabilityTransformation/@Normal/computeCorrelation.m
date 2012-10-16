@@ -2,8 +2,8 @@ function correlation = computeCorrelation(this, rvs)
   dimension = rvs.dimension;
 
   qd = Quadrature.Tensor('rules', 'GaussHermite', this.quadratureOptions);
-  nodes = transpose(qd.nodes);
-  weights = transpose(qd.weights);
+  nodes = qd.nodes;
+  weights = qd.weights;
 
   normal = this.normal;
 
@@ -21,16 +21,16 @@ function correlation = computeCorrelation(this, rvs)
       rv1 = rvs{i};
       rv2 = rvs{j};
 
-      mu1 = rv1.mu;
-      mu2 = rv2.mu;
+      mu1 = rv1.expectation;
+      mu2 = rv2.expectation;
 
-      sigma1 = rv1.sigma;
-      sigma2 = rv2.sigma;
+      sigma1 = sqrt(rv1.variance);
+      sigma2 = sqrt(rv2.variance);
 
       rho0 = rvs.correlation(i, j);
 
-      weightsOne = weights .* (rv1.invert(normal.apply(nodes(1, :))) - mu1);
-      two = @(rho) rv2.invert(normal.apply(rho * nodes(1, :) + sqrt(1 - rho^2) * nodes(2, :))) - mu2;
+      weightsOne = weights .* (rv1.invert(normal.apply(nodes(:, 1))) - mu1);
+      two = @(rho) rv2.invert(normal.apply(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
       goal = @(rho) abs(rho0 - sum(weightsOne .* two(rho)) / sigma1 / sigma2);
 
       [ matrix(i, j), ~, ~, out ] = fminbnd(goal, -1, 1, this.optimizationOptions);

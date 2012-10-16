@@ -1,4 +1,9 @@
 classdef Normal < ProbabilityDistribution.Base
+  properties (SetAccess = 'private')
+    mu
+    sigma
+  end
+
   methods
     function this = Normal(varargin)
       this = this@ProbabilityDistribution.Base();
@@ -7,6 +12,9 @@ classdef Normal < ProbabilityDistribution.Base
 
       this.mu = options.mu;
       this.sigma = options.sigma;
+
+      this.expectation = options.mu;
+      this.variance = options.sigma^2;
     end
 
     function data = sample(this, samples, dimension)
