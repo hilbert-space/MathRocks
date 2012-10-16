@@ -32,7 +32,8 @@ classdef Base < handle
       this.level = options.level;
       this.rules = options.rules;
 
-      filename = [ class(this), '_', string(options), '.mat' ];
+      filename = [ class(this), '_', ...
+        DataHash(string(options)), '.mat' ];
 
       if File.exist(filename)
         load(filename);

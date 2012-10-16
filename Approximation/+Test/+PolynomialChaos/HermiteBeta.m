@@ -4,13 +4,13 @@ samples = 1e4;
 
 %% Choose a distribution.
 %
-distribution = ProbabilityDistribution.Lognormal( ...
-  'mu', 0, 'sigma', 0.8);
-variables = RandomVariables.Single(distribution);
+distribution = ProbabilityDistribution.Beta( ...
+  'alpha', 1.4, 'beta', 3, 'a', 0, 'b', 2);
+variable = RandomVariables.Single(distribution);
 
 %% Perform the transformation.
 %
-transformation = ProbabilityTransformation.SingleNormal(variables);
+transformation = ProbabilityTransformation.SingleNormal(variable);
 
 %% Construct the PC expansion.
 %

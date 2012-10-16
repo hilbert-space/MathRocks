@@ -5,4 +5,5 @@ function setup
   use('Vendor', 'uninit');
   use('Vendor', 'sympoly');
   use('Vendor', 'SPARSE_GRID_HW');
+  use('Vendor', 'DataHash');
 end

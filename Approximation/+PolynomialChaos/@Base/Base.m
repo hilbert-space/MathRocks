@@ -70,11 +70,11 @@ classdef Base < handle
     end
 
     function nextCoefficients = expand(this, f, previousCoefficients)
-      if nargin > 2
+      if nargin == 2
+        nextCoefficients = this.projectionMatrix * f(this.nodes);
+      else
         nextCoefficients = this.projectionMatrix * ...
           f(this.nodes, this.evaluationMatrix * previousCoefficients);
-      else
-        nextCoefficients = this.projectionMatrix * f(this.nodes);
       end
     end
   end
@@ -94,7 +94,8 @@ classdef Base < handle
       this.codimension = options.codimension;
       this.order = options.order;
 
-      filename = [ class(this), '_', string(options), '.mat' ];
+      filename = [ class(this), '_', ...
+        DataHash(string(options)), '.mat' ];
 
       if exist(filename, 'file')
         load(filename);
