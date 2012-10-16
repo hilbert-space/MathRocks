@@ -1,10 +1,12 @@
 function output = read(varargin)
   options = Options(varargin{:});
 
+  prompt = options.get('prompt', '');
+
   if options.get('char', false)
-    output = input('', 's');
+    output = input(prompt, 's');
   else
-    output = input('');
+    output = input(prompt);
   end
 
   if isempty(output) && options.has('default')

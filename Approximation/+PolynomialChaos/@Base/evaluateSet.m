@@ -1,8 +1,6 @@
 function data = evaluateSet(this, coefficientSet, nodes)
   [ codimension, terms, count ] = size(coefficientSet);
 
-  assert(codimension == this.codimension, ...
-    'The deterministic dimension is invalid.');
   assert(terms == length(this.norm), ...
     'The number of terms is invalid.');
 

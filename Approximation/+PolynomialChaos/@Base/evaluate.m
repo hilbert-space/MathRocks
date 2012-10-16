@@ -1,8 +1,6 @@
 function value = evaluate(this, coefficients, nodes)
-  [ terms, codimension ] = size(coefficients);
+  terms = size(coefficients, 1);
 
-  assert(codimension == this.codimension, ...
-    'The deterministic dimension is invalid.');
   assert(terms == size(this.rvMap, 2), ...
     'The number of terms is invalid.');
 

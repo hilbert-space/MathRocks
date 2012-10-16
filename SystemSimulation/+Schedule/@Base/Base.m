@@ -15,31 +15,60 @@ classdef Base < handle
   end
 
   methods
-    function this = Base(platform, application, varargin)
-      options = Options(varargin{:});
+    function this = Base(varargin)
+      if isa(varargin{1}, 'Platform')
+        assert(isa(varargin{2}, 'Application'));
 
-      this.platform = platform;
-      this.application = application;
+        this.platform = varargin{1};
+        this.application = varargin{2};
 
-      count = length(application);
+        count = length(this.application);
 
-      this.priority = ...
-        options.get('priority', @() NaN(1, count));
+        this.priority = NaN(1, count);
 
-      this.mapping = ...
-        options.get('mapping', @() zeros(1, count, 'uint16'));
-      this.order = ...
-        options.get('order', @() zeros(1, count, 'uint16'));
+        this.mapping = zeros(1, count, 'uint16');
+        this.order = zeros(1, count, 'uint16');
 
-      this.executionTime = NaN(1, count);
-      this.startTime = NaN(1, count);
+        this.startTime = NaN(1, count);
+        this.executionTime = NaN(1, count);
 
-      this.perform();
-    end
+        options = Options(varargin{3:end});
+      elseif isa(varargin{1}, 'Schedule.Base')
+        schedule = varargin{1};
 
-    function adjustExecutionTime(this, executionTime)
-      this.executionTime = executionTime;
-      this.startTime(:) = NaN;
+        this.platform = schedule.platform;
+        this.application = schedule.application;
+
+        count = length(this.application);
+
+        this.priority = schedule.priority;
+
+        this.mapping = schedule.mapping;
+        this.order = schedule.order;
+
+        this.startTime = NaN(1, count);
+        this.executionTime = NaN(1, count);
+
+        options = Options(varargin{2:end});
+      else
+        assert(false);
+      end
+
+      if options.has('priority')
+        this.priority = options.priority;
+      end
+
+      if options.has('mapping')
+        this.mapping = options.mapping;
+      end
+
+      if options.has('order')
+        this.order = options.order;
+      end
+
+      if options.has('executionTime')
+        this.executionTime = options.executionTime;
+      end
 
       this.perform();
     end
