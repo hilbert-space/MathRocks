@@ -86,14 +86,57 @@ function [ P, M ] = toMatrix(p, rvMarker, coeffMarker)
   end
 
   %
-  % Merge the monomials that have exponents all equal to zero.
+  % Merge the monomials that have the same exponents.
   %
-  I = [];
-  for i = 1:monomialTerms
-    if all(P(i, :) == 0), I(end + 1) = i; end
+  [ P, I, J ] = unique(P, 'rows');
+  uniqueMonomialTerms = size(P, 1);
+
+  %
+  % NOTE: We use the following:
+  %
+  %   newP = oldP(I),
+  %   oldP = newP(J).
+  %
+
+  for i = 1:uniqueMonomialTerms
+    K = find(J == i);
+    count = length(K);
+    if count == 1
+      %
+      % This monomial is unique.
+      %
+      continue;
+    elseif count > 1
+      %
+      % This monomial is not unique. Find the one
+      % that is preserved by the index I.
+      %
+      k = find(ismember(K, I));
+      assert(length(k) == 1);
+      switch k
+      case 1
+        %
+        % Sum the tail.
+        %
+        M(K(k), :) = M(K(k), :) + ...
+          sum(M(K(2:end), :), 1);
+      case count
+        %
+        % Sum the head.
+        %
+        M(K(k), :) = M(K(k), :) + ...
+          sum(M(K(1:(end - 1)), :), 1);
+      otherwise
+        %
+        % Sum around.
+        %
+        M(K(k), :) = M(K(k), :) + ...
+          sum(M(K(1:(k - 1)), :), 1) + sum(M(K((k + 1):end), :), 1);
+      end
+    else
+      assert(false);
+    end
   end
 
-  P(I(2:end), :) = [];
-  M(I(1), :) = M(I(1), :) + sum(M(I(2:end), :), 1);
-  M(I(2:end), :) = [];
+  M = sparse(M(I, :));
 end
