@@ -1,9 +1,16 @@
 function correlation = computeCorrelation(this, rvs)
   dimension = rvs.dimension;
 
-  qd = Quadrature.Tensor(this.quadratureOptions);
+  qd = Quadrature.Tensor(this.quadratureOptions, ...
+    'dimension', 2, 'rules', 'ProbabilistGaussHermite');
+
   nodes = qd.nodes;
-  weights = qd.weights;
+
+  %
+  % The weight function of the quadrature rule is equal to e^(-x^2/2);
+  % therefore, we should account for the Gauss constant for two dimensions.
+  %
+  weights = qd.weights / (2 * pi)^(2 / 2);
 
   normal = this.normal;
 

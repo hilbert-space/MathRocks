@@ -22,18 +22,14 @@ function [ nodes, norm, projectionMatrix, evaluationMatrix, rvPower, rvMap ] = .
   % Construct the corresponding multivariate basis functions.
   %
   basis = this.constructBasis(x, order, index);
-
   terms = length(basis);
 
   %
   % Now, the quadrature rule.
   %
-  qd = Quadrature.(options.quadratureName)( ...
-    'dimension', dimension, options.quadratureOptions);
-
-  points = qd.points;
-  nodes = qd.nodes;
-  weights = qd.weights;
+  [ nodes, weights ] = ...
+    this.constructQuadrature(options.quadratureOptions);
+  points = size(nodes, 1);
 
   %
   % The projection matrix.

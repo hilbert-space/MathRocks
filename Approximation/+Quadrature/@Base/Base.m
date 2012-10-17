@@ -16,7 +16,7 @@ classdef Base < handle
     function result = integrate(this, f)
       values = eval(f, this.nodes);
       codimension = size(values, 1);
-      result = sum(repmat(this.weights, codimension, 1) .* values, 2);
+      result = sum(Utils.replicate(this.weights, codimension, 1) .* values, 2);
     end
   end
 

@@ -69,18 +69,14 @@ classdef Base < handle
       this.initialize(options);
     end
 
-    function nextCoefficients = expand(this, f, previousCoefficients)
-      if nargin == 2
-        nextCoefficients = this.projectionMatrix * f(this.nodes);
-      else
-        nextCoefficients = this.projectionMatrix * ...
-          f(this.nodes, this.evaluationMatrix * previousCoefficients);
-      end
+    function coefficients = expand(this, f)
+      coefficients = this.projectionMatrix * f(this.nodes);
     end
   end
 
   methods (Abstract, Access = 'protected')
     basis = constructUnivariateBasis(this, x, order)
+    [ nodes, weights ] = constructQuadrature(this, options)
     norm = computeNormalizationConstant(this, i, index)
   end
 

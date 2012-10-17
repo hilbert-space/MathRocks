@@ -1,7 +1,6 @@
 setup;
 
 samples = 1e6;
-dimension = 2;
 
 %% Generate a correlation matrix.
 %
