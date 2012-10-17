@@ -1,6 +1,6 @@
 function [ nodes, weights ] = construct(this, options)
   dimension = options.dimension;
-  level = options.level;
+  order = options.order;
   rules = options.rules;
 
   nodeSet = cell(1, dimension);
@@ -8,12 +8,12 @@ function [ nodes, weights ] = construct(this, options)
 
   if isa(rules, 'cell')
     for i = 1:dimension
-      [ nodes, weights ] = Quadrature.Rules.(rules{i})(level);
+      [ nodes, weights ] = Quadrature.Rules.(rules{i})(order);
       nodeSet{i} = nodes;
       weightSet{i} = weights;
     end
   else
-    [ nodes, weights ] = Quadrature.Rules.(rules)(level);
+    [ nodes, weights ] = Quadrature.Rules.(rules)(order);
     for i = 1:dimension
       nodeSet{i} = nodes;
       weightSet{i} = weights;

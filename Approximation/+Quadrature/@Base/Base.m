@@ -1,8 +1,6 @@
 classdef Base < handle
   properties (SetAccess = 'private')
     dimension
-    level
-    rules
 
     points
     nodes
@@ -29,8 +27,6 @@ classdef Base < handle
   methods (Access = 'private')
     function initialize(this, options)
       this.dimension = options.dimension;
-      this.level = options.level;
-      this.rules = options.rules;
 
       filename = [ class(this), '_', ...
         DataHash(string(options)), '.mat' ];

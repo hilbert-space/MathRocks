@@ -1,7 +1,7 @@
 function correlation = computeCorrelation(this, rvs)
   dimension = rvs.dimension;
 
-  qd = Quadrature.Tensor('rules', 'GaussHermite', this.quadratureOptions);
+  qd = Quadrature.Tensor(this.quadratureOptions);
   nodes = qd.nodes;
   weights = qd.weights;
 

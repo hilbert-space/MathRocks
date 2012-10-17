@@ -1,7 +1,8 @@
-classdef Hermite < PolynomialChaos.Base
+classdef ProbabilistHermite < PolynomialChaos.Base
   methods
-    function this = Hermite(varargin)
-      this = this@PolynomialChaos.Base(varargin{:});
+    function this = ProbabilistHermite(varargin)
+      this = this@PolynomialChaos.Base(varargin{:}, ...
+        'quadratureOptions', Options('rules', 'ProbabilistGaussHermite'));
       this.distribution = ProbabilityDistribution.Normal();
     end
   end
@@ -16,7 +17,11 @@ classdef Hermite < PolynomialChaos.Base
     end
 
     function norm = computeNormalizationConstant(this, i, index)
-      norm = prod(factorial(index(i, :) - 1));
+      %
+      % sqrt(2 * pi) is preserved.
+      %
+      index = index(i, :) - 1;
+      norm = prod(factorial(index));
     end
   end
 end

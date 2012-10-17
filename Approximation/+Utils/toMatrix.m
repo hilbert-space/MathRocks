@@ -9,7 +9,7 @@ function [ P, M ] = toMatrix(p, rvMarker, coeffMarker)
   %
   % Output:
   %
-  %   * P - the matrix of the exponents of the RVs for each monomial.
+  %   * P - the matrix of the exponents of the RVs for each monomial,
   %   * M - the mapping matrix from the polynomial coefficients to
   %         the monomial coefficients.
   %

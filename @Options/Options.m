@@ -16,7 +16,35 @@ classdef Options < dynamicprops
 
     function set(this, name, value)
       if ~isprop(this, name), this.addprop(name); end
-      this.(name) = value;
+      if isa(this.(name), 'Options')
+        this.(name).update(value);
+      else
+        this.(name) = value;
+      end
+    end
+
+    function update(this, varargin)
+      i = 1;
+
+      while i <= length(varargin)
+        item = varargin{i};
+
+        if isempty(item)
+          i = i + 1;
+          continue;
+        end
+
+        if isa(item, 'Options')
+          names = properties(item);
+          for j = 1:length(names)
+            this.set(names{j}, item.(names{j}));
+          end
+          i = i + 1;
+        else
+          this.set(item, varargin{i + 1});
+          i = i + 2;
+        end
+      end
     end
 
     function result = has(this, name)

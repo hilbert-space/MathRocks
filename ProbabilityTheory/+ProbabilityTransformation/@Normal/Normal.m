@@ -90,7 +90,7 @@ classdef Normal < ProbabilityTransformation.Base
       initialize@ProbabilityTransformation.Base(this, variables, options);
 
       this.quadratureOptions = options.get('quadratureOptions', ...
-        Options('dimension', 2, 'level', 5));
+        Options('dimension', 2, 'order', 5, 'rules', 'ProbabilistGaussHermite'));
       this.optimizationOptions = options.get('optimizationOptions', ...
         optimset('TolX', 1e-6));
 
