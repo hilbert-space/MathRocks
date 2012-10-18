@@ -6,7 +6,7 @@ classdef Homogeneous < RandomVariables.Base
 
   methods
     function this = Homogeneous(distribution, correlation)
-      this = this@RandomVariables.Base(correlation.dimension);
+      this = this@RandomVariables.Base(size(correlation, 1));
 
       this.distribution = distribution;
       this.correlation = correlation;
@@ -14,6 +14,10 @@ classdef Homogeneous < RandomVariables.Base
 
     function data = invert(this, data)
       data = this.distribution.invert(data);
+    end
+
+    function result = isIndependent(this)
+      result = Utils.isIndependent(this.correlation);
     end
 
     function value = subsref(this, S)

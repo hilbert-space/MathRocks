@@ -6,7 +6,7 @@ classdef Heterogeneous < RandomVariables.Base
 
   methods
     function this = Heterogeneous(distributions, correlation)
-      this = this@RandomVariables.Base(correlation.dimension);
+      this = this@RandomVariables.Base(size(correlation, 1));
 
       assert(all(this.dimension == length(distributions)), ...
         'The number of distributions is invalid.');
@@ -19,6 +19,10 @@ classdef Heterogeneous < RandomVariables.Base
       for i = 1:this.dimension
         data(:, i) = this.distributions{i}.invert(data(:, i));
       end
+    end
+
+    function result = isIndependent(this)
+      result = Utils.isIndependent(this.correlation);
     end
 
     function value = subsref(this, S)

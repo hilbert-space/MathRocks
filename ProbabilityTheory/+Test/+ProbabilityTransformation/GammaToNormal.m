@@ -4,7 +4,7 @@ samples = 1e6;
 
 %% Generate a correlation matrix.
 %
-correlation = Correlation.Pearson([ 1 -0.7; -0.7 1 ]);
+correlation = [ 1 -0.7; -0.7 1 ];
 fprintf('Desired correlation matrix:\n');
 correlation
 
@@ -32,7 +32,7 @@ transformation.correlation
 data = transformation.sample(samples);
 
 fprintf('Obtained correlation matrix:\n');
-Correlation.Pearson.compute(data)
+corr(data)
 
 %% Draw the result.
 %

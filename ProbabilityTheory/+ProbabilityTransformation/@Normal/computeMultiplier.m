@@ -1,8 +1,4 @@
 function multiplier = computeMultiplier(this, correlation)
-  if ~isa(correlation, 'Correlation.Pearson')
-    error('The correlation matrix is not supported.');
-  end
-
-  [ coeff, latent ] = pcacov(correlation.matrix);
+  [ coeff, latent ] = pcacov(correlation);
   multiplier = diag(sqrt(latent)) * coeff.';
 end

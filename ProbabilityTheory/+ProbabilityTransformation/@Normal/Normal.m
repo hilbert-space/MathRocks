@@ -14,7 +14,7 @@ classdef Normal < ProbabilityTransformation.Base
   end
 
   properties (Access = 'private')
-    normal
+    distribution
   end
 
   properties (SetAccess = 'private')
@@ -41,15 +41,15 @@ classdef Normal < ProbabilityTransformation.Base
       %
       % Independent normal RVs.
       %
-      data = this.normal.sample(samples, this.dimension);
+      data = this.distribution.sample(samples, this.dimension);
 
       %
       % Dependent RVs with the desired distributions.
       %
-      data = this.evaluateNative(data);
+      data = this.evaluate(data);
     end
 
-    function data = evaluateNative(this, data)
+    function data = evaluate(this, data)
       %
       % Dependent normal RVs.
       %
@@ -58,7 +58,7 @@ classdef Normal < ProbabilityTransformation.Base
       %
       % Dependent uniform RVs.
       %
-      data = this.normal.apply(data);
+      data = this.distribution.apply(data);
 
       %
       % Dependent RVs with the desired distributions.
@@ -70,12 +70,12 @@ classdef Normal < ProbabilityTransformation.Base
       %
       % Independent normal RVs.
       %
-      data = this.normal.invert(data);
+      data = this.distribution.invert(data);
 
       %
       % Dependent RVs with the desired distributions.
       %
-      data = this.evaluateNative(data);
+      data = this.evaluate(data);
     end
   end
 
@@ -95,7 +95,7 @@ classdef Normal < ProbabilityTransformation.Base
       this.optimizationOptions = ...
         options.get('optimizationOptions', optimset('TolX', 1e-6));
 
-      this.normal = ProbabilityDistribution.Normal();
+      this.distribution = ProbabilityDistribution.Normal();
 
       this.correlation = this.computeCorrelation(variables);
       this.multiplier = this.computeMultiplier(this.correlation);

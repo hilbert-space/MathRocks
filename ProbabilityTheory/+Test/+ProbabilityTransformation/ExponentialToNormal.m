@@ -5,7 +5,7 @@ dimension = 2;
 
 %% Generate a correlation matrix.
 %
-correlation = Correlation.Pearson.random(dimension);
+correlation = Utils.generateCorrelation(dimension);
 fprintf('Desired correlation matrix:\n');
 correlation
 
@@ -30,7 +30,7 @@ transformation.correlation
 data = transformation.sample(samples);
 
 fprintf('Obtained correlation matrix:\n');
-Correlation.Pearson.compute(data)
+corr(data)
 
 %% Draw the result.
 %

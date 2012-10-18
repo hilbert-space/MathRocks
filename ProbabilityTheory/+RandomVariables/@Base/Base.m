@@ -11,5 +11,6 @@ classdef Base < handle
 
   methods (Abstract)
     data = invert(this, data)
+    result = isIndependent(this)
   end
 end

@@ -12,16 +12,14 @@ function correlation = computeCorrelation(this, rvs)
   %
   weights = qd.weights / (2 * pi)^(2 / 2);
 
-  normal = this.normal;
+  distribution = this.distribution;
 
-  matrix = diag(ones(1, dimension));
+  correlation = eye(dimension);
 
   %
   % Just to eliminate unnecessary work if the RVs are independent.
   %
-  if dimension == 1 || norm(matrix - rvs.correlation.matrix, Inf) == 0
-    dimension = 0;
-  end
+  if dimension == 1 || rvs.isIndependent(), return; end
 
   for i = 1:dimension
     for j = (i + 1):dimension
@@ -36,15 +34,14 @@ function correlation = computeCorrelation(this, rvs)
 
       rho0 = rvs.correlation(i, j);
 
-      weightsOne = weights .* (rv1.invert(normal.apply(nodes(:, 1))) - mu1);
-      two = @(rho) rv2.invert(normal.apply(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
+      weightsOne = weights .* (rv1.invert(distribution.apply(nodes(:, 1))) - mu1);
+      two = @(rho) rv2.invert(distribution.apply(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
       goal = @(rho) abs(rho0 - sum(weightsOne .* two(rho)) / sigma1 / sigma2);
 
-      [ matrix(i, j), ~, ~, out ] = fminbnd(goal, -1, 1, this.optimizationOptions);
+      [ correlation(i, j), ~, ~, out ] = ...
+        fminbnd(goal, -1, 1, this.optimizationOptions);
 
-      matrix(j, i) = matrix(i, j);
+      correlation(j, i) = correlation(i, j);
     end
   end
-
-  correlation = Correlation.Pearson(matrix);
 end

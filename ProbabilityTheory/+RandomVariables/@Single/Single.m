@@ -13,6 +13,10 @@ classdef Single < RandomVariables.Base
       data = this.distribution.invert(data);
     end
 
+    function result = isIndependent(this)
+      result = true;
+    end
+
     function value = subsref(this, S)
       if length(S) == 1 && strcmp('{}', S.type)
         value = this.distribution;
