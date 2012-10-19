@@ -13,6 +13,8 @@ function construct(this, f, options)
   % NOTE: We convert strings to numbers due to a possible speedup later on.
   %
   switch adaptivityControl
+  case 'InfNorm'
+    adaptivityControl = uint8(0);
   case 'InfNormSurpluses'
     adaptivityControl = uint8(1);
   case 'InfNormSurpluses2'
@@ -125,11 +127,11 @@ function construct(this, f, options)
       I = find(all(delta < inverseIntervals, 2));
 
       %
-      % Ensure that all the (one-dimensional) bases function at
+      % Ensure that all the (one-dimensional) basis functions at
       % the first level are equal to one.
       %
       bases = 1.0 - intervals(I, :) .* delta(I, :);
-      bases(stableLevelIndex(I) == 1) = 1;
+      bases(stableLevelIndex(I, :) == 1) = 1;
       bases = prod(bases, 2);
 
       surpluses (i, :) = values(i, :) - ...
@@ -202,6 +204,9 @@ function construct(this, f, options)
     % Adaptivity control.
     %
     switch adaptivityControl
+    case 0 % Infinity norm of surpluses and surpluses2
+      nodeContribution = ...
+        max(abs([ surpluses(oldNodeRange, :) surpluses2(oldNodeRange, :) ]), [], 2);
     case 1 % Infinity norm of surpluses
       nodeContribution = max(abs(surpluses(oldNodeRange, :)), [], 2);
     case 2 % Infinity norm of squared surpluses
@@ -321,7 +326,10 @@ function construct(this, f, options)
   this.surpluses = surpluses(range, :);
 
   this.expectation = expectation;
-  this.variance = variance - expectation.^2; % Now, it is a true variance.
+  %
+  % Turn `variance' into a true variance.
+  %
+  this.variance = variance - expectation.^2;
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)

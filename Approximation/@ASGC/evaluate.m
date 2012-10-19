@@ -28,7 +28,7 @@ function values = evaluate(this, newNodes)
     I = find(all(delta < inverseIntervals, 2));
 
     bases = 1.0 - intervals(I, :) .* delta(I, :);
-    bases(levelIndex(I) == 1) = 1;
+    bases(levelIndex(I, :) == 1) = 1;
     bases = prod(bases, 2);
 
     values(i, :) = sum(bsxfun(@times, surpluses(I, :), bases), 1);
