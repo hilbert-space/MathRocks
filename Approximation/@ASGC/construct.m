@@ -7,17 +7,17 @@ function construct(this, f, options)
   tolerance = options.get('tolerance', 1e-3);
   minLevel = options.get('minLevel', 2);
   maxLevel = options.get('maxLevel', 10);
-  adaptivityControl = options.get('adaptivityControl', 'norm');
+  adaptivityControl = options.get('adaptivityControl', 'NormNormExpectation');
 
   %
-  % NOTE: Converting to number for a possible speedup later on.
+  % NOTE: We convert strings to numbers due to a possible speedup later on.
   %
-  switch lower(adaptivityControl)
-  case 'expectation'
+  switch adaptivityControl
+  case 'InfNormSurpluses'
     adaptivityControl = uint8(1);
-  case 'variance'
+  case 'InfNormSurpluses2'
     adaptivityControl = uint8(2);
-  case 'norm'
+  case 'NormNormExpectation'
     adaptivityControl = uint8(3);
   otherwise
     error('The specified adaptivity control method is unknown.');
@@ -202,11 +202,11 @@ function construct(this, f, options)
     % Adaptivity control.
     %
     switch adaptivityControl
-    case 1 % Expectation
+    case 1 % Infinity norm of surpluses
       nodeContribution = max(abs(surpluses(oldNodeRange, :)), [], 2);
-    case 2 % Variance
+    case 2 % Infinity norm of squared surpluses
       nodeContribution = max(abs(surpluses2(oldNodeRange, :)), [], 2);
-    case 3 % Norm
+    case 3 % Normalized norm of expectation
       nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / baseNorm;
     otherwise
       assert(false);

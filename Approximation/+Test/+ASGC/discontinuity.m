@@ -8,9 +8,9 @@ function discontinuity
     'RelTol', 1e-3);
 
   acOptions = Options( ...
-    'adaptivityControl', 'variance', ...
+    'adaptivityControl', 'InfNormSurpluses2', ...
     'inputDimension', 1, ...
-    'minLevel', 5, ...
+    'minLevel', 4, ...
     'maxLevel', 20, ...
     'tolerance', 1e-4);
 
@@ -35,7 +35,8 @@ function discontinuity
   z = -1:0.1:1;
   samples = length(z);
 
-  filename = sprintf('discontinuity_steps_%d_samples_%d.mat', steps, samples);
+  filename = sprintf('ASGC_discontinuity_%s.mat', ...
+    DataHash({ steps, samples }));
 
   if exist(filename, 'file')
     load(filename);
@@ -70,6 +71,9 @@ function discontinuity
   fprintf('Interpolant construction: %.2f s\n', toc);
 
   display(interpolant);
+
+  fprintf('Expectation error: %10.6f\n', interpolant.expectation - sqrt(15 / 35) / 4);
+  fprintf('Variance error:    %10.6f\n', interpolant.variance - 45 / 112);
 
   plot(interpolant);
 
