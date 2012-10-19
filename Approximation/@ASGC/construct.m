@@ -1,13 +1,12 @@
 function construct(this, f, options)
   zeros = @uninit;
 
-  inputDimension = options.inputDimension;
-  outputDimension = options.get('outputDimension', 1);
-
-  tolerance = options.get('tolerance', 1e-3);
-  minLevel = options.get('minLevel', 2);
-  maxLevel = options.get('maxLevel', 10);
-  adaptivityControl = options.get('adaptivityControl', 'NormNormExpectation');
+  inputDimension = options.InputDimension;
+  outputDimension = options.get('OutputDimension', 1);
+  adaptivityControl = options.get('AdaptivityControl', 'NormNormExpectation');
+  tolerance = options.get('Tolerance', 1e-3);
+  minimalLevel = options.get('MinimalLevel', 2);
+  maximalLevel = options.get('MaximalLevel', 10);
 
   %
   % NOTE: We convert strings to numbers due to a possible speedup later on.
@@ -26,7 +25,7 @@ function construct(this, f, options)
   end
 
   verbose = @(varargin) [];
-  if options.get('verbose', false)
+  if options.get('Verbose', false)
     verbose = @(varargin) fprintf(varargin{:});
   end
 
@@ -91,7 +90,7 @@ function construct(this, f, options)
     oldOrderIndex(2 * (i - 1) + 2, i) = 3;
   end
 
-  levelNodeCount = zeros(maxLevel, 1);
+  levelNodeCount = zeros(maximalLevel, 1);
   levelNodeCount(1) = 1;
   levelNodeCount(2) = 2 * inputDimension;
 
@@ -174,7 +173,7 @@ function construct(this, f, options)
     % If the current level is the last one, we do not try to add any
     % more nodes; just exit the loop.
     %
-    if ~(level < maxLevel), break; end
+    if ~(level < maximalLevel), break; end
 
     %
     % Since we are allowed to go to the next level, we seek
@@ -218,7 +217,7 @@ function construct(this, f, options)
     end
 
     for i = oldNodeRange
-      if level >= minLevel && ...
+      if level >= minimalLevel && ...
         nodeContribution(i - stableNodeCount) < tolerance, continue; end
 
       %

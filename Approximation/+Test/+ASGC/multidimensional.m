@@ -1,8 +1,20 @@
 function interpolant = multidimensional
-  clear all;
   setup;
 
-  samples = 1e2;
+  sampleCount = 1e2;
+
+  innerTimeStep = 0.01;
+  outerTimeStep = 0.1;
+
+  time = 0:outerTimeStep:30;
+  timeSpan = [ min(time), max(time) ];
+
+  timeDivision = outerTimeStep / innerTimeStep;
+
+  stepCount = length(time);
+
+  inputDimension = 1;
+  outputDimension = 3* stepCount;
 
   odeOptions = odeset( ...
     'Vectorized', 'on', ...
@@ -10,93 +22,119 @@ function interpolant = multidimensional
     'RelTol', 1e-3);
 
   acOptions = Options( ...
-    'adaptivityControl', 'InfNormSurpluses2', ...
-    'inputDimension', 1, ...
-    'outputDimension', 3, ...
-    'maxLevel', 20, ...
-    'tolerance', 1e-2);
+    'InputDimension', inputDimension, ...
+    'OutputDimension', outputDimension, ...
+    'AdaptivityControl', 'InfNormSurpluses2', ...
+    'Tolerance', 1e-2, ...
+    'MaximalLevel', 20, ...
+    'Verbose', true);
 
-  t = 0:0.01:30;
-  steps = length(t);
-
-  z = linspace(-1, 1, samples);
+  z = transpose(linspace(-1, 1, sampleCount));
 
   %
-  % Enumeration of `all' possible scenarious.
+  % Monte Carlo simulation.
   %
   filename = sprintf('ASGC_multidimensional_%s.mat', ...
-    DataHash({ steps, samples }));
+    DataHash({ inputDimension, outputDimension, sampleCount }));
 
   if exist(filename, 'file')
     load(filename);
   else
-    Y = zeros(steps, 3, samples);
+    mcData = zeros(stepCount, 3, sampleCount);
 
     tic;
-    for i = 1:samples
-      Y(:, :, i) = solve(t, [ 1.0, 0.1 * z(i), 0 ], odeOptions);
+    for i = 1:sampleCount
+      mcData(:, :, i) = solve([ 1.0, 0.1 * z(i), 0 ], ...
+        timeSpan, innerTimeStep, outerTimeStep);
     end
-    time = toc;
+    mcTime = toc;
 
-    save(filename, 'Y', 'time', '-v7.3');
+    save(filename, 'mcData', 'mcTime', '-v7.3');
   end
 
-  fprintf('Simulation time for %d samples: %.2f s\n', samples, time);
-
-  Variance = var(Y, [], 3);
-
-  solutionFigure = figure;
-  Plot.label('Uncertain parameter');
-  Plot.title('Solution');
-  plotTransient(z, transpose(squeeze(Y(end, :, :))));
-
-  figure;
-  Plot.label('Time');
-  Plot.title('Variance');
-  plotTransient(t, Variance);
+  fprintf('Monte Carlo:\n');
+  fprintf('  Samples: %d\n', sampleCount);
+  fprintf('  Time:    %.2f s\n', mcTime);
 
   %
   % Adaptive sparse grid collocation.
   %
-
-  k = steps;
-
   tic;
   interpolant = ASGC( ...
-    @(u) solvePointwise([ 0, t(k) ], ...
-      [ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
-      odeOptions), acOptions);
-  fprintf('Interpolant construction: %.2f s\n', toc);
+    @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
+      timeSpan, innerTimeStep, outerTimeStep, outputDimension), acOptions);
 
-  plotMarkers(t(k), interpolant.variance);
+  fprintf('Adaptive sparse grid collocation:\n');
+  fprintf('  Constructio time: %.2f s\n', toc);
+
+  tic;
+  scData = interpolant.evaluate((z + 1) / 2);
+  fprintf('  Evaluation time:  %.2f s\n', toc);
 
   display(interpolant);
   plot(interpolant);
 
-  figure(solutionFigure);
-  plotTransient(z, interpolant.evaluate((z.' + 1) / 2), 'LineStyle', '--');
-  legend('Exact 1', 'Exact 2', 'Exact 3', ...
-    'Approximated 1', 'Approximated 2', 'Approximated 3');
+  %
+  % The expected value.
+  %
+  figure;
+
+  mcExpectation = mean(mcData, 3);
+  scExpectation = reshape(interpolant.expectation, [ stepCount, 3 ]);
+
+  Plot.title('Expectation');
+  Plot.label('Time');
+  plotTransient(time, mcExpectation);
+  plotTransient(time, scExpectation, 'LineStyle', '--');
+
+  %
+  % The variance.
+  %
+  figure;
+
+  mcVariance = var(mcData, [], 3);
+  scVariance = reshape(interpolant.variance, [ stepCount, 3 ]);
+
+  Plot.title('Expectation');
+  Plot.label('Time');
+  plotTransient(time, mcVariance);
+  plotTransient(time, scVariance, 'LineStyle', '--');
+
+  %
+  % A solution slice.
+  %
+  figure;
+
+  mcData = transpose(squeeze(mcData(end, :, :)));
+  scData = scData(:, [ ...
+    outputDimension - 2 * stepCount, ...
+    outputDimension - 1 * stepCount, ...
+    outputDimension - 0 * stepCount ]);
+
+  Plot.title('Solution');
+  Plot.label('Uncertain parameter');
+  plotTransient(z, mcData);
+  plotTransient(z, scData, 'LineStyle', '--');
 end
 
-function y = solve(t, y0, options)
-  [ ~, y ] = ode45(@rightHandSide, t, y0, options);
+function y = solve(y0, timeSpan, innerTimeStep, outerTimeStep)
+  stepCount = timeSpan(end) / innerTimeStep;
+  y = rk4(@rightHandSide, y0, timeSpan(1), innerTimeStep, stepCount);
+  I = 1:(outerTimeStep / innerTimeStep):(stepCount + 1);
+  y = y(I, :);
 end
 
-function values = solvePointwise(t, y0, options)
+function Y = solveVector(y0, timeSpan, innerTimeStep, outerTimeStep, outputDimension)
   points = size(y0, 1);
-  values = zeros(points, 3);
-  for i = 1:points
-    y = solve(t, y0(i, :), options);
-    values(i, :) = y(end, :);
+  Y = zeros(points, outputDimension);
+  parfor i = 1:points
+    y = solve(y0(i, :), timeSpan, innerTimeStep, outerTimeStep);
+    Y(i, :) = transpose(y(:));
   end
 end
 
 function dy = rightHandSide(t, y)
-  dy = [ ...
-      y(1, :) .* y(3, :); ...
-    - y(2, :) .* y(3, :); ...
-    - y(1, :).^2 + y(2, :).^2 ];
+  dy = [ y(:, 1) .* y(:, 3), - y(:, 2) .* y(:, 3), - y(:, 1).^2 + y(:, 2).^2 ];
 end
 
 function plotTransient(t, y, varargin)
@@ -106,10 +144,30 @@ function plotTransient(t, y, varargin)
   end
 end
 
-function plotMarkers(t, y)
-  count = length(y);
-  for i = 1:count
-    line([ t t ], [ y(i) y(i) ], 'LineStyle', 'None', ...
-      'Marker', 'o', 'Color', Color.pick(i));
+function y = rk4(f, y0, startTime, timeStep, stepCount)
+  dimensionCount = length(y0);
+
+  y = zeros(stepCount + 1, dimensionCount);
+  y(1, :) = y0;
+
+  a = [ 0 1/2 1/2 1 ];
+  b = [ 0 0 0; 1/2 0 0; 0 1/2 0; 0 0 1 ];
+  c = [ 1/6 1/3 1/3 1/6 ];
+
+  stageCount = 4;
+  stageY = zeros(stageCount, dimensionCount);
+
+  t = startTime;
+  for k = 2:(stepCount + 1)
+    for i = 1:stageCount
+      ti = t + timeStep * a(i);
+      yi = y(k - 1, :);
+      for j = 1:(i - 1)
+        yi = yi + timeStep * b(i, j) * stageY(j, :);
+      end
+      stageY(i, :) = feval(f, ti, yi);
+    end
+    y(k, :) = y(k - 1, :) + timeStep * c * stageY;
+    t = t + timeStep;
   end
 end
