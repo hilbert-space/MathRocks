@@ -6,8 +6,8 @@ function interpolant = multidimensional
   innerTimeStep = 0.01;
   outerTimeStep = 0.1;
 
-  time = 0:outerTimeStep:30;
-  timeSpan = [ min(time), max(time) ];
+  time = outerTimeStep:outerTimeStep:30;
+  timeSpan = [ 0, max(time) ];
 
   timeDivision = outerTimeStep / innerTimeStep;
 
@@ -120,8 +120,7 @@ end
 function y = solve(y0, timeSpan, innerTimeStep, outerTimeStep)
   stepCount = timeSpan(end) / innerTimeStep;
   y = rk4(@rightHandSide, y0, timeSpan(1), innerTimeStep, stepCount);
-  I = 1:(outerTimeStep / innerTimeStep):(stepCount + 1);
-  y = y(I, :);
+  y = y(1:(outerTimeStep / innerTimeStep):stepCount, :);
 end
 
 function Y = solveVector(y0, timeSpan, innerTimeStep, outerTimeStep, outputDimension)
@@ -144,30 +143,15 @@ function plotTransient(t, y, varargin)
   end
 end
 
-function y = rk4(f, y0, startTime, timeStep, stepCount)
-  dimensionCount = length(y0);
-
-  y = zeros(stepCount + 1, dimensionCount);
-  y(1, :) = y0;
-
-  a = [ 0 1/2 1/2 1 ];
-  b = [ 0 0 0; 1/2 0 0; 0 1/2 0; 0 0 1 ];
-  c = [ 1/6 1/3 1/3 1/6 ];
-
-  stageCount = 4;
-  stageY = zeros(stageCount, dimensionCount);
-
-  t = startTime;
-  for k = 2:(stepCount + 1)
-    for i = 1:stageCount
-      ti = t + timeStep * a(i);
-      yi = y(k - 1, :);
-      for j = 1:(i - 1)
-        yi = yi + timeStep * b(i, j) * stageY(j, :);
-      end
-      stageY(i, :) = feval(f, ti, yi);
-    end
-    y(k, :) = y(k - 1, :) + timeStep * c * stageY;
-    t = t + timeStep;
+function y = rk4(f, y0, t, h, count)
+  y = zeros(count, length(y0));
+  for k = 1:count
+    f1 = feval(f, t      , y0             );
+    f2 = feval(f, t + h/2, y0 + (h/2) * f1);
+    f3 = feval(f, t + h/2, y0 + (h/2) * f2);
+    f4 = feval(f, t + h  , y0 +  h    * f3);
+    y0 = y0 + (h/6) * (f1 + 2*f2 + 2*f3 + f4);
+    y(k, :) = y0;
+    t = t + h;
   end
 end
