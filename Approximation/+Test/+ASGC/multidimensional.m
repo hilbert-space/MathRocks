@@ -65,11 +65,11 @@ function interpolant = multidimensional
       timeSpan, innerTimeStep, outerTimeStep, outputDimension), acOptions);
 
   fprintf('Adaptive sparse grid collocation:\n');
-  fprintf('  Constructio time: %.2f s\n', toc);
+  fprintf('  Construction time: %.2f s\n', toc);
 
   tic;
   scData = interpolant.evaluate((z + 1) / 2);
-  fprintf('  Evaluation time:  %.2f s\n', toc);
+  fprintf('  Evaluation time:   %.2f s\n', toc);
 
   display(interpolant);
   plot(interpolant);
