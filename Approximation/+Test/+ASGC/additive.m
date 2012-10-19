@@ -2,15 +2,14 @@ function additive
   setup;
 
   sampleCount = 1e3;
-  inputDimension = 2;
+  inputDimension = 10;
 
   asgcOptions = Options( ...
     'inputDimension', inputDimension, ...
-    'adaptivityControl', 'InfNormSurpluses2', ...
+    'adaptivityControl', 'InfNorm', ...
     'minLevel', 2, ...
     'maxLevel', 20, ...
-    'tolerance', 1e-4, ...
-    'verbose', true);
+    'tolerance', 1e-2);
 
   f = @(u) sum(u.^2, 2);
   u = rand(sampleCount, inputDimension);
@@ -56,20 +55,20 @@ function additive
   fprintf('Normalized L2: %e\n', normalizedError);
 
   fprintf('Analytical:\n');
-  fprintf('  Expectation: %10.6f\n', inputDimension / 3);
-  fprintf('  Variance:    %10.6f\n', inputDimension * 4 / 45);
+  fprintf('  Expectation: %12.8f\n', inputDimension / 3);
+  fprintf('  Variance:    %12.8f\n', inputDimension * 4 / 45);
 
   fprintf('Empirical:\n');
-  fprintf('  Expectation: %10.6f\n', mean(approximatedData));
-  fprintf('  Variance:    %10.6f\n', var(approximatedData));
+  fprintf('  Expectation: %12.8f\n', mean(approximatedData));
+  fprintf('  Variance:    %12.8f\n', var(approximatedData));
 
   fprintf('Approximated:\n');
-  fprintf('  Expectation: %10.6f\n', interpolant.expectation);
-  fprintf('  Variance:    %10.6f\n', interpolant.variance);
+  fprintf('  Expectation: %12.8f\n', interpolant.expectation);
+  fprintf('  Variance:    %12.8f\n', interpolant.variance);
 
   fprintf('Error:\n');
-  fprintf('  Expectation: %10.6f\n', ...
+  fprintf('  Expectation: %12.8f\n', ...
     inputDimension / 3 - interpolant.expectation);
-  fprintf('  Variance:    %10.6f\n', ...
+  fprintf('  Variance:    %12.8f\n', ...
     inputDimension * 4 / 45 - interpolant.variance);
 end
