@@ -1,12 +1,9 @@
-function value = evaluate(this, coefficients, nodes)
-  terms = size(coefficients, 1);
-
+function values = evaluate(this, nodes)
+  coefficients = this.coefficients;
   rvPower = this.rvPower;
   rvMap = this.rvMap;
 
-  assert(terms == size(rvMap, 2), ...
-    'The number of terms is invalid.');
-
+  terms = size(coefficients, 1);
   monomialTerms = size(rvPower, 1);
   points = size(nodes, 1);
 
@@ -17,5 +14,5 @@ function value = evaluate(this, coefficients, nodes)
       nodes, Utils.replicate(rvPower(i, :), points, 1)), 2);
   end
 
-  value = rvProduct * (rvMap * coefficients);
+  values = rvProduct * (rvMap * coefficients);
 end

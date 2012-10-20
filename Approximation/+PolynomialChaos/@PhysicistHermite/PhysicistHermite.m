@@ -2,7 +2,6 @@ classdef PhysicistHermite < PolynomialChaos.Base
   methods
     function this = PhysicistHermite(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
-      this.distribution = ProbabilityDistribution.Normal();
     end
   end
 

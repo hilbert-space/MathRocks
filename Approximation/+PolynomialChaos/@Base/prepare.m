@@ -1,9 +1,6 @@
-function [ nodes, norm, projectionMatrix, evaluationMatrix, rvPower, rvMap ] = ...
-  construct(this, options)
-
-  dimension = options.dimension;
-  codimension = options.codimension;
-  order = this.order;
+function [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, options)
+  dimension = options.inputDimension;
+  order = options.order;
 
   %
   % Construct the RVs.
@@ -56,7 +53,7 @@ function [ nodes, norm, projectionMatrix, evaluationMatrix, rvPower, rvMap ] = .
   %
   % Express the polynomial in terms of its monomials.
   %
-  % A (# of monomial terms) x (# of stochastic dimension) matrix
+  % A (# of monomial terms) x (# of stochastic dimensions) matrix
   % of the exponents of each of the RVs in each of the monomials.
   %
   % A (# of monomial terms) x (# of polynomial terms) matrix that
@@ -64,24 +61,4 @@ function [ nodes, norm, projectionMatrix, evaluationMatrix, rvPower, rvMap ] = .
   % the monomials.
   %
   [ rvPower, rvMap ] = Utils.toMatrix(sum(a .* basis));
-
-  monomialTerms = size(rvPower, 1);
-
-  %
-  % A (# of integration points x # of monomial terms) matrix that
-  % contains the monomials evaluated at each node of the grid.
-  %
-  rvProduct = zeros(points, monomialTerms);
-
-  for i = 1:monomialTerms
-    rvProduct(:, i) = prod(realpow(nodes, ...
-      Utils.replicate(rvPower(i, :), points, 1)), 2);
-  end
-
-  %
-  % The evaluation matrix.
-  %
-  % A (# of integration nodes) x (# of polynomial terms) matrix.
-  %
-  evaluationMatrix = rvProduct * rvMap;
 end

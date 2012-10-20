@@ -43,7 +43,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     assert(nnz(mcx - sdx) == 0, 'The supports are invalid.');
 
-    localError(i) = computeNRMSE(oneData, twoData);
+    localError(i) = Error.computeNormalizedMeanL2(oneData, twoData);
 
     if draw
       drawData(mcx, oneData, twoData, options);

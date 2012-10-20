@@ -1,14 +1,14 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
     %
-    % The stochastic dimension.
+    % The stochastic (input) dimension.
     %
-    dimension
+    inputDimension
 
     %
-    % The deterministic dimension.
+    % The output dimension.
     %
-    codimension
+    outputDimension
 
     %
     % The maximal total order of the multivariate polynomials.
@@ -16,36 +16,13 @@ classdef Base < handle
     order
 
     %
-    % The normalization constants of each basis polynomial.
+    % The expectation and variance.
     %
-    norm
-
-    %
-    % The probability distribution of the RVs.
-    %
-    distribution
+    expectation
+    variance
   end
 
   properties (Access = 'protected')
-    %
-    % The integration nodes.
-    %
-    nodes
-
-    %
-    % The projection matrix.
-    %
-    % A (# of polynomial terms) x (# of integration nodes) matrix.
-    %
-    projectionMatrix
-
-    %
-    % The evaluation matrix.
-    %
-    % A (# of integration nodes) x (# of polynomial terms) matrix.
-    %
-    evaluationMatrix
-
     %
     % A (# of monomial terms) x (# of stochastic dimension) matrix
     % of the exponents of each of the RVs in each of the monomials.
@@ -58,19 +35,17 @@ classdef Base < handle
     % the monomials.
     %
     rvMap
+
+    %
+    % The coefficients of the polynomial chaos expansion.
+    %
+    coefficients
   end
 
   methods
-    function this = Base(varargin)
-      options = Options( ...
-        'dimension', 1, 'codimension', 1, ...
-        'method', 'totalOrder', varargin{:});
-
-      this.initialize(options);
-    end
-
-    function coefficients = expand(this, f)
-      coefficients = this.projectionMatrix * f(this.nodes);
+    function this = Base(f, varargin)
+      options = Options('method', 'totalOrder', varargin{:});
+      this.construct(f, options);
     end
   end
 
@@ -82,12 +57,11 @@ classdef Base < handle
 
   methods (Access = 'private')
     basis = constructBasis(this, x, order, index)
-    [ nodes, norm, projectionMatrix, evaluationMatrix, ...
-      rvPower, rvMap ] = construct(this, options)
+    [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, options)
 
-    function initialize(this, options)
-      this.dimension = options.dimension;
-      this.codimension = options.codimension;
+    function construct(this, f, options)
+      this.inputDimension = options.inputDimension;
+      this.outputDimension = options.outputDimension;
       this.order = options.order;
 
       filename = [ class(this), '_', ...
@@ -96,19 +70,29 @@ classdef Base < handle
       if exist(filename, 'file')
         load(filename);
       else
-        [ nodes, norm, projectionMatrix, evaluationMatrix, ...
-          rvPower, rvMap ] = this.construct(options);
-
+        [ nodes, norm, projectionMatrix, rvPower, rvMap ] = this.prepare(options);
         save(filename, 'nodes', 'norm', 'projectionMatrix', ...
-          'evaluationMatrix', 'rvPower', 'rvMap', '-v7.3');
+          'rvPower', 'rvMap', '-v7.3');
       end
 
-      this.nodes = nodes;
-      this.norm = norm;
-      this.projectionMatrix = projectionMatrix;
-      this.evaluationMatrix = evaluationMatrix;
+      %
+      % Now, we expand the given function and compute its statistics.
+      %
+      coefficients = projectionMatrix * f(nodes);
+      expectation = coefficients(1, :);
+      variance = sum(coefficients(2:end, :).^2 .* ...
+        Utils.replicate(norm(2:end), 1, this.outputDimension), 1);
+
+      %
+      % Save.
+      %
       this.rvPower = rvPower;
       this.rvMap = rvMap;
+
+      this.coefficients = coefficients;
+
+      this.expectation = expectation;
+      this.variance = variance;
     end
   end
 end
