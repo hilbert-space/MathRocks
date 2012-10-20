@@ -1,46 +1,60 @@
 function additive
   setup;
+  rng(0);
 
-  sampleCount = 100;
-  inputDimension = 2;
+  sampleCount = 1e3;
+  inputDimension = 10;
 
   asgcOptions = Options( ...
     'inputDimension', inputDimension, ...
-    'adaptivityControl', 'InfNormSurpluses2', ...
-    'minLevel', 2, ...
-    'maxLevel', 20, ...
-    'tolerance', 1e-6, ...
+    'adaptivityControl', 'InfNorm', ...
+    'tolerance', 1e-2, ...
+    'maximalLevel', 20, ...
     'verbose', true);
 
   hdmrOptions = Options( ...
     'inputDimension', inputDimension, ...
-    'maxOrder', 10, ...
     'interpolantOptions', asgcOptions, ...
-    'orderTolerance', 1e-4, ...
-    'dimensionTolerance', 1e-4, ...
+    'orderTolerance', 1e-2, ...
+    'dimensionTolerance', 1e-2, ...
+    'maximalOrder', 10, ...
     'verbose', true);
 
   f = @(u) sum(u.^2, 2);
   u = rand(sampleCount, inputDimension);
 
-  for order = [ 1, 2, 3 ];
-    hdmrOptions.maxOrder = order;
+  tic;
+  interpolant = HDMR(f, hdmrOptions);
+  fprintf('Interpolant construction: %.2f s\n', toc);
 
-    tic;
-    interpolant = HDMR(f, hdmrOptions);
-    fprintf('Interpolant construction: %.2f s\n', toc);
+  display(interpolant);
 
-    display(interpolant);
+  tic
+  approximatedData = interpolant.evaluate(u);
+  fprintf('Evaluation: %.2f s\n', toc);
 
-    tic
-    approximatedData = interpolant.evaluate(u);
-    fprintf('Evaluation: %.2f s\n', toc);
+  exactData = f(u);
 
-    exactData = f(u);
+  normalizedError = ...
+    Error.computeNormalizedL2(exactData, approximatedData);
 
-    normalizedError = ...
-      Error.computeNormalizedL2(exactData, approximatedData);
+  fprintf('Normalized L2: %e\n', normalizedError);
 
-    fprintf('Normalized L2: %e\n', normalizedError);
-  end
+  fprintf('Analytical:\n');
+  fprintf('  Expectation: %12.8f\n', inputDimension / 3);
+  fprintf('  Variance:    %12.8f\n', inputDimension * 4 / 45);
+
+  fprintf('Empirical:\n');
+  fprintf('  Expectation: %12.8f\n', mean(approximatedData));
+  fprintf('  Variance:    %12.8f\n', var(approximatedData));
+
+  fprintf('Approximated:\n');
+  fprintf('  Expectation: %12.8f\n', interpolant.expectation);
+  fprintf('  Variance:    %12.8f\n', interpolant.variance);
+
+  fprintf('Error:\n');
+  fprintf('  Expectation: %12.8f\n', ...
+    inputDimension / 3 - interpolant.expectation);
+  fprintf('  Variance:    %12.8f\n', ...
+    inputDimension * 4 / 45 - interpolant.variance);
 end

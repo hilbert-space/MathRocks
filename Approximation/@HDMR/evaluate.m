@@ -1,19 +1,56 @@
-function values = evaluate(this, newNodes)
-  assert(all(all(newNodes >= 0)) && all(all(newNodes <= 1)));
+function values = evaluate(this, nodes)
+  planeNodes = nodes(:);
+  assert(all(planeNodes >= 0) && all(planeNodes <= 1));
 
   interpolants = this.interpolants;
   inputDimension = this.inputDimension;
 
-  assert(inputDimension == size(newNodes, 2));
+  assert(inputDimension == size(nodes, 2));
 
-  newNodeCount = size(newNodes, 1);
+  nodeCount = size(nodes, 1);
 
-  values = repmat(this.offset, newNodeCount, 1);
+  offset = Utils.replicate(this.offset, nodeCount, 1);
+
+  interpolantCount = length(interpolants);
 
   keys = interpolants.keys;
-  for i = 1:length(keys)
-    key = keys{i};
-    index = uint16(key);
-    values = values + interpolants(key).evaluate(newNodes(:, index));
+  index = cell(interpolantCount, 1);
+  order = zeros(interpolantCount, 1);
+
+  %
+  % Precompute all the interpolants in the given nodes.
+  %
+  valueCache = Map('char');
+  for i = 1:interpolantCount
+    index{i} = uint16(keys{i});
+    order(i) = length(index{i});
+    valueCache(keys{i}) = interpolants(keys{i}).evaluate(nodes(:, index{i}));
+  end
+
+  %
+  % Now, we need to combine the computed values, and we begin with
+  % the zero-order interpolant.
+  %
+  values = offset;
+  for i = 1:interpolantCount
+    %
+    % The value of the current interpolant.
+    %
+    values = values + valueCache(keys{i});
+
+    %
+    % The zero-order interpolant.
+    %
+    values = values + (-1)^(order(i) - 0) * offset;
+
+    %
+    % The rest of the low-order interpolants.
+    %
+    lowKeys = selectLowKeys(interpolants, order(i), index{i});
+    for j = 1:length(lowKeys)
+      values = values + ...
+        (-1)^(order(i) - length(lowKeys{j})) * ...
+          valueCache(lowKeys{j});
+    end
   end
 end

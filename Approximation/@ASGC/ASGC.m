@@ -14,6 +14,7 @@ classdef ASGC < handle
 
     expectation
     variance
+    secondRawMoment
   end
 
   methods

@@ -10,6 +10,7 @@ classdef HDMR < handle
     interpolants
 
     expectation
+    variance
   end
 
   methods

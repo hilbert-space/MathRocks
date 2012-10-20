@@ -1,12 +1,12 @@
 function construct(this, f, options)
   zeros = @uninit;
 
-  inputDimension = options.InputDimension;
-  outputDimension = options.get('OutputDimension', 1);
-  adaptivityControl = options.get('AdaptivityControl', 'NormNormExpectation');
-  tolerance = options.get('Tolerance', 1e-3);
-  minimalLevel = options.get('MinimalLevel', 2);
-  maximalLevel = options.get('MaximalLevel', 10);
+  inputDimension = options.inputDimension;
+  outputDimension = options.get('outputDimension', 1);
+  adaptivityControl = options.get('adaptivityControl', 'NormNormExpectation');
+  tolerance = options.get('tolerance', 1e-3);
+  minimalLevel = options.get('minimalLevel', 2);
+  maximalLevel = options.get('maximalLevel', 10);
 
   %
   % NOTE: We convert strings to numbers due to a possible speedup later on.
@@ -25,7 +25,7 @@ function construct(this, f, options)
   end
 
   verbose = @(varargin) [];
-  if options.get('Verbose', false)
+  if options.get('verbose', false)
     verbose = @(varargin) fprintf(varargin{:});
   end
 
@@ -98,14 +98,14 @@ function construct(this, f, options)
   % The first statistics.
   %
   expectation = surpluses(1, :);
-  variance    = surpluses2(1, :);
+  secondRawMoment = surpluses2(1, :);
 
   %
   % Now, the other levels.
   %
   while true
-    verbose('Level %2d, stable %6d, old %6d, total %6d, buffer %6d, step buffer %6d.\n', ...
-      level, stableNodeCount, oldNodeCount, nodeCount, bufferSize, stepBufferSize);
+    verbose('Level %2d, stable %6d, old %6d, total %6d.\n', ...
+      level, stableNodeCount, oldNodeCount, nodeCount);
 
     %
     % First, we always compute the surpluses of the old nodes.
@@ -157,17 +157,16 @@ function construct(this, f, options)
     %
     % Expectations and variances from each `old' node individually.
     %
-    oldExpectations = bsxfun(@times, surpluses(oldNodeRange, :), integrals);
-    oldVariances = bsxfun(@times, surpluses2(oldNodeRange, :), integrals);
+    oldExpectations = ...
+      bsxfun(@times, surpluses(oldNodeRange, :), integrals);
+    oldSecondRawMoments = ...
+      bsxfun(@times, surpluses2(oldNodeRange, :), integrals);
 
     %
     % Add the individual statistics to the overall ones.
     %
-    % NOTE: `variance' is not yet a variance: it is the second raw
-    % moment until we subtruct the squared expectation.
-    %
     expectation = expectation + sum(oldExpectations, 1);
-    variance = variance + sum(oldVariances, 1);
+    secondRawMoment = secondRawMoment + sum(oldSecondRawMoments, 1);
 
     %
     % If the current level is the last one, we do not try to add any
@@ -191,10 +190,14 @@ function construct(this, f, options)
       %
       % We need more space.
       %
-      oldOrderIndex = [ oldOrderIndex; zeros(addition, inputDimension, 'uint32') ];
-      newLevelIndex = [ newLevelIndex; zeros(addition, inputDimension, 'uint8') ];
-      newOrderIndex = [ newOrderIndex; zeros(addition, inputDimension, 'uint32') ];
-      newNodes      = [ newNodes;      zeros(addition, inputDimension) ];
+      oldOrderIndex = [ oldOrderIndex; ...
+        zeros(addition, inputDimension, 'uint32') ];
+      newLevelIndex = [ newLevelIndex; ...
+        zeros(addition, inputDimension, 'uint8') ];
+      newOrderIndex = [ newOrderIndex; ...
+        zeros(addition, inputDimension, 'uint32') ];
+      newNodes      = [ newNodes; ...
+        zeros(addition, inputDimension) ];
 
       stepBufferSize = stepBufferSize + addition;
     end
@@ -325,10 +328,8 @@ function construct(this, f, options)
   this.surpluses = surpluses(range, :);
 
   this.expectation = expectation;
-  %
-  % Turn `variance' into a true variance.
-  %
-  this.variance = variance - expectation.^2;
+  this.variance = secondRawMoment - expectation.^2;
+  this.secondRawMoment = secondRawMoment;
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)
