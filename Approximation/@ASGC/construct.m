@@ -269,6 +269,11 @@ function construct(this, f, options)
 
     newNodeCount = size(uniqueNewNodes, 1);
 
+    %
+    % If there are no more nodes to refine, we stop.
+    %
+    if newNodeCount == 0, break; end
+
     oldOrderIndex(1:newNodeCount, :) = uniqueNewOrderIndex;
 
     nodeCount = nodeCount + newNodeCount;
@@ -300,12 +305,6 @@ function construct(this, f, options)
 
     oldNodeCount  = nodeCount - stableNodeCount - oldNodeCount;
     stableNodeCount = nodeCount - oldNodeCount;
-
-    %
-    % If there are no more `old' nodes, there is nothing to refine,
-    % and we stop.
-    %
-    if oldNodeCount == 0, break; end
 
     %
     % We go to the next level.
