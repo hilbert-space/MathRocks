@@ -45,8 +45,8 @@ function construct(this, f, options)
   order = 1;
   orderIndex = combnk(uint16(1:inputDimension), order);
   while true
-    verbose('Order %2d, index %6d, interpolants %6d.\n', ...
-      order, size(orderIndex, 1), length(interpolants));
+    verbose('Order %2d, index %6d, interpolants %6d, nodes %6d.\n', ...
+      order, size(orderIndex, 1), length(interpolants), nodeCount);
 
     %
     % Adaptivity control.

@@ -104,7 +104,7 @@ function construct(this, f, options)
   % Now, the other levels.
   %
   while true
-    verbose('Level %2d, stable %6d, old %6d, total %6d.\n', ...
+    verbose('Level %2d: stable %6d, old %6d, total %6d.\n', ...
       level, stableNodeCount, oldNodeCount, nodeCount);
 
     %
@@ -144,13 +144,17 @@ function construct(this, f, options)
     % also surve error estimates. But, BEFORE doing so, we should compute
     % the norm of the current expectation for the future error control.
     %
-    baseNorm = norm(expectation);
-    if baseNorm == 0, baseNorm = 1; end
+    expectationNorm = norm(expectation);
+    assert(expectationNorm > 0);
 
     oldLevelIndex = levelIndex(oldNodeRange, :);
 
     integrals = 2.^(1 - double(oldLevelIndex));
-    integrals(oldLevelIndex == 1) = 1;
+    %
+    % NOTE: We do not need the following line; keep for clarity.
+    %
+    % integrals(oldLevelIndex == 1) = 1;
+    %
     integrals(oldLevelIndex == 2) = 0.25;
     integrals = prod(integrals, 2);
 
@@ -214,7 +218,7 @@ function construct(this, f, options)
     case 2 % Infinity norm of squared surpluses
       nodeContribution = max(abs(surpluses2(oldNodeRange, :)), [], 2);
     case 3 % Normalized norm of expectation
-      nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / baseNorm;
+      nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / expectationNorm;
     otherwise
       assert(false);
     end
@@ -257,16 +261,11 @@ function construct(this, f, options)
 
     %
     % The new nodes have been identify, but they might not be unique.
-    % Therefore, we filter out the duplicates.
+    % Therefore, we need to filter out all duplicates.
     %
-    [ uniqueNewNodes, J1 ] = unique(newNodes(1:newNodeCount, :), 'rows');
-    [ uniqueNewNodes, J2 ] = setdiff(uniqueNewNodes, nodes(1:nodeCount, :), 'rows');
-
-    uniqueNewLevelIndex = newLevelIndex(J1, :);
-    uniqueNewOrderIndex = newOrderIndex(J1, :);
-
-    uniqueNewLevelIndex = uniqueNewLevelIndex(J2, :);
-    uniqueNewOrderIndex = uniqueNewOrderIndex(J2, :);
+    [ uniqueNewNodes, I ] = unique(newNodes(1:newNodeCount, :), 'rows');
+    uniqueNewLevelIndex = newLevelIndex(I, :);
+    uniqueNewOrderIndex = newOrderIndex(I, :);
 
     newNodeCount = size(uniqueNewNodes, 1);
 
@@ -279,11 +278,16 @@ function construct(this, f, options)
       %
       % We need more space.
       %
-      levelIndex = [ levelIndex; zeros(addition, inputDimension, 'uint8') ];
-      nodes      = [ nodes;      zeros(addition, inputDimension) ];
-      values     = [ values;     zeros(addition, outputDimension) ];
-      surpluses  = [ surpluses;  zeros(addition, outputDimension) ];
-      surpluses2 = [ surpluses2; zeros(addition, outputDimension) ];
+      levelIndex = [ levelIndex; ...
+        zeros(addition, inputDimension, 'uint8') ];
+      nodes      = [ nodes; ...
+        zeros(addition, inputDimension) ];
+      values     = [ values; ...
+        zeros(addition, outputDimension) ];
+      surpluses  = [ surpluses; ...
+        zeros(addition, outputDimension) ];
+      surpluses2 = [ surpluses2; ...
+        zeros(addition, outputDimension) ];
 
       bufferSize = bufferSize + addition;
     end
