@@ -16,6 +16,12 @@ function string = arrayToString(object, format)
     error('Matrices are not supported yet.');
   end
 
+  count = numel(object);
+  if count == 0
+    string = '[]';
+    return;
+  end
+
   delta = diff(object);
   if length(unique(delta)) == 1
     if delta(1) == 1.0
@@ -29,7 +35,10 @@ function string = arrayToString(object, format)
   end
 
   string = sprintf(format, object(1));
-  for i = 2:numel(object)
+
+  if count == 1, return; end
+
+  for i = 2:count
     string = sprintf([ '%s, ', format ], string, object(i));
   end
   string = [ '[ ', string, ' ]' ];

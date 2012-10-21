@@ -1,17 +1,35 @@
-function display(this)
-  fprintf('Options:\n');
+function display(this, title, level)
+  if nargin < 2, title = class(this); end
+  if nargin < 3, level = 1; end
+
+  if ~isempty(title)
+    fprintf('%s:\n', title);
+  end
+
+  nameWidth = 20;
+  namePrefix = '  ';
+  for i = 2:level
+    nameWidth = max(10, nameWidth - 2);
+    namePrefix = [ namePrefix, '  ' ];
+  end
+
   names = properties(this);
 
   for i = 1:length(names)
     name = names{i};
     value = this.(name);
 
-    if isa(value, 'char')
-      fprintf('%10s: %s\n', name, value);
-    elseif isa(value, 'double')
-      fprintf('%10s: %f\n', name, value);
-    else
-      fprintf('%10s: <...>\n', name);
+    fprintf([ namePrefix, '%-', num2str(nameWidth), 's: ' ], name);
+    switch class(value)
+    case 'Options'
+      fprintf('\n');
+      display(value, [], level + 1);
+    case { 'int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32', 'double', 'logical' }
+      fprintf('%s\n', num2str(value));
+    case 'char'
+      fprintf('%s\n', value);
+    otherwise
+      fprintf('<...>\n');
     end
   end
 end
