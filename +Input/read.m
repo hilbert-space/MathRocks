@@ -16,4 +16,8 @@ function output = read(varargin)
   if options.get('upper', false)
     output = upper(output);
   end
+
+  if options.has('convert')
+    output = feval(options.convert, output);
+  end
 end
