@@ -32,12 +32,12 @@ classdef Input < handle
       if this.dataMap.isKey(name)
         value = this.dataMap(name);
       else
-        value = options.get('default', [])
+        value = options.get('default', []);
       end
       if ~isempty(value)
         if options.has('format')
-          prompt = sprintf([ 'Enter %s [', options.format ']: ' ], ...
-            options.description, value);
+          prompt = sprintf([ 'Enter %s [%s]: ' ], options.description, ...
+            Utils.toString(value, options.format));
         else
           prompt = sprintf('Enter %s [%s]: ', options.description, ...
             Utils.toString(value));
