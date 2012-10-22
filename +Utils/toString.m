@@ -1,5 +1,7 @@
 function string = toString(object)
   switch class(object)
+  case 'char'
+    string = object;
   case 'double'
     string = arrayToString(object, '%2.f');
   case { 'uint8', 'uint16', 'uint32' }

@@ -1,4 +1,4 @@
-function error = computeNormalizedL2(observed, predicted, dimension)
+function error = computeNL2(observed, predicted, dimension)
   %
   % Computes the normalized L2 error.
   %

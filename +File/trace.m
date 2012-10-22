@@ -1,11 +1,15 @@
-function [ path, file, name, line ] = trace()
+function [ path, file, name, line ] = trace(offset)
+  if nargin == 0, offset = 1; end
+
+  index = 1 + offset;
+
   stack = dbstack('-completenames');
-  if length(stack) < 2
-    error('Is not supposed to be called from the console.');
+  if length(stack) < index
+    error('The depth of the stack is not sufficient.');
   else
-    [ path, name, extension ] = fileparts(stack(2).file);
+    [ path, name, extension ] = fileparts(stack(index).file);
     file = [ name, extension ];
-    name = stack(2).name;
-    line = stack(2).line;
+    name = stack(index).name;
+    line = stack(index).line;
   end
 end
