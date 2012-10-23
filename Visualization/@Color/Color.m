@@ -17,5 +17,9 @@ classdef Color < handle
       palette = Color.palette;
       color = palette{mod(i - 1, length(palette)) + 1};
     end
+
+    function color = random()
+      color = rand(1, 3);
+    end
   end
 end

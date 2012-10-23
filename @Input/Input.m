@@ -64,5 +64,6 @@ classdef Input < handle
 
   methods (Static)
     output = request(varargin)
+    output = question(text)
   end
 end

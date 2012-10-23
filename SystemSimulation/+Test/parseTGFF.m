@@ -2,12 +2,12 @@
 %
 [ platform, application ] = parseTGFF('002_020.tgff');
 
+display(platform);
+display(application);
+
 %% Construct a schedule.
 %
-schedule = Schedule.Dense(platform, application)
+schedule = Schedule.Dense(platform, application);
 
-%% Draw.
-%
+display(schedule);
 plot(schedule);
-
-fprintf('Duration: %.4f s\n', duration(schedule));

@@ -8,6 +8,11 @@ function output = request(varargin)
   switch type
   case 'char'
     output = input(prompt, 's');
+  case 'logical'
+    output = input(prompt, 's');
+    if ~isempty(output)
+      output = ~isempty(regexpi(output, '[y|yes|yep|ok|true|1]'));
+    end
   otherwise
     output = input(prompt);
   end
