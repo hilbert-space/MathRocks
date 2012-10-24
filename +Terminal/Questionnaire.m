@@ -1,4 +1,4 @@
-classdef Input < handle
+classdef Questionnaire < handle
   properties (SetAccess = 'private')
     databaseFilename
     dataMap
@@ -6,7 +6,7 @@ classdef Input < handle
   end
 
   methods
-    function this = Input(databaseFilename)
+    function this = Questionnaire(databaseFilename)
       if nargin == 0
         [ ~, ~, functionName ] = File.trace(2);
         databaseFilename = sprintf('%s_input.mat', functionName);
@@ -23,13 +23,13 @@ classdef Input < handle
       this.optionMap(name) = options;
     end
 
-    function value = read(this, name, varargin)
+    function value = request(this, name, varargin)
       if this.optionMap.isKey(name)
         options = Options(this.optionMap(name), varargin{:});
       else
         options = Options(varargin{:});
       end
-      if this.dataMap.isKey(name)
+      if this.dataMap.isKey(name) && ~isempty(this.dataMap(name))
         value = this.dataMap(name);
       else
         value = options.get('default', []);
@@ -45,7 +45,7 @@ classdef Input < handle
       else
         prompt = sprintf('Enter %s: ', options.description);
       end
-      value = Input.request('prompt', prompt, options, 'default', value);
+      value = Terminal.request('prompt', prompt, options, 'default', value);
       this.dataMap(name) = value;
     end
 
@@ -60,10 +60,5 @@ classdef Input < handle
       dataMap = this.dataMap;
       save(this.databaseFilename, 'dataMap', '-v7.3');
     end
-  end
-
-  methods (Static)
-    output = request(varargin)
-    output = question(text)
   end
 end
