@@ -114,6 +114,10 @@ function interpolant = multidimensional
   Plot.label('Uncertain parameter');
   plotTransient(z, mcData);
   plotTransient(z, scData, 'LineStyle', '--');
+
+  fprintf('Infinity norm:   %e\n', norm(mcData - scData, Inf));
+  fprintf('Normalized RMSE: %e\n', Error.computeNRMSE(mcData, scData));
+  fprintf('Normalized L2:   %e\n', Error.computeNL2(mcData, scData));
 end
 
 function y = solve(y0, timeSpan, innerTimeStep, outerTimeStep)

@@ -3,6 +3,8 @@ classdef Questionnaire < handle
     databaseFilename
     dataMap
     optionMap
+
+    skip
   end
 
   methods
@@ -15,6 +17,8 @@ classdef Questionnaire < handle
       this.databaseFilename = databaseFilename;
       this.dataMap = Map('char');
       this.optionMap = Map('char');
+
+      this.load();
     end
 
     function append(this, name, varargin)
@@ -45,8 +49,18 @@ classdef Questionnaire < handle
       else
         prompt = sprintf('Enter %s: ', options.description);
       end
-      value = Terminal.request('prompt', prompt, options, 'default', value);
+      if this.skip
+        fprintf('%s\n', prompt);
+      else
+        value = Terminal.request( ...
+          'prompt', prompt, options, 'default', value);
+      end
       this.dataMap(name) = value;
+    end
+
+    function autoreply(this, enabled)
+      if nargin < 2, enabled = true; end
+      this.skip = enabled;
     end
 
     function load(this)
