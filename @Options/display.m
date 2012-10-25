@@ -25,7 +25,11 @@ function display(this, title, level)
       fprintf('\n');
       display(value, [], level + 1);
     case { 'int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32', 'double', 'logical' }
-      fprintf('%s\n', num2str(value));
+      if length(value) ~= 1
+        fprintf('%s\n', Utils.toString(value));
+      else
+        fprintf('%s\n', num2str(value));
+      end
     case 'char'
       fprintf('%s\n', value);
     otherwise

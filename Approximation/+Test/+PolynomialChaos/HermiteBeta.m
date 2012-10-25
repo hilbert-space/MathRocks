@@ -1,3 +1,4 @@
+clear all;
 setup;
 
 samples = 1e4;

@@ -1,4 +1,11 @@
 function [ nodes, weights ] = construct(this, options)
+  [ nodes, weights ] = nwspgr('gqn', options.dimension, options.level);
+  return;
+
+  %
+  % FIXME: Does not seem to be working properly.
+  %
+
   dimension = options.dimension;
   maxLevel = options.level;
   rules = options.rules;
