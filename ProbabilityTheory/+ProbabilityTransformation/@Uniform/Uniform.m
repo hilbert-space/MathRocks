@@ -1,8 +1,4 @@
 classdef Uniform < ProbabilityTransformation.Base
-  properties (SetAccess = 'private')
-    distribution
-  end
-
   methods
     function this = Uniform(varargin)
       this = this@ProbabilityTransformation.Base(varargin{:});

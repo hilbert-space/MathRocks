@@ -2,6 +2,7 @@ classdef Base < handle
   properties (SetAccess = 'protected')
     expectation
     variance
+    support
   end
 
   methods

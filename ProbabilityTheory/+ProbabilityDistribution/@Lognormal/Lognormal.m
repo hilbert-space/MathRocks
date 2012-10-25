@@ -16,6 +16,8 @@ classdef Lognormal < ProbabilityDistribution.Base
       this.expectation = exp(this.mu + this.sigma^2 / 2);
       this.variance = (exp(this.sigma^2) - 1) * ...
         exp(2 * this.mu + this.sigma^2);
+
+      this.support = [ 0, Inf ];
     end
 
     function data = sample(this, samples, dimension)

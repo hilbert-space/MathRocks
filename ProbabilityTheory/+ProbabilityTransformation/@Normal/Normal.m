@@ -13,10 +13,6 @@ classdef Normal < ProbabilityTransformation.Base
     optimizationOptions
   end
 
-  properties (Access = 'private')
-    distribution
-  end
-
   properties (SetAccess = 'private')
     %
     % The correlation matrix as produced by the pure probability
@@ -64,18 +60,6 @@ classdef Normal < ProbabilityTransformation.Base
       % Dependent RVs with the desired distributions.
       %
       data = this.variables.invert(data);
-    end
-
-    function data = evaluateUniform(this, data)
-      %
-      % Independent normal RVs.
-      %
-      data = this.distribution.invert(data);
-
-      %
-      % Dependent RVs with the desired distributions.
-      %
-      data = this.evaluate(data);
     end
   end
 

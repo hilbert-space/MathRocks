@@ -13,6 +13,8 @@ classdef Exponential < ProbabilityDistribution.Base
 
       this.expectation = this.mu;
       this.variance = this.mu^2;
+
+      this.support = [ 0, Inf ];
     end
 
     function data = sample(this, samples, dimension)

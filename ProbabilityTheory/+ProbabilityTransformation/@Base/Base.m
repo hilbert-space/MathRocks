@@ -2,6 +2,7 @@ classdef Base < handle
   properties (SetAccess = 'protected')
     dimension
     variables
+    distribution
   end
 
   methods

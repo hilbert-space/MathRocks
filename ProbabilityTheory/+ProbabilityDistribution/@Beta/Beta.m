@@ -25,6 +25,8 @@ classdef Beta < ProbabilityDistribution.Base
         (this.alpha + this.beta)^2 / ...
         (this.alpha + this.beta + 1);
       this.variance = this.variance * (this.b - this.a)^2;
+
+      this.support = [ this.a, this. b ];
     end
 
     function data = sample(this, samples, dimension)

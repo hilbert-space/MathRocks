@@ -15,6 +15,8 @@ classdef Normal < ProbabilityDistribution.Base
 
       this.expectation = options.mu;
       this.variance = options.sigma^2;
+
+      this.support = [ -Inf, Inf ];
     end
 
     function data = sample(this, samples, dimension)

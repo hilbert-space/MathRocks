@@ -15,6 +15,8 @@ classdef Gamma < ProbabilityDistribution.Base
 
       this.expectation = this.a * this.b;
       this.variance = this.a * this.b^2;
+
+      this.support = [ 0, Inf ];
     end
 
     function data = sample(this, samples, dimension)
