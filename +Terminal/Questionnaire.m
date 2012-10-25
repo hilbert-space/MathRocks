@@ -23,7 +23,9 @@ classdef Questionnaire < handle
 
     function append(this, name, varargin)
       options = Options(varargin{:});
-      this.dataMap(name) = options.get('default', []);
+      if ~this.dataMap.isKey(name)
+        this.dataMap(name) = options.get('default', []);
+      end
       this.optionMap(name) = options;
     end
 
