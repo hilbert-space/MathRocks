@@ -1,11 +1,4 @@
 function [ nodes, weights ] = construct(this, options)
-  [ nodes, weights ] = nwspgr('gqn', options.dimension, options.level);
-  return;
-
-  %
-  % FIXME: Does not seem to be working properly.
-  %
-
   dimension = options.dimension;
   maxLevel = options.level;
   rules = options.rules;
@@ -66,29 +59,32 @@ function [ nodes, weights ] = construct(this, options)
     end
 
     %
-    % Sort the nodes.
-    %
-    [ nodes, I ] = sortrows(nodes);
-    weights = weights(I);
-
-    %
     % Merge repeated values.
     %
-    keep = [ 1 ];
-    last = 1;
-
-    for i = 2:size(nodes, 1)
-      if nodes(i, :) == nodes(i - 1, :)
-        weights(last) = weights(last) + weights(i);
-      else
-        last = i;
-        keep = [ keep; i ];
+    while true
+      done = true;
+      for i = 1:size(nodes, 1)
+        I = find(all(abs(bsxfun(@minus, nodes, nodes(i, :))) < sqrt(2) * eps, 2));
+        if length(I) == 1, continue; end
+        done = false;
+        weights(I(1)) = sum(weights(I));
+        nodes(I(2:end), :) = [];
+        weights(I(2:end)) = [];
+        break;
       end
+      if done, break; end
     end
-
-    nodes = nodes(keep, :);
-    weights = weights(keep);
   end
+
+  %
+  % NODE: In order to compare this implementation with the algorithm
+  % from SPARSE_GRID_HW by John Brurkardt, we need to sort the nodes.
+  %
+  % nodes(abs(nodes) < sqrt(2) * eps) = 0;
+  %
+  % [ nodes, I ] = sortrows(nodes);
+  % weights = weights(I);
+  %
 
   %
   % Normalize the weights.

@@ -1,9 +1,9 @@
-function [ nodes, weights ] = PhysicistGaussHermite(order)
+function [ nodes, weights ] = GaussHermitePhysicist(order)
   %
-  % Reference:
+  % References:
   %
-  % [1] Walter G., Orthogonal Polynomials Computation and Approximation,
-  % Oxford Press, 2004.
+  % [1] Gautschi, W., Orthogonal Polynomials Computation and
+  % Approximation, Oxford Press, 2004.
   %
 
   assert(order > 0);

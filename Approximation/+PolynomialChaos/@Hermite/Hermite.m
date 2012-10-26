@@ -1,6 +1,6 @@
-classdef ProbabilistHermite < PolynomialChaos.Base
+classdef Hermite < PolynomialChaos.Base
   methods
-    function this = ProbabilistHermite(varargin)
+    function this = Hermite(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
     end
   end
@@ -22,21 +22,13 @@ classdef ProbabilistHermite < PolynomialChaos.Base
 
     function [ nodes, weights ] = constructQuadrature(this, options)
       quadrature = Quadrature.(options.name)( ...
-        options, 'rules', 'ProbabilistGaussHermite');
+        'rules', 'GaussHermite', options);
 
-      %
-      % In each dimension, the rule has the weight function equal to e^(-x^2 / 2);
-      % therefore, need to account for the Gaussian constant assuming the variance
-      % equal to one.
-      %
-      nodes   = quadrature.nodes;
-      weights = quadrature.weights / (2 * pi)^(options.dimension / 2);
+      nodes = quadrature.nodes;
+      weights = quadrature.weights;
     end
 
     function norm = computeNormalizationConstant(this, i, index)
-      %
-      % sqrt(2 * pi) is preserved as discussed above.
-      %
       index = index(i, :) - 1;
       norm = prod(factorial(index));
     end

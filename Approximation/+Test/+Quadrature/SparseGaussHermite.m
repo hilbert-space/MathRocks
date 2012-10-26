@@ -6,7 +6,7 @@ level = 5;
 
 grid = Quadrature.Sparse( ...
   'dimension', dimension, 'level', level, ...
-  'rules', 'ProbabilistGaussHermite');
+  'rules', 'GaussHermite');
 
 f = @(l) nwspgr('gqn', 1, l);
 
