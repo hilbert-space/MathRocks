@@ -1,5 +1,5 @@
 function [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, options)
-  dimension = options.inputDimension;
+  dimension = options.inputCount;
   order = options.order;
 
   %

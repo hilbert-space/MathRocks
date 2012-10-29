@@ -3,12 +3,12 @@ classdef Base < handle
     %
     % The stochastic (input) dimension.
     %
-    inputDimension
+    inputCount
 
     %
     % The output dimension.
     %
-    outputDimension
+    outputCount
 
     %
     % The maximal total order of the multivariate polynomials.
@@ -60,8 +60,8 @@ classdef Base < handle
     [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, options)
 
     function construct(this, f, options)
-      this.inputDimension = options.inputDimension;
-      this.outputDimension = options.outputDimension;
+      this.inputCount = options.inputCount;
+      this.outputCount = options.outputCount;
       this.order = options.order;
 
       filename = [ class(this), '_', ...
@@ -81,7 +81,7 @@ classdef Base < handle
       coefficients = projectionMatrix * f(nodes);
       expectation = coefficients(1, :);
       variance = sum(coefficients(2:end, :).^2 .* ...
-        Utils.replicate(norm(2:end), 1, this.outputDimension), 1);
+        Utils.replicate(norm(2:end), 1, this.outputCount), 1);
 
       %
       % Save.
