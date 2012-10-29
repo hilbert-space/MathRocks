@@ -1,17 +1,17 @@
 function construct(this, f, options)
-  inputDimension = options.inputDimension;
-  outputDimension = options.get('outputDimension', 1);
+  inputCount = options.inputCount;
+  outputCount = options.get('outputCount', 1);
 
   orderTolerance = options.get('orderTolerance', 1e-2);
   dimensionTolerance = options.get('dimensionTolerance', 1e-2);
-  maxOrder = min(options.get('maximalOrder', 10), inputDimension);
+  maxOrder = min(options.get('maximalOrder', 10), inputCount);
 
   interpolantOptions = Options( ...
     'tolerance', 1e-4, ...
     'maximalLevel', 10, ...
     options.get('interpolantOptions', []), ...
-    'outputDimension', outputDimension, ...
-    'inputDimension', 1);
+    'outputCount', outputCount, ...
+    'inputCount', 1);
 
   verbose = @(varargin) [];
   if options.get('verbose', false)
@@ -28,7 +28,7 @@ function construct(this, f, options)
   %
   % The zeroth order.
   %
-  offset = f(0.5 * ones(1, inputDimension));
+  offset = f(0.5 * ones(1, inputCount));
   offset2 = offset.^2;
 
   expectation = offset;
@@ -43,7 +43,7 @@ function construct(this, f, options)
   % The first and other orders.
   %
   order = 1;
-  orderIndex = combnk(uint16(1:inputDimension), order);
+  orderIndex = combnk(uint16(1:inputCount), order);
   while true
     verbose('Order %2d, index %6d, interpolants %6d, nodes %6d.\n', ...
       order, size(orderIndex, 1), length(interpolants), nodeCount);
@@ -55,7 +55,7 @@ function construct(this, f, options)
     expectationNorm = norm(expectation);
     assert(expectationNorm > 0);
 
-    orderExpectation = zeros(1, outputDimension);
+    orderExpectation = zeros(1, outputCount);
     orderSecondRawMoment = orderExpectation;
 
     for i = 1:size(orderIndex, 1)
@@ -66,9 +66,9 @@ function construct(this, f, options)
       % First, we construct an interpolant for the dimensions
       % selected by `index'.
       %
-      interpolantOptions.inputDimension = order;
+      interpolantOptions.inputCount = order;
       newInterpolant = ASGC(@(cutNodes) compute(f, cutNodes, ...
-        index, inputDimension), interpolantOptions);
+        index, inputCount), interpolantOptions);
 
       %
       % Now, we need to evaluate the contribution of the interpolant.
@@ -154,14 +154,14 @@ function construct(this, f, options)
     % Go to the next order.
     %
     order = order + 1;
-    orderIndex = constructOrderIndex(inputDimension, order, refine);
+    orderIndex = constructOrderIndex(inputCount, order, refine);
   end
 
   %
   % Save the result.
   %
-  this.inputDimension = inputDimension;
-  this.outputDimension = outputDimension;
+  this.inputCount = inputCount;
+  this.outputCount = outputCount;
 
   this.order = order;
   this.nodeCount = nodeCount;
@@ -173,23 +173,23 @@ function construct(this, f, options)
   this.variance = secondRawMoment - expectation.^2;
 end
 
-function values = compute(f, cutNodes, index, inputDimension)
+function values = compute(f, cutNodes, index, inputCount)
   nodeCount = size(cutNodes, 1);
 
   %
   % The central point is the mean of the standard uniform distribution.
   %
-  nodes = 0.5 * ones(nodeCount, inputDimension);
+  nodes = 0.5 * ones(nodeCount, inputCount);
   nodes(:, index) = cutNodes;
 
   values = f(nodes);
 end
 
-function orderIndex = constructOrderIndex(inputDimension, order, refine)
+function orderIndex = constructOrderIndex(inputCount, order, refine)
   %
   % All possible multi-indices of order `order'.
   %
-  orderIndex = combnk(uint16(1:inputDimension), order);
+  orderIndex = combnk(uint16(1:inputCount), order);
 
   %
   % Now, we need to check each index whether it is admissible,

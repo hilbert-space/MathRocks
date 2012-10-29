@@ -1,7 +1,7 @@
 classdef HDMR < handle
   properties (SetAccess = 'private')
-    inputDimension
-    outputDimension
+    inputCount
+    outputCount
 
     order
     nodeCount

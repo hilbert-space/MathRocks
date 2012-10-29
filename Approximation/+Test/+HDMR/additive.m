@@ -3,17 +3,17 @@ function additive
   rng(0);
 
   sampleCount = 1e3;
-  inputDimension = 10;
+  inputCount = 10;
 
   asgcOptions = Options( ...
-    'inputDimension', inputDimension, ...
+    'inputCount', inputCount, ...
     'adaptivityControl', 'InfNorm', ...
     'tolerance', 1e-2, ...
     'maximalLevel', 20, ...
     'verbose', true);
 
   hdmrOptions = Options( ...
-    'inputDimension', inputDimension, ...
+    'inputCount', inputCount, ...
     'interpolantOptions', asgcOptions, ...
     'orderTolerance', 1e-2, ...
     'dimensionTolerance', 1e-2, ...
@@ -21,7 +21,7 @@ function additive
     'verbose', true);
 
   f = @(u) sum(u.^2, 2);
-  u = rand(sampleCount, inputDimension);
+  u = rand(sampleCount, inputCount);
 
   tic;
   interpolant = HDMR(f, hdmrOptions);
@@ -36,13 +36,13 @@ function additive
   exactData = f(u);
 
   normalizedError = ...
-    Error.computeNormalizedL2(exactData, approximatedData);
+    Error.computeNL2(exactData, approximatedData);
 
   fprintf('Normalized L2: %e\n', normalizedError);
 
   fprintf('Analytical:\n');
-  fprintf('  Expectation: %12.8f\n', inputDimension / 3);
-  fprintf('  Variance:    %12.8f\n', inputDimension * 4 / 45);
+  fprintf('  Expectation: %12.8f\n', inputCount / 3);
+  fprintf('  Variance:    %12.8f\n', inputCount * 4 / 45);
 
   fprintf('Empirical:\n');
   fprintf('  Expectation: %12.8f\n', mean(approximatedData));
@@ -54,7 +54,7 @@ function additive
 
   fprintf('Error:\n');
   fprintf('  Expectation: %12.8f\n', ...
-    inputDimension / 3 - interpolant.expectation);
+    inputCount / 3 - interpolant.expectation);
   fprintf('  Variance:    %12.8f\n', ...
-    inputDimension * 4 / 45 - interpolant.variance);
+    inputCount * 4 / 45 - interpolant.variance);
 end

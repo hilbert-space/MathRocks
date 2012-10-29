@@ -3,9 +3,9 @@ function values = evaluate(this, nodes)
   assert(all(planeNodes >= 0) && all(planeNodes <= 1));
 
   interpolants = this.interpolants;
-  inputDimension = this.inputDimension;
+  inputCount = this.inputCount;
 
-  assert(inputDimension == size(nodes, 2));
+  assert(inputCount == size(nodes, 2));
 
   nodeCount = size(nodes, 1);
 
