@@ -79,7 +79,7 @@ classdef Analytic < HotSpot.Base
       this.D = this.Q * diag((exp(dt * this.L) - 1) ./ this.L) * this.QT * B;
     end
 
-    function T = compute(this, P)
+    function T = compute(this, P, keepSteps)
       [ processorCount, stepCount ] = size(P);
 
       assert(processorCount == this.processorCount, ...
@@ -90,14 +90,40 @@ classdef Analytic < HotSpot.Base
       BT = this.BT;
       Tamb = this.ambientTemperature;
 
-      T = zeros(processorCount, stepCount);
+      if nargin < 3
+        T = zeros(processorCount, stepCount);
 
-      X = D * P(:, 1);
-      T(:, 1) = BT * X + Tamb;
+        X = D * P(:, 1);
+        T(:, 1) = BT * X + Tamb;
 
-      for i = 2:stepCount
-        X = E * X + D * P(:, i);
-        T(:, i) = BT * X + Tamb;
+        for i = 2:stepCount
+          X = E * X + D * P(:, i);
+          T(:, i) = BT * X + Tamb;
+        end
+      else
+        %
+        % NOTE: It is assumed that `keepSteps' is sorted
+        % in the ascending order.
+        %
+        keepStepCount = length(keepSteps);
+        k = 1;
+
+        T = zeros(processorCount, keepStepCount);
+
+        X = D * P(:, 1);
+        if keepSteps(k) == 1
+          T(:, k) = BT * X + Tamb;
+          k = k + 1;
+        end
+
+        for i = 2:stepCount
+          X = E * X + D * P(:, i);
+          if keepSteps(k) == i
+            T(:, k) = BT * X + Tamb;
+            k = k + 1;
+            if k > keepStepCount, return; end
+          end
+        end
       end
     end
   end
