@@ -1,8 +1,8 @@
 function construct(this, f, options)
   zeros = @uninit;
 
-  inputDimension = options.inputDimension;
-  outputDimension = options.get('outputDimension', 1);
+  inputCount = options.inputCount;
+  outputCount = options.get('outputCount', 1);
   adaptivityControl = options.get('adaptivityControl', 'NormNormExpectation');
   tolerance = options.get('tolerance', 1e-3);
   minimalLevel = options.get('minimalLevel', 2);
@@ -29,8 +29,8 @@ function construct(this, f, options)
     verbose = @(varargin) fprintf(varargin{:});
   end
 
-  bufferSize = 200 * inputDimension;
-  stepBufferSize = 100 * 2 * inputDimension;
+  bufferSize = 200 * inputCount;
+  stepBufferSize = 100 * 2 * inputCount;
 
   %
   % Preallocate some memory such that we do need to reallocate
@@ -39,26 +39,26 @@ function construct(this, f, options)
   % next one does not happen too often, we do not lose too much
   % of speed.
   %
-  levelIndex = zeros(bufferSize, inputDimension, 'uint8');
-  nodes      = zeros(bufferSize, inputDimension);
-  values     = zeros(bufferSize, outputDimension);
-  surpluses  = zeros(bufferSize, outputDimension);
-  surpluses2 = zeros(bufferSize, outputDimension);
+  levelIndex = zeros(bufferSize, inputCount, 'uint8');
+  nodes      = zeros(bufferSize, inputCount);
+  values     = zeros(bufferSize, outputCount);
+  surpluses  = zeros(bufferSize, outputCount);
+  surpluses2 = zeros(bufferSize, outputCount);
 
-  oldOrderIndex = zeros(stepBufferSize, inputDimension, 'uint32');
-  newLevelIndex = zeros(stepBufferSize, inputDimension, 'uint8');
-  newOrderIndex = zeros(stepBufferSize, inputDimension, 'uint32');
-  newNodes      = zeros(stepBufferSize, inputDimension);
+  oldOrderIndex = zeros(stepBufferSize, inputCount, 'uint32');
+  newLevelIndex = zeros(stepBufferSize, inputCount, 'uint8');
+  newOrderIndex = zeros(stepBufferSize, inputCount, 'uint32');
+  newNodes      = zeros(stepBufferSize, inputCount);
 
   %
   % The first two levels.
   %
-  nodeCount = 1 + 2 * inputDimension;
+  nodeCount = 1 + 2 * inputCount;
 
   levelIndex(1:nodeCount, :) = 1;
   nodes     (1:nodeCount, :) = 0.5;
 
-  for i = 1:inputDimension
+  for i = 1:inputCount
     %
     % The left and right most nodes.
     %
@@ -79,10 +79,10 @@ function construct(this, f, options)
   %
   level = 2;
   stableNodeCount = 1;
-  oldNodeCount = 2 * inputDimension;
+  oldNodeCount = 2 * inputCount;
 
   oldOrderIndex(1:oldNodeCount, :) = 1;
-  for i = 1:inputDimension
+  for i = 1:inputCount
     %
     % NOTE: The order of the left node is already one;
     % therefore, we initialize only the right node.
@@ -92,7 +92,7 @@ function construct(this, f, options)
 
   levelNodeCount = zeros(maximalLevel, 1);
   levelNodeCount(1) = 1;
-  levelNodeCount(2) = 2 * inputDimension;
+  levelNodeCount(2) = 2 * inputCount;
 
   %
   % The first statistics.
@@ -118,9 +118,9 @@ function construct(this, f, options)
     intervals = 2.^(double(stableLevelIndex) - 1);
     inverseIntervals = 1.0 ./ intervals;
 
-    delta = zeros(stableNodeCount, inputDimension);
+    delta = zeros(stableNodeCount, inputCount);
     for i = oldNodeRange
-      for j = 1:inputDimension
+      for j = 1:inputCount
         delta(:, j) = abs(nodes(1:stableNodeCount, j) - nodes(i, j));
       end
       I = find(all(delta < inverseIntervals, 2));
@@ -184,7 +184,7 @@ function construct(this, f, options)
     % the corresponding surpluses violate the accuracy constraint.
     %
     newNodeCount = 0;
-    stepBufferLimit = oldNodeCount * 2 * inputDimension;
+    stepBufferLimit = oldNodeCount * 2 * inputCount;
 
     %
     % Ensure that we have enough space.
@@ -195,13 +195,13 @@ function construct(this, f, options)
       % We need more space.
       %
       oldOrderIndex = [ oldOrderIndex; ...
-        zeros(addition, inputDimension, 'uint32') ];
+        zeros(addition, inputCount, 'uint32') ];
       newLevelIndex = [ newLevelIndex; ...
-        zeros(addition, inputDimension, 'uint8') ];
+        zeros(addition, inputCount, 'uint8') ];
       newOrderIndex = [ newOrderIndex; ...
-        zeros(addition, inputDimension, 'uint32') ];
+        zeros(addition, inputCount, 'uint32') ];
       newNodes      = [ newNodes; ...
-        zeros(addition, inputDimension) ];
+        zeros(addition, inputCount) ];
 
       stepBufferSize = stepBufferSize + addition;
     end
@@ -235,7 +235,7 @@ function construct(this, f, options)
       currentOrderIndex = oldOrderIndex(i - stableNodeCount, :);
       currentNode = nodes(i, :);
 
-      for j = 1:inputDimension
+      for j = 1:inputCount
         [ childOrderIndex, childNodes ] = computeNeighbors( ...
           currentLevelIndex(j), currentOrderIndex(j));
 
@@ -284,15 +284,15 @@ function construct(this, f, options)
       % We need more space.
       %
       levelIndex = [ levelIndex; ...
-        zeros(addition, inputDimension, 'uint8') ];
+        zeros(addition, inputCount, 'uint8') ];
       nodes      = [ nodes; ...
-        zeros(addition, inputDimension) ];
+        zeros(addition, inputCount) ];
       values     = [ values; ...
-        zeros(addition, outputDimension) ];
+        zeros(addition, outputCount) ];
       surpluses  = [ surpluses; ...
-        zeros(addition, outputDimension) ];
+        zeros(addition, outputCount) ];
       surpluses2 = [ surpluses2; ...
-        zeros(addition, outputDimension) ];
+        zeros(addition, outputCount) ];
 
       bufferSize = bufferSize + addition;
     end
@@ -318,8 +318,8 @@ function construct(this, f, options)
   %
   range = 1:nodeCount;
 
-  this.inputDimension = inputDimension;
-  this.outputDimension = outputDimension;
+  this.inputCount = inputCount;
+  this.outputCount = outputCount;
 
   this.level = level;
   this.nodeCount = nodeCount;

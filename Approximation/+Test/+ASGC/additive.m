@@ -3,17 +3,17 @@ function additive
   rng(0);
 
   sampleCount = 1e3;
-  inputDimension = 10;
+  inputCount = 10;
 
   asgcOptions = Options( ...
-    'inputDimension', inputDimension, ...
+    'inputCount', inputCount, ...
     'adaptivityControl', 'InfNorm', ...
     'tolerance', 1e-2, ...
     'maximalLevel', 20, ...
     'verbose', true);
 
   f = @(u) sum(u.^2, 2);
-  u = rand(sampleCount, inputDimension);
+  u = rand(sampleCount, inputCount);
 
   tic;
   interpolant = ASGC(f, asgcOptions);
@@ -21,11 +21,11 @@ function additive
 
   display(interpolant);
 
-  if inputDimension < 3
+  if inputCount < 3
     plot(interpolant);
   end
 
-  if inputDimension == 2
+  if inputCount == 2
     x = 0:0.1:1;
     y = 0:0.1:1;
     [ X, Y ] = meshgrid(x, y);
@@ -51,13 +51,13 @@ function additive
   exactData = f(u);
 
   normalizedError = ...
-    Error.computeNormalizedL2(exactData, approximatedData);
+    Error.computeNL2(exactData, approximatedData);
 
   fprintf('Normalized L2: %e\n', normalizedError);
 
   fprintf('Analytical:\n');
-  fprintf('  Expectation: %12.8f\n', inputDimension / 3);
-  fprintf('  Variance:    %12.8f\n', inputDimension * 4 / 45);
+  fprintf('  Expectation: %12.8f\n', inputCount / 3);
+  fprintf('  Variance:    %12.8f\n', inputCount * 4 / 45);
 
   fprintf('Empirical:\n');
   fprintf('  Expectation: %12.8f\n', mean(approximatedData));
@@ -69,7 +69,7 @@ function additive
 
   fprintf('Error:\n');
   fprintf('  Expectation: %12.8f\n', ...
-    inputDimension / 3 - interpolant.expectation);
+    inputCount / 3 - interpolant.expectation);
   fprintf('  Variance:    %12.8f\n', ...
-    inputDimension * 4 / 45 - interpolant.variance);
+    inputCount * 4 / 45 - interpolant.variance);
 end

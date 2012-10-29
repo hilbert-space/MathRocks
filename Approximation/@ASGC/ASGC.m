@@ -1,7 +1,7 @@
 classdef ASGC < handle
   properties (SetAccess = 'protected')
-    inputDimension
-    outputDimension
+    inputCount
+    outputCount
 
     level
     nodeCount

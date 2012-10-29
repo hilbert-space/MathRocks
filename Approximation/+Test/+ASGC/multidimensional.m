@@ -13,8 +13,8 @@ function interpolant = multidimensional
 
   stepCount = length(time);
 
-  inputDimension = 1;
-  outputDimension = 3* stepCount;
+  inputCount = 1;
+  outputCount = 3 * stepCount;
 
   odeOptions = odeset( ...
     'Vectorized', 'on', ...
@@ -22,8 +22,8 @@ function interpolant = multidimensional
     'RelTol', 1e-3);
 
   acOptions = Options( ...
-    'inputDimension', inputDimension, ...
-    'outputDimension', outputDimension, ...
+    'inputCount', inputCount, ...
+    'outputCount', outputCount, ...
     'adaptivityControl', 'InfNormSurpluses2', ...
     'tolerance', 1e-2, ...
     'maximalLevel', 20, ...
@@ -35,7 +35,7 @@ function interpolant = multidimensional
   % Monte Carlo simulation.
   %
   filename = sprintf('ASGC_multidimensional_%s.mat', ...
-    DataHash({ inputDimension, outputDimension, sampleCount }));
+    DataHash({ inputCount, outputCount, sampleCount }));
 
   if exist(filename, 'file')
     load(filename);
@@ -62,7 +62,7 @@ function interpolant = multidimensional
   tic;
   interpolant = ASGC( ...
     @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
-      timeSpan, innerTimeStep, outerTimeStep, outputDimension), acOptions);
+      timeSpan, innerTimeStep, outerTimeStep, outputCount), acOptions);
   fprintf('Adaptive sparse grid collocation:\n');
   fprintf('  Construction time: %.2f s\n', toc);
 
@@ -106,9 +106,9 @@ function interpolant = multidimensional
 
   mcData = transpose(squeeze(mcData(end, :, :)));
   scData = scData(:, [ ...
-    outputDimension - 2 * stepCount, ...
-    outputDimension - 1 * stepCount, ...
-    outputDimension - 0 * stepCount ]);
+    outputCount - 2 * stepCount, ...
+    outputCount - 1 * stepCount, ...
+    outputCount - 0 * stepCount ]);
 
   Plot.title('Solution');
   Plot.label('Uncertain parameter');
@@ -126,9 +126,9 @@ function y = solve(y0, timeSpan, innerTimeStep, outerTimeStep)
   y = y(1:(outerTimeStep / innerTimeStep):stepCount, :);
 end
 
-function Y = solveVector(y0, timeSpan, innerTimeStep, outerTimeStep, outputDimension)
+function Y = solveVector(y0, timeSpan, innerTimeStep, outerTimeStep, outputCount)
   points = size(y0, 1);
-  Y = zeros(points, outputDimension);
+  Y = zeros(points, outputCount);
   parfor i = 1:points
     y = solve(y0(i, :), timeSpan, innerTimeStep, outerTimeStep);
     Y(i, :) = transpose(y(:));

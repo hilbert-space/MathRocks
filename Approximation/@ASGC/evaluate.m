@@ -4,8 +4,8 @@ function values = evaluate(this, newNodes)
   planeNewNodes = newNodes(:);
   assert(all(planeNewNodes >= 0) && all(planeNewNodes <= 1));
 
-  inputDimension = this.inputDimension;
-  outputDimension = this.outputDimension;
+  inputCount = this.inputCount;
+  outputCount = this.outputCount;
 
   nodes = this.nodes;
   levelIndex = this.levelIndex;
@@ -14,15 +14,15 @@ function values = evaluate(this, newNodes)
   nodeCount = size(nodes, 1);
 
   newNodeCount = size(newNodes, 1);
-  values = zeros(newNodeCount, outputDimension);
+  values = zeros(newNodeCount, outputCount);
 
-  delta = zeros(nodeCount, inputDimension);
+  delta = zeros(nodeCount, inputCount);
 
   intervals = 2.^(double(levelIndex) - 1);
   inverseIntervals = 1.0 ./ intervals;
 
   for i = 1:newNodeCount
-    for j = 1:inputDimension
+    for j = 1:inputCount
       delta(:, j) = abs(nodes(:, j) - newNodes(i, j));
     end
     I = find(all(delta < inverseIntervals, 2));
