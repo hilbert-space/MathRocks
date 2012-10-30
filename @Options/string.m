@@ -6,14 +6,10 @@ function line = string(this)
     name = names{i};
     value = this.(name);
 
-    if isa(value, 'char')
-      chunk = sprintf('%s_%s', name, value);
-    elseif isa(value, 'double')
-      chunk = sprintf('%s_%d', name, value);
-    elseif isa(value, 'Options')
+    if isa(value, 'Options')
       chunk = sprintf('%s_%s', name, string(value));
     else
-      continue;
+      chunk = sprintf('%s_%s', name, Utils.toString(value));
     end
 
     if i == 1
