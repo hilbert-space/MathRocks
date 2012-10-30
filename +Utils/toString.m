@@ -1,13 +1,23 @@
-function string = toString(object, format)
+function string = toString(object, varargin)
   switch class(object)
   case 'char'
     string = object;
   case 'double'
-    if nargin < 2, format = '%.2f'; end
+    if isempty(varargin)
+      format = '%.2f';
+    else
+      format = varargin{1};
+    end
     string = arrayToString(object, format);
   case { 'uint8', 'uint16', 'uint32' }
-    if nargin < 2, format = '%d'; end
+    if isempty(varargin)
+      format = '%d';
+    else
+      format = varargin{1};
+    end
     string = arrayToString(object, format);
+  case 'cell'
+    string = cellToString(object, varargin{:});
   otherwise
     error('The object class is not yet supported.');
   end
@@ -48,4 +58,21 @@ function string = arrayToString(object, format)
       string = [ '[ ', string, ' ]' ];
     end
   end
+end
+
+function string = cellToString(object, varargin)
+  [ rows, cols ] = size(object);
+
+  if ~(rows == 1 || cols == 1)
+    error('Matrices are not supported yet.');
+  end
+
+  count = numel(object);
+
+  string = Utils.toString(object{1}, varargin{:});
+  for i = 2:count
+    string = sprintf('%s, %s', string, ...
+      Utils.toString(object{i}, varargin{:}));
+  end
+  string = [ '{ ', string, ' }' ];
 end
