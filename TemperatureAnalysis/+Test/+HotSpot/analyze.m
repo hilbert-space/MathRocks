@@ -1,18 +1,16 @@
-function AnalyticWithLeakage
-  clear all;
-
-  use('SystemSimulation');
-
+function analyze(method)
   path = File.join(File.trace, '..', 'Assets');
 
   Pdyn = dlmread(File.join(path, '04.ptrace'), '', 1, 0).';
+
+  use('SystemSimulation');
 
   leakage = LeakagePower(Pdyn, ...
     'filename', File.join(path, 'inverter_45nm.leak'), ...
     'order', [ 1, 2 ], ...
     'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
 
-  hotspot = HotSpot.Analytic( ...
+  hotspot = HotSpot.(method)( ...
     File.join(path, '04.flp'), ...
     File.join(path, 'hotspot.config'), ...
     'sampling_intvl 1e-3');
@@ -36,7 +34,7 @@ function AnalyticWithLeakage
 
   subplot(2, 1, 2);
 
-  Plot.title('Dynamic and leakage power profiles');
+  Plot.title('Power profile');
   Plot.label('Time, s', 'Power, W');
   Plot.limit(time);
   for i = 1:hotspot.processorCount

@@ -20,32 +20,57 @@ classdef Numeric < HotSpot.Base
       this.Bt = Cm1 * M;
     end
 
-    function T = compute(this, P, keepSteps)
+    function T = compute(this, P)
       [ processorCount, stepCount ] = size(P);
-
-      assert(processorCount == this.processorCount, ...
-        'The power profile is invalid.')
-
-      if nargin < 3, keepSteps = 1:stepCount; end
+      assert(processorCount == this.processorCount);
 
       At = this.At;
       Bt = this.Bt;
       dt = this.samplingInterval;
       Tamb = this.ambientTemperature;
 
-      function Tt = solve(t, Tt)
-        a = floor(t / dt);
-        b = t / dt - a; c = 1 - b;
-        i = min(stepCount, 1 + a);
-        j = min(stepCount, 2 + a);
-        Tt = At * (Tt - Tamb) + Bt * (c * P(:, i) + b * P(:, j));
+      T = zeros(stepCount, processorCount);
+      T0 = Tamb * ones(1, this.nodeCount);
+
+      for i = 1:stepCount
+        [ ~, T0 ] = ode45(@(t, Tt) ...
+          At * (Tt - Tamb) + Bt * P(:, i), [ 0, dt ], T0);
+
+        T0 = T0(end, :);
+        T(i, :) = T0(1:processorCount);
       end
 
-      timeSpan = dt * [ 0 keepSteps ];
-      T0 = ones(1, this.nodeCount) * Tamb;
+      T = transpose(T);
+    end
 
-      [ ~, T ] = ode45(@solve, timeSpan, T0);
-      T = transpose(T(2:end, 1:processorCount));
+    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage)
+      [ processorCount, stepCount ] = size(Pdyn);
+      assert(processorCount == this.processorCount);
+
+      At = this.At;
+      Bt = this.Bt;
+      dt = this.samplingInterval;
+      Tamb = this.ambientTemperature;
+
+      T = zeros(stepCount, processorCount);
+      Pleak = zeros(stepCount, processorCount);
+
+      T0 = Tamb * ones(1, this.nodeCount);
+
+      for i = 1:stepCount
+        [ ~, T0 ] = ode45(@(t, Tt) ...
+          At * (Tt - Tamb) + ...
+          Bt * (Pdyn(:, i) + leakage.evaluate(Tt(1:processorCount))), ...
+          [ 0, dt ], T0);
+
+        T0 = T0(end, :);
+
+        T(i, :) = T0(1:processorCount);
+        Pleak(i, :) = leakage.evaluate(T(i, :));
+      end
+
+      T = transpose(T);
+      Pleak = transpose(Pleak);
     end
   end
 end
