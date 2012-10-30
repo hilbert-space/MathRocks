@@ -30,5 +30,9 @@ classdef Normal < ProbabilityDistribution.Base
     function data = invert(this, data)
       data = norminv(data, this.mu, this.sigma);
     end
+    
+    function data = pdf(this, data)
+      data = normpdf(data, this.mu, this.sigma);
+    end
   end
 end

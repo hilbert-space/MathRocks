@@ -1,7 +1,6 @@
-clear all;
 setup;
 
-samples = 1e4;
+sampleCount = 1e4;
 
 %% Choose a distribution.
 %
@@ -10,7 +9,11 @@ normal = ProbabilityDistribution.Normal( ...
 beta = ProbabilityDistribution.Beta( ...
   'alpha', 2, 'beta', 2, 'a', -1, 'b', 1);
 
-%% Construct the PC expansion.
+%% Monte Carlo simulations.
+%
+mcData = normal.sample(sampleCount, 1);
+
+%% Polynomial chaos expansion.
 %
 chaos = PolynomialChaos.Jacobi( ...
   @(x) normal.invert(beta.apply(x)), ...
@@ -27,17 +30,6 @@ chaos = PolynomialChaos.Jacobi( ...
 
 display(chaos);
 
-apData = chaos.evaluate(beta.sample(samples, 1));
+apData = chaos.evaluate(beta.sample(sampleCount, 1));
 
-%% Compare.
-%
-mcData = normal.sample(samples, 1);
-
-fprintf('Error of expectation: %.6f\n', ...
-  abs(normal.expectation - chaos.expectation));
-fprintf('Error of variance:    %.6f\n', ...
-  abs(normal.variance - chaos.variance));
-
-compareData(mcData, apData, ...
-  'draw', true, 'method', 'histogram', 'range', 'unbounded', ...
-  'labels', {{ 'Monte Carlo', 'Polynomial chaos' }});
+Test.PolynomialChaos.assess(chaos, apData, mcData, normal);
