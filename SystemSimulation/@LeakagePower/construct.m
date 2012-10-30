@@ -1,4 +1,4 @@
-function [ evaluate, L, T, I ] = construct(this, options)
+function [ predict, Ldata, Tdata, Idata ] = construct(this, options)
   filename = options.filename;
   order = options.order;
   scale = options.scale;
@@ -10,12 +10,12 @@ function [ evaluate, L, T, I ] = construct(this, options)
 
   data = dlmread(filename, '\t', 1, 0);
 
-  L = data(:, 1);
-  T = Utils.toKelvin(data(:, 2));
-  I = data(:, 3);
+  Ldata = data(:, 1);
+  Tdata = Utils.toKelvin(data(:, 2));
+  Idata = data(:, 3);
 
   [ fitresult, gof, expectation, deviation ] = ...
-    performPolynomialFit(L, T, log(I), order);
+    performPolynomialFit(Ldata, Tdata, log(Idata), order);
 
   values = coeffvalues(fitresult);
   names = coeffnames(fitresult);
@@ -40,5 +40,5 @@ function [ evaluate, L, T, I ] = construct(this, options)
   end
 
   [ arguments, body ] = Utils.toFunctionString(logI, Lsym, Tsym);
-  evaluate =  str2func([ '@(', arguments, ')exp(', body, ')' ]);
+  predict =  str2func([ '@(', arguments, ')exp(', body, ')' ]);
 end

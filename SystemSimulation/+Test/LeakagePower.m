@@ -1,5 +1,8 @@
 setup;
 
+use('TemperatureAnalysis');
+use('Vendor', 'DataHash');
+
 leakage = LeakagePower( ...
   'filename', 'inverter_45nm.leak', ...
   'order', [ 1 2 ], ...
@@ -27,7 +30,7 @@ for i = 1:100
   end
 end
 
-i = leakage.evaluate(l, t) / leakage.evaluate(Lnom, Tref);
+i = leakage.predict(l, t) / leakage.predict(Lnom, Tref);
 
 hold on;
 

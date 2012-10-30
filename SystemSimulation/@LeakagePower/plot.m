@@ -1,9 +1,9 @@
 function plot(this)
-  Inom = this.evaluate(this.Lnom, Utils.toKelvin(27));
+  Inom = this.predict(this.Lnom, Utils.toKelvin(27));
 
-  Ldata = this.L;
-  Tdata = this.T;
-  Idata = this.I / Inom;
+  Ldata = this.Ldata;
+  Tdata = this.Tdata;
+  Idata = this.Idata / Inom;
 
   figure;
   h = subplot(1, 1, 1);
@@ -17,7 +17,7 @@ function plot(this)
 
   mesh(L, T, I);
 
-  line(Ldata, Tdata, this.evaluate(Ldata, Tdata) / Inom, ...
+  line(Ldata, Tdata, this.predict(Ldata, Tdata) / Inom, ...
     'LineStyle', 'None', ...
     'Marker', 'o', ...
     'MarkerEdgeColor', 'w', ...

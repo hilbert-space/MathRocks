@@ -79,51 +79,80 @@ classdef Analytic < HotSpot.Base
       this.D = this.Q * diag((exp(dt * this.L) - 1) ./ this.L) * this.QT * B;
     end
 
-    function T = compute(this, P, keepSteps)
+    function T = compute(this, P)
       [ processorCount, stepCount ] = size(P);
-
-      assert(processorCount == this.processorCount, ...
-        'The power profile is invalid.')
+      assert(processorCount == this.processorCount);
 
       E = this.E;
       D = this.D;
       BT = this.BT;
       Tamb = this.ambientTemperature;
 
-      if nargin < 3
-        T = zeros(processorCount, stepCount);
+      T = zeros(processorCount, stepCount);
 
-        X = D * P(:, 1);
-        T(:, 1) = BT * X + Tamb;
+      X = D * P(:, 1);
+      T(:, 1) = BT * X + Tamb;
 
-        for i = 2:stepCount
-          X = E * X + D * P(:, i);
-          T(:, i) = BT * X + Tamb;
-        end
-      else
-        %
-        % NOTE: It is assumed that `keepSteps' is sorted
-        % in the ascending order.
-        %
-        keepStepCount = length(keepSteps);
-        k = 1;
+      for i = 2:stepCount
+        X = E * X + D * P(:, i);
+        T(:, i) = BT * X + Tamb;
+      end
+    end
 
-        T = zeros(processorCount, keepStepCount);
+    function T = computeSparse(this, P)
+      [ processorCount, stepCount ] = size(P);
+      assert(processorCount == this.processorCount);
 
-        X = D * P(:, 1);
-        if keepSteps(k) == 1
+      E = this.E;
+      D = this.D;
+      BT = this.BT;
+      Tamb = this.ambientTemperature;
+
+      %
+      % NOTE: It is assumed that `keepSteps' is sorted
+      % in the ascending order.
+      %
+      keepStepCount = length(keepSteps);
+      k = 1;
+
+      T = zeros(processorCount, keepStepCount);
+
+      X = D * P(:, 1);
+      if keepSteps(k) == 1
+        T(:, k) = BT * X + Tamb;
+        k = k + 1;
+      end
+
+      for i = 2:stepCount
+        X = E * X + D * P(:, i);
+        if keepSteps(k) == i
           T(:, k) = BT * X + Tamb;
           k = k + 1;
+          if k > keepStepCount, return; end
         end
+      end
+    end
 
-        for i = 2:stepCount
-          X = E * X + D * P(:, i);
-          if keepSteps(k) == i
-            T(:, k) = BT * X + Tamb;
-            k = k + 1;
-            if k > keepStepCount, return; end
-          end
-        end
+    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage)
+      [ processorCount, stepCount ] = size(Pdyn);
+      assert(processorCount == this.processorCount);
+
+      E = this.E;
+      D = this.D;
+      BT = this.BT;
+      Tamb = this.ambientTemperature;
+
+      T = zeros(processorCount, stepCount);
+      Pleak = zeros(processorCount, stepCount);
+
+      Pleak(:, 1) = leakage.evaluate(Tamb);
+      X = D * (Pdyn(:, 1) + Pleak(:, 1));
+      T(:, 1) = BT * X + Tamb;
+
+      for i = 2:stepCount
+        Pleak(:, i) = leakage.evaluate(T(:, i - 1));
+        X = E * X + D * (Pdyn(:, i) + Pleak(:, i));
+        T(:, i) = BT * X + Tamb;
       end
     end
   end
