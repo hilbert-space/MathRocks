@@ -1,3 +1,4 @@
 *.tgff
 *.eps
 *.vcg
+*.leak

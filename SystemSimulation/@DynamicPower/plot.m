@@ -12,7 +12,7 @@ function plot(this, powerProfile)
     labels{i} = sprintf('PE %d', i);
   end
 
-  Plot.title('Power profile');
+  Plot.title('Dynamic power profile');
   Plot.label('Time, s', 'Dynamic power, W');
   xlim([ 0, time(end) ]);
   legend(labels{:});

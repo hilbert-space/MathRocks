@@ -1,10 +1,10 @@
-classdef PowerProfile < handle
+classdef DynamicPower < handle
   properties (SetAccess = 'protected')
     samplingInterval
   end
 
   methods
-    function this = PowerProfile(samplingInterval)
+    function this = DynamicPower(samplingInterval)
       this.samplingInterval = samplingInterval;
     end
 

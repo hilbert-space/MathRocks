@@ -24,12 +24,7 @@ function string = toString(object, varargin)
 end
 
 function string = arrayToString(object, format)
-  [ rows, cols ] = size(object);
-
-  if ~(rows == 1 || cols == 1)
-    error('Matrices are not supported yet.');
-  end
-
+  object = object(:);
   count = numel(object);
 
   switch count
