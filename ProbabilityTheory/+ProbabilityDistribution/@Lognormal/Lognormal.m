@@ -31,5 +31,9 @@ classdef Lognormal < ProbabilityDistribution.Base
     function data = invert(this, data)
       data = logninv(data, this.mu, this.sigma);
     end
+
+    function data = pdf(this, data)
+      data = lognpdf(data, this.mu, this.sigma);
+    end
   end
 end

@@ -26,5 +26,6 @@ classdef Base < handle
     data = sample(this, samples, dimension)
     data = apply(this, data)
     data = invert(this, data)
+    data = pdf(this, data)
   end
 end
