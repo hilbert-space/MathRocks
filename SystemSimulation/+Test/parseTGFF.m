@@ -1,6 +1,7 @@
 %% Load a platform and an application.
 %
-[ platform, application ] = parseTGFF('002_020.tgff');
+[ platform, application ] = parseTGFF( ...
+  File.join(File.trace, 'Assets', '002_020.tgff'));
 
 display(platform);
 display(application);
