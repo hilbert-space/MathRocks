@@ -1,4 +1,4 @@
-classdef Base < handle
+classdef Quadrature < handle
   properties (SetAccess = 'private')
     dimension
 
@@ -8,7 +8,7 @@ classdef Base < handle
   end
 
   methods
-    function this = Base(varargin)
+    function this = Quadrature(varargin)
       options = Options(varargin{:});
       this.initialize(options);
     end
@@ -20,11 +20,10 @@ classdef Base < handle
     end
   end
 
-  methods (Abstract, Access = 'protected')
-    [ nodes, weights ] = construct(this, options)
-  end
-
   methods (Access = 'private')
+    [ nodes, weights ] = constructTensor(this, options)
+    [ nodes, weights ] = constructSparse(this, options)
+
     function initialize(this, options)
       this.dimension = options.dimension;
 
@@ -34,7 +33,14 @@ classdef Base < handle
       if File.exist(filename)
         load(filename);
       else
-        [ nodes, weights ] = this.construct(options);
+        switch lower(options.method)
+        case 'tensor'
+          [ nodes, weights ] = this.constructTensor(options);
+        case 'sparse'
+          [ nodes, weights ] = this.constructSparse(options);
+        otherwise
+          error('The construction method is unknown.');
+        end
         save(filename, 'nodes', 'weights', '-v7.3');
       end
 

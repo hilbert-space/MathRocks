@@ -21,16 +21,25 @@ classdef Hermite < PolynomialChaos.Base
     end
 
     function [ nodes, weights ] = constructQuadrature(this, options)
-      quadrature = Quadrature.(options.name)( ...
-        'rules', 'GaussHermite', options);
+      quadrature = Quadrature(options, ...
+        'dimension', this.inputCount, ...
+        'ruleName', 'GaussHermite');
 
       nodes = quadrature.nodes;
       weights = quadrature.weights;
     end
 
     function norm = computeNormalizationConstant(this, i, index)
-      index = index(i, :) - 1;
-      norm = prod(factorial(index));
+      n = index(i, :) - 1;
+
+      %
+      % NOTE: The original probabilists' Hermite polynomials have
+      % normalization constants equal to sqrt(2 * pi) * factorial(n).
+      % However, all the quadrature rules are assumed to produce purely
+      % probabilists' nodes and weights; in other words, sqrt(2 * pi)
+      % is preserved as it is a part of the Gaussian measure.
+      %
+      norm = prod(factorial(n));
     end
   end
 end

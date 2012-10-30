@@ -45,7 +45,13 @@ classdef Base < handle
   methods
     function this = Base(f, varargin)
       options = Options('method', 'totalOrder', varargin{:});
+      this.configure(options);
       this.construct(f, options);
+    end
+  end
+
+  methods (Access = 'protected')
+    function configure(this, options)
     end
   end
 

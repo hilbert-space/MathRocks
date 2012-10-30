@@ -1,10 +1,9 @@
-function [ nodes, weights ] = construct(this, options)
+function [ nodes, weights ] = constructSparse(this, options)
   dimension = options.dimension;
   maxLevel = options.level;
-  rules = options.rules;
 
-  assert(isa(rules, 'char'), ...
-    'Only isotropic grids are currently supported.');
+  ruleName = options.ruleName;
+  ruleArguments = options.get('ruleArguments', {});
 
   minLevel = max(0, maxLevel - dimension + 1);
 
@@ -16,7 +15,8 @@ function [ nodes, weights ] = construct(this, options)
   % Compute one-dimensional rules for all the needed levels.
   %
   for level = 1:maxLevel
-    [ nodeSet{level}, weightSet{level} ] = Quadrature.Rules.(rules)(level);
+    [ nodeSet{level}, weightSet{level} ] = ...
+      feval(ruleName, level, ruleArguments{:});
     pointSet(level) = length(weightSet{level});
   end
 

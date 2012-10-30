@@ -4,6 +4,7 @@ function setup
   use('ProbabilityTheory');
   use('Vendor', 'uninit');
   use('Vendor', 'sympoly');
-  use('Vendor', 'SPARSE_GRID_HW');
   use('Vendor', 'DataHash');
+  use('Vendor', 'SPARSE_GRID_HW');
+  use('Vendor', 'SANDIA_RULES');
 end

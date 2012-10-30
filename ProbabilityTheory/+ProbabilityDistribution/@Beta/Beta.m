@@ -43,5 +43,10 @@ classdef Beta < ProbabilityDistribution.Base
       data = betainv(data, this.alpha, this.beta);
       data = data * (this.b - this.a) + this.a;
     end
+
+    function data = pdf(this, data)
+      data = (data - this.a) / (this.b - this.a);
+      data = betapdf(data, this.alpha, this.beta) / (this.b - this.a);
+    end
   end
 end
