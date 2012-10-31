@@ -15,6 +15,8 @@ classdef LeakagePower < handle
   end
 
   properties (SetAccess = 'private')
+    toString
+
     evaluator
     Ldata
     Tdata
@@ -31,6 +33,7 @@ classdef LeakagePower < handle
   methods
     function this = LeakagePower(varargin)
       [ data, options ] = Options.extract(varargin{:});
+      this.toString = options.toString;
       this.initialize(options);
 
       this.C = 1;
@@ -52,7 +55,7 @@ classdef LeakagePower < handle
 
     function initialize(this, options)
       filename = [ class(this), '_', ...
-        DataHash(string(options)), '.mat' ];
+        DataHash(this.toString), '.mat' ];
 
       if File.exist(filename);
         load(filename);

@@ -28,7 +28,7 @@ classdef Quadrature < handle
       this.dimension = options.dimension;
 
       filename = [ class(this), '_', ...
-        DataHash(string(options)), '.mat' ];
+        DataHash(Utils.toString(options)), '.mat' ];
 
       if File.exist(filename)
         load(filename);

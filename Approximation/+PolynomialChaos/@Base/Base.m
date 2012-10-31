@@ -106,7 +106,7 @@ classdef Base < handle
       this.order = options.order;
 
       filename = [ class(this), '_', ...
-        DataHash(string(options)), '.mat' ];
+        DataHash(Utils.toString(options)), '.mat' ];
 
       if exist(filename, 'file')
         load(filename);

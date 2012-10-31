@@ -1,4 +1,9 @@
 function string = toString(object, varargin)
+  if ismethod(object, 'toString') || isprop(object, 'toString')
+    string = object.toString;
+    return;
+  end
+
   switch class(object)
   case 'char'
     string = object;
