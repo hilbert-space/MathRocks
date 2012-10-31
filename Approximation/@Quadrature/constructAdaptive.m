@@ -1,6 +1,6 @@
 function [ nodes, weights ] = constructAdaptive(this, options)
   dimension = options.dimension;
-  polynomialOrder = options.order;
+  polynomialOrder = options.polynomialOrder;
 
   %
   % A `order'-order Gaussian quadrature rule integrates polynomials
@@ -32,8 +32,8 @@ function [ nodes, weights ] = constructAdaptive(this, options)
   sparseNodeCount = size(nodes, 1);
   tensorNodeCount = order^dimension;
 
-  fprintf('Quadrature: dimension %d, order %d, tensor %d, sparse %d.\n', ...
-    dimension, order, tensorNodeCount, sparseNodeCount);
+  % fprintf('Quadrature: dimension %d, order %d, tensor %d, sparse %d.\n', ...
+  %   dimension, order, tensorNodeCount, sparseNodeCount);
 
   if sparseNodeCount >= tensorNodeCount
     [ nodes, weights ] = this.constructTensor(options);
