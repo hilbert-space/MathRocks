@@ -133,15 +133,16 @@ classdef Analytic < HotSpot.Base
       end
     end
 
-    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage)
+    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage, L)
       [ processorCount, stepCount ] = size(Pdyn);
       assert(processorCount == this.processorCount);
+
+      if nargin < 4, L = leakage.Lnom; end
 
       E = this.E;
       D = this.D;
       BT = this.BT;
       Tamb = this.ambientTemperature;
-      L = leakage.Lnom;
 
       T = zeros(processorCount, stepCount);
       Pleak = zeros(processorCount, stepCount);

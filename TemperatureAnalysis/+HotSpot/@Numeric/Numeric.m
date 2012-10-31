@@ -43,15 +43,16 @@ classdef Numeric < HotSpot.Base
       T = transpose(T);
     end
 
-    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage)
+    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage, L)
       [ processorCount, stepCount ] = size(Pdyn);
       assert(processorCount == this.processorCount);
+
+      if nargin < 4, L = leakage.Lnom; end
 
       At = this.At;
       Bt = this.Bt;
       dt = this.samplingInterval;
       Tamb = this.ambientTemperature;
-      L = leakage.Lnom;
 
       T = zeros(stepCount, processorCount);
       Pleak = zeros(stepCount, processorCount);
