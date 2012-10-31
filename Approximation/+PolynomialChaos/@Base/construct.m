@@ -1,4 +1,4 @@
-function [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, options)
+function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(this, options)
   dimension = options.inputCount;
   order = options.order;
 
@@ -33,14 +33,14 @@ function [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, optio
   %
   % A (# of polynomial terms) x (# of integration nodes) matrix.
   %
-  projectionMatrix = zeros(terms, points);
+  projection = zeros(terms, points);
 
   norm = zeros(terms, 1);
 
   for i = 1:terms
     f = Utils.toFunction(basis(i), x, 'columns');
     norm(i) = this.computeNormalizationConstant(i, index);
-    projectionMatrix(i, :) = f(nodes) .* weights / norm(i);
+    projection(i, :) = f(nodes) .* weights / norm(i);
   end
 
   %
@@ -61,4 +61,21 @@ function [ nodes, norm, projectionMatrix, rvPower, rvMap ] = prepare(this, optio
   % the monomials.
   %
   [ rvPower, rvMap ] = Utils.toMatrix(sum(a .* basis));
+
+  %
+  % Compute the evaluation matrix.
+  %
+  % A (# of quadrature nodes) x (# of monomial terms) matrix
+  % that is used to compute the PC expansion at the quadrature nodes.
+  %
+  nodeCount = size(nodes, 1);
+  monomialCount = size(rvPower, 1);
+
+  rvProduct = zeros(nodeCount, monomialCount);
+  for i = 1:monomialCount
+    rvProduct(:, i) = prod(realpow( ...
+      nodes, Utils.replicate(rvPower(i, :), nodeCount, 1)), 2);
+  end
+
+  evaluation = rvProduct * rvMap;
 end
