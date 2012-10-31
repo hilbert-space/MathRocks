@@ -1,5 +1,7 @@
 function string = toString(object, varargin)
-  if ismethod(object, 'toString') || isprop(object, 'toString')
+  if numel(object) == 1 && ...
+    (ismethod(object, 'toString') || isprop(object, 'toString'))
+
     string = object.toString;
     return;
   end
