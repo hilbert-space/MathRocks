@@ -34,6 +34,8 @@ classdef Quadrature < handle
         load(filename);
       else
         switch lower(options.method)
+        case 'adaptive'
+          [ nodes, weights ] = this.constructAdaptive(options);
         case 'tensor'
           [ nodes, weights ] = this.constructTensor(options);
         case 'sparse'

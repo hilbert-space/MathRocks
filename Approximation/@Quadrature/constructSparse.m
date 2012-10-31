@@ -1,9 +1,29 @@
 function [ nodes, weights ] = constructSparse(this, options)
   dimension = options.dimension;
-  maxLevel = options.level;
-
   ruleName = options.ruleName;
-  ruleArguments = options.get('ruleArguments', {});
+
+  switch ruleName
+  case 'GaussHermiteHW'
+    [ nodes, weights ] = nwspgr('gqn', dimension, options.order);
+  case 'GaussHermiteSandia'
+    level = options.get('level', @() ceil(log2(options.order + 1) - 1));
+    nodeCount = levels_index_size(dimension, level, 6);
+    [ nodes, weights ] = sparse_grid(dimension, level, 6, nodeCount);
+    nodes = transpose(nodes);
+    weights = transpose(weights);
+    %
+    % See private/GaussHermiteSandia.m
+    %
+    nodes = sqrt(2) * nodes;
+    weights = weights / sqrt(pi);
+  otherwise
+    [ nodes, weights ] = constructGeneralSparseGrid( ...
+      dimension, options.order, ruleName, options.get('ruleArguments', {}));
+  end
+end
+
+function [ nodes, weights ] = constructGeneralSparseGrid( ...
+  dimension, maxLevel, ruleName, ruleArguments)
 
   minLevel = max(0, maxLevel - dimension + 1);
 

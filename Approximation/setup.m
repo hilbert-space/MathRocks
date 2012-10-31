@@ -7,4 +7,5 @@ function setup
   use('Vendor', 'DataHash');
   use('Vendor', 'SPARSE_GRID_HW');
   use('Vendor', 'SANDIA_RULES');
+  use('Vendor', 'SANDIA_SPARSE');
 end

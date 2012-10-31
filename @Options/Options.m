@@ -23,6 +23,20 @@ classdef Options < dynamicprops
       end
     end
 
+    function value = getSet(this, name, default)
+      if isprop(this, name)
+        value = this.(name);
+      else
+        this.addprop(name);
+        if isa(default, 'function_handle')
+          value = default();
+        else
+          value = default;
+        end
+        this.(name) = value;
+      end
+    end
+
     function update(this, varargin)
       i = 1;
 
