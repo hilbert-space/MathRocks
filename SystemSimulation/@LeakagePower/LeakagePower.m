@@ -15,18 +15,13 @@ classdef LeakagePower < handle
   end
 
   properties (SetAccess = 'private')
-    predict
+    evaluator
     Ldata
     Tdata
     Idata
   end
 
   properties
-    %
-    % The effective channel length.
-    %
-    L
-
     %
     % The scaling coefficient from current to power.
     %
@@ -38,18 +33,17 @@ classdef LeakagePower < handle
       [ data, options ] = Options.extract(varargin{:});
       this.initialize(options);
 
-      this.L = this.Lnom;
       this.C = 1;
 
       if ~isempty(data)
         powerProfile = data{1};
-        P0 = this.predict(this.Lnom, this.Tref);
+        P0 = this.evaluator(this.Lnom, this.Tref);
         this.C = this.PleakPdyn * mean(powerProfile(:)) / P0;
       end
     end
 
-    function P = evaluate(this, T)
-      P = this.C * this.predict(this.L, T);
+    function P = evaluate(this, L, T)
+      P = this.C * this.evaluator(L, T);
     end
   end
 
@@ -63,11 +57,11 @@ classdef LeakagePower < handle
       if File.exist(filename);
         load(filename);
       else
-        [ predict, Ldata, Tdata, Idata ] = this.construct(options);
-        save(filename, 'predict', 'Ldata', 'Tdata', 'Idata');
+        [ evaluator, Ldata, Tdata, Idata ] = this.construct(options);
+        save(filename, 'evaluator', 'Ldata', 'Tdata', 'Idata');
       end
 
-      this.predict = predict;
+      this.evaluator = evaluator;
       this.Ldata = Ldata;
       this.Tdata = Tdata;
       this.Idata = Idata;

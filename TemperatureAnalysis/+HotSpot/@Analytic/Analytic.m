@@ -141,16 +141,17 @@ classdef Analytic < HotSpot.Base
       D = this.D;
       BT = this.BT;
       Tamb = this.ambientTemperature;
+      L = leakage.Lnom;
 
       T = zeros(processorCount, stepCount);
       Pleak = zeros(processorCount, stepCount);
 
-      Pleak(:, 1) = leakage.evaluate(Tamb);
+      Pleak(:, 1) = leakage.evaluate(L, Tamb);
       X = D * (Pdyn(:, 1) + Pleak(:, 1));
       T(:, 1) = BT * X + Tamb;
 
       for i = 2:stepCount
-        Pleak(:, i) = leakage.evaluate(T(:, i - 1));
+        Pleak(:, i) = leakage.evaluate(L, T(:, i - 1));
         X = E * X + D * (Pdyn(:, i) + Pleak(:, i));
         T(:, i) = BT * X + Tamb;
       end

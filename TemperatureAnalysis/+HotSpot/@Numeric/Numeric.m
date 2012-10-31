@@ -51,6 +51,7 @@ classdef Numeric < HotSpot.Base
       Bt = this.Bt;
       dt = this.samplingInterval;
       Tamb = this.ambientTemperature;
+      L = leakage.Lnom;
 
       T = zeros(stepCount, processorCount);
       Pleak = zeros(stepCount, processorCount);
@@ -60,13 +61,13 @@ classdef Numeric < HotSpot.Base
       for i = 1:stepCount
         [ ~, T0 ] = ode45(@(t, Tt) ...
           At * (Tt - Tamb) + ...
-          Bt * (Pdyn(:, i) + leakage.evaluate(Tt(1:processorCount))), ...
+          Bt * (Pdyn(:, i) + leakage.evaluate(L, Tt(1:processorCount))), ...
           [ 0, dt ], T0);
 
         T0 = T0(end, :);
 
         T(i, :) = T0(1:processorCount);
-        Pleak(i, :) = leakage.evaluate(T(i, :));
+        Pleak(i, :) = leakage.evaluate(L, T(i, :));
       end
 
       T = transpose(T);

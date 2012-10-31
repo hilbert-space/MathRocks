@@ -30,7 +30,7 @@ for i = 1:100
   end
 end
 
-i = leakage.predict(l, t) / leakage.predict(Lnom, Tref);
+i = leakage.evaluate(l, t) / leakage.evaluate(Lnom, Tref);
 
 hold on;
 

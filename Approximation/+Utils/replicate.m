@@ -1,4 +1,4 @@
-function B = irep(A, M, N)
+function B = replicate(A, M, N)
   [ m, n ] = size(A);
   if (m == 1 && N == 1)
     B = A(ones(M, 1), :);
