@@ -9,23 +9,7 @@ function [ nodes, weights ] = constructAdaptive(this, options)
   %
   order = polynomialOrder + 1;
 
-  %
-  % The level of accuracy of a sparse grid is not that simple to
-  % define. Refer to the following web page for further details:
-  %
-  % http://people.sc.fsu.edu/~jburkardt/m_src/sandia_sparse/sandia_sparse.html
-  %
-  % Roughly speaking:
-  %
-  %   order = 2^(level + 1) - 1
-  %   level = log2(order + 1) - 1
-  %
-  % Hence, we should have something like
-  %
-  level = ceil(log2(order + 1) - 1);
-
   options.set('order', order);
-  options.set('level', level);
 
   [ nodes, weights ] = this.constructSparse(options);
 

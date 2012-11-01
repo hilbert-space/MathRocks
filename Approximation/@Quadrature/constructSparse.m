@@ -1,113 +1,91 @@
 function [ nodes, weights ] = constructSparse(this, options)
-  dimension = options.dimension;
   ruleName = options.ruleName;
+  dimension = options.dimension;
+  order = options.order;
 
   switch ruleName
   case 'GaussHermiteHW'
-    [ nodes, weights ] = nwspgr('gqn', dimension, options.order);
-  case 'GaussHermiteSandia'
-    level = options.get('level', @() ceil(log2(options.order + 1) - 1));
-    nodeCount = levels_index_size(dimension, level, 6);
-    [ nodes, weights ] = sparse_grid(dimension, level, 6, nodeCount);
-    nodes = transpose(nodes);
-    weights = transpose(weights);
-    %
-    % See private/GaussHermiteSandia.m
-    %
-    nodes = sqrt(2) * nodes;
-    weights = weights / sqrt(pi);
+    [ nodes, weights ] = nwspgr('gqn', dimension, order);
   otherwise
-    [ nodes, weights ] = constructGeneralSparseGrid( ...
-      dimension, options.order, ruleName, options.get('ruleArguments', {}));
+    [ nodes, weights ] = constructSmolyak( ...
+      dimension, order, ruleName, options.get('ruleArguments', {}));
   end
 end
 
-function [ nodes, weights ] = constructGeneralSparseGrid( ...
-  dimension, maxLevel, ruleName, ruleArguments)
-
-  minLevel = max(0, maxLevel - dimension + 1);
-
-  pointSet = zeros(1, maxLevel);
-  nodeSet = cell(maxLevel);
-  weightSet = cell(maxLevel);
-
+function [ nodes, weights ] = constructSmolyak(dimension, order, name, arguments)
   %
-  % Compute one-dimensional rules for all the needed levels.
+  % Florian Heiss and Viktor Winschel, Likelihood approximation by numerical
+  % integration on sparse grids, Journal of Econometrics, Volume 144, 2008,
+  % pages 62-80.
   %
-  for level = 1:maxLevel
-    [ nodeSet{level}, weightSet{level} ] = ...
-      feval(ruleName, level, ruleArguments{:});
-    pointSet(level) = length(weightSet{level});
+  nodeSet = cell(order, 1);
+  weightSet = cell(order, 1);
+  nedeCountSet = zeros(1, order);
+
+  for i = 1:order
+    [ nodeSet{i}, weightSet{i} ] = feval(name, i, arguments{:});
+    nodeCountSet(i) = length(weightSet{i});
   end
 
-  points = 0;
   nodes = [];
   weights = [];
+  nodeCount = 0;
 
-  for level = minLevel:maxLevel
-    coefficient = (-1)^(maxLevel - level) * ...
-      nchoosek(dimension - 1, maxLevel - level);
+  minq = max(0, order - dimension);
+  maxq = order - 1;
 
-    %
-    % Compute all combinations of positive integers that
-    % sum up to `dimension + level - 1'.
-    %
-    indexSet = get_seq(dimension, dimension + level - 1);
+  for q = minq:maxq
+    coefficient = (-1)^(maxq - q) * ...
+      nchoosek(dimension - 1, dimension + q - order);
 
-    newPoints = prod(pointSet(indexSet), 2);
-    totalNewPoints = sum(newPoints);
+    indexSet = get_seq(dimension, dimension + q);
 
-    %
-    % Preallocate space for new points.
-    %
+    newNodeCount = prod(nodeCountSet(indexSet), 2);
+    totalNewPoints = sum(newNodeCount);
+
     nodes = [ nodes; zeros(totalNewPoints, dimension) ];
     weights = [ weights; zeros(totalNewPoints, 1) ];
 
-    %
-    % Append the new nodes and weights.
-    %
-    for i = 1:size(indexSet, 1)
-      index = indexSet(i, :);
+    for j = 1:size(indexSet, 1)
+      index = indexSet(j, :);
 
       [ newNodes, newWeights ] = ...
         tensor_product(nodeSet(index), weightSet(index));
 
-      nodes((points + 1):(points + newPoints(i)), :) = newNodes;
-      weights((points + 1):(points + newPoints(i))) = coefficient * newWeights;
+      nodes  ((nodeCount + 1):(nodeCount + newNodeCount(j)), :) = newNodes;
+      weights((nodeCount + 1):(nodeCount + newNodeCount(j))) = coefficient * newWeights;
 
-      points = points + newPoints(i);
-    end
-
-    %
-    % Merge repeated values.
-    %
-    while true
-      done = true;
-      for i = 1:size(nodes, 1)
-        I = find(all(abs(bsxfun(@minus, nodes, nodes(i, :))) < sqrt(2) * eps, 2));
-        if length(I) == 1, continue; end
-        done = false;
-        weights(I(1)) = sum(weights(I));
-        nodes(I(2:end), :) = [];
-        weights(I(2:end)) = [];
-        break;
-      end
-      if done, break; end
+      nodeCount = nodeCount + newNodeCount(j);
     end
   end
 
   %
-  % NODE: In order to compare this implementation with the algorithm
-  % from SPARSE_GRID_HW by John Brurkardt, we need to sort the nodes.
+  % Merge repeated nodes.
   %
-  % nodes(abs(nodes) < sqrt(2) * eps) = 0;
-  %
-  % [ nodes, I ] = sortrows(nodes);
-  % weights = weights(I);
-  %
+  i = 0;
+  while true
+    nodeCount = size(nodes, 1);
 
-  %
-  % Normalize the weights.
-  %
+    i = i + 1;
+    if i >= nodeCount, break; end
+
+    I = [];
+    for j = (i + 1):nodeCount
+      delta = norm(nodes(i, :) - nodes(j, :), Inf);
+      if delta > sqrt(2) * eps, continue; end
+      I(end + 1) = j;
+    end
+    if isempty(I), continue; end
+
+    weights(i) = weights(i) + sum(weights(I));
+    nodes(I, :) = [];
+    weights(I) = [];
+  end
+
+  % nodes(abs(nodes) < sqrt(2) * eps) = 0;
+
+  [ nodes, I ] = sortrows(nodes);
+  weights = weights(I);
+
   weights = weights / sum(weights);
 end
