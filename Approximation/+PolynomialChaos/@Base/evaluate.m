@@ -1,5 +1,6 @@
-function values = evaluate(this, nodes)
-  coefficients = this.coefficients;
+function values = evaluate(this, nodes, coefficients)
+  if nargin < 3, coefficients = this.coefficients; end
+
   rvPower = this.rvPower;
   rvMap = this.rvMap;
 

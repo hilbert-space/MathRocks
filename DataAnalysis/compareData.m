@@ -38,15 +38,15 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     x = constructLinearSpace(onedata, twodata, options);
 
-    [ mcx, oneData ] = processData(x, onedata, options);
-    [ sdx, twoData ] = processData(x, twodata, options);
+    [ mcx, onedata ] = processData(x, onedata, options);
+    [ sdx, twodata ] = processData(x, twodata, options);
 
     assert(nnz(mcx - sdx) == 0, 'The supports are invalid.');
 
-    localError(i) = Error.computeNRMSE(oneData, twoData);
+    localError(i) = Error.computeNRMSE(onedata, twodata);
 
     if draw
-      drawData(mcx, oneData, twoData, options);
+      drawData(mcx, onedata, twodata, options);
       title(sprintf('NRMSE %.2f %%', localError(i) * 100));
       labels = options.get('labels', {});
       legend(labels{:});
