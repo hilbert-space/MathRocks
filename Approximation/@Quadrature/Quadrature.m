@@ -2,9 +2,9 @@ classdef Quadrature < handle
   properties (SetAccess = 'private')
     dimension
 
-    points
     nodes
     weights
+    nodeCount
   end
 
   methods
@@ -46,9 +46,9 @@ classdef Quadrature < handle
         save(filename, 'nodes', 'weights', '-v7.3');
       end
 
-      this.points = length(weights);
       this.nodes = nodes;
       this.weights = weights;
+      this.nodeCount = length(weights);
     end
   end
 end
