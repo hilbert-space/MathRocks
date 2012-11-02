@@ -40,17 +40,17 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
   localError = zeros(1, dimension);
 
   for i = 1:dimension
-    onedata = oneData(:, i);
-    twodata = twoData(:, i);
+    one = oneData(:, i);
+    two = twoData(:, i);
 
-    x = Utils.constructLinearSpace(onedata, twodata, options);
+    x = Utils.constructLinearSpace(one, two, options);
 
-    [ mcx, onedata ] = Data.process(x, onedata, options);
-    [ sdx, twodata ] = Data.process(x, twodata, options);
+    [ mcx, one ] = Data.process(x, one, options);
+    [ sdx, two ] = Data.process(x, two, options);
 
     assert(nnz(mcx - sdx) == 0, 'The supports are invalid.');
 
-    localError(i) = Error.computeNRMSE(onedata, twodata);
+    localError(i) = Error.computeNRMSE(one, two);
 
     if ~draw, continue; end
 
@@ -61,10 +61,10 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
       figure;
     end
 
-    Data.draw(mcx, onedata, twodata, options);
-    title(sprintf('NRMSE %.2f %%', localError(i) * 100));
+    Data.draw(mcx, one, two, options);
+    Plot.title('Dimension %d (NRMSE %.2f %%)', i, localError(i) * 100);
     labels = options.get('labels', {});
-    legend(labels{:});
+    Plot.legend(labels{:});
   end
 
   globalError = sqrt(sum(localError .^ 2) / dimension);
@@ -101,7 +101,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
     line(time, localError(i, :) * 100, 'Color', Color.pick(i));
   end
 
-  title('Error evolution');
-  ylabel('NRMSE, %');
+  Plot.title('Error evolution');
+  Plot.label('', 'NRMSE, %');
   legend(labels{:});
 end
