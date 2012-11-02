@@ -1,4 +1,4 @@
-function drawData(x, varargin)
+function draw(x, varargin)
   [ data, options ] = Options.extract(varargin{:});
   method = options.get('method', 'smooth');
 
@@ -17,7 +17,7 @@ end
 function drawHistogram(x, data, options)
   hold on;
   for i = 1:length(data)
-    drawBar(x, data{i}, Color.pick(i));
+    drawBar(x, data{i}, options.get('color', Color.pick(i)));
   end
 end
 
@@ -29,6 +29,6 @@ end
 
 function drawLines(x, data, options)
   for i = 1:length(data)
-    line(x, data{i}, 'Color', Color.pick(i));
+    line(x, data{i}, 'Color', options.get('color', Color.pick(i)));
   end
 end

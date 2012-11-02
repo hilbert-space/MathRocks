@@ -1,6 +1,6 @@
 function x = constructLinearSpace(varargin)
   [ data, options ] = Options.extract(varargin{:});
-  [ left, right ] = detectBounds(varargin{:});
+  [ left, right ] = Utils.detectBounds(varargin{:});
   if left == right
     x = [ left ];
   else

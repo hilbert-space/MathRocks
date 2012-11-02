@@ -1,4 +1,4 @@
-function [ globalError, localError ] = compareData(varargin)
+function [ globalError, localError ] = compare(varargin)
   [ data, options ] = Options.extract(varargin{:});
   assert(length(data) == 2, ...
     'The comparison is supported only for two sets of data.');
@@ -26,31 +26,45 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
   draw = options.get('draw', false);
 
-  if draw, figure; end
+  if draw
+    layout = options.get('layout', 'tiles');
+    switch layout
+    case 'tiles'
+      figure;
+    case 'separate'
+    otherwise
+      error('The layout is unknown.');
+    end
+  end
 
   localError = zeros(1, dimension);
 
   for i = 1:dimension
-    if draw, p = subplot(1, dimension, i); end
-
     onedata = oneData(:, i);
     twodata = twoData(:, i);
 
-    x = constructLinearSpace(onedata, twodata, options);
+    x = Utils.constructLinearSpace(onedata, twodata, options);
 
-    [ mcx, onedata ] = processData(x, onedata, options);
-    [ sdx, twodata ] = processData(x, twodata, options);
+    [ mcx, onedata ] = Data.process(x, onedata, options);
+    [ sdx, twodata ] = Data.process(x, twodata, options);
 
     assert(nnz(mcx - sdx) == 0, 'The supports are invalid.');
 
     localError(i) = Error.computeNRMSE(onedata, twodata);
 
-    if draw
-      drawData(mcx, onedata, twodata, options);
-      title(sprintf('NRMSE %.2f %%', localError(i) * 100));
-      labels = options.get('labels', {});
-      legend(labels{:});
+    if ~draw, continue; end
+
+    switch layout
+    case 'tiles'
+      subplot(1, dimension, i);
+    case 'separate'
+      figure;
     end
+
+    Data.draw(mcx, onedata, twodata, options);
+    title(sprintf('NRMSE %.2f %%', localError(i) * 100));
+    labels = options.get('labels', {});
+    legend(labels{:});
   end
 
   globalError = sqrt(sum(localError .^ 2) / dimension);

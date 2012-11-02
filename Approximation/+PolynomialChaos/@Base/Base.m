@@ -70,19 +70,6 @@ classdef Base < handle
         new = this.projection * f(this.nodes);
       end
     end
-
-    function expandPermanent(this, f)
-      %
-      % Now, we expand the given function and compute its statistics.
-      %
-      coefficients = this.projection * f(this.nodes);
-      outputCount = size(coefficients, 2);
-
-      this.coefficients = coefficients;
-      this.expectation = coefficients(1, :);
-      this.variance = sum(coefficients(2:end, :).^2 .* ...
-        Utils.replicate(this.norm(2:end), 1, outputCount), 1);
-    end
   end
 
   methods (Access = 'protected')
@@ -126,6 +113,19 @@ classdef Base < handle
       this.evaluation = evaluation;
       this.rvPower = rvPower;
       this.rvMap = rvMap;
+    end
+
+    function expandPermanent(this, f)
+      %
+      % Now, we expand the given function and compute its statistics.
+      %
+      coefficients = this.projection * f(this.nodes);
+      outputCount = size(coefficients, 2);
+
+      this.coefficients = coefficients;
+      this.expectation = coefficients(1, :);
+      this.variance = sum(coefficients(2:end, :).^2 .* ...
+        Utils.replicate(this.norm(2:end), 1, outputCount), 1);
     end
   end
 end
