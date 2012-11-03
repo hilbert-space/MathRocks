@@ -8,15 +8,20 @@ leakage = LeakagePower( ...
   'order', [ 1 2 ], ...
   'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
 
+display(leakage);
 plot(leakage);
 
 Lnom = LeakagePower.Lnom;
 Ldev = 0.05 * Lnom;
+Lmin = Lnom - 4 * Ldev;
+Lmax = Lnom + 4 * Ldev;
 
-Tref = Utils.toKelvin(27);
+Tnom = Utils.toKelvin(27);
+Tmin = Utils.toKelvin(0);
+Tmax = Utils.toKelvin(200);
 
-T = linspace(Tref, Tref + 123, 100);
-L = linspace(Lnom - 4 * Ldev, Lnom + 4 * Ldev, 100);
+L = linspace(Lmin, Lmax, 100);
+T = linspace(Tmin, Tmax, 100);
 
 l = zeros(100 * 100, 1);
 t = zeros(100 * 100, 1);
@@ -30,11 +35,11 @@ for i = 1:100
   end
 end
 
-i = leakage.evaluate(l, t) / leakage.evaluate(Lnom, Tref);
+i = leakage.evaluate(l, t);
 
 hold on;
 
-plot3(l, t, i, ...
+plot3(l, Utils.toCelsius(t), i, ...
   'LineStyle', 'None', ...
   'Marker', 'o', ...
   'MarkerEdgeColor', 'none', ...

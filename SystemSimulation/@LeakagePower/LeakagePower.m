@@ -21,6 +21,8 @@ classdef LeakagePower < handle
     Ldata
     Tdata
     Idata
+
+    stats
   end
 
   properties
@@ -51,7 +53,7 @@ classdef LeakagePower < handle
   end
 
   methods (Access = 'private')
-    [ predict, L, T, I ] = construct(this, options)
+    [ evaluator, Ldata, Tdata, Idata, stats ] = construct(this, options)
 
     function initialize(this, options)
       filename = [ class(this), '_', ...
@@ -60,14 +62,16 @@ classdef LeakagePower < handle
       if File.exist(filename);
         load(filename);
       else
-        [ evaluator, Ldata, Tdata, Idata ] = this.construct(options);
-        save(filename, 'evaluator', 'Ldata', 'Tdata', 'Idata');
+        [ evaluator, Ldata, Tdata, Idata, stats ] = this.construct(options);
+        save(filename, 'evaluator', 'Ldata', 'Tdata', 'Idata', ...
+          'stats', '-v7.3');
       end
 
       this.evaluator = evaluator;
       this.Ldata = Ldata;
       this.Tdata = Tdata;
       this.Idata = Idata;
+      this.stats = stats;
     end
   end
 end

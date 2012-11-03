@@ -1,9 +1,7 @@
 function plot(this)
-  Inom = this.evaluate(this.Lnom, Utils.toKelvin(27));
-
   Ldata = this.Ldata;
   Tdata = this.Tdata;
-  Idata = this.Idata / Inom;
+  Idata = this.Idata;
 
   figure;
   h = subplot(1, 1, 1);
@@ -15,18 +13,19 @@ function plot(this)
 
   I = griddata(Ldata, Tdata, Idata, L, T);
 
-  mesh(L, T, I);
+  mesh(L, Utils.toCelsius(T), I);
 
-  line(Ldata, Tdata, this.evaluate(Ldata, Tdata) / Inom, ...
+  line(Ldata, Utils.toCelsius(Tdata), ...
+    this.evaluate(Ldata, Tdata), ...
     'LineStyle', 'None', ...
     'Marker', 'o', ...
     'MarkerEdgeColor', 'w', ...
     'MarkerFaceColor', 'b', ...
     'Parent', h);
 
-  Plot.title('Normalized leakage current');
-  Plot.label('Channel length, mm', 'Temperature, K', ...
-    'Normalized leakage current');
+  Plot.title('Leakage current');
+  Plot.label('Channel length, mm', 'Temperature, C', ...
+    'Leakage current, A');
 
   grid on;
   view(10, 10);

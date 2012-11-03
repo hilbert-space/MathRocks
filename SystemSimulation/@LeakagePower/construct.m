@@ -1,4 +1,6 @@
-function [ evaluator, Ldata, Tdata, Idata ] = construct(this, options)
+function [ evaluator, Ldata, Tdata, Idata, stats ] = ...
+  construct(this, options)
+
   filename = options.filename;
   order = options.order;
   scale = options.scale;
@@ -20,6 +22,14 @@ function [ evaluator, Ldata, Tdata, Idata ] = construct(this, options)
   values = coeffvalues(fitresult);
   names = coeffnames(fitresult);
 
+  stats = struct();
+  stats.Lorder = order(1);
+  stats.Torder = order(2);
+  stats.expectation = expectation;
+  stats.deviation = deviation;
+  stats.coefficients = zeros(order(1) + 1, order(2) + 1);
+  stats.scale = zeros(order(1) + 1, order(2) + 1);
+
   Lsym = sympoly('L');
   Tsym = sympoly('T');
 
@@ -35,6 +45,9 @@ function [ evaluator, Ldata, Tdata, Idata ] = construct(this, options)
     Torder = str2num(attributes{1}{2});
 
     alpha = scale(1, Lorder + 1) * scale(2, Torder + 1);
+
+    stats.coefficients(Lorder + 1, Torder + 1) = values(i);
+    stats.scale(Lorder + 1, Torder + 1) = alpha;
 
     logI = logI + alpha * values(i) * Lnorm^Lorder * Tnorm^Torder;
   end

@@ -3,13 +3,19 @@
 require 'progressbar'
 
 netlist = ARGV[0]
-raise 'The first argument should be a netlist.' if netlist.nil? || netlist.empty?
+if netlist.nil? || netlist.empty?
+  raise 'The first argument should be a netlist.'
+end
 
 Lcount = ARGV[1].to_i
-raise 'The second argument should be the number of L measurements.' if Lcount <= 0
+if Lcount <= 0
+  raise 'The second argument should be the number of L measurements.'
+end
 
 Tcount = ARGV[2].to_i
-raise 'The third argument should be the number of T measurements.' if Tcount <= 0
+if Tcount <= 0
+  raise 'The third argument should be the number of T measurements.'
+end
 
 netlist_out = ARGV[3]
 if netlist_out.nil? || netlist_out.empty?
@@ -33,8 +39,8 @@ end
 Lnom = $1.to_i * 1e-9
 Ldev = 0.05 * Lnom
 
-Lmin = Lnom - Ldev
-Lrange = 2 * Ldev
+Lmin = Lnom - 4 * Ldev
+Lmax = Lnom + 4 * Ldev
 
 if Lcount == 1
   L = [ Lnom ]
@@ -42,7 +48,7 @@ else
   L = Array.new(Lcount)
 
   (0...Lcount).to_a.each do |i|
-    L[i] = "%.4e" % (Lmin + i * Lrange / (Lcount - 1))
+    L[i] = "%.4e" % (Lmin + i * (Lmax - Lmin) / (Lcount - 1))
   end
 end
 
@@ -50,18 +56,16 @@ end
 # Temperature
 #
 
-Tnom = 27
-
-Tmin = Tnom
-Trange = 100 - Tmin
+Tmin = 0
+Tmax = 200
 
 if Tcount == 1
-  T = [ Tnom ]
+  T = [ 27 ]
 else
   T = Array.new(Tcount)
 
   (0...Tcount).to_a.each do |i|
-    T[i] = "%.2f" % (Tmin + i * Trange / (Tcount - 1))
+    T[i] = "%.2f" % (Tmin + i * (Tmax - Tmin) / (Tcount - 1))
   end
 end
 
