@@ -28,7 +28,11 @@ function [ left, right ] = detectBounds(varargin)
     mu = mean(one);
     sigma = sqrt(var(one));
 
-    r = range(mu, sigma);
+    if isa(range, 'function_handle')
+      r = range(mu, sigma);
+    else
+      r = range;
+    end
 
     left(i) = max(mn, r(1));
     right(i) = min(mx, r(2));
