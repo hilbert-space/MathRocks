@@ -7,7 +7,7 @@ function assess(chaos, apData, mcData, distribution)
   fprintf('  Expectation: %.4f\n', chaos.expectation);
   fprintf('  Variance:    %.4f\n', chaos.variance);
 
-  compareData(mcData, apData, 'draw', true);
+  Data.compare(mcData, apData, 'draw', true);
 
   if nargin > 3
     fprintf('Exact:\n');
