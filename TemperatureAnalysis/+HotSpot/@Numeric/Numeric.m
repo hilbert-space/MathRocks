@@ -54,8 +54,8 @@ classdef Numeric < HotSpot.Base
       dt = this.samplingInterval;
       Tamb = this.ambientTemperature;
 
-      T = zeros(stepCount, processorCount);
-      Pleak = zeros(stepCount, processorCount);
+      T = zeros(processorCount, stepCount);
+      Pleak = zeros(processorCount, stepCount);
 
       T0 = Tamb * ones(1, this.nodeCount);
 
@@ -67,12 +67,9 @@ classdef Numeric < HotSpot.Base
 
         T0 = T0(end, :);
 
-        T(i, :) = T0(1:processorCount);
-        Pleak(i, :) = leakage.evaluate(L, T(i, :));
+        T(:, i) = T0(1:processorCount);
+        Pleak(:, i) = leakage.evaluate(L, T(:, i));
       end
-
-      T = transpose(T);
-      Pleak = transpose(Pleak);
     end
   end
 end
