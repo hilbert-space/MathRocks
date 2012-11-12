@@ -1,5 +1,7 @@
 function analyze(method)
-  path = File.join(File.trace, '..', 'Assets');
+  use('Vendor', 'DataHash');
+
+  path = File.join(File.trace, '..', '..', 'Assets');
 
   Pdyn = dlmread(File.join(path, '04.ptrace'), '', 1, 0).';
 

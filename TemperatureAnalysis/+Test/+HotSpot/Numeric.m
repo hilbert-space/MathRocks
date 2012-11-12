@@ -1,1 +1,3 @@
-Test.HotSpot.analyze('Numeric');
+function Numeric
+  analyze('Numeric');
+end

@@ -31,7 +31,7 @@ function plot(this)
       values = ones(size(nodes)) * values;
     end
     norm = this.computeNormalizationConstant(i, index);
-    line(nodes, values, 'Color', Color.pick(i));
+    line(nodes, values, 'Color', Color.pick(i), 'LineWidth', 1.5);
     labels{end + 1} = sprintf('\\Phi_%d', i);
   end
   name = regexp(class(this), '^[^.]*\.([^.]*)$', 'tokens');

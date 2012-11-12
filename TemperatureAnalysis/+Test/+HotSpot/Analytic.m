@@ -1,1 +1,3 @@
-Test.HotSpot.analyze('Analytic');
+function Analytic
+  analyze('Analytic');
+end
