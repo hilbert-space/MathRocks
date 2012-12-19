@@ -1,31 +1,33 @@
-clear all;
-setup;
+function HermiteBeta
+  clear all;
+  setup;
 
-sampleCount = 1e4;
+  sampleCount = 1e4;
 
-distribution = ProbabilityDistribution.Beta( ...
-  'alpha', 1.4, 'beta', 3, 'a', 0, 'b', 2);
-variable = RandomVariables.Single(distribution);
+  distribution = ProbabilityDistribution.Beta( ...
+    'alpha', 1.4, 'beta', 3, 'a', 0, 'b', 2);
+  variable = RandomVariables.Single(distribution);
 
-transformation = ProbabilityTransformation.SingleNormal(variable);
+  transformation = ProbabilityTransformation.SingleNormal(variable);
 
-%% Monte Carlo simulations.
-%
-mcData = distribution.sample(sampleCount, 1);
+  %% Monte Carlo simulations.
+  %
+  mcData = distribution.sample(sampleCount, 1);
 
-%% Polynomial chaos expansion.
-%
-chaos = PolynomialChaos.Hermite( ...
-  @transformation.evaluate, ...
-  'inputCount', 1, ...
-  'outputCount', 1, ...
-  'order', 6, ...
-  'quadratureOptions', Options( ...
-    'method', 'tensor', ...
-    'order', 10));
+  %% Polynomial chaos expansion.
+  %
+  chaos = PolynomialChaos.Hermite( ...
+    @transformation.evaluate, ...
+    'inputCount', 1, ...
+    'outputCount', 1, ...
+    'order', 6, ...
+    'quadratureOptions', Options( ...
+      'method', 'tensor', ...
+      'order', 10));
 
-display(chaos);
+  display(chaos);
 
-apData = chaos.evaluate(normrnd(0, 1, sampleCount, 1));
+  apData = chaos.evaluate(normrnd(0, 1, sampleCount, 1));
 
-Test.PolynomialChaos.assess(chaos, apData, mcData, distribution);
+  assess(chaos, apData, mcData, distribution);
+end
