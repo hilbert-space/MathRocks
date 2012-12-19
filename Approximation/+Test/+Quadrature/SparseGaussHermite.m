@@ -2,24 +2,24 @@ clear all;
 setup;
 
 dimension = 2;
-level = 5;
+order = 5;
 
 grid = Quadrature( ...
   'method', 'sparse', ...
   'dimension', dimension, ...
-  'level', level, ...
-  'ruleName', 'GaussHermite');
+  'order', order, ...
+  'ruleName', 'GaussHermiteHW');
 
 f = @(l) nwspgr('gqn', 1, l);
 
-[ nodes, weights ] = nwspgr(f, dimension, level);
+[ nodes, weights ] = nwspgr(f, dimension, order);
 points = length(weights);
 
 fprintf('Expected points: %d\n', points);
-fprintf('Computed points: %d\n', grid.points);
+fprintf('Computed points: %d\n', grid.nodeCount);
 
 fprintf('Nodes:\n');
-for i = 1:min(points, grid.points)
+for i = 1:min(points, grid.nodeCount)
   fprintf('%3d ', i);
   for j = 1:dimension
     fprintf('| %10.4f - %10.4f = %10.4f', ...
@@ -29,7 +29,7 @@ for i = 1:min(points, grid.points)
 end
 
 fprintf('Weights:\n');
-for i = 1:min(points, grid.points)
+for i = 1:min(points, grid.nodeCount)
   fprintf('%3d ', i);
   fprintf('| %10.4f - %10.4f = %10.4f', ...
     grid.weights(i), weights(i), grid.weights(i) - weights(i));
