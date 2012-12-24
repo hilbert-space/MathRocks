@@ -27,8 +27,8 @@ classdef Quadrature < handle
     function initialize(this, options)
       this.dimension = options.dimension;
 
-      filename = [ class(this), '_', ...
-        DataHash(Utils.toString(options)), '.mat' ];
+      filename = File.temporal([ class(this), '_', ...
+        DataHash(Utils.toString(options)), '.mat' ]);
 
       if File.exist(filename)
         load(filename);

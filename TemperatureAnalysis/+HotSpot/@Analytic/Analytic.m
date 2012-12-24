@@ -99,7 +99,7 @@ classdef Analytic < HotSpot.Base
       end
     end
 
-    function T = computeSparse(this, P)
+    function T = computeSparse(this, P, keepSteps)
       [ processorCount, stepCount ] = size(P);
       assert(processorCount == this.processorCount);
 
