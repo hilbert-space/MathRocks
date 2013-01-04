@@ -56,8 +56,8 @@ classdef LeakagePower < handle
     [ evaluator, Ldata, Tdata, Idata, stats ] = construct(this, options)
 
     function initialize(this, options)
-      filename = [ class(this), '_', ...
-        DataHash(this.toString), '.mat' ];
+      filename = File.temporal([ class(this), '_', ...
+        DataHash(this.toString), '.mat' ]);
 
       if File.exist(filename);
         load(filename);

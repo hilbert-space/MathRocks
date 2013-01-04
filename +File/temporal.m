@@ -1,3 +1,3 @@
-function path = temporal(path)
-  path = File.join('/tmp', path);
+function path = temporal(varargin)
+  path = File.join('/tmp', varargin{:});
 end
