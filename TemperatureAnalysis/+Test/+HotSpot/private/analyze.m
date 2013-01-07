@@ -3,7 +3,7 @@ function analyze(method)
 
   path = File.join(File.trace, '..', '..', 'Assets');
 
-  Pdyn = dlmread(File.join(path, '04.ptrace'), '', 1, 0).';
+  Pdyn = 2 * dlmread(File.join(path, '02.ptrace'), '', 1, 0).';
 
   use('SystemSimulation');
 
@@ -13,7 +13,7 @@ function analyze(method)
     'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
 
   hotspot = HotSpot.(method)( ...
-    File.join(path, '04.flp'), ...
+    File.join(path, '02.flp'), ...
     File.join(path, 'hotspot.config'), ...
     'sampling_intvl 1e-3');
 

@@ -2,6 +2,7 @@ function setup
   use('DataAnalysis');
   use('DataStructure');
   use('ProbabilityTheory');
+  use('Visualization');
   use('Vendor', 'uninit');
   use('Vendor', 'sympoly');
   use('Vendor', 'DataHash');
