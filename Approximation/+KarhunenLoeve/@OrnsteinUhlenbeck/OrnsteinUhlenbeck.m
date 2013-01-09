@@ -8,21 +8,20 @@ classdef OrnsteinUhlenbeck < KarhunenLoeve.Base
       this = this@KarhunenLoeve.Base(varargin{:});
     end
 
-    function [ C1, C2 ] = evaluate(this, x1, x2)
-      C1 = evaluate@KarhunenLoeve.Base(this, x1, x2);
+    function C = calculate(this, s, t)
+      if ndims(s) == 1
+        m = length(s);
+        n = length(t);
+        [ s, t ] = meshgrid(s, t);
+      else
+        [ m, n ] = size(s);
+      end
 
-      if nargout < 2, return; end
+      s = s(:);
+      t = t(:);
 
-      m = length(x1);
-      n = length(x2);
-
-      [ x1, x2 ] = meshgrid(x1, x2);
-
-      x1 = x1(:);
-      x2 = x2(:);
-
-      C2 = exp(-abs(x1 - x2) / this.correlationLength);
-      C2 = reshape(C2, [ m n ]);
+      C = exp(-abs(s - t) / this.correlationLength);
+      C = reshape(C, [ m n ]);
     end
   end
 

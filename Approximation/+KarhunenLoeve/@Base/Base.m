@@ -13,14 +13,17 @@ classdef Base < handle
       this.initialize(options);
     end
 
-    function C = evaluate(this, x1, x2)
-      m = length(x1);
-      n = length(x2);
+    function C = approximate(this, s, t)
+      if ndims(s) == 1
+        m = length(s);
+        n = length(t);
+        [ s, t ] = meshgrid(s, t);
+      else
+        [ m, n ] = size(s);
+      end
 
-      [ x1, x2 ] = meshgrid(x1, x2);
-
-      x1 = x1(:);
-      x2 = x2(:);
+      s = s(:);
+      t = t(:);
 
       v = this.values;
       f = this.functions;
@@ -28,11 +31,15 @@ classdef Base < handle
       C = 0;
 
       for i = 1:this.dimension
-        C = C + v(i) * f{i}(x1) .* f{i}(x2);
+        C = C + v(i) * f{i}(s) .* f{i}(t);
       end
 
       C = reshape(C, [ m n ]);
     end
+  end
+
+  methods (Abstract)
+    C = calculate(this, s, t);
   end
 
   methods (Abstract, Access = 'protected')

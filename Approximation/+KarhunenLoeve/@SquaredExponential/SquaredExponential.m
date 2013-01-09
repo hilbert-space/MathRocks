@@ -9,21 +9,17 @@ classdef SquaredExponential < KarhunenLoeve.Base
       this = this@KarhunenLoeve.Base(varargin{:});
     end
 
-    function [ C1, C2 ] = evaluate(this, x1, x2)
-      C1 = evaluate@KarhunenLoeve.Base(this, x1, x2);
+    function C = calculate(this, s, t)
+      if ndims(s) == 1
+        m = length(s);
+        n = length(t);
+        [ s, t ] = meshgrid(s, t);
+      else
+        [ m, n ] = size(s);
+      end
 
-      if nargout < 2, return; end
-
-      m = length(x1);
-      n = length(x2);
-
-      [ x1, x2 ] = meshgrid(x1, x2);
-
-      x1 = x1(:);
-      x2 = x2(:);
-
-      C2 = this.sigma^2 * exp(-(x1 - x2).^2 / (2 * this.correlationLength^2));
-      C2 = reshape(C2, [ m n ]);
+      C = this.sigma^2 * exp(-(s - t).^2 / (2 * this.correlationLength^2));
+      C = reshape(C, [ m n ]);
     end
   end
 
