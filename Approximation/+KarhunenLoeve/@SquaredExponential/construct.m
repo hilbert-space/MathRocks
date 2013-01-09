@@ -41,7 +41,7 @@ function [ values, functions ] = construct(this, options)
       F{k + 1} = Utils.toFunction(H(k + 1), x, 'columns');
     end
 
-    values(k + 1) = sqrt(2 * a / A) * B^k;
+    values(k + 1) = sqrt(pi / A) * B^k; % or sqrt(2 * a / A) ?
     functions{k + 1} = @(y) exp(-(c - a) * y.^2) .* F{k + 1}(sqrt(2 * c) * y);
 
     if isnan(d)

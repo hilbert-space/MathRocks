@@ -27,7 +27,7 @@ function plot(this)
     end
   end
 
-  Plot.title('Wafer with %d dies, %d cores each', prod(size(L)), length(W));
+  Plot.title('%d dies, %d cores each', prod(size(L)), length(W));
 end
 
 function h = draw(x, y, W, H)

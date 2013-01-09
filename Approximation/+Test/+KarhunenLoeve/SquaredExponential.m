@@ -1,48 +1,30 @@
 setup;
 
-dimension = 1;
-a = 1;
-b = 3;
-
-sigma = 1; % sqrt(1 / a / 4);
-correlationLength = 1; % sqrt(1 / b / 2);
-domainBoundary = 2;
+dimension = 4;
+domainBoundary = 1;
+correlationLength = 1;
+sigma = 1;
 
 kl = KarhunenLoeve.SquaredExponential( ...
   'dimension', dimension, 'domainBoundary', domainBoundary, ...
   'correlationLength', correlationLength, 'sigma', sigma);
 
-plot(kl);
-
-kl.values
-
-x = linspace(-domainBoundary, domainBoundary).';
-
-[ C1, C2 ] = kl.evaluate(x, x);
-
-fprintf('Error: %.e\n', norm(C1(:) - C2(:)));
-
-K = @(t, s) sigma^2 * exp(-(t - s).^2 / (2 * correlationLength^2));
-
-F = fred( K, domain([ -domainBoundary, domainBoundary ]) );
-[ Psi, Lambda ] = eigs(F, dimension,'lm');
+K = @(s, t) sigma^2 * exp(-(s - t).^2 / (2 * correlationLength^2));
+F = fred(K, domain([ -domainBoundary, domainBoundary ]));
+[ psi, lambda ] = eigs(F, dimension, 'lm');
+lambda = diag(lambda);
 
 figure;
-plot(Psi);
+line(1:dimension, kl.values, 'Marker', 'x');
+line(1:dimension, lambda, 'Marker', 'o');
+legend('Approximation', 'Numerical (chebfun)');
 
-diag(Lambda).'
-
-n = length(x);
-
-[ x1, x2 ] = meshgrid(x, x);
-
-x1 = x1(:);
-x2 = x2(:);
-
-C3 = 0;
-
+figure;
+x = linspace(-domainBoundary, domainBoundary);
 for i = 1:dimension
-  C3 = C3 + Lambda(i) * Psi(x1) .* Psi(x2);
+  color = Color.pick(i);
+  f = kl.functions{i};
+  line(x, f(x), 'Color', color, 'Marker', 'x');
+  f = psi(:, i);
+  line(x, f(x), 'Color', color, 'Marker', 'o');
 end
-
-C3 = reshape(C3, [ n n ]);
