@@ -20,7 +20,19 @@ classdef Numeric < HotSpot.Base
       this.Bt = Cm1 * M;
     end
 
-    function T = compute(this, P)
+    function [ T, Pleak ] = compute(this, P, varargin)
+      if nargin == 2
+        T = this.computeRegular(P);
+      elseif isa(varargin{1}, 'LeakagePower')
+        [ T, Pleak ] = this.computeWithLeakage(P, varargin{:});
+      else
+        assert(false);
+      end
+    end
+  end
+
+  methods (Access = 'protected')
+    function T = computeRegural(this, P)
       [ processorCount, stepCount ] = size(P);
       assert(processorCount == this.processorCount);
 

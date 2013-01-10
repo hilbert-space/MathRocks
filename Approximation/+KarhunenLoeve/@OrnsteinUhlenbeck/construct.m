@@ -53,7 +53,7 @@ function [ values, functions ] = construct(this, options)
     end
 
     if isnan(d)
-      if values(end) / sum(values) < t, break; end
+      if values(end) / sum(values) < (1 - t), break; end
     end
   end
 

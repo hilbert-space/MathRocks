@@ -35,24 +35,28 @@ classdef Base < handle
   end
 
   methods
-    function this = Base(floorplanFilename, configFilename, configLine)
-      if nargin < 3, configLine = ''; end
+    function this = Base(varargin)
+      options = Options(varargin{:});
 
-      if ~File.exist(floorplanFilename)
+      floorplan = options.floorplan;
+      config = options.config;
+      line = options.get('line', '');
+
+      if ~File.exist(floorplan)
         error('The floorplan file does not exist.');
       end
 
-      if ~File.exist(configFilename)
+      if ~File.exist(config)
         error('The configuration file does not exist.');
       end
 
       [ this.capacitance, this.conductance, this.nodeCount, ...
         this.processorCount, this.samplingInterval, this.ambientTemperature ] = ...
-        HotSpot.constructModel(floorplanFilename, configFilename, configLine);
+        HotSpot.constructModel(floorplan, config, line);
     end
   end
 
   methods (Abstract)
-    temperatureProfile = compute(this, powerProfile)
+    T = compute(this, P)
   end
 end

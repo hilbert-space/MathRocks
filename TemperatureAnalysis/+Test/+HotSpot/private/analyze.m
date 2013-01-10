@@ -1,23 +1,21 @@
 function analyze(method)
   use('Vendor', 'DataHash');
 
-  path = File.join(File.trace, '..', '..', 'Assets');
-
-  Pdyn = 2 * dlmread(File.join(path, '02.ptrace'), '', 1, 0).';
+  Pdyn = 2 * dlmread(File.join('+Test', 'Assets', '04.ptrace'), '', 1, 0).';
 
   use('SystemSimulation');
 
   leakage = LeakagePower(Pdyn, ...
-    'filename', File.join(path, 'inverter_45nm.leak'), ...
+    'filename', File.join('+Test', 'Assets', 'inverter_45nm.leak'), ...
     'order', [ 1, 2 ], ...
     'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
 
   hotspot = HotSpot.(method)( ...
-    File.join(path, '02.flp'), ...
-    File.join(path, 'hotspot.config'), ...
-    'sampling_intvl 1e-3');
+    'floorplan', File.join('+Test', 'Assets', '04.flp'), ...
+    'config', File.join('+Test', 'Assets', 'hotspot.config'), ...
+    'line', 'sampling_intvl 1e-3');
 
-  [ T, Pleak ] = hotspot.computeWithLeakage(Pdyn, leakage);
+  [ T, Pleak ] = hotspot.compute(Pdyn, leakage);
 
   T = Utils.toCelsius(T);
 

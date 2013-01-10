@@ -79,7 +79,21 @@ classdef Analytic < HotSpot.Base
       this.D = this.Q * diag((exp(dt * this.L) - 1) ./ this.L) * this.QT * B;
     end
 
-    function T = compute(this, P)
+    function [ T, Pleak ] = compute(this, Pdyn, varargin)
+      if nargin == 2
+        T = this.computeRegular(Pdyn);
+      elseif isa(varargin{1}, 'double')
+        T = this.computeSparse(Pdyn, varargin{:});
+      elseif isa(varargin{1}, 'LeakagePower')
+        [ T, Pleak ] = this.computeWithLeakage(Pdyn, varargin{:});
+      else
+        assert(false);
+      end
+    end
+  end
+
+  methods (Access = 'protected')
+    function T = computeRegular(this, P)
       [ processorCount, stepCount ] = size(P);
       assert(processorCount == this.processorCount);
 
