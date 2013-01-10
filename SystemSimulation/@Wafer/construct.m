@@ -24,7 +24,9 @@ function construct(this, options)
       e = ((x - waferCenterX) / waferCenterX)^2 + ...
         ((y - waferCenterY) / waferCenterY)^2;
       if e > 1, continue; end
-      floorplan(end + 1, :) = [ (j - 1) * dieW, (i - 1) * dieH ];
+      floorplan(end + 1, :) = [ ...
+        (j - 1) * dieW - waferCenterX, ...
+        (i - 1) * dieH - waferCenterY ];
     end
   end
 
