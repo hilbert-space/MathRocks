@@ -3,6 +3,7 @@ function setup
   use('DataStructure');
   use('ProbabilityTheory');
   use('Visualization');
+  use('Vendor', 'chebfun');
   use('Vendor', 'uninit');
   use('Vendor', 'sympoly');
   use('Vendor', 'DataHash');

@@ -1,4 +1,4 @@
-function [ values, functions ] = construct(this, options)
+function [ functions, values ] = construct(this, options)
   %
   % Source:
   %
@@ -11,16 +11,16 @@ function [ values, functions ] = construct(this, options)
   a = options.domainBoundary;
   c = 1 / options.correlationLength;
 
-  if options.has('dimension')
-    d = options.dimension;
+  if options.has('dimensionCount')
+    d = options.dimensionCount;
   else
     d = NaN;
     t = options.threshold;
   end
 
   omegas = zeros(1, 0);
-  values = zeros(1, 0);
   functions = cell(1, 0);
+  values = zeros(1, 0);
 
   even = @(x) c - x * tan(a * x);
   odd  = @(x) x + c * tan(a * x);
@@ -42,8 +42,6 @@ function [ values, functions ] = construct(this, options)
       omegas(i) = bisect(left, right, odd);
     end
 
-    values(i) = (2 * c) / (omegas(i)^2 + c^2);
-
     if mod(i - 1, 2) == 0
       functions{i} = @(x) cos(omegas(i) * x) / ...
         sqrt(a + (sin(2 * omegas(i) * a)) / (2 * omegas(i)));
@@ -51,6 +49,8 @@ function [ values, functions ] = construct(this, options)
       functions{i} = @(x) sin(omegas(i) * x) / ...
         sqrt(a - (sin(2 * omegas(i) * a)) / (2 * omegas(i)));
     end
+
+    values(i) = (2 * c) / (omegas(i)^2 + c^2);
 
     if isnan(d)
       if values(end) / sum(values) < (1 - t), break; end

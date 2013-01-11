@@ -1,10 +1,10 @@
 classdef Base < handle
   properties (SetAccess = 'private')
-    dimension
     domainBoundary
+    dimensionCount
 
-    values
     functions
+    values
   end
 
   methods
@@ -18,23 +18,15 @@ classdef Base < handle
         m = length(s);
         n = length(t);
         [ s, t ] = meshgrid(s, t);
-      else
-        [ m, n ] = size(s);
       end
 
-      s = s(:);
-      t = t(:);
-
-      v = this.values;
       f = this.functions;
+      v = this.values;
 
       C = 0;
-
-      for i = 1:this.dimension
+      for i = 1:this.dimensionCount
         C = C + v(i) * f{i}(s) .* f{i}(t);
       end
-
-      C = reshape(C, [ m n ]);
     end
   end
 
@@ -43,14 +35,14 @@ classdef Base < handle
   end
 
   methods (Abstract, Access = 'protected')
-    [ values, functions ] = construct(this, options)
+    [ functions, values ] = construct(this, options)
   end
 
   methods (Access = 'private')
     function initialize(this, options)
       this.domainBoundary = options.domainBoundary;
-      [ this.values, this.functions ] = this.construct(options);
-      this.dimension = length(this.values);
+      [ this.functions, this.values ] = this.construct(options);
+      this.dimensionCount = length(this.values);
     end
   end
 end

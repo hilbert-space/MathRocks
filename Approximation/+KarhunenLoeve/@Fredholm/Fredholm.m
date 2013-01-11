@@ -1,15 +1,15 @@
-classdef OrnsteinUhlenbeck < KarhunenLoeve.Base
+classdef Fredholm < KarhunenLoeve.Base
   properties (SetAccess = 'private')
-    correlationLength
+    kernel
   end
 
   methods
-    function this = OrnsteinUhlenbeck(varargin)
+    function this = Fredholm(varargin)
       this = this@KarhunenLoeve.Base(varargin{:});
     end
 
     function C = calculate(this, s, t)
-      C = exp(-abs(s - t) / this.correlationLength);
+      C = this.kernel(s, t);
     end
   end
 

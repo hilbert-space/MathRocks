@@ -1,49 +1,48 @@
 setup;
 
-dimension = 10;
+dimensionCount = 10;
 domainBoundary = 1;
 correlationLength = 1;
+kernel = @(s, t) exp(-abs(s - t) / correlationLength);
 
-kl = KarhunenLoeve.OrnsteinUhlenbeck( ...
-  'dimension', dimension, ...
+kl1 = KarhunenLoeve.OrnsteinUhlenbeck( ...
+  'dimensionCount', dimensionCount, ...
   'domainBoundary', domainBoundary, ...
   'correlationLength', correlationLength);
 
-K = @(s, t) exp(-abs(s - t) / correlationLength);
-F = fred(K, domain([ -domainBoundary, domainBoundary ]));
-[ psi, lambda ] = eigs(F, dimension, 'lm');
-lambda = diag(lambda);
+kl2 = KarhunenLoeve.Fredholm( ...
+  'kernel', kernel, ...
+  'dimensionCount', dimensionCount, ...
+  'domainBoundary', domainBoundary);
 
 figure;
-line(1:dimension, kl.values, 'Marker', 'x');
-line(1:dimension, lambda, 'Marker', 'o');
-legend('Analytical', 'Numerical (chebfun)');
+line(1:dimensionCount, kl1.values, 'Marker', 'x');
+line(1:dimensionCount, kl2.values, 'Marker', 'o');
+legend('OrnsteinUhlenbeck', 'Fredholm');
 
 figure;
 r = linspace(-domainBoundary, domainBoundary);
-for i = 1:dimension
+for i = 1:dimensionCount
   color = Color.pick(i);
-  f = kl.functions{i};
-  line(r, f(r), 'Color', color, 'Marker', 'x');
-  f = psi(:, i);
-  line(r, f(r), 'Color', color, 'Marker', 'o');
+  line(r, kl1.functions{i}(r), 'Color', color, 'Marker', 'x');
+  line(r, kl2.functions{i}(r), 'Color', color, 'Marker', 'o');
 end
 
 samples = 1e3;
-z = randn(samples, dimension);
-k = zeros(dimension, length(r));
+z = randn(samples, dimensionCount);
+k = zeros(dimensionCount, length(r));
 
-for i = 1:dimension
-  f = kl.functions{i};
-  k(i, :) = f(r);
+for i = 1:dimensionCount
+  k(i, :) = kl1.functions{i}(r);
 end
 
-u = z * diag(sqrt(kl.values)) * k;
+u = z * diag(sqrt(kl1.values)) * k;
 
+figure;
 [ R1, R2 ] = meshgrid(r, r);
 C = cov(u);
 mesh(R1, R2, C);
 hold on;
 
-C = kl.calculate(R1, R2);
+C = kernel(R1, R2);
 plot3(R1, R2, C, 'k.', 'MarkerSize', 10);
