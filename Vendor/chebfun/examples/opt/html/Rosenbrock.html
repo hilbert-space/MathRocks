@@ -1,0 +1,219 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>The Rosenbrock function in 2D optimisation</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="Rosenbrock.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>The Rosenbrock function in 2D optimisation</h1><!--introduction--><p>Nick Trefethen, October 2010</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">1. The Rosenbrock function</a></li><li><a href="#9">2. A function with several local minima</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/opt/Rosenbrock.m">opt/Rosenbrock.m</a>)</p><h2>1. The Rosenbrock function<a name="2"></a></h2><p>Chebfun can often do quite a good job of minimizing or maximizing a function defined on a 2D rectangle. A famous challenging example is the "Rosenbrock function":</p><pre class="codeinput">f = @(x,y) (1-x).^2 + 100*(y-x.^2).^2;
+</pre><p>First let's plot it to get an idea:</p><pre class="codeinput">x = linspace(-1.5,1.5); y = linspace(-1,3);
+[xx,yy] = meshgrid(x,y); ff = f(xx,yy);
+levels = 10:10:300;
+LW = <span class="string">'linewidth'</span>; FS = <span class="string">'fontsize'</span>; MS = <span class="string">'markersize'</span>;
+figure, contour(x,y,ff,levels,LW,1.2), colorbar
+axis([-1.5 1.5 -1 3]), axis <span class="string">square</span>, hold <span class="string">on</span>
+</pre><img vspace="5" hspace="5" src="Rosenbrock_01.png" alt=""> <p>It's obvious from the formula that the minimum value is 0, taken at x=y=1.  In Chebfun, we can find this by taking slices.  If x0 is a constant, then the minimum of f(x0,y) over all y can be obtained like this:</p><pre class="codeinput">fminx0 = @(x0) min(chebfun(@(y) f(x0,y),[-1 3]));
+</pre><p>Now we can make a chebfun representing fminx as a function of x:</p><pre class="codeinput">fminx = chebfun(fminx0,[-1.5 1.5],<span class="string">'vectorize'</span>,<span class="string">'splitting'</span>,<span class="string">'on'</span>);
+figure, plot(fminx,LW,1.6)
+xlabel(<span class="string">'x'</span>,FS,16)
+ylabel(<span class="string">'min_y(f(x,y))'</span>,FS,16)
+title(<span class="string">'minimum of f(x,y) along vertical slices'</span>,FS,16)
+</pre><img vspace="5" hspace="5" src="Rosenbrock_02.png" alt=""> <p>The global minimum of f(x,y) is the minimum of fminx:</p><pre class="codeinput">format <span class="string">long</span>
+[minf,minx] = min(fminx)
+</pre><pre class="codeoutput">minf =
+    -4.416844862125998e-15
+minx =
+   0.999999999999614
+</pre><p>The variable minx represents the x coordinate of the minimum. We can find the y coordinate like this:</p><pre class="codeinput">[minf,miny] = min(chebfun(@(y) f(minx,y), [-1 3]))
+</pre><pre class="codeoutput">minf =
+    -2.842170948999650e-14
+miny =
+   0.999999999999228
+</pre><p>Let's show the contour plot again, with the minimum point:</p><pre class="codeinput">close, plot(minx,miny,<span class="string">'.k'</span>,MS,20)
+</pre><img vspace="5" hspace="5" src="Rosenbrock_03.png" alt=""> <h2>2. A function with several local minima<a name="9"></a></h2><p>Why did we put 'splitting on' in this computation?  It wasn't necessary in this case, but it is important in more general cases where f(x,y) has several local extrema, because then the function fminx may not be smooth.</p><p>For example, consider this function defined on the square [-1,1]x[-1,1]:</p><pre class="codeinput">f = @(x,y) exp(x-2*x.^2-y.^2).*sin(6*(x+y+x.*y.^2));
+x = linspace(-1,1); y = linspace(-1,1);
+[xx,yy] = meshgrid(x,y); ff = f(xx,yy);
+figure, contour(x,y,ff,30,LW,1.2), colorbar
+axis([-1 1 -1 1]), axis <span class="string">square</span>, hold <span class="string">on</span>
+</pre><img vspace="5" hspace="5" src="Rosenbrock_04.png" alt=""> <p>We define fminx0 and fminx as before.  Because of the lack of smoothness, this takes a little while:</p><pre class="codeinput">tic
+fminx0 = @(x0) min(chebfun(@(y) f(x0,y),[-1 1]));
+fminx = chebfun(fminx0,[-1 1],<span class="string">'vectorize'</span>,<span class="string">'splitting'</span>,<span class="string">'on'</span>);
+figure, plot(fminx,LW,1.6)
+xlabel(<span class="string">'x'</span>,FS,16)
+ylabel(<span class="string">'min_y(f(x,y))'</span>,FS,16)
+title(<span class="string">'minimum of f(x,y) along vertical slices'</span>,FS,16)
+toc
+</pre><pre class="codeoutput">Elapsed time is 16.390056 seconds.
+</pre><img vspace="5" hspace="5" src="Rosenbrock_05.png" alt=""> <p>Here are the breakpoints that Chebfun has detected:</p><pre class="codeinput">fminx.ends
+</pre><pre class="codeoutput">ans =
+  Columns 1 through 3
+  -1.000000000000000  -0.635872022371398   0.210237104254783
+  Column 4
+   1.000000000000000
+</pre><p>We can now quickly compute the global minimum as before:</p><pre class="codeinput">[minf,minx] = min(fminx)
+[minf,miny] = min(chebfun(@(y) f(minx,y), [-1 3]))
+</pre><pre class="codeoutput">minf =
+  -0.969232500643147
+minx =
+   0.395759627601425
+minf =
+  -0.969232500643148
+miny =
+   0.331573987886851
+</pre><p>And here's the plot:</p><pre class="codeinput">close, plot(minx,miny,<span class="string">'.k'</span>,MS,20)
+</pre><img vspace="5" hspace="5" src="Rosenbrock_06.png" alt=""> <p>Reference:</p><p>[1] H. H. Rosenbrock, "An automatic method for finding the greatest or least value of a function", Computer Journal 3 (1960), 175-184.</p><p>[2] S. Scheuring, Global Optimization in the Chebfun System, thesis, MSc in Mathematical Modelling and Scientific Computing, Oxford University, 2008.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% The Rosenbrock function in 2D optimisation
+% Nick Trefethen, October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/opt/Rosenbrock.m">opt/Rosenbrock.m</a>)
+
+%% 1. The Rosenbrock function
+% Chebfun can often do quite a good job of minimizing
+% or maximizing a function defined on a 2D rectangle.
+% A famous challenging example is the "Rosenbrock function":
+f = @(x,y) (1-x).^2 + 100*(y-x.^2).^2;
+
+%%
+% First let's plot it to get an idea:
+x = linspace(-1.5,1.5); y = linspace(-1,3);
+[xx,yy] = meshgrid(x,y); ff = f(xx,yy);
+levels = 10:10:300;
+LW = 'linewidth'; FS = 'fontsize'; MS = 'markersize';
+figure, contour(x,y,ff,levels,LW,1.2), colorbar
+axis([-1.5 1.5 -1 3]), axis square, hold on
+
+%%
+% It's obvious from the formula that the minimum value
+% is 0, taken at x=y=1.  In Chebfun, we can find this
+% by taking slices.  If x0 is a constant, then the minimum
+% of f(x0,y) over all y can be obtained like this:
+fminx0 = @(x0) min(chebfun(@(y) f(x0,y),[-1 3]));
+
+%%
+% Now we can make a chebfun representing fminx as a function
+% of x:
+fminx = chebfun(fminx0,[-1.5 1.5],'vectorize','splitting','on');
+figure, plot(fminx,LW,1.6)
+xlabel('x',FS,16)
+ylabel('min_y(f(x,y))',FS,16)
+title('minimum of f(x,y) along vertical slices',FS,16)
+
+%%
+% The global minimum of f(x,y) is the minimum of fminx:
+format long
+[minf,minx] = min(fminx)
+
+%%
+% The variable minx represents the x coordinate of the minimum.
+% We can find the y coordinate like this:
+[minf,miny] = min(chebfun(@(y) f(minx,y), [-1 3]))
+
+%%
+% Let's show the contour plot again, with the minimum point:
+close, plot(minx,miny,'.k',MS,20)
+
+%% 2. A function with several local minima
+% Why did we put 'splitting on' in this computation?  It wasn't
+% necessary in this case, but it is important in more general
+% cases where f(x,y) has several local extrema, because then
+% the function fminx may not be smooth.
+
+%%
+% For example, consider this function defined on the square [-1,1]x[-1,1]:
+f = @(x,y) exp(x-2*x.^2-y.^2).*sin(6*(x+y+x.*y.^2));
+x = linspace(-1,1); y = linspace(-1,1);
+[xx,yy] = meshgrid(x,y); ff = f(xx,yy);
+figure, contour(x,y,ff,30,LW,1.2), colorbar
+axis([-1 1 -1 1]), axis square, hold on
+
+%%
+% We define fminx0 and fminx as before.  Because of the
+% lack of smoothness, this takes a little while:
+tic
+fminx0 = @(x0) min(chebfun(@(y) f(x0,y),[-1 1]));
+fminx = chebfun(fminx0,[-1 1],'vectorize','splitting','on');
+figure, plot(fminx,LW,1.6)
+xlabel('x',FS,16)
+ylabel('min_y(f(x,y))',FS,16)
+title('minimum of f(x,y) along vertical slices',FS,16)
+toc
+
+%%
+% Here are the breakpoints that Chebfun has detected:
+fminx.ends
+
+%%
+% We can now quickly compute the global minimum as before:
+[minf,minx] = min(fminx)
+[minf,miny] = min(chebfun(@(y) f(minx,y), [-1 3]))
+
+%%
+% And here's the plot:
+close, plot(minx,miny,'.k',MS,20)
+
+%%
+% Reference:
+%
+% [1] H. H. Rosenbrock, "An automatic method for finding
+% the greatest or least value of a function",
+% Computer Journal 3 (1960), 175-184.
+%
+% [2] S. Scheuring, Global Optimization in the Chebfun System,
+% thesis, MSc in Mathematical Modelling and Scientific Computing,
+% Oxford University, 2008.
+
+##### SOURCE END #####
+--></body></html>

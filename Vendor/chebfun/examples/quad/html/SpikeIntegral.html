@@ -1,0 +1,115 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Spike integral</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="SpikeIntegral.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Spike integral</h1><!--introduction--><p>Nick Hale, October 2010</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/quad/SpikeIntegral.m">quad/SpikeIntegral.m</a>)</p><p>We demonstrate the adaptive capabilities of Chebfun by integrating the 'spike function'</p><pre class="codeinput">f = @(x) sech(10*(x-0.2)).^2 + sech(100*(x-0.4)).^4 + <span class="keyword">...</span>
+         sech(1000*(x-0.6)).^6 + sech(1000*(x-0.8)).^8;
+</pre><p>(which appears as F21F in [1]) over [0 1].</p><p>We create a Chebfun representation and plot the function, increasing 'minsamples' so that the spikes are not missed by an overly coarse initial sample:</p><pre class="codeinput">ff = chebfun(f,[0 1], <span class="string">'splitting'</span>,<span class="string">'on'</span>,<span class="string">'minsamples'</span>,129);
+plot(ff,<span class="string">'b'</span>,<span class="string">'linewidth'</span>,1.6,<span class="string">'numpts'</span>,1e4)
+title(<span class="string">'Spike function'</span>,<span class="string">'FontSize'</span>,16)
+</pre><img vspace="5" hspace="5" src="SpikeIntegral_01.png" alt=""> <p>Now we compute the integral.  In order to estimate the time for this computation, we create the chebfun again without plotting it.</p><pre class="codeinput">tic
+ff = chebfun(f,[0 1], <span class="string">'splitting'</span>,<span class="string">'on'</span>,<span class="string">'minsamples'</span>,129);
+sum(ff)
+</pre><pre class="codeoutput">ans =
+   0.211717021214835
+</pre><p>Time for creating this chebfun and integrating it:</p><pre class="codeinput">toc
+</pre><pre class="codeoutput">Elapsed time is 0.357464 seconds.
+</pre><p>References:</p><p>[1] D. K. Kahaner, "Comparison of numerical quadrature formulas", in J. R. Rice, ed., Mathematical Software, Academic Press, 1971, 229-259.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Spike integral
+% Nick Hale, October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/quad/SpikeIntegral.m">quad/SpikeIntegral.m</a>)
+
+%%
+% We demonstrate the adaptive capabilities of Chebfun 
+% by integrating the 'spike function'
+f = @(x) sech(10*(x-0.2)).^2 + sech(100*(x-0.4)).^4 + ...
+         sech(1000*(x-0.6)).^6 + sech(1000*(x-0.8)).^8;
+%%
+% (which appears as F21F in [1]) over [0 1].
+
+
+%%
+% We create a Chebfun representation and plot the function,
+% increasing 'minsamples' so that the spikes 
+% are not missed by an overly coarse initial sample:
+ff = chebfun(f,[0 1], 'splitting','on','minsamples',129);
+plot(ff,'b','linewidth',1.6,'numpts',1e4)
+title('Spike function','FontSize',16)
+
+%% 
+% Now we compute the integral.  In order to estimate the
+% time for this computation, we create the chebfun again
+% without plotting it.
+tic
+ff = chebfun(f,[0 1], 'splitting','on','minsamples',129);
+sum(ff)
+
+%%
+% Time for creating this chebfun and integrating it:
+toc
+
+%%
+% References:
+%
+% [1] D. K. Kahaner, "Comparison of numerical quadrature formulas", in 
+% J. R. Rice, ed., Mathematical Software, Academic Press, 1971, 229-259.
+
+##### SOURCE END #####
+--></body></html>

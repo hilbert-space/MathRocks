@@ -1,0 +1,190 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Multiple BVP solutions by solving an IVP</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="TwoSolBVPfromIVP.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Multiple BVP solutions by solving an IVP</h1><!--introduction--><p>Asgeir Birkisson, May 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#5">Obtaining the first solution, constant initial guess</a></li><li><a href="#7">Obtaining an initial guess by solving an IVP</a></li><li><a href="#8">Obtaining the second solution</a></li><li><a href="#9">Plotting</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/TwoSolBVPfromIVP.m">ode/TwoSolBVPfromIVP.m</a>)</p><p>It is well known that nonlinear boundary-value problems (BVPs) can have multiple solutions. However, it is difficult to construct general numerical methods to find these solutions -- whereas we can often hope to find one solution with common numerical software, we have to use clever tricks to find more solutions.</p><p>One such trick is to start by solving an initial value problem (IVP) with initial conditions similar to the boundary conditions of the original BVP, and use the solution of the IVP as an initial guess for the solution of the BVP. Here, this method is demonstrated for the nonlinear BVP</p><pre>  u''+2usin(u) = 0,   u'(0) = 0,   u(5) = 1</pre><p>We start by solving the BVP using a constant initial guess, then obtain another initial guess by solving the IVP</p><pre>  u''+2usin(u) = 0,   u'(0) = 0,   u(0) = 3</pre><p>and find another solution to the BVP by using that initial guess.</p><h2>Obtaining the first solution, constant initial guess<a name="5"></a></h2><p>Here, our initial guess of the solution is the constant function u(x) = pi.</p><p>Setup a BVP chebop</p><pre class="codeinput">Nbvp = chebop(0,5);
+Nbvp.op = @(u) diff(u,2)+2*u.*sin(u);
+Nbvp.lbc = <span class="string">'neumann'</span>; Nbvp.rbc = 1;
+</pre><p>Assign the initial guess u(x) = pi, and solve using nonlinear backslash</p><pre class="codeinput">Nbvp.init = pi;
+bvpSol1 = Nbvp\0;
+disp([<span class="string">'Residual, first solution: '</span> num2str(norm(Nbvp(bvpSol1)))])
+</pre><pre class="codeoutput">Residual, first solution: 1.9552e-11
+</pre><h2>Obtaining an initial guess by solving an IVP<a name="7"></a></h2><p>Here, we obtain an initial guess for the solution of the BVP by solving an IVP. The solution of the IVP will satisfy</p><pre>  u''+2usin(u) = 0,   u'(0) = 0,   u(0) = 3</pre><p>Setup a IVP chebop and solve (the system will automatically construct an initial guess for this problem):</p><pre class="codeinput">ca, clc
+cheboppref(<span class="string">'display'</span>,<span class="string">'iter'</span>,<span class="string">'plotting'</span>,<span class="string">'on'</span>,<span class="string">'damped'</span>,<span class="string">'on'</span>)
+Nivp = chebop(0,5);
+x = chebfun(<span class="string">'x'</span>,domain(Nivp));
+Nivp.op = @(u) diff(u,2)+2*u.*sin(u);
+Nivp.lbc = @(u) [diff(u),u-3];
+Nivp.init = -x.^2 + 3;
+plot(Nivp.init)
+ivpSol = Nivp\0;
+</pre><pre class="codeoutput">   Iter.       || update ||      length(update)     stepsize    length(u)
+---------------------------------------------------------------------------
+    1          1.462e-01           134                   1             134
+    2          1.726e+00           237                   1             237
+    3          2.394e+00           432                   1             432
+    4          8.210e-02           432                   1             432
+    5          1.969e-03           267                   1             432
+    6          8.460e-07           111                   1             432
+    7          1.027e-12            22                   1             432
+
+7 iterations
+Final residual norm: 2.19e-04 (interior) and 2.39e-07 (boundary conditions). 
+
+</pre><img vspace="5" hspace="5" src="TwoSolBVPfromIVP_01.png" alt=""> <img vspace="5" hspace="5" src="TwoSolBVPfromIVP_02.png" alt=""> <img vspace="5" hspace="5" src="TwoSolBVPfromIVP_03.png" alt=""> <h2>Obtaining the second solution<a name="8"></a></h2><p>We now assign the solution of the IVP as the initial guess to the original BVP chebop, and find another solution of the problem:</p><pre class="codeinput">Nbvp.init = ivpSol;
+bvpSol2 = Nbvp\0;
+disp([<span class="string">'Residual, second solution: '</span> num2str(norm(Nbvp(bvpSol2)))])
+</pre><pre class="codeoutput">   Iter.       || update ||      length(update)     stepsize    length(u)
+---------------------------------------------------------------------------
+    1          1.633e-02           108                   1             432
+    2          3.267e-02            90                   1             432
+    3          6.841e-04           107                   1             432
+    4          8.598e-06           106                   1             432
+    5          3.049e-10            69                   1             432
+    6          0.000e+00             1                   1             432
+
+6 iterations
+Final residual norm: 2.55e-04 (interior) and 4.81e-07 (boundary conditions). 
+
+Residual, second solution: 0.0016488
+</pre><img vspace="5" hspace="5" src="TwoSolBVPfromIVP_04.png" alt=""> <img vspace="5" hspace="5" src="TwoSolBVPfromIVP_05.png" alt=""> <h2>Plotting<a name="9"></a></h2><p>A plot of both the solutions is shown below:</p><pre class="codeinput">plot(bvpSol1,<span class="string">'linewidth'</span>,2), hold <span class="string">on</span>, plot(bvpSol2,<span class="string">'r-.'</span>,<span class="string">'Linewidth'</span>,2), grid <span class="string">on</span>
+legend(<span class="string">'First soln.'</span>,<span class="string">'Second soln.'</span>), ylim([-6 6])
+title(<span class="string">'Multiple solutions of the BVP u''''+2usin(u) = 0,  u''(0) = 0,  u(0) = 3'</span>)
+</pre><img vspace="5" hspace="5" src="TwoSolBVPfromIVP_06.png" alt=""> <p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Multiple BVP solutions by solving an IVP
+% Asgeir Birkisson, May 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/TwoSolBVPfromIVP.m">ode/TwoSolBVPfromIVP.m</a>)
+
+%%
+% It is well known that nonlinear boundary-value problems (BVPs) can have
+% multiple solutions. However, it is difficult to construct general
+% numerical methods to find these solutions REPLACE_WITH_DASH_DASH whereas we can often hope to
+% find one solution with common numerical software, we have to use clever
+% tricks to find more solutions.
+
+%%
+% One such trick is to start by solving an initial value problem (IVP) with
+% initial conditions similar to the boundary conditions of the original
+% BVP, and use the solution of the IVP as an initial guess for the solution
+% of the BVP. Here, this method is demonstrated for the nonlinear BVP
+%
+%    u''+2usin(u) = 0,   u'(0) = 0,   u(5) = 1
+%
+
+%%
+% We start by solving the BVP using a constant initial guess, then obtain
+% another initial guess by solving the IVP
+%
+%    u''+2usin(u) = 0,   u'(0) = 0,   u(0) = 3
+%
+% and find another solution to the BVP by using that initial guess.
+
+%% Obtaining the first solution, constant initial guess
+%
+% Here, our initial guess of the solution is the constant function
+% u(x) = pi.
+%
+% Setup a BVP chebop
+Nbvp = chebop(0,5);
+Nbvp.op = @(u) diff(u,2)+2*u.*sin(u);
+Nbvp.lbc = 'neumann'; Nbvp.rbc = 1;
+
+%%
+% Assign the initial guess u(x) = pi, and solve using nonlinear backslash
+Nbvp.init = pi;
+bvpSol1 = Nbvp\0;
+disp(['Residual, first solution: ' num2str(norm(Nbvp(bvpSol1)))])
+
+%% Obtaining an initial guess by solving an IVP
+%
+% Here, we obtain an initial guess for the solution of the BVP by solving
+% an IVP. The solution of the IVP will satisfy
+%
+%    u''+2usin(u) = 0,   u'(0) = 0,   u(0) = 3
+%
+% Setup a IVP chebop and solve (the system will automatically construct an
+% initial guess for this problem):
+ca, clc
+cheboppref('display','iter','plotting','on','damped','on')
+Nivp = chebop(0,5);
+x = chebfun('x',domain(Nivp));
+Nivp.op = @(u) diff(u,2)+2*u.*sin(u);
+Nivp.lbc = @(u) [diff(u),u-3];
+Nivp.init = -x.^2 + 3;
+plot(Nivp.init)
+ivpSol = Nivp\0;
+
+%% Obtaining the second solution
+%
+% We now assign the solution of the IVP as the initial guess to the
+% original BVP chebop, and find another solution of the problem:
+Nbvp.init = ivpSol;
+bvpSol2 = Nbvp\0;
+disp(['Residual, second solution: ' num2str(norm(Nbvp(bvpSol2)))])
+
+%% Plotting
+%
+% A plot of both the solutions is shown below:
+plot(bvpSol1,'linewidth',2), hold on, plot(bvpSol2,'r-.','Linewidth',2), grid on
+legend('First soln.','Second soln.'), ylim([-6 6])
+title('Multiple solutions of the BVP u''''+2usin(u) = 0,  u''(0) = 0,  u(0) = 3')
+
+##### SOURCE END #####
+--></body></html>

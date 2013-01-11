@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<toc version="4.2.2194">
+
+<tocitem target="index.html">Chebfun
+<tocitem target="guide1.html">Getting started with chebfuns</tocitem>
+<tocitem target="guide2.html">Integration and differentiation</tocitem>
+<tocitem target="guide3.html">Rootfinding and minima and maxima</tocitem>
+<tocitem target="guide4.html">Chebfuns and approximation theory</tocitem>
+<tocitem target="guide5.html">Complex chebfuns</tocitem>
+<tocitem target="guide6.html">Quasimatrices and least squares</tocitem>
+<tocitem target="guide7.html">Solving linear differential equations with chebops</tocitem>
+<tocitem target="guide8.html">Chebfun preferences</tocitem>
+<tocitem target="guide9.html">Infinite intervals, infinite function values, and singularities</tocitem>
+<tocitem target="guide10.html">Nonlinear boundary value problems and Automatic Differentiation</tocitem>
+<tocitem target="guideindex.html">Index</tocitem>
+
+</tocitem>
+</toc>

@@ -1,0 +1,179 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Jump Conditions in BVPS</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="JumpConditions.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Jump Conditions in BVPS</h1><!--introduction--><p>Nick Hale, 25th November 2011</p><!--/introduction--><p>(Chebfun Example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/JumpConditions.m">ode/JumpConditions.m</a>)</p><p>Chebfun has recently added support for jump conditions in solutions to differential equations. Here we'll demonstrate this on a few toy examples.</p><p>Let's start with a simple linear ODE</p><pre class="codeinput">N = chebop(@(x,u) 1e-2*diff(u,2) + sin(x).*u);
+</pre><p>and add some dirichlet boundary conditions</p><pre class="codeinput">N.lbc = 1; N.rbc = 1;
+</pre><p>Now let's solve this as it is (i.e., without jumps) for reference.</p><pre class="codeinput">u1 = N\0
+plot(u1)
+</pre><pre class="codeoutput">u1 = 
+   chebfun column (1 smooth piece)
+       interval       length   endpoint values   
+[      -1,       1]       47        1        1   
+vertical scale = 1.7 
+</pre><img vspace="5" hspace="5" src="JumpConditions_01.png" alt=""> <p>Suppose we want to add a jump condition at the origin. To do this we'd use the .bc field as follows</p><pre class="codeinput">N.bc = @(x,u) feval(u,0,<span class="string">'right'</span>) - feval(u,0,<span class="string">'left'</span>) - 1;
+u2 = N\0
+plot(u2)
+</pre><pre class="codeoutput">u2 = 
+   chebfun column (2 smooth pieces)
+       interval       length   endpoint values   
+[      -1,       0]       25        1     0.39   
+[       0,       1]       27      1.4        1   
+Total length = 52   vertical scale =   1 
+</pre><img vspace="5" hspace="5" src="JumpConditions_02.png" alt=""> <p>The above notation is a bit clunky, and the syntax 'jump' can be used instead. For example, we get the same result as above with</p><pre class="codeinput">N.bc = @(x,u) jump(u,0) - 1;
+u3 = N\0
+norm(u3-u2)
+</pre><pre class="codeoutput">u3 = 
+   chebfun column (2 smooth pieces)
+       interval       length   endpoint values   
+[      -1,       0]       25        1     0.39   
+[       0,       1]       27      1.4        1   
+Total length = 52   vertical scale =   1 
+ans =
+     0
+</pre><p>We can quickly around and make a jump appear instead in the derivative</p><pre class="codeinput">N.bc = @(x,u) jump(diff(u),0) + 2*pi;
+u4 = N\0
+plot(u4)
+</pre><pre class="codeoutput">u4 = 
+   chebfun column (2 smooth pieces)
+       interval       length   endpoint values   
+[      -1,       0]       30        1      1.6   
+[       0,       1]       26      1.6        1   
+Total length = 56   vertical scale = 1.6 
+</pre><img vspace="5" hspace="5" src="JumpConditions_03.png" alt=""> <p>Or go crazy and introduce multiple jumps!</p><pre class="codeinput">N.bc = @(x,u) [jump(u,-.8:.2:.8) - (-.8:.2:.8),<span class="keyword">...</span>
+               jump(diff(u),-.8:.2:.8) + (-.8:.2:.8)];
+u5 = N\0
+plot(u5)
+</pre><pre class="codeoutput">u5 = 
+   chebfun column (10 smooth pieces)
+       interval       length   endpoint values   
+[      -1,    -0.8]       14        1     0.57   
+[    -0.8,    -0.6]       14    -0.23     0.27   
+[    -0.6,    -0.4]       14    -0.33     0.27   
+[    -0.4,    -0.2]       13    -0.13     0.65   
+[    -0.2,       0]       19     0.45      1.6   
+[       0,     0.2]       14      1.6      2.7   
+[     0.2,     0.4]       14      2.9      1.8   
+[     0.4,     0.6]       14      2.2     -1.4   
+[     0.6,     0.8]       14    -0.82     -2.1   
+[     0.8,       1]       14     -1.3        1   
+Total length = 144   vertical scale =   1 
+</pre><img vspace="5" hspace="5" src="JumpConditions_04.png" alt=""> <p>I'd be very interested to hear if you have any practical problems which require these kinds of conditions!</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Jump Conditions in BVPS
+% Nick Hale, 25th November 2011
+
+%%
+% (Chebfun Example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/JumpConditions.m">ode/JumpConditions.m</a>)
+
+%%
+% Chebfun has recently added support for jump conditions in solutions to
+% differential equations. Here we'll demonstrate this on a few toy examples.
+
+%%
+% Let's start with a simple linear ODE
+
+N = chebop(@(x,u) 1e-2*diff(u,2) + sin(x).*u);
+
+%%
+% and add some dirichlet boundary conditions
+
+N.lbc = 1; N.rbc = 1;
+
+%%
+% Now let's solve this as it is (i.e., without jumps) for reference.
+
+u1 = N\0
+plot(u1)
+
+%%
+% Suppose we want to add a jump condition at the origin. To do this we'd
+% use the .bc field as follows
+
+N.bc = @(x,u) feval(u,0,'right') - feval(u,0,'left') - 1;
+u2 = N\0
+plot(u2)
+
+%%
+% The above notation is a bit clunky, and the syntax 'jump' can be used
+% instead. For example, we get the same result as above with
+
+N.bc = @(x,u) jump(u,0) - 1;
+u3 = N\0
+norm(u3-u2)
+
+%%
+% We can quickly around and make a jump appear instead in the derivative
+
+N.bc = @(x,u) jump(diff(u),0) + 2*pi;
+u4 = N\0
+plot(u4)
+
+%%
+% Or go crazy and introduce multiple jumps!
+
+N.bc = @(x,u) [jump(u,-.8:.2:.8) - (-.8:.2:.8),...
+               jump(diff(u),-.8:.2:.8) + (-.8:.2:.8)];
+u5 = N\0
+plot(u5)
+
+%%
+% I'd be very interested to hear if you have any practical problems which
+% require these kinds of conditions!
+
+##### SOURCE END #####
+--></body></html>

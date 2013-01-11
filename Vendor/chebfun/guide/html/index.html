@@ -1,0 +1,108 @@
+<html>
+
+<head>
+<title>Chebfun</title>
+
+<style>
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+</style>
+</head>
+
+<body>
+<h1>Chebfun</h1>
+
+<p>Copyright &copy 2011 by The University of Oxford and The Chebfun Developers. 
+Please see the <a href="../../LICENSE.txt">software license</a> for usage restrictions.</p>
+
+<p> 
+The Chebfun system provides "numerical computing with functions." Many familiar MATLAB
+commands are extended to appropriate interpretations for functions of one
+variable, and Chebfun often feels symbolic but runs
+at the speed of numerics. More precisely our vision is to achieve for
+functions what floating-point arithmetic achieves for numbers: rapid
+computation in which each successive operation is carried out exactly
+apart from a rounding error that is very small in relative terms.
+</p>
+
+<h2>Chebfun user guides</h2>
+<ol>
+  <li><a href="guide1.html">Getting started with Chebfun</a></li>
+  <li><a href="guide2.html">Integration and differentiation</a></li>
+  <li><a href="guide3.html">Rootfinding and minima and maxima</a></li>
+  <li><a href="guide4.html">Chebfuns and approximation theory</a></li>
+  <li><a href="guide5.html">Complex chebfuns</a></li>
+  <li><a href="guide6.html">Quasimatrices and least squares</a></li>
+  <li><a href="guide7.html">Solving linear differential equations with chebops</a></li>
+  <li><a href="guide8.html">Chebfun preferences</a></li>
+  <li><a href="guide9.html">Infinite intervals, infinite function values, and singularities</a></li>
+  <li><a href="guide10.html">Nonlinear boundary value problems and automatic differentiation</a></li>
+  <li><a href="guideindex.html">Index</a></li>
+</ol>
+
+<h2>Website</h2>
+<p>
+For more information about Chebfun, visit <a href="http://www.maths.ox.ac.uk/chebfun/">www.maths.ox.ac.uk/chebfun/</a>.
+</p>
+
+<hr style="width:600px;" align=left>
+<div style="width:600px;">
+<center>
+<img width="300" src="cheblogo.png" alt="chebfun logo">
+</center>
+</div>
+</body>
+
+</html>

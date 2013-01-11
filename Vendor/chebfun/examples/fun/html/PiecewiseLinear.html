@@ -1,0 +1,226 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Approximation of piecewise linear functions (&amp; chebsnake!)</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="PiecewiseLinear.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Approximation of piecewise linear functions (&amp; chebsnake!)</h1><!--introduction--><p>Stefan G&uuml;ttel, 11 July 2011</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/fun/PiecewiseLinear.m">fun/PiecewiseLinear.m</a>)</p><p>One ingredient that makes Chebyshev interpolation so powerful is the small Lebesgue constant L(n) associated with the Chebyshev nodes cos(pi*(0:n)/(n+1)). The number 1 + L(n) is the factor by which the uniform best approximation of a continuous function f(x) may outperform polynomial interpolation at the corresponding nodes. The Lebesgue constant for Chebyshev nodes is asymptotically</p><pre>  L(n) ~ (2/pi)*log(n),</pre><p>which is a mild growth in n, whereas for n equispaced nodes it's growing exponentially</p><pre>  L(n) ~ 2^n/(e*n*log(n)).</pre><p>(See also Chapter 15 of <a href="http://www.maths.ox.ac.uk/chebfun/ATAP/">http://www.maths.ox.ac.uk/chebfun/ATAP/</a>)</p><p>Roughly speaking, a small Lebesgue constant also suggests that a Chebyshev interpolant stays close to interpolation data f(x), provided that the polynomial best approximant of the same degree is also close to f(x).</p><p>Let's illustrate the above with the following continuous function g(x) resembling a labyrinth.</p><pre class="codeinput">g = chebfun(<span class="string">'0'</span>,[0,400]);
+j = 0; ell = 0; d = 1;
+<span class="keyword">while</span> j &lt; 400,
+    <span class="keyword">if</span> isreal(d),
+        ell = ell + 1;
+    <span class="keyword">end</span>;
+    g(domain([j,j+ell])) = d;
+    d = 1i*d; j = j + ell;
+<span class="keyword">end</span>;
+g = cumsum(g);
+plot(g,<span class="string">'k-'</span>);
+axis([-1,1,-1,1]*11)
+axis <span class="string">square</span>
+</pre><img vspace="5" hspace="5" src="PiecewiseLinear_01.png" alt=""> <p>Imagine that Minotaurus is sitting in the centre of this dark labyrinth and we want to give it a description of how to escape without hitting the wall. One such description is given by the piecewise linear path f:</p><pre class="codeinput">f = -g + .5 + .5i;
+hold <span class="string">on</span>
+plot(f,<span class="string">'r'</span>);
+</pre><img vspace="5" hspace="5" src="PiecewiseLinear_02.png" alt=""> <p>Note that Minotaurus needs to change direction 38 times:</p><pre class="codeinput">f.nfuns - 1
+</pre><pre class="codeoutput">ans =
+    38
+</pre><p>Yet another description for escaping this labyrinth is encoded by as few as 201 Chebyshev coefficients, i.e., by a Chebyshev interpolant of degree 200 (the * indicating the interpolation nodes):</p><pre class="codeinput">figure
+plot(g,<span class="string">'k-'</span>);
+hold <span class="string">on</span>
+p = chebfun(f,[0,400],201,<span class="string">'splitting'</span>,<span class="string">'off'</span>);
+plot(p,<span class="string">'r-*'</span>);
+axis([-1,1,-1,1]*11)
+axis <span class="string">square</span>
+</pre><img vspace="5" hspace="5" src="PiecewiseLinear_03.png" alt=""> <p>In contrast to Chebyshev interpolation, interpolation in equispaced nodes results in immediate instability, even for a degree as small as 20:</p><pre class="codeinput">figure
+plot(g,<span class="string">'k-'</span>);
+hold <span class="string">on</span>
+x = linspace(0,400,21);
+px = polyfit(x,f(x),length(x)-1,domain([0,400]));
+plot(px,<span class="string">'r-*'</span>);
+axis([-1,1,-1,1]*11)
+axis <span class="string">square</span>
+</pre><pre class="codeoutput">Warning: Polynomial is badly conditioned. Add points with distinct X
+         values, reduce the degree of the polynomial, or try centering
+         and scaling as described in HELP POLYFIT. 
+</pre><img vspace="5" hspace="5" src="PiecewiseLinear_04.png" alt=""> <p>Inspired by the fact that Chebyshev interpolants can stay very close to continuous piecewise linear data f(x), the Chebfun system contains an implementation of the well-known game "Snake" (or "Nibbles") based on a Chebyshev interpolant to a moving piecewise linear function.</p><p>chebsnake.m will soon be appearing in the next Chebfun release, but for now it is available at   <a href="http://www.maths.ox.ac.uk/chebfun/examples/approx/chebsnake.m">http://www.maths.ox.ac.uk/chebfun/examples/approx/chebsnake.m</a></p><p>To play, download this file and type:</p><pre class="codeinput">chebsnake;
+</pre><p>If this is too easy for you, you may try to play this game with a polynomial interpolant through equispaced nodes:</p><pre class="codeinput">chebsnake(<span class="string">'equi'</span>);
+</pre><p>You may also try barycentric rational interpolation as described by Floater and Hormann (Numerische Mathematik, 2007), an option implemented by Georges Klein. Because this is a rational interpolant, it can remain close to our piecewise linear f(x) even when the interpolation nodes are equispaced:</p><pre class="codeinput">chebsnake(<span class="string">'fh'</span>);
+</pre><p>Have (Cheb)fun!</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Approximation of piecewise linear functions (& chebsnake!)
+% Stefan Güttel, 11 July 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/fun/PiecewiseLinear.m">fun/PiecewiseLinear.m</a>)
+
+%% 
+% One ingredient that makes Chebyshev interpolation so powerful
+% is the small Lebesgue constant L(n) associated with the Chebyshev
+% nodes cos(pi*(0:n)/(n+1)). The number 1 + L(n) is the factor by 
+% which the uniform best approximation of a continuous function f(x)
+% may outperform polynomial interpolation at the corresponding nodes. 
+% The Lebesgue constant for Chebyshev nodes is asymptotically
+%
+%    L(n) ~ (2/pi)*log(n), 
+%
+% which is a mild growth in n, whereas for n equispaced nodes it's
+% growing exponentially 
+%
+%    L(n) ~ 2^n/(e*n*log(n)). 
+%
+% (See also Chapter 15 of http://www.maths.ox.ac.uk/chebfun/ATAP/)
+%  
+% Roughly speaking, a small Lebesgue constant also suggests that 
+% a Chebyshev interpolant stays close to interpolation data f(x), 
+% provided that the polynomial best approximant of the same degree 
+% is also close to f(x).
+%
+% Let's illustrate the above with the following continuous function 
+% g(x) resembling a labyrinth.
+
+g = chebfun('0',[0,400]);
+j = 0; ell = 0; d = 1;
+while j < 400,
+    if isreal(d),
+        ell = ell + 1;
+    end;
+    g(domain([j,j+ell])) = d;
+    d = 1i*d; j = j + ell;
+end;
+g = cumsum(g);
+plot(g,'k-');
+axis([-1,1,-1,1]*11)
+axis square
+
+%%
+% Imagine that Minotaurus is sitting in the centre of this
+% dark labyrinth and we want to give it a description of how 
+% to escape without hitting the wall. One such description is 
+% given by the piecewise linear path f:
+
+f = -g + .5 + .5i;
+hold on
+plot(f,'r');
+
+%% 
+% Note that Minotaurus needs to change direction 38 times:
+
+f.nfuns - 1
+
+%%
+% Yet another description for escaping this labyrinth is
+% encoded by as few as 201 Chebyshev coefficients, i.e., by
+% a Chebyshev interpolant of degree 200 (the * indicating
+% the interpolation nodes):
+
+figure
+plot(g,'k-');
+hold on
+p = chebfun(f,[0,400],201,'splitting','off');
+plot(p,'r-*');
+axis([-1,1,-1,1]*11)
+axis square
+
+%%
+% In contrast to Chebyshev interpolation, interpolation in 
+% equispaced nodes results in immediate instability, even for 
+% a degree as small as 20:
+
+figure
+plot(g,'k-');
+hold on
+x = linspace(0,400,21);
+px = polyfit(x,f(x),length(x)-1,domain([0,400]));
+plot(px,'r-*');
+axis([-1,1,-1,1]*11)
+axis square
+
+%%
+% Inspired by the fact that Chebyshev interpolants can stay
+% very close to continuous piecewise linear data f(x), the
+% Chebfun system contains an implementation of the well-known 
+% game "Snake" (or "Nibbles") based on a Chebyshev interpolant 
+% to a moving piecewise linear function.
+
+%%
+% chebsnake.m will soon be appearing in the next Chebfun release, 
+% but for now it is available at 
+%   http://www.maths.ox.ac.uk/chebfun/examples/approx/chebsnake.m
+
+%%
+% To play, download this file and type:
+
+chebsnake;
+
+%%
+% If this is too easy for you, you may try to play this game
+% with a polynomial interpolant through equispaced nodes:
+
+chebsnake('equi');
+
+%% 
+% You may also try barycentric rational interpolation as described 
+% by Floater and Hormann (Numerische Mathematik, 2007), an option
+% implemented by Georges Klein. Because this is a rational interpolant, 
+% it can remain close to our piecewise linear f(x) even when the 
+% interpolation nodes are equispaced:
+
+chebsnake('fh');
+
+%%
+% Have (Cheb)fun!
+
+
+##### SOURCE END #####
+--></body></html>

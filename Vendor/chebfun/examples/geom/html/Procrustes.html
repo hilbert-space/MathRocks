@@ -1,0 +1,253 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Procrustes shape analysis</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="Procrustes.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Procrustes shape analysis</h1><!--introduction--><p>Alex Townsend, August 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#3">Shape analysis on a beach holiday</a></li><li><a href="#10">A little warning</a></li><li><a href="#11">A shape and its reflection</a></li><li><a href="#16">Reference</a></li></ul></div><p>(Chebfun Example <a href="/tmp/chebfun_tmp/chebfun/examples/geom/Procrustes.m">geom/Procrustes.m</a>)</p><pre class="codeinput"><span class="keyword">function</span> procrustes
+</pre><pre class="codeinput">close <span class="string">all</span>
+</pre><h2>Shape analysis on a beach holiday<a name="3"></a></h2><p>Procrustes shape analysis is a statistical method for analysing the distribution of sets of shapes (see [1]). Let's suppose we pick up a pebble from the beach and want to know how close its shape matches the outline of an frisbee. Here is a plot of the frisbee and the beach pebble.</p><pre class="codeinput">figure(1);
+t=chebfun(<span class="string">'x'</span>,[0,2*pi]);
+f=3*(1.5*cos(t) + 1i*sin(t)); <span class="comment">%frisbee</span>
+g=exp(1i*pi/3)*(1+cos(t)+1.5i*sin(t)+ .125*(1+1.5i)*sin(3*t).^2); <span class="comment">%pebble</span>
+plot(f,<span class="string">'r'</span>,<span class="string">'LineWidth'</span>,2), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(g,<span class="string">'k'</span>,<span class="string">'LineWidth'</span>,2);
+title(<span class="string">'Frisbee and pebble'</span>,<span class="string">'FontSize'</span>,16); hold <span class="string">off</span>;
+</pre><img vspace="5" hspace="5" src="Procrustes_01.png" alt=""> <p>Two shapes are equivalent if one can be obtained from the other by translating, scaling and rotating. Before comparison we thus:</p><p>1. Translate the shapes so they have mean zero.</p><p>2. Scale so the shapes have Root Mean Squared Distance (RMSD) to the origin of one.</p><p>3. Rotate to align major axis.</p><p>Here is how the frisbee and the pebble compare after each stage.</p><pre class="codeinput"><span class="keyword">function</span> [f,g]=ShapeAnalysis(f,g)
+    <span class="comment">% SHAPEANALYSIS(F,G) Plots the parameterised curves before and after</span>
+    <span class="comment">% each stage of translating, scaling and aligning. Outputs are</span>
+    <span class="comment">% parameterised curves ready for Procustes shape analysis.</span>
+
+    LW = <span class="string">'LineWidth'</span>; FS = <span class="string">'FontSize'</span>;
+    <span class="comment">% Plot orignal</span>
+    subplot(2,2,1)
+    plot(f,<span class="string">'r'</span>,LW,2), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(g,<span class="string">'k'</span>,LW,2)
+    title(<span class="string">'Orignal'</span>,FS,16)
+
+    <span class="comment">% Translate mean to 0.</span>
+    f = f-mean(f); g = g-mean(g);
+    subplot(2,2,2)
+    plot(f,<span class="string">'r'</span>,LW,2), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(g,<span class="string">'k'</span>,LW,2)
+    title(<span class="string">'After translation'</span>,FS,16)
+
+    <span class="comment">% Scale so RMSD is 1.</span>
+    f = f/norm(f); g = g/norm(g);
+    subplot(2,2,3)
+    plot(f,<span class="string">'r'</span>,LW,2), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(g,<span class="string">'k'</span>,LW,2)
+    title(<span class="string">'After scaling'</span>,FS,16)
+
+    <span class="comment">% Align major axis.</span>
+    subplot(2,2,4)
+    <span class="comment">% Find argument of major axis.</span>
+    [~,fxmax]=max(abs(f)); [~,gxmax]=max(abs(g));
+    rotf=angle(f(fxmax)); rotg=angle(g(gxmax));
+    <span class="comment">% Rotate both so major axis lies on the +ve real axis.</span>
+    x = chebfun(<span class="string">'x'</span>,[0,2*pi]);
+    f = exp(-1i*rotf)*f(mod(x+fxmax,2*pi));
+    g = exp(-1i*rotg)*g(mod(x+gxmax,2*pi));
+    plot(f,<span class="string">'r'</span>,LW,2), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(g,<span class="string">'k'</span>,LW,2)
+    title(<span class="string">'After aligning'</span>,FS,16), hold <span class="string">off</span>
+<span class="keyword">end</span>
+
+[f,g] = ShapeAnalysis(f,g);
+</pre><img vspace="5" hspace="5" src="Procrustes_02.png" alt=""> <p>To calculate the Procrustes distance we would measure the error between the two shapes at a finite number of reference points and compute the vector 2-norm. In this discrete case In Chebfun we calculate the continuous analogue:</p><pre class="codeinput">norm(f-g)
+</pre><pre class="codeoutput">ans =
+   0.072347575424997
+</pre><h2>A little warning<a name="10"></a></h2><p>In the discrete version of Procrustes shape analysis statisticians choose reference points on the two shapes (to compare).  They then work out the difference between corresponding reference points.  The error computed depends on this correspondence.  A different correspondence gives a different error.   In the continuous case this correspondence becomes the parameterisation. A different parameterisation of the two curves gives a different error. This continuous version of Procrustes (as implemented in this example) is therefore more of an 'eye-ball' check than a robust statistical analysis.</p><h2>A shape and its reflection<a name="11"></a></h2><p>At the beach shapes reflect on the surface of the sea. An interesting question is: How close, in shape, is a pebble to its reflection?  Here is a plot of a pebble and its reflection.</p><pre class="codeinput">figure(2)
+<span class="comment">% pebble</span>
+f = exp(1i*pi/3)*(1+cos(t)+1.5i*sin(t)+.125*(1+1.5i)*sin(3*t).^2);
+<span class="comment">% reflection</span>
+g = exp(-1i*pi/3)*(1+cos(2*pi-t)-1.5i*sin(2*pi-t)+.125*(1-1.5i)*sin(3*(2*pi-t)).^2);
+
+plot(f,<span class="string">'r'</span>,<span class="string">'LineWidth'</span>,2), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(g,<span class="string">'k'</span>,<span class="string">'LineWidth'</span>,2)
+title(<span class="string">'Pebble and its reflection'</span>,<span class="string">'FontSize'</span>,16), hold <span class="string">off</span>
+</pre><img vspace="5" hspace="5" src="Procrustes_03.png" alt=""> <p>Here is how the pebble and its reflection compare after each stage of translating, scaling and rotating.</p><pre class="codeinput">[f,g]=ShapeAnalysis(f,g);
+</pre><img vspace="5" hspace="5" src="Procrustes_04.png" alt=""> <p>Now we calculate the continuous Procrustes distance.</p><pre class="codeinput">norm(f-g)
+</pre><pre class="codeoutput">ans =
+   0.097593759012228
+</pre><p>Comparing this result to the Procrustes distance of the pebble and a frisbee shows that the pebble is closer in shape to a frisbee than its own reflection!</p><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2>Reference<a name="16"></a></h2><p>[1] <a href="http://en.wikipedia.org/wiki/Procrustes">http://en.wikipedia.org/wiki/Procrustes</a></p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Procrustes shape analysis
+% Alex Townsend, August 2011
+
+%%
+% (Chebfun Example <a href="/tmp/chebfun_tmp/chebfun/examples/geom/Procrustes.m">geom/Procrustes.m</a>)
+
+function procrustes
+close all
+%% Shape analysis on a beach holiday
+% Procrustes shape analysis is a statistical method for analysing the
+% distribution of sets of shapes (see [1]). Let's suppose we pick up a
+% pebble from the beach and want to know how close its shape matches the
+% outline of an frisbee. Here is a plot of the frisbee and the beach
+% pebble.
+
+figure(1);
+t=chebfun('x',[0,2*pi]);
+f=3*(1.5*cos(t) + 1i*sin(t)); %frisbee
+g=exp(1i*pi/3)*(1+cos(t)+1.5i*sin(t)+ .125*(1+1.5i)*sin(3*t).^2); %pebble
+plot(f,'r','LineWidth',2), hold on, axis equal, plot(g,'k','LineWidth',2); 
+title('Frisbee and pebble','FontSize',16); hold off;
+
+%% 
+% Two shapes are equivalent if one can be obtained from the other by
+% translating, scaling and rotating. Before comparison we thus:
+
+%%
+% 1. Translate the shapes so they have mean zero.
+
+%%
+% 2. Scale so the shapes have Root Mean Squared Distance (RMSD) to the
+% origin of one.
+
+%% 
+% 3. Rotate to align major axis.
+
+%% 
+% Here is how the frisbee and the pebble compare after each stage.
+
+function [f,g]=ShapeAnalysis(f,g)
+    % SHAPEANALYSIS(F,G) Plots the parameterised curves before and after
+    % each stage of translating, scaling and aligning. Outputs are
+    % parameterised curves ready for Procustes shape analysis.
+    
+    LW = 'LineWidth'; FS = 'FontSize';
+    % Plot orignal
+    subplot(2,2,1)
+    plot(f,'r',LW,2), hold on, axis equal, plot(g,'k',LW,2)
+    title('Orignal',FS,16)
+
+    % Translate mean to 0.
+    f = f-mean(f); g = g-mean(g); 
+    subplot(2,2,2)
+    plot(f,'r',LW,2), hold on, axis equal, plot(g,'k',LW,2)
+    title('After translation',FS,16)
+
+    % Scale so RMSD is 1.
+    f = f/norm(f); g = g/norm(g);
+    subplot(2,2,3)
+    plot(f,'r',LW,2), hold on, axis equal, plot(g,'k',LW,2)
+    title('After scaling',FS,16)
+
+    % Align major axis.
+    subplot(2,2,4)
+    % Find argument of major axis.
+    [~,fxmax]=max(abs(f)); [~,gxmax]=max(abs(g));
+    rotf=angle(f(fxmax)); rotg=angle(g(gxmax));
+    % Rotate both so major axis lies on the +ve real axis.
+    x = chebfun('x',[0,2*pi]);
+    f = exp(-1i*rotf)*f(mod(x+fxmax,2*pi));
+    g = exp(-1i*rotg)*g(mod(x+gxmax,2*pi));
+    plot(f,'r',LW,2), hold on, axis equal, plot(g,'k',LW,2)
+    title('After aligning',FS,16), hold off
+end
+
+[f,g] = ShapeAnalysis(f,g);
+
+%%
+% To calculate the Procrustes distance we would measure the error between
+% the two shapes at a finite number of reference points and compute the
+% vector 2-norm. In this discrete case In Chebfun we calculate the
+% continuous analogue:
+
+norm(f-g)
+
+%% A little warning
+% In the discrete version of Procrustes shape analysis statisticians choose
+% reference points on the two shapes (to compare).  They then work out the
+% difference between corresponding reference points.  The error computed
+% depends on this correspondence.  A different correspondence gives a
+% different error.   In the continuous case this correspondence becomes the
+% parameterisation. A different parameterisation of the two curves gives a
+% different error. This continuous version of Procrustes (as implemented in
+% this example) is therefore more of an 'eye-ball' check than a robust
+% statistical analysis.
+
+%% A shape and its reflection
+% At the beach shapes reflect on the surface of the sea. An interesting 
+% question is: How close, in shape, is a pebble to its reflection?  Here is
+% a plot of a pebble and its reflection. 
+
+figure(2)
+% pebble
+f = exp(1i*pi/3)*(1+cos(t)+1.5i*sin(t)+.125*(1+1.5i)*sin(3*t).^2); 
+% reflection
+g = exp(-1i*pi/3)*(1+cos(2*pi-t)-1.5i*sin(2*pi-t)+.125*(1-1.5i)*sin(3*(2*pi-t)).^2);
+
+plot(f,'r','LineWidth',2), hold on, axis equal, plot(g,'k','LineWidth',2) 
+title('Pebble and its reflection','FontSize',16), hold off
+
+%%
+% Here is how the pebble and its reflection compare after each stage of
+% translating, scaling and rotating.
+
+[f,g]=ShapeAnalysis(f,g);
+
+%%
+% Now we calculate the continuous Procrustes distance. 
+norm(f-g)
+
+%%
+% Comparing this result to the Procrustes distance of the pebble and a
+% frisbee shows that the pebble is closer in shape to a frisbee than its own
+% reflection! 
+
+end
+
+%% Reference
+%
+% [1] http://en.wikipedia.org/wiki/Procrustes
+##### SOURCE END #####
+--></body></html>

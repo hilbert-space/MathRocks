@@ -1,0 +1,163 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>The white curves of Ortiz and Rivlin</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="WhiteCurves.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>The white curves of Ortiz and Rivlin</h1><!--introduction--><p>Stefan Guettel, 2nd November 2011</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/roots/WhiteCurves.m">roots/WhiteCurves.m</a>)</p><p>In their article ``Another Look at the Chebyshev Polynomials'' [1] from 1983, E. L. Ortiz and T. J. Rivlin considered the graph of 30 Chebyshev polynomials T_j(x), noticing the appearance of what they called "white curves":</p><pre class="codeinput">plot(chebpoly(1:30),<span class="string">'b-'</span>)
+hold <span class="string">on</span>
+</pre><img vspace="5" hspace="5" src="WhiteCurves_01.png" alt=""> <p>The white curves are regions in the graph with exceptionally many intersection points of Chebyshev polynomials. Ortiz and Rivlin show that if 0 &lt; m &lt;= n and T_m(x) = T_n(x) = y, then</p><pre>  (1 - T_{n-m}(x)) * (T_2(y) - T_{n-m}(x)) = 0.</pre><p>Hence the interior intersection points of Chebyshev polynomials must lie on the curve (x,y) satisfying T_2(y) = T_{n-m}(x). Smaller numbers of n-m correspond to smaller numbers of intersection points. Here are the intersection points obtained with n-m &lt;= 4, obtained with Chebfun's rootfinding capability:</p><pre class="codeinput">T_2 = chebpoly(2);
+<span class="keyword">for</span> j = 1:4,        <span class="comment">% j = n-m</span>
+    T_j = chebpoly(j);
+    <span class="keyword">for</span> y = linspace(-1,1,200),
+        x = roots(T_j - T_2(y));
+        plot(x,y,<span class="string">'r.'</span>);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="WhiteCurves_02.png" alt=""> <p>Ortiz and Rivlin also noted that the phenomenon of white curves persists for other orthogonal polynomials as well. For example, let's take the Legendre polynomials and plot them with some appropriate reweighting:</p><pre class="codeinput">figure
+x = chebfun(<span class="string">'x'</span>);
+<span class="keyword">for</span> j = 1:30,
+    L = legpoly(j);
+    q = (pi*j/2)^.5*(1-x.^2).^.25;
+    plot(L.*q);
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="WhiteCurves_03.png" alt=""> <p>It is easy to compute the points (x,y) satisfying L_2(y) = L_j(x) just as before. They have no particular meaning in this case, but they appear as a nice pattern:</p><pre class="codeinput">figure
+L_2 = legpoly(2);
+<span class="keyword">for</span> j = 1:4,        <span class="comment">% j = n-m</span>
+    L_j = legpoly(j);
+    <span class="keyword">for</span> y = linspace(-1,1,200),
+        x = roots(L_j - L_2(y));
+        <span class="keyword">if</span>(~isempty(x)), plot(x,y,<span class="string">'r.'</span>); hold <span class="string">on</span>; <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="WhiteCurves_04.png" alt=""> <p>References:</p><p>E. L. Ortiz and T. J. Rivlin, Another look at the Chebyshev polynomials, American Mathematical Monthly 90 (1983), 3-10.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% The white curves of Ortiz and Rivlin
+% Stefan Guettel, 2nd November 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/roots/WhiteCurves.m">roots/WhiteCurves.m</a>)
+
+
+%%
+% In their article ``Another Look at the Chebyshev Polynomials'' [1] from
+% 1983, E. L. Ortiz and T. J. Rivlin considered the graph of 30 Chebyshev
+% polynomials T_j(x), noticing the appearance of what they called "white
+% curves":
+
+plot(chebpoly(1:30),'b-')
+hold on
+
+%%
+% The white curves are regions in the graph with exceptionally many intersection
+% points of Chebyshev polynomials. Ortiz and Rivlin show that if 
+% 0 < m <= n and T_m(x) = T_n(x) = y, then 
+% 
+%    (1 - T_{n-m}(x)) * (T_2(y) - T_{n-m}(x)) = 0.
+%
+% Hence the interior intersection points of Chebyshev polynomials
+% must lie on the curve (x,y) satisfying T_2(y) = T_{n-m}(x).
+% Smaller numbers of n-m correspond to smaller numbers of intersection
+% points. Here are the intersection points obtained with n-m <= 4,
+% obtained with Chebfun's rootfinding capability:
+
+T_2 = chebpoly(2);
+for j = 1:4,        % j = n-m
+    T_j = chebpoly(j);
+    for y = linspace(-1,1,200),
+        x = roots(T_j - T_2(y));
+        plot(x,y,'r.');
+    end
+end
+
+%%
+% Ortiz and Rivlin also noted that the phenomenon of white curves 
+% persists for other orthogonal polynomials as well. For example,
+% let's take the Legendre polynomials and plot them with some
+% appropriate reweighting:
+
+figure
+x = chebfun('x');
+for j = 1:30,
+    L = legpoly(j);
+    q = (pi*j/2)^.5*(1-x.^2).^.25;
+    plot(L.*q);
+    hold on
+end
+
+%% 
+% It is easy to compute the points (x,y) satisfying L_2(y) = L_j(x) just
+% as before. They have no particular meaning in this case, but they
+% appear as a nice pattern:
+
+figure
+L_2 = legpoly(2);
+for j = 1:4,        % j = n-m
+    L_j = legpoly(j);
+    for y = linspace(-1,1,200),
+        x = roots(L_j - L_2(y));
+        if(~isempty(x)), plot(x,y,'r.'); hold on; end
+    end
+end
+
+%%
+% References:
+%
+% E. L. Ortiz and T. J. Rivlin, Another look at the Chebyshev polynomials,
+% American Mathematical Monthly 90 (1983), 3-10.
+
+##### SOURCE END #####
+--></body></html>

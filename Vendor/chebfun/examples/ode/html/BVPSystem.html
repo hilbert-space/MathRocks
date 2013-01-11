@@ -1,0 +1,175 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>System of two nonlinear BVPs</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="BVPSystem.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>System of two nonlinear BVPs</h1><!--introduction--><p>Asgeir Birkisson, September 2010</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">1. System of equations</a></li><li><a href="#3">2.  Solution using multiple variables u and v</a></li><li><a href="#5">3.  Solution using a single quasimatrix variable u</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/BVPSystem.m">ode/BVPSystem.m</a>)</p><h2>1. System of equations<a name="2"></a></h2><p>Here is a system of two coupled nonlinear ODEs on the interval [-1,1], with boundary conditions.</p><p>u'' - sin(v) = 0</p><p>v'' + cos(u) = 0</p><p>u(-1) = 1,    v'(-1) = 0</p><p>u'(1) = 0,   v(1) = 0</p><h2>2.  Solution using multiple variables u and v<a name="3"></a></h2><p>One way you can solve a problem like this with Chebfun is to work with multiple variables, solving for two chebfuns u and v. Here we do this, setting up the problem using anonymous functions that take two chebfuns as input and return a quasimatrix of two chebfuns as output:</p><pre class="codeinput">N = chebop(-1,1);
+x = chebfun(<span class="string">'x'</span>);
+N.op = @(x,u,v)[ diff(u,2) - sin(v), diff(v,2) + cos(u)];
+N.lbc = @(u,v)[ u-1,  diff(v)];
+N.rbc =  @(u,v)[ v, diff(u)];
+N.guess = [0*x,0*x];
+[sol nrmduvec] = N\0;
+</pre><p>We extract the functions from the solution and plot them:</p><pre class="codeinput">LW = <span class="string">'linewidth'</span>; FS = <span class="string">'fontsize'</span>;
+u = sol(:,1); v = sol(:,2);
+figure, subplot(1,2,1), plot(u,LW,2)
+hold <span class="string">on</span>, plot(v,<span class="string">'--r'</span>,LW,2), hold <span class="string">off</span>
+title(<span class="string">'u and v vs. x'</span>,FS,12), legend(<span class="string">'u'</span>,<span class="string">'v'</span>)
+box <span class="string">on</span>, grid <span class="string">on</span>
+xlabel(<span class="string">'x'</span>,FS,10), ylabel(<span class="string">'u(x) and v(x)'</span>,FS,10)
+subplot(1,2,2), semilogy(nrmduvec,<span class="string">'-*'</span>,LW,2)
+title(<span class="string">'Norm of update vs. iteration no.'</span>,FS,12)
+box <span class="string">on</span>, grid <span class="string">on</span>
+xlabel(<span class="string">'Iteration no.'</span>,FS,10), ylabel(<span class="string">'Norm of update'</span>,FS,10)
+</pre><img vspace="5" hspace="5" src="BVPSystem_01.png" alt=""> <h2>3.  Solution using a single quasimatrix variable u<a name="5"></a></h2><p>Another way to solve the same problem is to work with a single quasimatrix variable u which has two components, u(:,1) and u(:,2).</p><p>(u_1)'' - sin(u_2) = 0</p><p>(u_2)'' + cos(u_1) = 0</p><p>u_1(-1) = 1,      (u_2)'(-1) = 0</p><p>(u_1)'(1) = 0,   u_2(1) = 0</p><pre class="codeinput">N = chebop(-1,1);
+x = chebfun(<span class="string">'x'</span>);
+N.op = @(u) [ diff(u(:,1),2) - sin(u(:,2)), diff(u(:,2),2) + cos(u(:,1)) ];
+N.lbc = @(u)[ u(:,1)-1, diff(u(:,2))];
+N.rbc =  @(u)[ u(:,2), diff(u(:,1))];
+N.guess = [0*x,0*x];
+[u nrmduvec] = N\0;
+
+figure
+subplot(1,2,1), plot(u(:,1),LW,2), hold <span class="string">on</span>
+plot(u(:,2),<span class="string">'--r'</span>,LW,2), hold <span class="string">off</span>
+title(<span class="string">'u_1(x) and u_2(x) vs. x'</span>,FS,12), legend(<span class="string">'u_1'</span>,<span class="string">'u_2'</span>)
+box <span class="string">on</span>, grid <span class="string">on</span>
+xlabel(<span class="string">'x'</span>,FS,10), ylabel(<span class="string">'u_1(x) and u_2(x)'</span>,FS,10)
+subplot(1,2,2), semilogy(nrmduvec,<span class="string">'-*'</span>,LW,2)
+title(<span class="string">'Norm of update vs. iteration no.'</span>,FS,12)
+box <span class="string">on</span>, grid <span class="string">on</span>
+xlabel(<span class="string">'Iteration no.'</span>,FS,10), ylabel(<span class="string">'Norm of update'</span>,FS,10)
+</pre><img vspace="5" hspace="5" src="BVPSystem_02.png" alt=""> <p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% System of two nonlinear BVPs
+% Asgeir Birkisson, September 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/BVPSystem.m">ode/BVPSystem.m</a>)
+
+%% 1. System of equations
+% Here is a system of two coupled nonlinear ODEs on the
+% interval [-1,1], with boundary conditions.
+%
+% u'' - sin(v) = 0
+%
+% v'' + cos(u) = 0               
+%
+% u(-1) = 1,    v'(-1) = 0
+%
+% u'(1) = 0,   v(1) = 0
+%
+
+%% 2.  Solution using multiple variables u and v
+% One way you can solve a problem like this with Chebfun is to work with
+% multiple variables, solving for two chebfuns u and v.
+% Here we do this, setting up the problem using anonymous functions that take
+% two chebfuns as input and return a quasimatrix of two chebfuns as output:
+N = chebop(-1,1);
+x = chebfun('x');
+N.op = @(x,u,v)[ diff(u,2) - sin(v), diff(v,2) + cos(u)];
+N.lbc = @(u,v)[ u-1,  diff(v)];
+N.rbc =  @(u,v)[ v, diff(u)];
+N.guess = [0*x,0*x];
+[sol nrmduvec] = N\0;
+
+%%
+% We extract the functions from the solution and plot them:
+LW = 'linewidth'; FS = 'fontsize';
+u = sol(:,1); v = sol(:,2);
+figure, subplot(1,2,1), plot(u,LW,2)
+hold on, plot(v,'REPLACE_WITH_DASH_DASHr',LW,2), hold off
+title('u and v vs. x',FS,12), legend('u','v')
+box on, grid on
+xlabel('x',FS,10), ylabel('u(x) and v(x)',FS,10)
+subplot(1,2,2), semilogy(nrmduvec,'-*',LW,2)
+title('Norm of update vs. iteration no.',FS,12)
+box on, grid on
+xlabel('Iteration no.',FS,10), ylabel('Norm of update',FS,10)
+
+%% 3.  Solution using a single quasimatrix variable u
+% Another way to solve the same problem is to work with a single quasimatrix variable u
+% which has two components, u(:,1) and u(:,2).
+%
+% (u_1)'' - sin(u_2) = 0
+%
+% (u_2)'' + cos(u_1) = 0               
+%
+% u_1(-1) = 1,      (u_2)'(-1) = 0
+%
+% (u_1)'(1) = 0,   u_2(1) = 0
+%
+N = chebop(-1,1);
+x = chebfun('x');
+N.op = @(u) [ diff(u(:,1),2) - sin(u(:,2)), diff(u(:,2),2) + cos(u(:,1)) ];
+N.lbc = @(u)[ u(:,1)-1, diff(u(:,2))];
+N.rbc =  @(u)[ u(:,2), diff(u(:,1))];
+N.guess = [0*x,0*x];
+[u nrmduvec] = N\0;
+
+figure
+subplot(1,2,1), plot(u(:,1),LW,2), hold on
+plot(u(:,2),'REPLACE_WITH_DASH_DASHr',LW,2), hold off
+title('u_1(x) and u_2(x) vs. x',FS,12), legend('u_1','u_2')
+box on, grid on
+xlabel('x',FS,10), ylabel('u_1(x) and u_2(x)',FS,10)
+subplot(1,2,2), semilogy(nrmduvec,'-*',LW,2)
+title('Norm of update vs. iteration no.',FS,12)
+box on, grid on
+xlabel('Iteration no.',FS,10), ylabel('Norm of update',FS,10)
+
+##### SOURCE END #####
+--></body></html>

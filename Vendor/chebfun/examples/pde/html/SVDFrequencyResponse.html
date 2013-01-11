@@ -1,0 +1,374 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Singular Value Decomposition of Compact Operators: A Tool for Computing Frequency Responses of PDEs</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="SVDFrequencyResponse.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Singular Value Decomposition of Compact Operators: A Tool for Computing Frequency Responses of PDEs</h1><!--introduction--><p>Binh K. Lieu and Mihailo R. Jovanovic, 6th January 2012</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Introduction</a></li><li><a href="#3">Example: one-dimensional diffusion equation</a></li><li><a href="#13">References</a></li></ul></div><p>(Chebfun example pde/SVDFrequencyResponse.m)</p><h2>Introduction<a name="2"></a></h2><p>In many physical systems there is a need to examine the effects of exogenous disturbances on the variables of interest. The analysis of dynamical systems with inputs has a long history in physics, circuit theory, controls, communications, and signal processing. Recently, input-output analysis has been effectively employed to uncover the mechanisms and associated spatio-temporal flow patterns that trigger the early stages of transition to turbulence in wall-bounded shear flows of Newtonian and viscoelastic fluids.</p><p>Frequency response analysis represents an effective means for quantifying the system's performance in the presence of a stimulus, and it characterizes the steady-state response of a stable system to persistent harmonic forcing. For infinite dimensional systems, the principal singular value of the frequency response operator quantifies the largest amplification from the input forcing to the desired output at each frequency. Furthermore, the associated left and right principal singular functions identify the spatial distributions of the output (that exhibits this largest amplification) and the input (that has the strongest influence on the system's dynamics), respectively.</p><p>We have employed Chebfun as a tool for computing frequency responses of linear time-invariant PDEs in which an independent spatial variable belongs to a compact interval. Our method recasts the frequency response operator as a two-point boundary value problem (TPBVP) and determines the singular value decomposition of the resulting representation in Chebfun. This approach has two advantages over currently available schemes: first, it avoids numerical instabilities encountered in systems with differential operators of high order and, second, it alleviates difficulty in implementing boundary conditions. We refer the user to Lieu &amp; Jovanovic 2011 [3] for a detailed explanation of the method.</p><p>We have developed the following easy-to-use Matlab function (m-file) [1]</p><pre class="language-matlab">svdfr.m
+</pre><p>which takes the system's coefficients and boundary condition matrices as inputs and returns the desired number of left (or right) singular pairs as the output. The coefficients and boundary conditions of the adjoint systems are automatically implemented within the code. Thus, the burden of finding the adjoint operators and corresponding boundary conditions is removed from the user. The algorithm is based on transforming the TPBVP in differential form into an equivalent integral representation. The procedure for achieving this is described in Lieu &amp; Jovanovic 2011 [3]; also see T. Driscoll 2010 [2]. Additional examples are provided at [1].</p><pre class="codeinput">urlwrite(<span class="string">'http://www.ece.umn.edu/users/mihailo/software/chebfun-svd/matlab-files/svdfr.m'</span>,<span class="string">'svdfr.m'</span>);
+help <span class="string">svdfr</span>
+</pre><pre class="codeoutput">  ========================================================================
+  [Sfun,Sval] = svdfr(A0,B0,C0,Wa0,Wb0,LRfuns,Nsigs)
+   
+  Given a two point boundary value representation of the frequency response
+  operator
+   
+        { A0*phi = B0*d,
+    T:  { u = C0*phi,
+        { 0 = Wa0*phi(a) + Wb0*phi(b),
+   
+  solve the eigenvalue problem
+   
+        T*Ts*Sfun = Sval*Sfun, or Ts*T*Sfun = Sval*Sfun,
+   
+  where Ts is the adjoint of the frequency response operator T
+   
+         { A0s*psi = B0s*f,
+    Ts:  { g = C0s*psi,
+         { 0 = Wa0s*psi(a) + Wb0s*psi(b).
+   
+  Inputs:
+   
+    LRfuns  = 1     --&gt; solve for left singular functions: T*Ts
+                    --&gt; determine spatial profile of the output
+    LRfuns  = 0     --&gt; solve for right singular functions: Ts*T
+                    --&gt; determine spatial profile of the input
+   
+    Nsigs --&gt; number of desired singular values (default: Nsigs = 1)
+   
+  Outputs:
+    
+    Sval    --&gt; singular values of T arranged in descending order
+    Sfun    --&gt; singular functions associated with Sval
+   
+  written by: Binh Lieu, 2011
+  reference:
+   
+  B.K. Lieu &amp; M.R. Jovanovic, "Computation of frequency responses 
+  for linear time-invariant PDEs on a compact interval", Journal of 
+  Computational Physics, submitted (2011); also arXiv:1112.0579v1
+   
+  ========================================================================
+
+</pre><h2>Example: one-dimensional diffusion equation<a name="3"></a></h2><p>We demonstrate our method on a simple one-dimensional diffusion equation subject to spatially and temporally distributed forcing d(y,t), homogenous Dirichlet boundary conditions, and zero initial conditions</p><pre class="language-matlab">u_t(y,t) = u_{yy}(y,t) + d(y,t), y <span class="string">\in</span> <span class="string">[-1,1]</span>
+</pre><pre class="language-matlab">u(-1,t) = u(+1,t) = 0, u(y,0) = 0.
+</pre><p>Application of the temporal Fourier transform yields the following two point boundary value representation of the frequency response operator T,</p><pre class="language-matlab">( D^{(2)} - i*w )*u(y) = -d(y)
+</pre><pre class="language-matlab">( [1; 0] E_{-1} + [0; 1] E_{1} )*u(y) = [0; 0]
+</pre><p>where</p><pre class="language-matlab">w       <span class="string">--</span> <span class="string">temporal</span> <span class="string">frequency</span>
+</pre><pre class="language-matlab">D^{(2)} -- second-order differential <span class="string">operator</span> <span class="string">in</span> <span class="string">y</span>
+</pre><pre class="language-matlab">i       -- imaginary unit
+</pre><pre class="language-matlab">E_{j}   -- point evaluation <span class="string">functional</span> <span class="string">at</span> <span class="string">the</span> <span class="string">boundary</span> <span class="string">y</span> <span class="string">=</span> <span class="string">j.</span>
+</pre><p>We note that svdfr.m only requires the system's coefficients and boundary conditions matrices to compute the singular value decomposition of the frequency response operator T. For completeness, we will next show how to obtain the two point boundary value representations of the adjoint operator Ts and the composition operator T*Ts.</p><p>The two-point boundary value representation for the adjoint of the frequency response operator, Ts, is given by</p><pre class="language-matlab">( D^{(2)} + i*w )*v(y) = f(y)
+</pre><pre class="language-matlab">g(y) = -v(y)
+</pre><pre class="language-matlab">( [1; 0] E_{-1} + [0; 1] E_{1} )*v(y) = [0; 0].
+</pre><p>The representation of the operator T*Ts is obtained by combining the two point boundary value representations of T and Ts. This can be achieved by setting d = g</p><pre class="language-matlab">( D^{(2)} - i*w )*u(y) - v(y) = 0
+( D^{(2)} + i*w )*v(y) = f(y)
+</pre><pre class="language-matlab">( [1; 0] E_{-1} + [0; 1] E_{1} )*u(y) = [0; 0]
+( [1; 0] E_{-1} + [0; 1] E_{1} )*v(y) = [0; 0].
+</pre><p>Note that svdfr.m utilizes the integral form of a two point boundary value representation of the operator T*Ts. This yields accurate results even for systems with high order differential operators and poorly-scaled coefficients.</p><pre class="codeinput"><span class="comment">% The system parameters:</span>
+w = 0; <span class="comment">% set temporal frequency to the value of interest</span>
+
+dom = domain(-1,1);         <span class="comment">% domain of your function</span>
+fone = chebfun(1,dom);      <span class="comment">% one function</span>
+fzero = chebfun(0,dom);     <span class="comment">% zero function</span>
+y = chebfun(<span class="string">'x'</span>,dom);       <span class="comment">% linear function</span>
+</pre><p>The system operators can be constructed as follows:</p><pre class="codeinput">A0{1} = [-1i*w*fone, fzero, fone];
+B0{1} = -fone;
+C0{1} = fone;
+</pre><p>The boundary condition matrices are given by:</p><pre class="codeinput">Wa0{1} = [1, 0];   <span class="comment">% 1*u(-1) + 0*D^{(1)}*u(-1) = 0</span>
+Wb0{1} = [1, 0];   <span class="comment">% 1*u(+1) + 0*D^{(1)}*u(+1) = 0</span>
+</pre><p>The singular values and the associated singular functions of the frequency response operator can be computed using the following code</p><pre class="codeinput">Nsigs = 25;    <span class="comment">% find the largest 25 singular values</span>
+LRfuns = 1;    <span class="comment">% and associated left singular functions</span>
+
+[Sfun, Sval] = svdfr(A0,B0,C0,Wa0,Wb0,LRfuns,Nsigs);
+</pre><p>Analytical expressions for the singular values and corresponding singular functions are given by:</p><pre class="codeinput">Sa = (4./(([1:Nsigs].*pi).^2)).';    <span class="comment">% analytical singular values</span>
+Sf1 = sin((1/sqrt(Sa(1))).*(y+1));   <span class="comment">% analytical soln of 1st singular function</span>
+Sf2 = sin((1/sqrt(Sa(2))).*(y+1));   <span class="comment">% analytical soln of 2nd singular function</span>
+</pre><p>The absolute error of the first 25 singular values</p><pre class="codeinput">norm(Sval - Sa)
+</pre><pre class="codeoutput">ans =
+   6.7540e-15
+</pre><p>The 25 largest singular values of the frequency response operator: svdfr versus analytical results.</p><pre class="codeinput">plot(1:Nsigs,Sval,<span class="string">'bx'</span>,<span class="string">'LineWidth'</span>,1.25,<span class="string">'MarkerSize'</span>,10)
+hold <span class="string">on</span>
+plot(1:Nsigs,Sa,<span class="string">'ro'</span>,<span class="string">'LineWidth'</span>,1.25,<span class="string">'MarkerSize'</span>,10);
+xlab = xlabel(<span class="string">'n'</span>, <span class="string">'interpreter'</span>, <span class="string">'tex'</span>);
+set(xlab, <span class="string">'FontName'</span>, <span class="string">'cmmi10'</span>, <span class="string">'FontSize'</span>, 20);
+h = get(gcf,<span class="string">'CurrentAxes'</span>);
+set(h, <span class="string">'FontName'</span>, <span class="string">'cmr10'</span>, <span class="string">'FontSize'</span>, 20, <span class="string">'xscale'</span>, <span class="string">'lin'</span>, <span class="string">'yscale'</span>, <span class="string">'lin'</span>);
+</pre><img vspace="5" hspace="5" src="SVDFrequencyResponse_01.png" alt=""> <p>The principal singular function of the frequency response operator: svdfr versus analytical results.</p><pre class="codeinput">hold <span class="string">off</span>; plot(y,-Sfun(:,1),<span class="string">'bx-'</span>,<span class="string">'LineWidth'</span>,1.25,<span class="string">'MarkerSize'</span>,10)
+hold <span class="string">on</span>; plot(y,Sf1,<span class="string">'ro-'</span>,<span class="string">'LineWidth'</span>,1.25,<span class="string">'MarkerSize'</span>,10);
+xlab = xlabel(<span class="string">'y'</span>, <span class="string">'interpreter'</span>, <span class="string">'tex'</span>);
+set(xlab, <span class="string">'FontName'</span>, <span class="string">'cmmi10'</span>, <span class="string">'FontSize'</span>, 20);
+h = get(gcf,<span class="string">'CurrentAxes'</span>);
+set(h, <span class="string">'FontName'</span>, <span class="string">'cmr10'</span>, <span class="string">'FontSize'</span>, 20, <span class="string">'xscale'</span>, <span class="string">'lin'</span>, <span class="string">'yscale'</span>, <span class="string">'lin'</span>);
+axis <span class="string">tight</span>
+</pre><img vspace="5" hspace="5" src="SVDFrequencyResponse_02.png" alt=""> <p>The singular function of the frequency response operator corresponding to the second largest singular value: svdfr versus analytical results.</p><pre class="codeinput">hold <span class="string">off</span>; plot(y,Sfun(:,2),<span class="string">'bx-'</span>,<span class="string">'LineWidth'</span>,1.25,<span class="string">'MarkerSize'</span>,10)
+hold <span class="string">on</span>; plot(y,Sf2,<span class="string">'ro-'</span>,<span class="string">'LineWidth'</span>,1.25,<span class="string">'MarkerSize'</span>,10);
+xlab = xlabel(<span class="string">'y'</span>, <span class="string">'interpreter'</span>, <span class="string">'tex'</span>);
+set(xlab, <span class="string">'FontName'</span>, <span class="string">'cmmi10'</span>, <span class="string">'FontSize'</span>, 20);
+h = get(gcf,<span class="string">'CurrentAxes'</span>);
+set(h, <span class="string">'FontName'</span>, <span class="string">'cmr10'</span>, <span class="string">'FontSize'</span>, 20, <span class="string">'xscale'</span>, <span class="string">'lin'</span>, <span class="string">'yscale'</span>, <span class="string">'lin'</span>);
+axis <span class="string">tight</span>
+</pre><img vspace="5" hspace="5" src="SVDFrequencyResponse_03.png" alt=""> <h2>References<a name="13"></a></h2><p>[1] <a href="http://www.ece.umn.edu/users/mihailo/software/chebfun-svd/">http://www.ece.umn.edu/users/mihailo/software/chebfun-svd/</a></p><p>[2] T. A. Driscoll, Automatic spectral collocation for integral, integro-differential, and integrally reformulated differential equations, J. Comput. Phys. 229 (2010), 5980-5998.</p><p>If you are using this software please cite:</p><p>[3] B. K. Lieu and M. R. Jovanovic, "Computation of frequency responses for linear time-invariant PDEs on a compact interval", Journal of Computational Physics (2011), submitted; available at: <a href="http://arxiv.org/abs/1112.0579">arXiv:1112.0579v1</a></p><p>[4] L. N. Trefethen and others, Chebfun Version 4.0, The Chebfun Development Team, 2011, <a href="http://www.maths.ox.ac.uk/chebfun/">http://www.maths.ox.ac.uk/chebfun/</a></p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Singular Value Decomposition of Compact Operators: A Tool for Computing Frequency Responses of PDEs 
+% Binh K. Lieu and Mihailo R. Jovanovic, 6th January 2012
+
+%%
+% (Chebfun example pde/SVDFrequencyResponse.m)
+
+%% Introduction
+% In many physical systems there is a need to examine the effects of
+% exogenous disturbances on the variables of interest. The analysis of
+% dynamical systems with inputs has a long history in physics, circuit
+% theory, controls, communications, and signal processing. Recently,
+% input-output analysis has been effectively employed to uncover the
+% mechanisms and associated spatio-temporal flow patterns that trigger the
+% early stages of transition to turbulence in wall-bounded shear flows of
+% Newtonian and viscoelastic fluids.
+%
+% Frequency response analysis represents an effective means for
+% quantifying the system's performance in the presence of a stimulus, and
+% it characterizes the steady-state response of a stable system to
+% persistent harmonic forcing. For infinite dimensional systems, the
+% principal singular value of the frequency response operator quantifies
+% the largest amplification from the input forcing to the desired output at
+% each frequency. Furthermore, the associated left and right principal
+% singular functions identify the spatial distributions of the output (that
+% exhibits this largest amplification) and the input (that has the
+% strongest influence on the system's dynamics), respectively.
+% 
+% We have employed Chebfun as a tool for computing frequency responses of
+% linear time-invariant PDEs in which an independent spatial variable
+% belongs to a compact interval. Our method recasts the frequency response
+% operator as a two-point boundary value problem (TPBVP) and determines the
+% singular value decomposition of the resulting representation in Chebfun.
+% This approach has two advantages over currently available schemes: first,
+% it avoids numerical instabilities encountered in systems with
+% differential operators of high order and, second, it alleviates
+% difficulty in implementing boundary conditions. We refer the user to Lieu
+% & Jovanovic 2011 [3] for a detailed explanation of the method.
+%
+% We have developed the following easy-to-use Matlab function (m-file) [1] 
+%  
+%   svdfr.m
+% 
+% which takes the system's coefficients and boundary condition matrices as
+% inputs and returns the desired number of left (or right) singular pairs
+% as the output. The coefficients and boundary conditions of the adjoint
+% systems are automatically implemented within the code. Thus, the burden
+% of finding the adjoint operators and corresponding boundary conditions is
+% removed from the user. The algorithm is based on transforming the TPBVP
+% in differential form into an equivalent integral representation. The
+% procedure for achieving this is described in Lieu & Jovanovic 2011 [3];
+% also see T. Driscoll 2010 [2]. Additional examples are provided at [1].
+%
+%
+
+urlwrite('http://www.ece.umn.edu/users/mihailo/software/chebfun-svd/matlab-files/svdfr.m','svdfr.m');
+help svdfr
+
+%% Example: one-dimensional diffusion equation
+%
+% We demonstrate our method on a simple one-dimensional diffusion equation
+% subject to spatially and temporally distributed forcing d(y,t),
+% homogenous Dirichlet boundary conditions, and zero initial conditions
+%
+%   u_t(y,t) = u_{yy}(y,t) + d(y,t), y \in [-1,1]
+%   
+%   u(-1,t) = u(+1,t) = 0, u(y,0) = 0.
+%
+% Application of the temporal Fourier transform yields the following two
+% point boundary value representation of the frequency response operator T,
+% 	
+%   ( D^{(2)} - i*w )*u(y) = -d(y)
+%
+%   ( [1; 0] E_{-1} + [0; 1] E_{1} )*u(y) = [0; 0]
+%
+% where
+% 		
+%   w       REPLACE_WITH_DASH_DASH temporal frequency
+%
+%   D^{(2)} REPLACE_WITH_DASH_DASH second-order differential operator in y
+%
+%   i       REPLACE_WITH_DASH_DASH imaginary unit
+%
+%   E_{j}   REPLACE_WITH_DASH_DASH point evaluation functional at the boundary y = j.
+%
+% We note that svdfr.m only requires the system's coefficients and boundary
+% conditions matrices to compute the singular value decomposition of the
+% frequency response operator T. For completeness, we will next show how to
+% obtain the two point boundary value representations of the adjoint
+% operator Ts and the composition operator T*Ts.
+%
+% The two-point boundary value representation for the adjoint of the
+% frequency response operator, Ts, is given by
+%
+%   ( D^{(2)} + i*w )*v(y) = f(y)
+%
+%   g(y) = -v(y)
+%
+%   ( [1; 0] E_{-1} + [0; 1] E_{1} )*v(y) = [0; 0].
+%
+% The representation of the operator T*Ts is obtained by combining the 
+% two point boundary value representations of T and Ts. 
+% This can be achieved by setting d = g
+%
+%   ( D^{(2)} - i*w )*u(y) - v(y) = 0
+%   ( D^{(2)} + i*w )*v(y) = f(y)
+%
+%   ( [1; 0] E_{-1} + [0; 1] E_{1} )*u(y) = [0; 0]
+%   ( [1; 0] E_{-1} + [0; 1] E_{1} )*v(y) = [0; 0].
+%
+% Note that svdfr.m utilizes the integral form of a two point boundary
+% value representation of the operator T*Ts. This yields accurate results
+% even for systems with high order differential operators and poorly-scaled
+% coefficients.
+%%
+
+% The system parameters:
+w = 0; % set temporal frequency to the value of interest
+
+dom = domain(-1,1);         % domain of your function
+fone = chebfun(1,dom);      % one function
+fzero = chebfun(0,dom);     % zero function
+y = chebfun('x',dom);       % linear function
+
+%%
+% The system operators can be constructed as follows:
+A0{1} = [-1i*w*fone, fzero, fone];    
+B0{1} = -fone;
+C0{1} = fone;
+
+%%
+% The boundary condition matrices are given by:
+Wa0{1} = [1, 0];   % 1*u(-1) + 0*D^{(1)}*u(-1) = 0
+Wb0{1} = [1, 0];   % 1*u(+1) + 0*D^{(1)}*u(+1) = 0
+
+%%
+% The singular values and the associated singular functions of the
+% frequency response operator can be computed using the following code
+
+Nsigs = 25;    % find the largest 25 singular values
+LRfuns = 1;    % and associated left singular functions
+
+[Sfun, Sval] = svdfr(A0,B0,C0,Wa0,Wb0,LRfuns,Nsigs);
+
+%% 
+% Analytical expressions for the singular values and corresponding singular
+% functions are given by:
+Sa = (4./(([1:Nsigs].*pi).^2)).';    % analytical singular values
+Sf1 = sin((1/sqrt(Sa(1))).*(y+1));   % analytical soln of 1st singular function
+Sf2 = sin((1/sqrt(Sa(2))).*(y+1));   % analytical soln of 2nd singular function
+
+%%
+% The absolute error of the first 25 singular values  
+norm(Sval - Sa)
+
+%%
+% The 25 largest singular values of the frequency response operator:
+% svdfr versus analytical results.
+plot(1:Nsigs,Sval,'bx','LineWidth',1.25,'MarkerSize',10)
+hold on
+plot(1:Nsigs,Sa,'ro','LineWidth',1.25,'MarkerSize',10);
+xlab = xlabel('n', 'interpreter', 'tex');
+set(xlab, 'FontName', 'cmmi10', 'FontSize', 20);
+h = get(gcf,'CurrentAxes');
+set(h, 'FontName', 'cmr10', 'FontSize', 20, 'xscale', 'lin', 'yscale', 'lin');
+
+%%
+% The principal singular function of the frequency response operator: svdfr
+% versus analytical results.
+hold off; plot(y,-Sfun(:,1),'bx-','LineWidth',1.25,'MarkerSize',10)
+hold on; plot(y,Sf1,'ro-','LineWidth',1.25,'MarkerSize',10);
+xlab = xlabel('y', 'interpreter', 'tex');
+set(xlab, 'FontName', 'cmmi10', 'FontSize', 20);
+h = get(gcf,'CurrentAxes');
+set(h, 'FontName', 'cmr10', 'FontSize', 20, 'xscale', 'lin', 'yscale', 'lin');
+axis tight
+
+%%
+% The singular function of the frequency response operator corresponding to
+% the second largest singular value: svdfr versus analytical results.
+hold off; plot(y,Sfun(:,2),'bx-','LineWidth',1.25,'MarkerSize',10)
+hold on; plot(y,Sf2,'ro-','LineWidth',1.25,'MarkerSize',10);
+xlab = xlabel('y', 'interpreter', 'tex');
+set(xlab, 'FontName', 'cmmi10', 'FontSize', 20);
+h = get(gcf,'CurrentAxes');
+set(h, 'FontName', 'cmr10', 'FontSize', 20, 'xscale', 'lin', 'yscale', 'lin');
+axis tight
+
+%% References
+%
+% [1] http://www.ece.umn.edu/users/mihailo/software/chebfun-svd/
+%
+% [2] T. A. Driscoll, Automatic spectral collocation for integral,
+% integro-differential, and integrally reformulated differential equations,
+% J. Comput. Phys. 229 (2010), 5980-5998.
+%
+
+%%
+% If you are using this software please cite:
+%
+% [3] B. K. Lieu and M. R. Jovanovic,
+% "Computation of frequency responses for linear time-invariant PDEs on a
+% compact interval", Journal of Computational Physics (2011), submitted;
+% available at: <http://arxiv.org/abs/1112.0579 arXiv:1112.0579v1>
+%
+% [4] L. N. Trefethen and others, Chebfun Version 4.0, The Chebfun
+% Development Team, 2011, <http://www.maths.ox.ac.uk/chebfun/>
+
+
+##### SOURCE END #####
+--></body></html>

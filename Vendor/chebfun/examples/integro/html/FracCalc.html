@@ -1,0 +1,237 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Fractional calculus in Chebfun</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="FracCalc.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Fractional calculus in Chebfun</h1><!--introduction--><p>Nick Hale, October 2010</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#3">Half-derivative</a></li><li><a href="#7">Fractional differentiation</a></li><li><a href="#10">Fractional integration</a></li><li><a href="#12">Fractional differential equations</a></li><li><a href="#13">References</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/integro/FracCalc.m">integro/FracCalc.m</a>)</p><p>We're all familiar with the standard definitions of differentiation and integration we learnt in high-school and at undergraduate level. For example, here is the function x on the interval [0 4] along with its derivative (the constant function, 1) and antiderivative (x^2).</p><pre class="codeinput">x = chebfun(<span class="string">'x'</span>,[0 4]);
+LW = <span class="string">'LineWidth'</span>; lw = 1.2; FS = <span class="string">'FontSize'</span>; fs = 14;
+plot(x,<span class="string">'b'</span>,diff(x),<span class="string">'r'</span>,cumsum(x),<span class="string">'m'</span>,LW,lw)
+legend(<span class="string">'x'</span>,<span class="string">'x'''</span>,<span class="string">'0.5*x^2'</span>), axis([0 4 0 4]), xlabel(<span class="string">'x'</span>,FS,fs)
+title(<span class="string">'The function ''x'' with its derivative and antiderivative'</span>,FS,fs)
+</pre><img vspace="5" hspace="5" src="FracCalc_01.png" alt=""> <h2>Half-derivative<a name="3"></a></h2><p>A natural question one might ask is whether there exists, say, a 'half-derivative' operator H, such that H^2(f) = df(x)/dx.</p><p>It turns out that through a generalisation of the Cauchy formula for repeated integration we can define precisely such an operator as a "Riemann-Liouville derivative" [1].</p><p>We omit here any rigorous definition of these operators, but instead demonstrate their behaviour when applied to some simple functions f, as well as Chebfun's ability to compute them.</p><p>Continuing where we left off above, we might ask what is the half-derivative of the function f(x) = x. In Chebfun this is easily computed via</p><pre class="codeinput">xp05 = diff(x, 0.5);
+hold <span class="string">on</span>, plot(xp05,<span class="string">'k'</span>,LW,lw), axis([0 4 0 4])
+legend(<span class="string">'x'</span>,<span class="string">'x'''</span>,<span class="string">'0.5*x^2'</span>,<span class="string">'d^{1/2}x / dx^{1/2}'</span>); xlabel(<span class="string">'x'</span>,FS,fs);
+title(<span class="string">'The function ''x'' and its half-derivative'</span>,FS,fs)
+</pre><img vspace="5" hspace="5" src="FracCalc_02.png" alt=""> <p>Notice here that the second argument passed to diff, which for standard calculus is a positive integer specifying the number of times to differentiate the chebfun, indicates that we wish to compute the half-derivative of x.</p><p>The plot of this half-derivative may look familiar, and in fact one can show that the half derivative of x is precisely 2*sqrt(x/pi), which we can verify:</p><pre class="codeinput">f = chebfun(@(x) 2*sqrt(x/pi), <span class="string">'exps'</span>, [0.5,0], [0 4]);
+norm( f - xp05 , inf)
+</pre><pre class="codeoutput">ans =
+     8.881784197001252e-16
+</pre><h2>Fractional differentiation<a name="7"></a></h2><p>The Riemann-Liouville derivative definition above applies not only to half-powers, but to d^a/dx^a for any a &gt; 0.</p><p>Below we demonstrate the (a)th derivative of x for a = 1/10,2/10,...,1.</p><pre class="codeinput">close
+u = x;
+<span class="keyword">for</span> alpha = 0.1:.1:1
+    u = [ u diff(u(:,1),alpha) ];
+    plot(u,LW,lw), drawnow
+<span class="keyword">end</span>
+title(<span class="string">'Fractional derivatives of x of order a = 0, 0.1, ..., 0.9, 1.0'</span>,FS,fs)
+xlabel(<span class="string">'x'</span>,FS,fs); ylabel(<span class="string">'d^a x / d x ^a'</span>,FS,fs)
+</pre><img vspace="5" hspace="5" src="FracCalc_03.png" alt=""> <p>Of course, these generalised derivatives can be applied to more complicated functions than simply the independent variable 'x'. Here we demonstrate the behaviour of varying irrational derrivatives of the trigonometric function sin(x).</p><pre class="codeinput">close
+u = chebfun(<span class="string">'sin(x)'</span>,[0 20]);
+<span class="keyword">for</span> alpha = sqrt(2)*(0:2:10)/17
+    u = [ u diff(u(:,1),alpha) ];
+    plot(u,LW,lw), ylim(1.2*[-1 1]), drawnow,
+<span class="keyword">end</span>
+title(<span class="string">'Fractional derivatives of sin(x) with a = sqrt(2)*(0:2:12)/17'</span>,FS,fs)
+xlabel(<span class="string">'x'</span>,FS,fs); ylabel(<span class="string">'d^a sin(x) / d x ^a'</span>,FS,fs)
+</pre><img vspace="5" hspace="5" src="FracCalc_04.png" alt=""> <p>Far away from the left-hand boundary these derivatives are essentially shifts of x -&gt; x + a*pi/2 (which is consistent with the case of a being an integer), but near x = 0 the boundary effects are more interesting.</p><pre class="codeinput">axis([-0.5 pi 0.0 1.01])
+</pre><img vspace="5" hspace="5" src="FracCalc_05.png" alt=""> <h2>Fractional integration<a name="10"></a></h2><p>The definition of the Riemann-Liouville derivative can also to extended fractional integration (in fact it is sometimes refered to as the Riemann-Liouville "differintegral" [2]). Chebfun can also handle these types of operators, here extending the definition of cumsum to allow non-integer degree.</p><pre class="codeinput">close
+x = chebfun(<span class="string">'x'</span>,[0 1]); u = [];
+<span class="keyword">for</span> k = 1:10;
+    u = [ u cumsum(x.^k,0.5)];
+    plot(u,LW,lw), drawnow, hold <span class="string">on</span>
+<span class="keyword">end</span>
+title(<span class="string">'Half-integrals of x^k for k = 1, ..., 10'</span>,FS,fs)
+xlabel(<span class="string">'x'</span>,FS,fs);
+</pre><img vspace="5" hspace="5" src="FracCalc_06.png" alt=""> <p>Here's another example:</p><pre class="codeinput">close
+u = chebfun(<span class="string">'exp(x)-1'</span>,[0 1]);
+<span class="keyword">for</span> alpha = 0.1:.1:1
+    u = [ u cumsum(u(:,1),alpha) ];
+    plot(u,LW,lw), drawnow
+<span class="keyword">end</span>
+title(<span class="string">'Fractional integrals of exp(x)-1 of order a = 0, 0.1, ..., 0.9, 1.0'</span>,FS,fs)
+xlabel(<span class="string">'x'</span>,FS,fs);
+</pre><img vspace="5" hspace="5" src="FracCalc_07.png" alt=""> <h2>Fractional differential equations<a name="12"></a></h2><p>Unfortunately there is not yet any functionality for fractional calculus operators in the chebop system.</p><h2>References<a name="13"></a></h2><p>[1] Lizorkin, P.I. (2001),"Fractional integration and differentiation",        <a href="http://eom.springer.de/f/f041230.htm">http://eom.springer.de/f/f041230.htm</a></p><p>[2] <a href="http://en.wikipedia.org/wiki/Riemann-Liouville_differintegral">http://en.wikipedia.org/wiki/Riemann-Liouville_differintegral</a></p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Fractional calculus in Chebfun
+% Nick Hale, October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/integro/FracCalc.m">integro/FracCalc.m</a>)
+
+%%
+% We're all familiar with the standard definitions of differentiation 
+% and integration we learnt in high-school and at undergraduate level. 
+% For example, here is the function x on the interval [0 4] along 
+% with its derivative (the constant function, 1) and antiderivative (x^2).
+
+x = chebfun('x',[0 4]);
+LW = 'LineWidth'; lw = 1.2; FS = 'FontSize'; fs = 14;
+plot(x,'b',diff(x),'r',cumsum(x),'m',LW,lw)
+legend('x','x''','0.5*x^2'), axis([0 4 0 4]), xlabel('x',FS,fs)
+title('The function ''x'' with its derivative and antiderivative',FS,fs)
+
+%% Half-derivative
+% A natural question one might ask is whether there exists, say, a 
+% 'half-derivative' operator H, such that H^2(f) = df(x)/dx.
+%
+% It turns out that through a generalisation of the Cauchy formula 
+% for repeated integration we can define precisely such an operator
+% as a "Riemann-Liouville derivative" [1].
+%
+% We omit here any rigorous definition of these operators, but instead 
+% demonstrate their behaviour when applied to some simple functions f,
+% as well as Chebfun's ability to compute them.
+
+%%
+% Continuing where we left off above, we might ask what is the 
+% half-derivative of the function f(x) = x. In Chebfun this is
+% easily computed via
+
+xp05 = diff(x, 0.5);
+hold on, plot(xp05,'k',LW,lw), axis([0 4 0 4])
+legend('x','x''','0.5*x^2','d^{1/2}x / dx^{1/2}'); xlabel('x',FS,fs);
+title('The function ''x'' and its half-derivative',FS,fs)
+
+%%
+% Notice here that the second argument passed to diff, which for 
+% standard calculus is a positive integer specifying the number 
+% of times to differentiate the chebfun, indicates that we wish 
+% to compute the half-derivative of x.
+
+%%
+% The plot of this half-derivative may look familiar, and in
+% fact one can show that the half derivative of x is precisely 
+% 2*sqrt(x/pi), which we can verify:
+f = chebfun(@(x) 2*sqrt(x/pi), 'exps', [0.5,0], [0 4]);
+norm( f - xp05 , inf)
+
+%% Fractional differentiation
+% The Riemann-Liouville derivative definition above applies not 
+% only to half-powers, but to d^a/dx^a for any a > 0.
+%
+% Below we demonstrate the (a)th derivative of x for a = 1/10,2/10,...,1.
+
+close 
+u = x;
+for alpha = 0.1:.1:1   
+    u = [ u diff(u(:,1),alpha) ];
+    plot(u,LW,lw), drawnow
+end
+title('Fractional derivatives of x of order a = 0, 0.1, ..., 0.9, 1.0',FS,fs)
+xlabel('x',FS,fs); ylabel('d^a x / d x ^a',FS,fs)
+
+%% 
+% Of course, these generalised derivatives can be applied to more 
+% complicated functions than simply the independent variable 'x'.
+% Here we demonstrate the behaviour of varying irrational derrivatives
+% of the trigonometric function sin(x).
+
+close 
+u = chebfun('sin(x)',[0 20]);
+for alpha = sqrt(2)*(0:2:10)/17
+    u = [ u diff(u(:,1),alpha) ];
+    plot(u,LW,lw), ylim(1.2*[-1 1]), drawnow, 
+end
+title('Fractional derivatives of sin(x) with a = sqrt(2)*(0:2:12)/17',FS,fs)
+xlabel('x',FS,fs); ylabel('d^a sin(x) / d x ^a',FS,fs)
+
+%%
+% Far away from the left-hand boundary these derivatives are essentially
+% shifts of x -> x + a*pi/2 (which is consistent with the case of a being
+% an integer), but near x = 0 the boundary effects are more interesting.
+
+axis([-0.5 pi 0.0 1.01])
+
+%% Fractional integration
+% The definition of the Riemann-Liouville derivative can also to extended
+% fractional integration (in fact it is sometimes refered to as the 
+% Riemann-Liouville "differintegral" [2]). Chebfun can also handle 
+% these types of operators, here extending the definition of cumsum to 
+% allow non-integer degree.
+
+close
+x = chebfun('x',[0 1]); u = [];
+for k = 1:10;
+    u = [ u cumsum(x.^k,0.5)];
+    plot(u,LW,lw), drawnow, hold on
+end
+title('Half-integrals of x^k for k = 1, ..., 10',FS,fs)
+xlabel('x',FS,fs);
+
+%%
+% Here's another example:
+
+close
+u = chebfun('exp(x)-1',[0 1]);
+for alpha = 0.1:.1:1
+    u = [ u cumsum(u(:,1),alpha) ];
+    plot(u,LW,lw), drawnow
+end
+title('Fractional integrals of exp(x)-1 of order a = 0, 0.1, ..., 0.9, 1.0',FS,fs)
+xlabel('x',FS,fs);
+
+%% Fractional differential equations
+% Unfortunately there is not yet any functionality for fractional 
+% calculus operators in the chebop system.
+
+%% References
+%
+% [1] Lizorkin, P.I. (2001),"Fractional integration and differentiation", 
+%        http://eom.springer.de/f/f041230.htm
+%
+% [2] http://en.wikipedia.org/wiki/Riemann-Liouville_differintegral
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,254 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Polynomial eigenproblems with differential operators</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="PolyEigDiff.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Polynomial eigenproblems with differential operators</h1><!--introduction--><p>Stefan G&uuml;ttel, 30 August 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Bessel functions as eigenvectors of polynomial eigenvalue problems</a></li><li><a href="#8">Accuracy of polynomial eigenvalues</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode-eig/PolyEigDiff.m">ode-eig/PolyEigDiff.m</a>)</p><h2>Bessel functions as eigenvectors of polynomial eigenvalue problems<a name="2"></a></h2><p>The eigenfunctions of polynomial eigenvalue problems with differential operators can often be interpreted as solutions of certain differential equations. Our first example is the differential equation</p><pre class="language-matlab">x^2*y''(x) + x*y'(x) + (x^2-alpha^2)*y(x) = 0,
+</pre><p>which is satisfied by the Bessel functions. We may easily verify this with Chebfun by looking at the residual norm of this equation for the Bessel functions of the first kind of orders alpha = 0,...,5:</p><pre class="codeinput">dom = [0 100];
+x = chebfun(@(x) x, dom);
+<span class="keyword">for</span> alpha = 0:5,
+    y = chebfun(@(x)besselj(alpha,x),dom);
+    r = x.^2.*diff(y,2) + x.*diff(y,1) + (x.^2 - alpha^2).*y;
+    fprintf(<span class="string">'%d   %4.2e\n'</span>,alpha,norm(r))
+<span class="keyword">end</span>;
+</pre><pre class="codeoutput">0   4.31e-10
+1   4.64e-10
+2   5.14e-10
+3   5.09e-10
+4   6.12e-10
+5   6.02e-10
+</pre><p>Let's consider, say, the Bessel function of order alpha = 5 and compute its roots on [0,100];</p><pre class="codeinput">alpha = 5;
+bessel5 = chebfun(@(x)besselj(alpha,x),dom);
+rts = roots(bessel5);
+</pre><p>We may reformulate the above differential equation into a polynomial eigenvalue problem: Between two of its roots, each Bessel function is (up to scaling) an eigenvector with homogeneous Dirichlet boundary values associated with the eigenvalue 1 of the polynomial eigenvalue problem:</p><pre class="language-matlab">lambda^2*x^2*y'' + lambda*x*y' + (x^2-alpha^2)*y = 0
+</pre><p>Using the POLYEIGS command of Chebfun, we can verify this assertion numerically on the domain given by the, say, 1st and 22nd root of our Bessel function:</p><pre class="codeinput">dom = [rts(1),rts(22)];
+A = chebop(@(x,y) (x.^2 - alpha^2).*y, dom);
+B = chebop(@(x,y) x.*diff(y), dom);
+C = chebop(@(x,y) x.^2.*diff(y,2), dom);
+C.bc = <span class="string">'dirichlet'</span>;
+
+[V,D] = polyeigs(A,B,C,1,1);
+
+D
+</pre><pre class="codeoutput">D =
+    1.0000
+</pre><p>We may compare the exact Bessel function of order 5 with the computed eigenvector V (after rescaling):</p><pre class="codeinput">LW = <span class="string">'linewidth'</span>; lw = 1.6;
+plot(bessel5,LW,lw)
+dd = diff(dom);
+s = bessel5(dd)/V(dd);
+hold <span class="string">on</span>
+plot(s*V,<span class="string">'r--'</span>,LW,lw);
+hold <span class="string">off</span>
+
+norm(s*V-bessel5{dom(1),dom(2)})
+</pre><pre class="codeoutput">ans =
+   4.6966e-10
+</pre><img vspace="5" hspace="5" src="PolyEigDiff_01.png" alt=""> <p>We could also compute further eignmodes and eigenfunctions of this operator (although we don't claim that they have much physical relevance in this case!).</p><pre class="codeinput">[V,D] = polyeigs(A,B,C,3,1);
+D
+plot(V,LW,lw)
+</pre><pre class="codeoutput">D =
+    1.0000
+    0.9540
+    1.0506
+</pre><img vspace="5" hspace="5" src="PolyEigDiff_02.png" alt=""> <h2>Accuracy of polynomial eigenvalues<a name="8"></a></h2><p>To check the accuracy of the polynomial eigensolver of Chebfun, we consider the following linear ordinary differential equation</p><pre>lambda^2*c*y''(x) + lambda*b*y'(x) + a*y(x) = 0,
+y(0) = y(1) = 0.</pre><p>We compute, say, 5 eigenvalues lambda closest to 1 of the associated polynomial eigenvalue problem:</p><pre class="codeinput">dom = [0 1]; a = 4; b = 1; c = 2;
+A = chebop(@(y) a*y, dom);
+B = chebop(@(y) b*diff(y), dom);
+C = chebop(@(y) c*diff(y,2), dom);
+C.bc = <span class="string">'dirichlet'</span>;
+[V,D] = polyeigs(A,B,C,5,1);
+</pre><p>This is what the eigenvectors look like:</p><pre class="codeinput">figure
+plot(V,LW,lw)
+</pre><img vspace="5" hspace="5" src="PolyEigDiff_03.png" alt=""> <p>and here is the norm of the quasimatrix whose columns are the residuals of the computed eigenvectors:</p><pre class="codeinput">norm(A*V + B*V*diag(D) + C*V*diag(D)^2)
+</pre><pre class="codeoutput">ans =
+   1.6907e-11
+</pre><p>Because the problem is linear, the eigenvalues are known exactly and can be compared to the computed ones, which turn out to be pretty accurate:</p><pre class="codeinput">d = sqrt(b^2 - 4*a*c)/(2*a);
+k = (1:5)';
+lambda = 2*d./(k*pi*1i);
+format <span class="string">long</span>
+[ lambda , D ]
+norm((D - lambda)./lambda,inf)
+</pre><pre class="codeoutput">ans =
+   0.443068610157647   0.443068610157302
+   0.221534305078824   0.221534305078944
+   0.147689536719216   0.147689536719202
+   0.110767152539412   0.110767152539402
+   0.088613722031530   0.088613722031539
+ans =
+     7.802932591980787e-13
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Polynomial eigenproblems with differential operators
+% Stefan Güttel, 30 August 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode-eig/PolyEigDiff.m">ode-eig/PolyEigDiff.m</a>)
+
+%% Bessel functions as eigenvectors of polynomial eigenvalue problems
+% The eigenfunctions of polynomial eigenvalue problems with differential
+% operators can often be interpreted as solutions of certain differential
+% equations. Our first example is the differential equation
+%
+%   x^2*y''(x) + x*y'(x) + (x^2-alpha^2)*y(x) = 0,
+%
+% which is satisfied by the Bessel functions. We may easily verify this
+% with Chebfun by looking at the residual norm of this equation for the
+% Bessel functions of the first kind of orders alpha = 0,...,5:
+
+dom = [0 100];
+x = chebfun(@(x) x, dom);
+for alpha = 0:5,
+    y = chebfun(@(x)besselj(alpha,x),dom);
+    r = x.^2.*diff(y,2) + x.*diff(y,1) + (x.^2 - alpha^2).*y;
+    fprintf('%d   %4.2e\n',alpha,norm(r))
+end;
+
+%% 
+% Let's consider, say, the Bessel function of order alpha = 5 and compute
+% its roots on [0,100];
+alpha = 5;
+bessel5 = chebfun(@(x)besselj(alpha,x),dom);
+rts = roots(bessel5);
+
+%%
+% We may reformulate the above differential equation into a polynomial
+% eigenvalue problem: Between two of its roots, each Bessel function is (up
+% to scaling) an eigenvector with homogeneous Dirichlet boundary values
+% associated with the eigenvalue 1 of the polynomial eigenvalue problem:
+%
+%   lambda^2*x^2*y'' + lambda*x*y' + (x^2-alpha^2)*y = 0
+
+%%
+% Using the POLYEIGS command of Chebfun, we can verify
+% this assertion numerically on the domain given by the, say, 1st and 22nd
+% root of our Bessel function:
+
+dom = [rts(1),rts(22)];
+A = chebop(@(x,y) (x.^2 - alpha^2).*y, dom);
+B = chebop(@(x,y) x.*diff(y), dom);
+C = chebop(@(x,y) x.^2.*diff(y,2), dom);
+C.bc = 'dirichlet';
+
+[V,D] = polyeigs(A,B,C,1,1);
+
+D
+
+%% 
+% We may compare the exact Bessel function of order 5 with the computed
+% eigenvector V (after rescaling):
+
+LW = 'linewidth'; lw = 1.6;
+plot(bessel5,LW,lw)
+dd = diff(dom);
+s = bessel5(dd)/V(dd);
+hold on
+plot(s*V,'rREPLACE_WITH_DASH_DASH',LW,lw);
+hold off
+
+norm(s*V-bessel5{dom(1),dom(2)})
+
+%%
+% We could also compute further eignmodes and eigenfunctions of this
+% operator (although we don't claim that they have much physical relevance
+% in this case!).
+
+[V,D] = polyeigs(A,B,C,3,1);
+D
+plot(V,LW,lw)
+
+%% Accuracy of polynomial eigenvalues
+% To check the accuracy of the polynomial eigensolver of Chebfun, we
+% consider the following linear ordinary differential equation
+%
+%  lambda^2*c*y''(x) + lambda*b*y'(x) + a*y(x) = 0,
+%  y(0) = y(1) = 0.
+%
+% We compute, say, 5 eigenvalues lambda closest to 1 of the associated
+% polynomial eigenvalue problem:
+
+dom = [0 1]; a = 4; b = 1; c = 2;
+A = chebop(@(y) a*y, dom);
+B = chebop(@(y) b*diff(y), dom);
+C = chebop(@(y) c*diff(y,2), dom);
+C.bc = 'dirichlet'; 
+[V,D] = polyeigs(A,B,C,5,1);
+
+%%
+% This is what the eigenvectors look like:
+
+figure
+plot(V,LW,lw)
+
+%%
+% and here is the norm of the quasimatrix whose columns are the residuals
+% of the computed eigenvectors:
+
+norm(A*V + B*V*diag(D) + C*V*diag(D)^2)
+
+%% 
+% Because the problem is linear, the eigenvalues are known exactly and can
+% be compared to the computed ones, which turn out to be pretty accurate:
+
+d = sqrt(b^2 - 4*a*c)/(2*a);
+k = (1:5)';
+lambda = 2*d./(k*pi*1i);
+format long
+[ lambda , D ]
+norm((D - lambda)./lambda,inf)
+
+
+##### SOURCE END #####
+--></body></html>

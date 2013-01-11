@@ -1,0 +1,210 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Stability of a thermoelastic rod</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="ThermoelasticRod.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Stability of a thermoelastic rod</h1><!--introduction--><p>Toby Driscoll, 8th November 2011</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode-eig/ThermoelasticRod.m">ode-eig/ThermoelasticRod.m</a>)</p><p>Suppose a thermoelastic rod is fixed to a wall at one end and may expand to make contact with a wall at the other end. J. R. Barber [1] proposed a boundary condition that models a physically realistic transition between thermal insulation, when far from contact, and perfect thermal contact.</p><p>Linear stability analysis suggests a change from stable to unstable behavior as the temperature difference between the walls increases. The eigenvalue problem governing the stability of the perturbation phi(x) is nondimensionally</p><pre>   phi''(x) = lambda*phi(x),   0 &lt; x &lt; 1
+                                            / 1
+                                           |
+   phi(0) = 0,  phi'(1) + phi(1) = 4 delta |    phi(x) dx
+                                           |
+                                         0/</pre><p>where delta is a function of the thermal gradient. The transition from stable to unstable happens at delta=1. The presence of the integral of phi in the boundary condition makes the problem unusual from a classical standpoint, but from the Chebfun point of view it's just another linear boundary condition.</p><pre class="codeinput">LW = <span class="string">'linewidth'</span>;
+format <span class="string">long</span>,
+</pre><p>First, we solve the eigenvalue problem in a stable case.</p><pre class="codeinput">N = chebop( @(u) diff(u,2), [0 1] );    <span class="comment">% operator on 0&lt;x&lt;1</span>
+N.lbc = 0;     <span class="comment">% fixed end</span>
+delta = 0.96;  <span class="comment">% stable choice</span>
+N.bc = @(x,u) feval(diff(u),1) + u(1) - 4*delta*sum(u);  <span class="comment">% Barber condition</span>
+[Vs,Ls] = eigs(N,4,0);  <span class="comment">% eigenmodes closest to zero</span>
+</pre><p>The eigenvalues are all negative, indicating stability:</p><pre class="codeinput">diag(Ls)
+</pre><pre class="codeoutput">ans =
+   1.0e+02 *
+  -0.001601435706615
+  -0.251462532662429
+  -0.626486098335208
+  -1.234915472724216
+</pre><p>Here is what happens in a slightly unstable case:</p><pre class="codeinput">delta = 1.02;  <span class="comment">% unstable choice</span>
+N.bc = @(x,u) feval(diff(u),1) + u(1) - 4*delta*sum(u);  <span class="comment">% Barber condition</span>
+[Vu,Lu] = eigs(N,4,0);
+diag(Lu)
+</pre><pre class="codeoutput">ans =
+   1.0e+02 *
+   0.000799646107482
+  -0.252000055361213
+  -0.625884455972660
+  -1.235278901225324
+</pre><p>Here we see the perturbation which is least stable in the first case, or unstable in the second case.</p><pre class="codeinput">subplot(1,2,1)
+plot(Vs(:,1),LW,1.6)
+title(sprintf(<span class="string">'Stable, \\lambda = %.3f'</span>,Ls(1,1)))
+subplot(1,2,2)
+plot(Vu(:,1),LW,1.6)
+title(sprintf(<span class="string">'Unstable, \\lambda = %.3f'</span>,Lu(1,1)))
+</pre><img vspace="5" hspace="5" src="ThermoelasticRod_01.png" alt=""> <p>The solutions above look linear, but they do have significant Chebyshev coefficients out to degree 8.</p><p>Without knowing the transition value delta=1 in advance, we could locate it through a simple Chebfun rootfinding search. First, we parameterize the boundary conditions and the maximum real eigenvalue.</p><pre class="codeinput">BC = @(delta) @(x,u) [u(0), feval(diff(u),1) + u(1) - 4*delta*sum(u)];
+maxlam = @(delta) eigs( chebop([0,1],@(u)diff(u,2),BC(delta)), 1, 0 );
+</pre><p>Then, we construct a chebfun for the maximum lambda. A polynomial of degree 10 captures the behavior of the maximum eigenvalue to about 11 digits.</p><pre class="codeinput">stability = chebfun(maxlam,[0.5,2],<span class="string">'eps'</span>,1e-11,<span class="string">'vectorize'</span>)
+</pre><pre class="codeoutput">stability = 
+   chebfun column (1 smooth piece)
+       interval       length   endpoint values   
+[     0.5,       2]       11       -2      3.9   
+vertical scale = 3.9 
+</pre><p>Finally, the transition in stability occurs when the eigenvalue passes through zero.</p><pre class="codeinput">dstar = find(stability==0)
+clf, plot(stability,LW,1.6), hold <span class="string">on</span>, plot(dstar,0,<span class="string">'r*'</span>)
+xlabel(<span class="string">'\delta'</span>), ylabel(<span class="string">'max \lambda'</span>), grid <span class="string">on</span>
+</pre><pre class="codeoutput">dstar =
+   0.999999999997509
+</pre><img vspace="5" hspace="5" src="ThermoelasticRod_02.png" alt=""> <p>References:</p><p>[1] J. R. Barber, "Contact problems involving a cooled punch," J. Elast. 8 (1978), 409-423.</p><p>[2] J. A. Pelesko, "Nonlinear stability, thermoelastic contact, and the Barber condition", J. Appl. Mech. 68 (2001), 28-33.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Stability of a thermoelastic rod
+% Toby Driscoll, 8th November 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode-eig/ThermoelasticRod.m">ode-eig/ThermoelasticRod.m</a>)
+
+%%
+% Suppose a thermoelastic rod is fixed to a wall at one end and may expand
+% to make contact with a wall at the other end. J. R. Barber [1] proposed a
+% boundary condition that models a physically realistic transition between
+% thermal insulation, when far from contact, and perfect thermal contact.
+
+%%
+% Linear stability analysis suggests a change from stable to unstable
+% behavior as the temperature difference between the walls increases. The
+% eigenvalue problem governing the stability of the perturbation phi(x) is
+% nondimensionally
+%
+%     phi''(x) = lambda*phi(x),   0 < x < 1
+%                                              / 1   
+%                                             |  
+%     phi(0) = 0,  phi'(1) + phi(1) = 4 delta |    phi(x) dx
+%                                             |
+%                                           0/
+%
+% where delta is a function of the thermal gradient. The transition from
+% stable to unstable happens at delta=1. The presence of the integral of
+% phi in the boundary condition makes the problem unusual from a classical
+% standpoint, but from the Chebfun point of view it's just another linear
+% boundary condition.
+
+%%
+%  
+LW = 'linewidth';
+format long, 
+
+%%
+% First, we solve the eigenvalue problem in a stable case.
+N = chebop( @(u) diff(u,2), [0 1] );    % operator on 0<x<1
+N.lbc = 0;     % fixed end
+delta = 0.96;  % stable choice 
+N.bc = @(x,u) feval(diff(u),1) + u(1) - 4*delta*sum(u);  % Barber condition
+[Vs,Ls] = eigs(N,4,0);  % eigenmodes closest to zero
+
+%%
+% The eigenvalues are all negative, indicating stability:
+diag(Ls) 
+
+%%
+% Here is what happens in a slightly unstable case:
+delta = 1.02;  % unstable choice
+N.bc = @(x,u) feval(diff(u),1) + u(1) - 4*delta*sum(u);  % Barber condition
+[Vu,Lu] = eigs(N,4,0);  
+diag(Lu)  
+
+%% 
+% Here we see the perturbation which is least stable in the first case, or 
+% unstable in the second case. 
+subplot(1,2,1)
+plot(Vs(:,1),LW,1.6)
+title(sprintf('Stable, \\lambda = %.3f',Ls(1,1)))
+subplot(1,2,2)
+plot(Vu(:,1),LW,1.6)
+title(sprintf('Unstable, \\lambda = %.3f',Lu(1,1)))
+
+%%
+% The solutions above look linear, but they do have significant Chebyshev 
+% coefficients out to degree 8.
+
+%%
+% Without knowing the transition value delta=1 in advance, we could locate
+% it through a simple Chebfun rootfinding search. First, we parameterize
+% the boundary conditions and the maximum real eigenvalue.
+BC = @(delta) @(x,u) [u(0), feval(diff(u),1) + u(1) - 4*delta*sum(u)];
+maxlam = @(delta) eigs( chebop([0,1],@(u)diff(u,2),BC(delta)), 1, 0 );
+
+%%
+% Then, we construct a chebfun for the maximum lambda. A polynomial of 
+% degree 10 captures the behavior of the maximum eigenvalue to 
+% about 11 digits.
+stability = chebfun(maxlam,[0.5,2],'eps',1e-11,'vectorize')
+
+%%
+% Finally, the transition in stability occurs when the eigenvalue passes
+% through zero. 
+dstar = find(stability==0)
+clf, plot(stability,LW,1.6), hold on, plot(dstar,0,'r*')
+xlabel('\delta'), ylabel('max \lambda'), grid on
+
+
+%%
+% References:
+%
+% [1] J. R. Barber, "Contact problems involving a cooled punch," J. Elast.
+% 8 (1978), 409-423.
+%
+% [2] J. A. Pelesko, "Nonlinear stability, thermoelastic contact, and the
+% Barber condition", J. Appl. Mech. 68 (2001), 28-33.
+ 
+
+##### SOURCE END #####
+--></body></html>

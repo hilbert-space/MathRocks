@@ -1,0 +1,248 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Field of values and numerical abscissa</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="FieldOfValues.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Field of values and numerical abscissa</h1><!--introduction--><p>Nick Trefethen, November 2010</p><!--/introduction--><p>(Chebfun Example <a href="/tmp/chebfun_tmp/chebfun/examples/linalg/FieldOfValues.m">linalg/FieldOfValues.m</a>)</p><p>If A is a matrix, the field of values F(A) is the nonempty bounded convex set in the complex plane consisting of all the Rayleigh quotients of A, that is, all the numbers q'Aq, where q is a unit vector and q' is its conjugate transpose.</p><p>The standard method for computing the field of values numerically is an algorithm due to C. R. Johnson in 1978 based on finding the maximum and minimum eigenvalues of (A+A')/2, then "rotating" this computation around in the complex plane [1]. This algorithm is implemented in the Chebfun command FOV, which is listed at the end of this Example.</p><p>Generically the boundary of the field of values is smooth, but it is not always smooth.  Chebfun's 'splitting' feature enables FOV to compute this boundary in either situation, smooth or not.</p><p>For example, here are the eigenvalues and field of values of a random matrix of dimension 20. This is a case where the boundary is smooth.</p><pre class="codeinput">randn(<span class="string">'seed'</span>,1), A = randn(20);
+LW = <span class="string">'linewidth'</span>; lw = 1.6; MS = <span class="string">'markersize'</span>; ms = 18;
+FA = fov(A);
+figure, plot(FA,LW,lw), axis <span class="string">equal</span>, grid <span class="string">on</span>
+ax = axis; axis(1.1*ax)
+hold <span class="string">on</span>, plot(eig(A),<span class="string">'.k'</span>,MS,ms)
+</pre><img vspace="5" hspace="5" src="FieldOfValues_01.png" alt=""> <p>The numerical abscissa of A is the maximum real part of its field of values:</p><pre class="codeinput">[alpha,maxtheta] = max(real(FA))
+</pre><pre class="codeoutput">alpha =
+   5.340723050262884
+maxtheta =
+   6.283185307178151
+</pre><p>Here we add it to the plot as a red dot:</p><pre class="codeinput">plot(real(FA(maxtheta)),imag(FA(maxtheta)),<span class="string">'.r'</span>,MS,24)
+</pre><img vspace="5" hspace="5" src="FieldOfValues_02.png" alt=""> <p>You can also find the numerical abscissa without Chebfun:</p><pre class="codeinput">alpha = max(eig((A+A')/2))
+</pre><pre class="codeoutput">alpha =
+   5.340723050262883
+</pre><p>Now let's consider a matrix B defined as a diagonal matrix with the same eigenvalues as A. In this case the boundary of the field of values is a polygon:</p><pre class="codeinput">B = diag(eig(A));
+FB = fov(B);
+hold <span class="string">off</span>, plot(real(FB),imag(FB),<span class="string">'b'</span>,LW,lw,<span class="string">'jumpline'</span>,{<span class="string">'b'</span>,LW,lw})
+hold <span class="string">on</span>, plot(eig(B),<span class="string">'.k'</span>,MS,ms), axis(1.1*ax), axis <span class="string">equal</span>, grid <span class="string">on</span>
+[alpha,maxtheta] = max(real(FB));
+plot(real(FB(maxtheta)),imag(FB(maxtheta)),<span class="string">'.r'</span>,MS,24)
+</pre><img vspace="5" hspace="5" src="FieldOfValues_03.png" alt=""> <p>Since the field of values is not smooth, its boundary is a Chebfun with several pieces:</p><pre class="codeinput">FB
+</pre><pre class="codeoutput">FB = 
+   chebfun column (9 smooth pieces)
+       interval       length   endpoint values   
+[       0,    0.26]        1        4        4   
+[    0.26,    0.73]        1    complex values   
+[    0.73,     1.8]        1    complex values   
+[     1.8,     3.1]        1    complex values   
+[     3.1,     3.1]        1     -2.9     -2.9   
+[     3.1,     4.5]        1    complex values   
+[     4.5,     5.6]        1    complex values   
+[     5.6,       6]        1    complex values   
+[       6,     6.3]        1        4        4   
+Total length = 9   vertical scale = 9.7 
+</pre><p>Finally, here's an example where the boundary of the field of values mixes smooth curves with straight segments:</p><pre class="codeinput">C = [0 3 0 0; -3 0 0 0; 0 0 0 3; 0 0 1 1]
+FC = fov(C);
+hold <span class="string">off</span>, plot(real(FC),imag(FC),<span class="string">'b'</span>,LW,lw,<span class="string">'jumpline'</span>,{<span class="string">'b'</span>,LW,lw})
+axis(4*[-1 1 -1 1]), axis <span class="string">square</span>, grid <span class="string">on</span>
+hold <span class="string">on</span>, plot(eig(C),<span class="string">'.k'</span>,MS,ms)
+</pre><pre class="codeoutput">C =
+     0     3     0     0
+    -3     0     0     0
+     0     0     0     3
+     0     0     1     1
+</pre><img vspace="5" hspace="5" src="FieldOfValues_04.png" alt=""> <p>Here is a listing of FOV. Note that the numerical computations are carried out in just about 10 lines of code.</p><pre class="codeinput">type <span class="string">fov</span>
+</pre><pre class="codeoutput">
+function f = fov(A)
+%FOV  Field of values (numerical range) of matrix A
+%   F = FOV(A), where A is a square matrix, returns a chebfun F
+%   with domain [0 2*pi].  The image F([0 pi]) will be a curve
+%   describing the boundary of the field of values A, a convex
+%   region in the complex plane.  If A is hermitian, the field of
+%   values is a real interval, and if A is normal, it is the
+%   convex hull of the eigenvalues of A.
+%  
+%   EXAMPLE.
+%   A = randn(5);
+%   F = fov(A);
+%   hold off, fill(real(F),imag(F),[1 .5 .5]), axis equal
+%   e = eig(A);
+%   hold on, plot(real(e),imag(e),'.k','markersize',16)
+%
+%   The numerical abscissa of A is equal to max(real(F)),
+%   though much better computed as max(real(eig(A+A')))/2
+%
+%   The algorithm use is that of C. R. Johnson, Numerical
+%   determination of the field of values of a general complex
+%   matrix, SIAM J. Numer. Anal. 15 (1978), 595-602.
+
+%   Copyright 2011 by The University of Oxford and The Chebfun Developers. 
+%   See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
+
+f = chebfun(@(theta) z(theta,A),[0, 2*pi],'splitting','on');
+
+function z = z(theta,A)                  
+   z = NaN(size(theta));
+   for j = 1:length(theta)
+      r = exp(1i*theta(j));
+      B = r*A;
+      H = (B+B')/2;
+      [X,D] = eig(H);
+      [lam,k] = max(diag(D));
+      v = X(:,k);
+      z(j) = v'*A*v/(v'*v);
+   end
+end
+
+end
+
+
+</pre><p>References:</p><p>[1] C. R. Johnson, Numerical determination of the field of values of a general complex matrix, SIAM J. Numer. Anal. 15 (1978), 595-602.</p><p>[2] L. N. Trefethen and M. Embree, Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators, Princeton U. Press, 2005, chapter 17 on Numerical range, abscissa, and radius.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Field of values and numerical abscissa
+% Nick Trefethen, November 2010
+
+%%
+% (Chebfun Example <a href="/tmp/chebfun_tmp/chebfun/examples/linalg/FieldOfValues.m">linalg/FieldOfValues.m</a>)
+
+%%
+% If A is a matrix, the field of values F(A) is
+% the nonempty bounded convex set in the complex plane
+% consisting of all the Rayleigh quotients of A, that is,
+% all the numbers q'Aq, where q is a unit vector and
+% q' is its conjugate transpose.  
+
+%%
+% The standard method for computing the field of
+% values numerically is an algorithm due to C. R.
+% Johnson in 1978 based on finding the
+% maximum and minimum eigenvalues of (A+A')/2, then
+% "rotating" this computation around in the complex plane [1].
+% This algorithm is implemented in the Chebfun command FOV,
+% which is listed at the end of this Example.
+
+%%
+% Generically the boundary of the field of values is
+% smooth, but it is not always smooth.  Chebfun's
+% 'splitting' feature enables FOV to compute this boundary
+% in either situation, smooth or not.
+
+%%
+% For example, here are the eigenvalues and
+% field of values of a random matrix of dimension 20.
+% This is a case where the boundary is smooth.
+randn('seed',1), A = randn(20);
+LW = 'linewidth'; lw = 1.6; MS = 'markersize'; ms = 18;
+FA = fov(A);
+figure, plot(FA,LW,lw), axis equal, grid on
+ax = axis; axis(1.1*ax)
+hold on, plot(eig(A),'.k',MS,ms)
+
+%%
+% The numerical abscissa of A is the maximum real part of
+% its field of values:
+[alpha,maxtheta] = max(real(FA))
+
+%%
+% Here we add it to the plot as a red dot:
+plot(real(FA(maxtheta)),imag(FA(maxtheta)),'.r',MS,24)
+
+%%
+% You can also find the numerical abscissa without Chebfun:
+alpha = max(eig((A+A')/2))
+
+%%
+% Now let's consider a matrix B defined as a
+% diagonal matrix with the same eigenvalues as A.
+% In this case the boundary of the field of values is a polygon:
+B = diag(eig(A));
+FB = fov(B);
+hold off, plot(real(FB),imag(FB),'b',LW,lw,'jumpline',{'b',LW,lw})
+hold on, plot(eig(B),'.k',MS,ms), axis(1.1*ax), axis equal, grid on
+[alpha,maxtheta] = max(real(FB));
+plot(real(FB(maxtheta)),imag(FB(maxtheta)),'.r',MS,24)
+
+%%
+% Since the field of values is not smooth, its boundary is
+% a Chebfun with several pieces:
+FB
+
+%%
+% Finally, here's an example where the boundary of the
+% field of values mixes smooth curves with straight segments:
+C = [0 3 0 0; -3 0 0 0; 0 0 0 3; 0 0 1 1]
+FC = fov(C);
+hold off, plot(real(FC),imag(FC),'b',LW,lw,'jumpline',{'b',LW,lw})
+axis(4*[-1 1 -1 1]), axis square, grid on
+hold on, plot(eig(C),'.k',MS,ms)
+
+%%
+% Here is a listing of FOV.
+% Note that the numerical computations are carried out
+% in just about 10 lines of code.
+type fov
+
+%%
+% References:
+%
+% [1] C. R. Johnson, Numerical determination of the
+% field of values of a general complex matrix,
+% SIAM J. Numer. Anal. 15 (1978), 595-602. 
+%
+% [2] L. N. Trefethen and M. Embree, Spectra and Pseudospectra:
+% The Behavior of Nonnormal Matrices and Operators, Princeton U.
+% Press, 2005, chapter 17 on Numerical range, abscissa, and radius.
+
+
+##### SOURCE END #####
+--></body></html>

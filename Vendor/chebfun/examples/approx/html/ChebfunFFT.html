@@ -1,0 +1,219 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>The FFT in Chebfun</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="ChebfunFFT.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>The FFT in Chebfun</h1><!--introduction--><p>Mark Richardson, 9th May 2011</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/approx/ChebfunFFT.m">approx/ChebfunFFT.m</a>)</p><p>One of the most frequently used computations in Chebfun is the one-to-one operation of converting function values at Chebyshev points to Chebyshev expansion coefficients. This operation is achieved by the CHEBPOLY command. The inverse operation of mapping Chebyshev coefficients to function values is computed with CHEBPOLYVAL. In each case, the FFT (or IFFT) is used. Thus, the conversion process is very fast, with O(nlogn) complexity.</p><p>This transformation is so fundamental to Chebfun that it is useful to understand where it comes from. In order to do so, we consider an example computation.</p><p>Suppose that we have some function values at Chebyshev points, and we wish to compute the corresponding coeffcients of the truncated Chebyshev series. Let's pick a sample Chebfun to work with.</p><pre class="codeinput">fc = chebfun(<span class="string">'exp(x).*sin(pi*x) + x'</span>); n = length(fc) - 1;
+</pre><p>Chebfuns are defined by the values taken at Chebyshev points. We can access this data by looking in the 'vals' field.</p><pre class="codeinput">fvals = fc.vals;
+</pre><p>We can plot the chebfun and its values at Chebsyhev points with the following code, noting that this is equivalent to the command PLOT(FC,'.-').</p><pre class="codeinput">LW = <span class="string">'linewidth'</span>; FS = <span class="string">'fontsize'</span>; MS = <span class="string">'markersize'</span>; ms = 14; lw = 0.7;
+plot(fc), hold <span class="string">on</span>
+cpts = chebpts(n+1);
+plot(cpts,fvals,<span class="string">'.'</span>,MS,ms)
+grid <span class="string">on</span>, hold <span class="string">off</span>, xlim(1.26789*[-1 1])
+</pre><img vspace="5" hspace="5" src="ChebfunFFT_01.png" alt=""> <p>The kth Chebyshev polynomial on the unit interval can be viewed as the real part of the monomial z^k on the unit disc in the complex plane, z^k = Re(z^(k)) = 1/2(z^(k) + z^(-k)). Thus, a sum of n+1 Chebyshev polynomials is equivalent to a truncated Laurent series in the variable z, with equal coefficients for the z^(k) and z^(-k) terms.</p><p>In a similar way, the Chebyshev points on [-1,1] can be interpreted as the real parts of equispaced nodes on the unit circle.</p><pre class="codeinput">t1 = linspace(0,pi,n+1);
+t2 = linspace(pi,2*pi,n+1); t2 = t2(2:end-1);
+z1 = exp(1i*t1); z2 = exp(1i*t2);
+plot(z1,<span class="string">'.-r'</span>,MS,ms), hold <span class="string">on</span>
+plot(z2,<span class="string">'.k'</span>,MS,ms),
+xlim(1.1*[-1 1]), axis <span class="string">equal</span>
+xx = fliplr(real(z1));
+<span class="keyword">for</span> j = 2:n+1
+    plot([xx(n+2-j) z1(j)],<span class="string">'--k'</span>,LW,lw)
+<span class="keyword">end</span>
+plot(xx,0*xx,<span class="string">'.r'</span>,MS,ms),
+hold <span class="string">off</span>, grid <span class="string">on</span>
+</pre><img vspace="5" hspace="5" src="ChebfunFFT_02.png" alt=""> <p>The interplay between the unit interval and the unit circle allows us to utilise the tools of Fourier analysis. This is because a truncated Laurent series with equal coefficients for the z^(k) and z^(-k) terms is equivalent to a Fourier series in the variable s, where z = exp(i*s). Thus, in this setting, Fourier and Laurent coefficients are identical. Moreover, the vector of coefficients will be symmetric since the same factor multiplies the z^(k) and z^(-k) terms. The Chebyshev coefficients are then simply the first n+1 terms of this vector with the first and last coefficients divided by 2.</p><p>The following code performs this process step-by-step.</p><p>First, we extend the vector of function values to a vector representing equispaced values on the unit circle, going round anticlockwise from x=1.</p><pre class="codeinput">valsUnitDisc = [flipud(fvals) ; fvals(2:end-1)];
+</pre><p>Next, we take the FFT of the values to give Fourier/Laurent coeffcients. Note that in general, we expect the Chebyshev coefficients to be real-valued. Accordingly, we take the real part of this vector in order to eliminate any spurious imaginary components that may have appeared due to rounding errors.</p><pre class="codeinput">FourierCoeffs = real(fft(valsUnitDisc));
+</pre><p>Next we extract the first n+1 values of the vector. Note that Matlab's FFT routine requires us to divide through by the degree in order to obtain the Fourier coefficients. We also flip the vector to make it consistent with Chebfun's coeffcient ordering conventions.</p><pre class="codeinput">ChebCoeffs = flipud(FourierCoeffs(1:n+1))/n;
+</pre><p>Lastly, we divide the first and last entries by 2.</p><pre class="codeinput">ChebCoeffs(1) = ChebCoeffs(1)/2;
+ChebCoeffs(end) = ChebCoeffs(end)/2;
+</pre><p>This process replicates CHEBPOLY exactly.</p><pre class="codeinput">format <span class="string">long</span>
+display([chebpoly(fc)' ChebCoeffs chebpoly(fc)'-ChebCoeffs])
+</pre><pre class="codeoutput">ans =
+   0.000000000000001   0.000000000000001  -0.000000000000000
+   0.000000000000003   0.000000000000003   0.000000000000000
+  -0.000000000000171  -0.000000000000171   0.000000000000000
+  -0.000000000001641  -0.000000000001641   0.000000000000000
+   0.000000000010346   0.000000000010346   0.000000000000000
+   0.000000000247444   0.000000000247444   0.000000000000000
+   0.000000000450693   0.000000000450693   0.000000000000000
+  -0.000000018956244  -0.000000018956244   0.000000000000000
+  -0.000000132930479  -0.000000132930479   0.000000000000000
+   0.000000595916124   0.000000595916124   0.000000000000000
+   0.000010099254843   0.000010099254843   0.000000000000000
+   0.000013588812354   0.000013588812353   0.000000000000000
+  -0.000342376600591  -0.000342376600591   0.000000000000000
+  -0.001593236303762  -0.001593236303762   0.000000000000000
+   0.003716744333234   0.003716744333234   0.000000000000000
+   0.040446564047093   0.040446564047093  -0.000000000000000
+   0.042138836260565   0.042138836260565   0.000000000000000
+  -0.305357070227397  -0.305357070227397                   0
+  -0.751408267321024  -0.751408267321024   0.000000000000000
+  -0.040460133901562  -0.040460133901562  -0.000000000000000
+   1.705885096542583   1.705885096542584  -0.000000000000000
+   0.306949710367589   0.306949710367589   0.000000000000000
+</pre><p>In order to go back from coefficients to function values (in order to replicate CHEBPOLYVAL), we simply need to reverse the steps described.</p><p>References:</p><p>[1] Z. Battles and L. N. Trefethen, An extension of Matlab to continuous       functions and operators, SIAM J. Sci. Comp. 25 (2004), 1743-1770.</p><p>[2] L.N. Trefethen, Spectral methods in Matlab, SIAM, 2000.</p><p>[3] L.N. Trefethen, Approximation Theory and Approximation Practice.       <a href="http://www.maths.ox.ac.uk/chebfun/ATAP/">http://www.maths.ox.ac.uk/chebfun/ATAP/</a></p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% The FFT in Chebfun
+% Mark Richardson, 9th May 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/approx/ChebfunFFT.m">approx/ChebfunFFT.m</a>)
+
+%%
+% One of the most frequently used computations in Chebfun is the one-to-one
+% operation of converting function values at Chebyshev points to Chebyshev
+% expansion coefficients. This operation is achieved by the CHEBPOLY
+% command. The inverse operation of mapping Chebyshev coefficients to
+% function values is computed with CHEBPOLYVAL. In each case, the FFT (or
+% IFFT) is used. Thus, the conversion process is very fast, with O(nlogn)
+% complexity.
+%
+% This transformation is so fundamental to Chebfun that it is useful to 
+% understand where it comes from. In order to do so, we consider an example 
+% computation.
+%%
+% Suppose that we have some function values at Chebyshev points, and we
+% wish to compute the corresponding coeffcients of the truncated Chebyshev
+% series. Let's pick a sample Chebfun to work with.
+fc = chebfun('exp(x).*sin(pi*x) + x'); n = length(fc) - 1;
+%%
+% Chebfuns are defined by the values taken at Chebyshev points. We can
+% access this data by looking in the 'vals' field.
+fvals = fc.vals; 
+%% 
+% We can plot the chebfun and its values at Chebsyhev points with the
+% following code, noting that this is equivalent to the command
+% PLOT(FC,'.-').
+LW = 'linewidth'; FS = 'fontsize'; MS = 'markersize'; ms = 14; lw = 0.7;
+plot(fc), hold on
+cpts = chebpts(n+1);
+plot(cpts,fvals,'.',MS,ms)
+grid on, hold off, xlim(1.26789*[-1 1])
+%%
+% The kth Chebyshev polynomial on the unit interval can be viewed as the 
+% real part of the monomial z^k on the unit disc in the complex plane, z^k 
+% = Re(z^(k)) = 1/2(z^(k) + z^(-k)). Thus, a sum of n+1 Chebyshev 
+% polynomials is equivalent to a truncated Laurent series in the variable 
+% z, with equal coefficients for the z^(k) and z^(-k) terms.
+%%
+% In a similar way, the Chebyshev points on [-1,1] can be interpreted as 
+% the real parts of equispaced nodes on the unit circle. 
+t1 = linspace(0,pi,n+1);
+t2 = linspace(pi,2*pi,n+1); t2 = t2(2:end-1);
+z1 = exp(1i*t1); z2 = exp(1i*t2);
+plot(z1,'.-r',MS,ms), hold on 
+plot(z2,'.k',MS,ms),
+xlim(1.1*[-1 1]), axis equal 
+xx = fliplr(real(z1));
+for j = 2:n+1
+    plot([xx(n+2-j) z1(j)],'REPLACE_WITH_DASH_DASHk',LW,lw)
+end
+plot(xx,0*xx,'.r',MS,ms), 
+hold off, grid on
+%%
+% The interplay between the unit interval and the unit circle allows us to
+% utilise the tools of Fourier analysis. This is because a truncated 
+% Laurent series with equal coefficients for the z^(k) and z^(-k) terms is 
+% equivalent to a Fourier series in the variable s, where z = exp(i*s). 
+% Thus, in this setting, Fourier and Laurent coefficients are identical.
+% Moreover, the vector of coefficients will be symmetric since the same 
+% factor multiplies the z^(k) and z^(-k) terms. The Chebyshev coefficients
+% are then simply the first n+1 terms of this vector with the first and 
+% last coefficients divided by 2. 
+%%
+% The following code performs this process step-by-step.
+%%
+% First, we extend the vector of function values to a vector representing 
+% equispaced values on the unit circle, going round anticlockwise from x=1. 
+valsUnitDisc = [flipud(fvals) ; fvals(2:end-1)];
+%%
+% Next, we take the FFT of the values to give Fourier/Laurent coeffcients.
+% Note that in general, we expect the Chebyshev coefficients to be 
+% real-valued. Accordingly, we take the real part of this vector in order 
+% to eliminate any spurious imaginary components that may 
+% have appeared due to rounding errors.
+FourierCoeffs = real(fft(valsUnitDisc));
+%% 
+% Next we extract the first n+1 values of the vector. Note that Matlab's 
+% FFT routine requires us to divide through by the degree in order to 
+% obtain the Fourier coefficients. We also flip the vector to make it 
+% consistent with Chebfun's coeffcient ordering conventions.
+ChebCoeffs = flipud(FourierCoeffs(1:n+1))/n;
+%% 
+% Lastly, we divide the first and last entries by 2.
+ChebCoeffs(1) = ChebCoeffs(1)/2;
+ChebCoeffs(end) = ChebCoeffs(end)/2;
+%% 
+% This process replicates CHEBPOLY exactly.
+format long
+display([chebpoly(fc)' ChebCoeffs chebpoly(fc)'-ChebCoeffs])
+%%
+% In order to go back from coefficients to function values (in order to 
+% replicate CHEBPOLYVAL), we simply need to reverse the steps described.
+%%
+% References:
+%
+% [1] Z. Battles and L. N. Trefethen, An extension of Matlab to continuous 
+%       functions and operators, SIAM J. Sci. Comp. 25 (2004), 1743-1770.
+%
+% [2] L.N. Trefethen, Spectral methods in Matlab, SIAM, 2000.
+%
+% [3] L.N. Trefethen, Approximation Theory and Approximation Practice.
+%       http://www.maths.ox.ac.uk/chebfun/ATAP/
+
+##### SOURCE END #####
+--></body></html>

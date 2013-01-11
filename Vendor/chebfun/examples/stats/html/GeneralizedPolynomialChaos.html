@@ -1,0 +1,308 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Generalized Polynomial Chaos</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="GeneralizedPolynomialChaos.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Generalized Polynomial Chaos</h1><!--introduction--><p>Toby Driscoll, 16th December 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#4">Strong approximation</a></li><li><a href="#12">Weak approximation</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/stats/GeneralizedPolynomialChaos.m">stats/GeneralizedPolynomialChaos.m</a>)</p><p>gPC is a powerful way to express stochastic quantities with spectral accuracy. We demonstrate the technique in one dimension.</p><pre class="codeinput">LW = <span class="string">'linewidth'</span>; FS = <span class="string">'fontsize'</span>; MS = <span class="string">'markersize'</span>;
+</pre><h2>Strong approximation<a name="4"></a></h2><p>When the density of a random variable Y is known explicitly, and can be reparameterized in terms of a standard random variable Z, then a polynomial approximation in Z can reproduce Y accurately. The gPC method expresses the approximation using orthogonal polynomials based on the density of Z, so that the approximation is a very simple least-squares (i.e., Fourier) projection.</p><p>For example, suppose Y is a lognormal variable (that is, log(Y) is normal with mean mu and variance sigma^2). If Z is a standard normal variable, then Y = exp(mu+sigma*Z). A standard gPC approximation will use Hermite polynomials in Z as a basis, as they are orthogonal when weighted by the Gaussian density of Z. Here, we build those using a three-term recurrence on a truncated domain. We are going to truncate the infinite domain to 10 standard deviations.</p><pre class="codeinput">z = chebfun(@(z) z,[-10 10]);
+H = [ 1,z ];  N = 5;
+<span class="keyword">for</span> n = 1:N-1
+    H(:,n+2) = z.*H(:,n+1) - n*H(:,n);
+<span class="keyword">end</span>
+plot(H(:,1:4),LW,2), title(<span class="string">'Hermite polynomials'</span>)
+</pre><img vspace="5" hspace="5" src="GeneralizedPolynomialChaos_01.png" alt=""> <p>The plot shows that the polynomials are not uniformly normalized, but that won't be a problem. We can verify the orthogonality in a few cases:</p><pre class="codeinput">rho = exp(-z.^2/2);  rho = rho/sum(rho);  <span class="comment">% Gaussian density</span>
+sum( H(:,2).*H(:,5).*rho )
+</pre><pre class="codeoutput">ans =
+     3.925302919896845e-13
+</pre><pre class="codeinput">sum( H(:,1).*H(:,3).*rho )
+</pre><pre class="codeoutput">ans =
+     2.216109240560371e-15
+</pre><p>To check things more globally, we can use the square root of the density rho to recast everything into the L2 norm.</p><pre class="codeinput">w = exp(-z.^2/4);  w = w/sqrt(sum(w.^2));  <span class="comment">% square root of weight</span>
+HW = repmat(w,[1 N+1]).*H;                 <span class="comment">% multiply each column by w</span>
+G = HW'*HW    <span class="comment">% Gram matrix of mutual inner products</span>
+</pre><pre class="codeoutput">G =
+   1.0e+02 *
+  Columns 1 through 3
+   0.010000000000000  -0.000000000000000   0.000000000000000
+  -0.000000000000000   0.010000000000000   0.000000000000000
+   0.000000000000000  -0.000000000000000   0.020000000000000
+  -0.000000000000001   0.000000000000000   0.000000000000001
+   0.000000000000003   0.000000000000001  -0.000000000000002
+   0.000000000000036  -0.000000000000002  -0.000000000000018
+  Columns 4 through 6
+  -0.000000000000001   0.000000000000003   0.000000000000036
+   0.000000000000000   0.000000000000001  -0.000000000000002
+   0.000000000000001  -0.000000000000002  -0.000000000000018
+   0.059999999999999  -0.000000000000003  -0.000000000000010
+  -0.000000000000003   0.240000000000009   0.000000000000039
+  -0.000000000000010   0.000000000000039   1.200000000000125
+</pre><p>The Gram matrix shows why it's so easy to use this basis for least-squares approximation. If we accept that G is numerically diagonal, then its inversion in the normal equations is trivial. Returning to our lognormal variable Y, its approximation has coefficients given by:</p><pre class="codeinput">mu = 1; sigma = 0.5;  y = exp(mu+sigma*z);
+rhs = (repmat(rho,[1 N+1]).*H)' * y;  <span class="comment">% inner products of y and H_n</span>
+c = rhs ./ diag(G)                    <span class="comment">% solve the normal equations</span>
+</pre><pre class="codeoutput">c =
+   3.080216848918044
+   1.540108424459042
+   0.385027106114899
+   0.064171184352773
+   0.008021398044998
+   0.000802139805236
+</pre><p>The rapid decrease in the coefficients reflects the spectral accuracy. A plot shows how the weight function strongly emphasizes values of Z near 0 at the expense of the ends:</p><pre class="codeinput">clf, plot([y,H*c],LW,2), title(<span class="string">'Weighted least squares for lognormal density'</span>)
+xlabel(<span class="string">'Z'</span>), ylabel(<span class="string">'Y(Z)'</span>)
+</pre><img vspace="5" hspace="5" src="GeneralizedPolynomialChaos_02.png" alt=""> <p>In Chebfun, we can avoid all the discussion and use of orthogonal polynomials and go straight to the least-squares solution. We'll use the Chebyshev polynomials as the basis; though they aren't orthogonal in this inner product, they're (barely!) well-conditioned enough to do the job. The main trick is to again recast everything in the L2 norm, then use Chebfun's built in least-squares solutions.</p><pre class="codeinput">T = chebpoly(0:N,[-10 10]);
+WT = repmat(w,[1 N+1]).*T;  wy = w.*y;
+c = WT \ wy
+hold <span class="string">on</span>, plot(T*c,<span class="string">'r'</span>,LW,2)
+title(<span class="string">'Weighted least squares using Chebyshev basis'</span>)
+</pre><pre class="codeoutput">c =
+   1.0e+02 *
+   0.496444324946645
+   1.058423471913505
+   0.569519261127982
+   0.391043154647867
+   0.100267475550692
+   0.050133737775374
+</pre><img vspace="5" hspace="5" src="GeneralizedPolynomialChaos_03.png" alt=""> <h2>Weak approximation<a name="12"></a></h2><p>In practice, the more common situation is that the explicit parameterization Y(Z) is unknown, but the distribution FY(y)=P[Y&lt;=y] is known. In this case, the trick is to reparameterize both Y and Z in terms of a variable in their common range [0,1]. Specifically, both FY(Y) and FZ(Z) are uniformly distributed and can be called a new variable U. Solving, we get Y=FY^(-1)( FZ(Z) ), a quantity that we can approximate as before.</p><p>For example, let Y be given by an exponential distribution on [0,inf], which we truncate for simplicity. All we would know, in principle, is the distribution FY(y) = 1-exp(-y), which Chebfun can invert.</p><pre class="codeinput">FY = chebfun(@(y) 1-exp(-y),[0 8]);
+</pre><p>Let's again use the Hermite weight in Z to approximate Y.</p><pre class="codeinput">z = chebfun(@(z)z, [0 8] );
+w = exp(-z.^2/4) / sqrt(sum(exp(-z.^2/2)));  <span class="comment">% sqrt of density</span>
+FZ = cumsum( w.^2 );                         <span class="comment">% distribution of Z</span>
+</pre><p>Because function composition can be very sensitive to roundoff, we have to guarantee that the ranges of the distributions are exactly right.</p><pre class="codeinput">FY = (FY-FY(0))/(FY(8)-FY(0));
+FZ = (FZ-FZ(0))/(FZ(8)-FZ(0));
+FYinv = inv2(FY);  <span class="comment">% invert</span>
+y = FYinv(FZ);     <span class="comment">% compose</span>
+</pre><p>Now that we have an expression for Y as parameterized by Z, we can proceed as before with a least-squares approximation.</p><pre class="codeinput">T = chebpoly(0:N,[0 8]);
+WT = repmat(w,[1 N+1]).*T;  wy = w.*y;
+c = WT \ wy
+clf, plot([y,T*c],LW,2)
+title(<span class="string">'Weighted least squares approximation of exponential distribution'</span>)
+xlabel(<span class="string">'Z'</span>), ylabel(<span class="string">'Y(Z)'</span>)
+legend(<span class="string">'exact'</span>,<span class="string">'LS approximation'</span>,<span class="string">'Location'</span>,<span class="string">'southwest'</span>)
+</pre><pre class="codeoutput">c =
+ -20.625599957134142
+ -41.630340846337013
+ -33.422878071472525
+ -16.514675650572975
+  -4.746920822378029
+  -0.652282841706033
+</pre><img vspace="5" hspace="5" src="GeneralizedPolynomialChaos_04.png" alt=""> <p>If we decide not to deemphasize the right end so much, we could use a weight function that is only inverse square rather than exponential.</p><pre class="codeinput">w = 1./(1+z);      <span class="comment">% sqrt of density</span>
+FZ = cumsum( w.^2 );
+FZ = (FZ-FZ(0))/(FZ(8)-FZ(0));  <span class="comment">% normalize exactly</span>
+y = FYinv(FZ);
+WT = repmat(w,[1 N+1]).*T;  wy = w.*y;
+c = WT \ wy
+clf, plot([y,T*c],LW,2)
+title(<span class="string">'Another least squares approximation of exponential distribution'</span>)
+xlabel(<span class="string">'Z'</span>), ylabel(<span class="string">'Y(Z)'</span>)
+legend(<span class="string">'exact'</span>,<span class="string">'LS approximation'</span>,<span class="string">'Location'</span>,<span class="string">'southwest'</span>)
+</pre><pre class="codeoutput">c =
+   2.613340880098030
+   2.687973351259238
+   0.444143892171006
+   0.450397458926194
+   0.164817745106679
+   0.094370286996201
+</pre><img vspace="5" hspace="5" src="GeneralizedPolynomialChaos_05.png" alt=""> <p>Note that both curves in the graph changed, because the parameterization and the approximation are both different.</p><p>References:</p><p>[1] D. Xiu, Numerical Methods for Stochastic Computations, Princeton University Press, 2010.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Generalized Polynomial Chaos
+% Toby Driscoll, 16th December 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/stats/GeneralizedPolynomialChaos.m">stats/GeneralizedPolynomialChaos.m</a>)
+
+%%
+% gPC is a powerful way to express stochastic quantities with spectral
+% accuracy. We demonstrate the technique in one dimension. 
+
+%%
+%  
+LW = 'linewidth'; FS = 'fontsize'; MS = 'markersize';
+
+%% Strong approximation
+% When the density of a random variable Y is known explicitly, and can be
+% reparameterized in terms of a standard random variable Z, then a
+% polynomial approximation in Z can reproduce Y accurately. The gPC method
+% expresses the approximation using orthogonal polynomials based on the
+% density of Z, so that the approximation is a very simple least-squares
+% (i.e., Fourier) projection.
+
+%%
+% For example, suppose Y is a lognormal variable (that is, log(Y) is normal
+% with mean mu and variance sigma^2). If Z is a standard normal variable,
+% then Y = exp(mu+sigma*Z). A standard gPC approximation will use Hermite
+% polynomials in Z as a basis, as they are orthogonal when weighted by the
+% Gaussian density of Z. Here, we build those using a three-term recurrence
+% on a truncated domain. We are going to truncate the infinite domain to 10
+% standard deviations.
+z = chebfun(@(z) z,[-10 10]);
+H = [ 1,z ];  N = 5;
+for n = 1:N-1
+    H(:,n+2) = z.*H(:,n+1) - n*H(:,n);
+end
+plot(H(:,1:4),LW,2), title('Hermite polynomials')
+
+%%
+% The plot shows that the polynomials are not uniformly normalized, but that
+% won't be a problem. We can verify the orthogonality in a few cases:
+rho = exp(-z.^2/2);  rho = rho/sum(rho);  % Gaussian density 
+sum( H(:,2).*H(:,5).*rho )
+
+
+%%
+sum( H(:,1).*H(:,3).*rho )
+
+%%
+% To check things more globally, we can use the square root of the density
+% rho to recast everything into the L2 norm.
+w = exp(-z.^2/4);  w = w/sqrt(sum(w.^2));  % square root of weight
+HW = repmat(w,[1 N+1]).*H;                 % multiply each column by w
+G = HW'*HW    % Gram matrix of mutual inner products
+
+%% 
+% The Gram matrix shows why it's so easy to use this basis for
+% least-squares approximation. If we accept that G is numerically diagonal,
+% then its inversion in the normal equations is trivial. Returning to our
+% lognormal variable Y, its approximation has coefficients given by:
+mu = 1; sigma = 0.5;  y = exp(mu+sigma*z);
+rhs = (repmat(rho,[1 N+1]).*H)' * y;  % inner products of y and H_n
+c = rhs ./ diag(G)                    % solve the normal equations
+
+%% 
+% The rapid decrease in the coefficients reflects the spectral accuracy. A
+% plot shows how the weight function strongly emphasizes values of Z near 0
+% at the expense of the ends:
+clf, plot([y,H*c],LW,2), title('Weighted least squares for lognormal density')
+xlabel('Z'), ylabel('Y(Z)') 
+
+%%
+% In Chebfun, we can avoid all the discussion and use of orthogonal
+% polynomials and go straight to the least-squares solution. We'll use the
+% Chebyshev polynomials as the basis; though they aren't orthogonal in this
+% inner product, they're (barely!) well-conditioned enough to do the job.
+% The main trick is to again recast everything in the L2 norm, then use
+% Chebfun's built in least-squares solutions.
+T = chebpoly(0:N,[-10 10]);
+WT = repmat(w,[1 N+1]).*T;  wy = w.*y;
+c = WT \ wy
+hold on, plot(T*c,'r',LW,2)
+title('Weighted least squares using Chebyshev basis')
+
+%% Weak approximation
+% In practice, the more common situation is that the explicit
+% parameterization Y(Z) is unknown, but the distribution FY(y)=P[Y<=y] is
+% known. In this case, the trick is to reparameterize both Y and Z in terms
+% of a variable in their common range [0,1]. Specifically, both FY(Y) and
+% FZ(Z) are uniformly distributed and can be called a new variable U.
+% Solving, we get Y=FY^(-1)( FZ(Z) ), a quantity that we can approximate as
+% before. 
+
+%%
+% For example, let Y be given by an exponential distribution on [0,inf],
+% which we truncate for simplicity. All we would know, in principle, is the
+% distribution FY(y) = 1-exp(-y), which Chebfun can invert.
+FY = chebfun(@(y) 1-exp(-y),[0 8]);
+
+%%
+% Let's again use the Hermite weight in Z to approximate Y. 
+z = chebfun(@(z)z, [0 8] );
+w = exp(-z.^2/4) / sqrt(sum(exp(-z.^2/2)));  % sqrt of density
+FZ = cumsum( w.^2 );                         % distribution of Z
+
+%%
+% Because function composition can be very sensitive to roundoff, we have
+% to guarantee that the ranges of the distributions are exactly right. 
+FY = (FY-FY(0))/(FY(8)-FY(0));
+FZ = (FZ-FZ(0))/(FZ(8)-FZ(0));
+FYinv = inv2(FY);  % invert
+y = FYinv(FZ);     % compose
+
+%%
+% Now that we have an expression for Y as parameterized by Z, we can
+% proceed as before with a least-squares approximation. 
+T = chebpoly(0:N,[0 8]);
+WT = repmat(w,[1 N+1]).*T;  wy = w.*y;
+c = WT \ wy
+clf, plot([y,T*c],LW,2)
+title('Weighted least squares approximation of exponential distribution')
+xlabel('Z'), ylabel('Y(Z)')
+legend('exact','LS approximation','Location','southwest')
+
+%%
+% If we decide not to deemphasize the right end so much, we could use a
+% weight function that is only inverse square rather than exponential.
+w = 1./(1+z);      % sqrt of density
+FZ = cumsum( w.^2 );
+FZ = (FZ-FZ(0))/(FZ(8)-FZ(0));  % normalize exactly
+y = FYinv(FZ);     
+WT = repmat(w,[1 N+1]).*T;  wy = w.*y;
+c = WT \ wy
+clf, plot([y,T*c],LW,2)
+title('Another least squares approximation of exponential distribution')
+xlabel('Z'), ylabel('Y(Z)')
+legend('exact','LS approximation','Location','southwest')
+
+%%
+% Note that both curves in the graph changed, because the parameterization
+% and the approximation are both different. 
+
+
+%%
+% References:
+%
+% [1] D. Xiu, Numerical Methods for Stochastic Computations, Princeton
+% University Press, 2010. 
+%
+
+##### SOURCE END #####
+--></body></html>

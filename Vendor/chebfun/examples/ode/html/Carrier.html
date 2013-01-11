@@ -1,0 +1,184 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Carrier equation</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="Carrier.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Carrier equation</h1><!--introduction--><p>Asgeir Birkisson, October 2010</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">1. The original problem</a></li><li><a href="#7">2. Alternative boundary conditions</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/Carrier.m">ode/Carrier.m</a>)</p><h2>1. The original problem<a name="2"></a></h2><p>The Carrier equation can be found in Section 9.7 of the well-known textbook of Bender &amp; Orszag 1978, and is given as follows:</p><p>eps u" + 2(1-x^2)u + u^2 = 1,    u(-1) = 0,  u(1) = 0.</p><p>This is a nonlinear ODE BVP with multiple solutions. We can find a solution with Chebfun (taking eps = 0.01) as follows.  We set up the operator and boundary conditions:</p><pre class="codeinput">N = chebop(-1,1);
+N.op = @(x,u) 0.01*diff(u,2) + 2*(1-x.^2).*u + u.^2;
+N.bc = <span class="string">'dirichlet'</span>;
+</pre><p>And we set an initial guess:</p><pre class="codeinput">x = chebfun(<span class="string">'x'</span>);
+N.init = 2*(x.^2-1);
+</pre><p>We now solve the problem using the nonlinear backslash operator. By calling \ with two output arguments, we also get the norms of the updates at each iteration returned in a vector. Before solving the problem, we set the cheboppref 'display' to be 'iter' in order to display information about the solution process. We then plot the solution and the norm of the updates:</p><pre class="codeinput">cheboppref(<span class="string">'display'</span>,<span class="string">'iter'</span>)
+[u nrmdu] = N\1;
+LW = <span class="string">'linewidth'</span>; MS = <span class="string">'markersize'</span>; FS = <span class="string">'fontsize'</span>;
+subplot(1,2,1), plot(u,LW,1.6), title(<span class="string">'Solution'</span>,FS,14)
+subplot(1,2,2), semilogy(nrmdu,<span class="string">'.-r'</span>,LW,1.6,MS,16), title(<span class="string">'Convergence'</span>,FS,14)
+xlim([1 length(nrmdu)]), grid <span class="string">on</span>
+</pre><pre class="codeoutput">   Iter.       || update ||      length(update)     stepsize    length(u)
+---------------------------------------------------------------------------
+    1          3.342e-01            39                   1              39
+    2          9.869e-02            59                   1              59
+    3          1.060e-02            59                   1              59
+    4          1.458e-04            59                   1              59
+    5          2.966e-08            51                   1              59
+
+5 iterations
+Final residual norm: 4.03e-14 (interior) and 4.41e-23 (boundary conditions). 
+
+</pre><img vspace="5" hspace="5" src="Carrier_01.png" alt=""> <p>The solution has been obtained to high accuracy:</p><pre class="codeinput">accuracy = norm(N(u)-1)
+</pre><pre class="codeoutput">accuracy =
+     1.083874138272800e-13
+</pre><p>Running from a different initial guess gives a different solution:</p><pre class="codeinput">N.init = 2*(x.^2-1).*(1-2./(1+20*x.^2));
+cheboppref(<span class="string">'display'</span>,<span class="string">'off'</span>)
+[u nrmdu] = N\1;
+subplot(1,2,1), plot(u,LW,1.6), title(<span class="string">'Solution'</span>,FS,14)
+subplot(1,2,2), semilogy(nrmdu,<span class="string">'.-r'</span>,LW,1.6,MS,16), title(<span class="string">'Convergence'</span>,FS,14)
+xlim([1 length(nrmdu)]), grid <span class="string">on</span>
+accuracy = norm(N(u)-1)
+</pre><pre class="codeoutput">accuracy =
+     3.191288707301407e-06
+</pre><img vspace="5" hspace="5" src="Carrier_02.png" alt=""> <h2>2. Alternative boundary conditions<a name="7"></a></h2><p>If we want to change the BVP above to impose different boundary conditions, we can reuse the chebop created and only change the relevant fields. For example, suppose we want to solve the same equation with the new boundary conditions</p><pre>   u(-1) = 1,  u'(1) + u(1) = 0.</pre><p>We can execute the following commands:</p><pre class="codeinput">N.lbc = 1;
+N.rbc = @(u) diff(u) + u;
+[u nrmdu] = N\1;
+subplot(1,2,1), plot(u,LW,1.6), title(<span class="string">'Solution'</span>,FS,14)
+subplot(1,2,2), semilogy(nrmdu,<span class="string">'.-r'</span>,LW,1.6,MS,16), title(<span class="string">'Convergence'</span>,FS,14)
+xlim([1 length(nrmdu)]), grid <span class="string">on</span>
+accuracy = norm(N(u)-1)
+</pre><pre class="codeoutput">accuracy =
+     6.577582279759786e-08
+</pre><img vspace="5" hspace="5" src="Carrier_03.png" alt=""> <p>This example can also be found among the Sclar BVP demos in CHEBGUI.</p><p>Reference:</p><p>C. Bender and S. A. Orzsag, Advanced Mathematical Methods for Scientists and Engineers, McGraw-Hill, 1978 (Sectin 9.7).</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Carrier equation
+% Asgeir Birkisson, October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/Carrier.m">ode/Carrier.m</a>)
+
+%% 1. The original problem
+% The Carrier equation can be found in Section 9.7 of the well-known
+% textbook of Bender & Orszag 1978, and is given as follows:
+%
+% eps u" + 2(1-x^2)u + u^2 = 1,    u(-1) = 0,  u(1) = 0.
+%
+% This is a nonlinear ODE BVP with multiple solutions.
+% We can find a solution with Chebfun (taking eps = 0.01) as
+% follows.  We set up the operator and boundary conditions:
+N = chebop(-1,1);
+N.op = @(x,u) 0.01*diff(u,2) + 2*(1-x.^2).*u + u.^2;
+N.bc = 'dirichlet';
+
+%%
+% And we set an initial guess:
+x = chebfun('x');
+N.init = 2*(x.^2-1);
+
+%%
+% We now solve the problem using the nonlinear backslash operator.
+% By calling \ with two output arguments, we also get the norms of the updates at each
+% iteration returned in a vector. Before solving the problem, we set the
+% cheboppref 'display' to be 'iter' in order to display information about
+% the solution process. We then plot the solution and the norm of the
+% updates:
+cheboppref('display','iter')
+[u nrmdu] = N\1;
+LW = 'linewidth'; MS = 'markersize'; FS = 'fontsize';
+subplot(1,2,1), plot(u,LW,1.6), title('Solution',FS,14)
+subplot(1,2,2), semilogy(nrmdu,'.-r',LW,1.6,MS,16), title('Convergence',FS,14)
+xlim([1 length(nrmdu)]), grid on
+
+%%
+% The solution has been obtained to high accuracy:
+accuracy = norm(N(u)-1)
+
+%%
+% Running from a different initial guess gives a different solution:
+N.init = 2*(x.^2-1).*(1-2./(1+20*x.^2));
+cheboppref('display','off')
+[u nrmdu] = N\1;
+subplot(1,2,1), plot(u,LW,1.6), title('Solution',FS,14)
+subplot(1,2,2), semilogy(nrmdu,'.-r',LW,1.6,MS,16), title('Convergence',FS,14)
+xlim([1 length(nrmdu)]), grid on
+accuracy = norm(N(u)-1)
+
+%% 2. Alternative boundary conditions
+% If we want to change the BVP above to impose different boundary
+% conditions, we can reuse the chebop created and only change the relevant
+% fields. For example, suppose we want to solve the same equation with
+% the new boundary conditions
+%
+%     u(-1) = 1,  u'(1) + u(1) = 0.
+%
+% We can execute the following commands:
+N.lbc = 1;
+N.rbc = @(u) diff(u) + u;
+[u nrmdu] = N\1;
+subplot(1,2,1), plot(u,LW,1.6), title('Solution',FS,14)
+subplot(1,2,2), semilogy(nrmdu,'.-r',LW,1.6,MS,16), title('Convergence',FS,14)
+xlim([1 length(nrmdu)]), grid on
+accuracy = norm(N(u)-1)
+
+%%
+% This example can also be found among the Sclar BVP demos in CHEBGUI.
+
+
+%%
+% Reference:
+%
+% C. Bender and S. A. Orzsag, Advanced Mathematical Methods
+% for Scientists and Engineers, McGraw-Hill, 1978 (Sectin 9.7).
+
+##### SOURCE END #####
+--></body></html>

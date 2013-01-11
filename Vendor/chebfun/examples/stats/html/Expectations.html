@@ -1,0 +1,244 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Simple computations with probability distributions</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="Expectations.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Simple computations with probability distributions</h1><!--introduction--><p>Mark Richardson, 21 May 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#3">1. Expectation of a random variable</a></li><li><a href="#13">2. Mean, median and mode of a probability distribution</a></li></ul></div><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/stats/Expectations.m">stats/Expectations.m</a>)</p><pre class="codeinput">format <span class="string">long</span>
+</pre><p>In this example, we use Chebfun to solve some probability distribution problems from [1].</p><h2>1. Expectation of a random variable<a name="3"></a></h2><p>We use Problem 3.4 from p. 86 of [1] to motivate this example.</p><p>Suppose a continuous random variable X has a probability density function given by</p><p>f(x) = 2e^(-2x),  x &gt;=0</p><p>f(x) = 0,         x &lt; 0.</p><p>What are: (a) E(X) and (b) E(X^2)?</p><p>(a) In order to compute the expectation E(X), we first need define a chebfun over the semi-infinite interval [0 inf]. Since the density function is defined to be zero for x&lt;0, we don't need to concern ourselves with it there.</p><pre class="codeinput">x = chebfun(<span class="string">'x'</span>,[0 inf]);
+</pre><p>Next we approximate the density function.</p><pre class="codeinput">f = 2*exp(-2*x);
+figure(<span class="string">'Position'</span>,[100 200 520 180])
+LW = <span class="string">'linewidth'</span>; lw = 1.6;
+plot(f,LW,lw), grid <span class="string">on</span>
+ylim([-0.2 2.2])
+xlabel(<span class="string">'x'</span>), ylabel(<span class="string">'f(x)'</span>,<span class="string">'rotation'</span>,0)
+</pre><img vspace="5" hspace="5" src="Expectations_01.png" alt=""> <p>If f is a density function, then its integral should be 1, and we find that this is indeed the case to within rounding errors.</p><pre class="codeinput">sum(f)
+</pre><pre class="codeoutput">ans =
+   0.999999999999996
+</pre><p>The expectation of a continuous random variable is defined as the integral over x = -inf...inf of the function xf(x).</p><pre class="codeinput">xf = x.*f;
+plot(xf,LW,lw), grid <span class="string">on</span>
+ylim([-0.05 0.4])
+xlabel(<span class="string">'x'</span>), ylabel(sprintf(<span class="string">'x f(x)\n'</span>),<span class="string">'rotation'</span>,0)
+</pre><img vspace="5" hspace="5" src="Expectations_02.png" alt=""> <p>We can use the chebfun command SUM to compute this integral (hopefully we can get rid of the restrict command at some point!). The correct answer in this case is 1/2.</p><pre class="codeinput">sum(xf{0,20})
+</pre><pre class="codeoutput">ans =
+   0.500000000000006
+</pre><p>b) For E(X^2), the answer is again 1/2 and we compute this in exactly the same way as before.</p><pre class="codeinput">xxf = x.^2.*f;
+plot(xxf,LW,lw), grid <span class="string">on</span>
+ylim([-0.03 0.31])
+xlabel(<span class="string">'x'</span>), ylabel(<span class="string">'x^2 f(x)'</span>,<span class="string">'rotation'</span>,0)
+</pre><img vspace="5" hspace="5" src="Expectations_03.png" alt=""> <pre class="codeinput">sum(xxf{0,20})
+</pre><pre class="codeoutput">ans =
+   0.500000000000123
+</pre><h2>2. Mean, median and mode of a probability distribution<a name="13"></a></h2><p>This example is motivated by problem 3.33 on p. 94 of [1].</p><p>The probability density function of a continuous random variable X is g(x) = 4x(9-x^2)/81, for 0&lt;=x&lt;=3, and zero otherwise. Find: a) the mean, b) the median, and c) the mode.</p><p>First, we define an appropriate Chebfun variable and the p.d.f.</p><pre class="codeinput">x = chebfun(<span class="string">'x'</span>,[0 3]);
+g = 4*x.*(9-x.^2)/81;
+plot(g,LW,lw), grid <span class="string">on</span>
+ylim([-0.01 0.61])
+xlabel(<span class="string">'x'</span>), ylabel(<span class="string">'g(x)'</span>,<span class="string">'rotation'</span>,0)
+</pre><img vspace="5" hspace="5" src="Expectations_04.png" alt=""> <p>a) Computing the mean is simply a matter of computing the expectation as in the previous question. The exact answer is 1.6 and this is what we find using Chebfun.</p><pre class="codeinput">mean = sum(x.*g)
+</pre><pre class="codeoutput">mean =
+   1.600000000000000
+</pre><p>b) The median is the value a for which P(X&lt;=a) = 1/2. In order to solve this problem we need to work with the cumulative distribution function, which is simply the indefinite integral of the probability density. This can be computed with the chebfun command CUMSUM.</p><pre class="codeinput">G = cumsum(g);
+plot(G,LW,lw), grid <span class="string">on</span>
+xlabel(<span class="string">'x'</span>), ylabel(sprintf(<span class="string">'G(x)\n'</span>),<span class="string">'rotation'</span>,0)
+</pre><img vspace="5" hspace="5" src="Expectations_05.png" alt=""> <p>Note again that as we would expect for any p.d.f., the integral is 1. In order to compute the the value of a, we may use one of the relational operators that have been overloaded in Chebfun. Here it is:</p><pre class="codeinput">median = roots(G-0.5)
+median_exact = sqrt(9-9*sqrt(2)/2)
+</pre><pre class="codeoutput">median =
+   1.623588300438591
+median_exact =
+   1.623588300438591
+</pre><p>c) For the mode, we are simply looking for the position of the global maximum of the probability distribution. This is easily computed with the Chebfun command MAX.</p><pre class="codeinput">[gmax,mode] = max(g);
+display(mode)
+</pre><pre class="codeoutput">mode =
+   1.732050807568877
+</pre><p>Again, this matches the exact answer</p><pre class="codeinput">mode_exact = sqrt(3)
+</pre><pre class="codeoutput">mode_exact =
+   1.732050807568877
+</pre><p>Here is a graph showing the three computed values:</p><pre class="codeinput">plot(g,LW,lw), grid <span class="string">on</span>, hold <span class="string">on</span>
+plot([mean mean],[0 g(mean)],<span class="string">'-r'</span>,LW,lw)
+plot([median median],[0 g(median)],<span class="string">'-m'</span>,LW,lw)
+plot([mode mode],[0 g(mode)],<span class="string">'-k'</span>,LW,lw)
+text(0.2,0.55,sprintf(<span class="string">'mean   = %1.2f'</span>,mean),<span class="string">'color'</span>,<span class="string">'r'</span>)
+text(1.2,0.55,sprintf(<span class="string">'median = %1.2f'</span>,median),<span class="string">'color'</span>,<span class="string">'m'</span>)
+text(2.2,0.55,sprintf(<span class="string">'mode   = %1.2f'</span>,mode),<span class="string">'color'</span>,<span class="string">'k'</span>)
+hold <span class="string">off</span>, ylim([-0.01 0.61])
+xlabel(<span class="string">'x'</span>), ylabel(<span class="string">'g(x)'</span>,<span class="string">'rotation'</span>,0)
+</pre><img vspace="5" hspace="5" src="Expectations_06.png" alt=""> <p>References:</p><p>[1] M. Spiegel, J. Schiller and R. Srinivasan, Schaum's Outlines -- Probability and Statistics, 3rd. ed., 2009.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Simple computations with probability distributions
+% Mark Richardson, 21 May 2011
+%
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/stats/Expectations.m">stats/Expectations.m</a>)
+%
+format long
+%%
+% In this example, we use Chebfun to solve some probability distribution 
+% problems from [1].
+
+%% 1. Expectation of a random variable
+% 
+% We use Problem 3.4 from p. 86 of [1] to motivate this example.
+% 
+% Suppose a continuous random variable X has a probability density function 
+% given by
+% 
+% f(x) = 2e^(-2x),  x >=0
+%%
+% f(x) = 0,         x < 0.
+%%
+% What are: (a) E(X) and (b) E(X^2)?
+%%
+% (a) In order to compute the expectation E(X), we first need define a 
+% chebfun over the semi-infinite interval [0 inf]. Since the density 
+% function is defined to be zero for x<0, we don't need to concern 
+% ourselves with it there.
+x = chebfun('x',[0 inf]);
+%%
+% Next we approximate the density function.
+f = 2*exp(-2*x); 
+figure('Position',[100 200 520 180])
+LW = 'linewidth'; lw = 1.6;
+plot(f,LW,lw), grid on
+ylim([-0.2 2.2])
+xlabel('x'), ylabel('f(x)','rotation',0)
+%%
+% If f is a density function, then its integral should be 1, and we find 
+% that this is indeed the case to within rounding errors.
+sum(f)
+%%
+% The expectation of a continuous random variable is defined as the 
+% integral over x = -inf...inf of the function xf(x). 
+xf = x.*f;
+plot(xf,LW,lw), grid on
+ylim([-0.05 0.4])
+xlabel('x'), ylabel(sprintf('x f(x)\n'),'rotation',0)
+%%
+% We can use the chebfun command SUM to compute this integral
+% (hopefully we can get rid of the restrict command at some point!). The
+% correct answer in this case is 1/2.
+sum(xf{0,20})
+
+%%
+% b) For E(X^2), the answer is again 1/2 and we compute this in exactly the 
+% same way as before.
+xxf = x.^2.*f;
+plot(xxf,LW,lw), grid on
+ylim([-0.03 0.31])
+xlabel('x'), ylabel('x^2 f(x)','rotation',0)
+%%
+sum(xxf{0,20})
+
+%% 2. Mean, median and mode of a probability distribution
+%
+% This example is motivated by problem 3.33 on p. 94 of [1]. 
+%%
+% The probability density function of a continuous random variable X is 
+% g(x) = 4x(9-x^2)/81, for 0<=x<=3, and zero otherwise. Find: a) the mean, 
+% b) the median, and c) the mode.
+%%
+% First, we define an appropriate Chebfun variable and the p.d.f.
+x = chebfun('x',[0 3]);
+g = 4*x.*(9-x.^2)/81;
+plot(g,LW,lw), grid on
+ylim([-0.01 0.61])
+xlabel('x'), ylabel('g(x)','rotation',0)
+%%
+% a) Computing the mean is simply a matter of computing the expectation as
+% in the previous question. The exact answer is 1.6 and this is what we
+% find using Chebfun.
+mean = sum(x.*g)
+%%
+% b) The median is the value a for which P(X<=a) = 1/2. In order to solve
+% this problem we need to work with the cumulative distribution function,
+% which is simply the indefinite integral of the probability density. This 
+% can be computed with the chebfun command CUMSUM.
+G = cumsum(g);
+plot(G,LW,lw), grid on
+xlabel('x'), ylabel(sprintf('G(x)\n'),'rotation',0)
+%%
+% Note again that as we would expect for any p.d.f., the integral is 1. In 
+% order to compute the the value of a, we may use one of the relational 
+% operators that have been overloaded in Chebfun. Here it is:
+median = roots(G-0.5)
+median_exact = sqrt(9-9*sqrt(2)/2)
+%%
+% c) For the mode, we are simply looking for the position of the global 
+% maximum of the probability distribution. This is easily computed 
+% with the Chebfun command MAX.
+[gmax,mode] = max(g);
+display(mode)
+%%
+% Again, this matches the exact answer
+mode_exact = sqrt(3)
+%%
+% Here is a graph showing the three computed values:
+plot(g,LW,lw), grid on, hold on
+plot([mean mean],[0 g(mean)],'-r',LW,lw)
+plot([median median],[0 g(median)],'-m',LW,lw)
+plot([mode mode],[0 g(mode)],'-k',LW,lw)
+text(0.2,0.55,sprintf('mean   = %1.2f',mean),'color','r')
+text(1.2,0.55,sprintf('median = %1.2f',median),'color','m')
+text(2.2,0.55,sprintf('mode   = %1.2f',mode),'color','k')
+hold off, ylim([-0.01 0.61])
+xlabel('x'), ylabel('g(x)','rotation',0)
+
+%%
+% References:
+%
+% [1] M. Spiegel, J. Schiller and R. Srinivasan, Schaum's Outlines REPLACE_WITH_DASH_DASH
+% Probability and Statistics, 3rd. ed., 2009.
+
+##### SOURCE END #####
+--></body></html>

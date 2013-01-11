@@ -1,0 +1,168 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Boundary layer for advection-diffusion equation</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="BoundaryLayer.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Boundary layer for advection-diffusion equation</h1><!--introduction--><p>Nick Trefethen, 22 October 2010</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/BoundaryLayer.m">ode/BoundaryLayer.m</a>)</p><p>Consider the steady-state linear advection-diffusion equation</p><p>L_eps u = -eps u" - u' = 1,    u(0) = u(1) = 0 ,</p><p>where eps is a small positive parameter. The solution to this equation has a boundary layer near x=0.</p><p>In Chebfun, we can define the eps-dependent operator like this:</p><pre class="codeinput">dom = domain(0,1);
+L = @(eps) -eps*diff(dom,2) - diff(dom) &amp; <span class="string">'dirichlet'</span>;
+</pre><p>Note that since the operator L above is linear, we are defining it to be a linop. Another approach would be be to define a linear chebop as follows:</p><pre class="codeinput">L2 = @(eps) chebop(@(u) -eps*diff(u,2)-diff(u),dom,0,0);
+</pre><p>For eps=0.1 we get this picture:</p><pre class="codeinput">u = L(0.1)\1;
+LW = <span class="string">'linewidth'</span>; lw = 1.6;
+clf, plot(u,<span class="string">'b'</span>,LW,lw)
+grid <span class="string">on</span>, axis([-0.03 1 0 1.03])
+</pre><img vspace="5" hspace="5" src="BoundaryLayer_01.png" alt=""> <p>Let's add a curve for eps = 0.01:</p><pre class="codeinput">u = L(0.01)\1;
+hold <span class="string">on</span>, plot(u,<span class="string">'r'</span>,LW,lw)
+</pre><img vspace="5" hspace="5" src="BoundaryLayer_02.png" alt=""> <p>Here's eps = 0.001:</p><pre class="codeinput">u = L(0.001)\1;
+hold <span class="string">on</span>, plot(u,LW,lw,<span class="string">'color'</span>,[0 .8 0])
+legend(<span class="string">'\epsilon=0.1'</span>,<span class="string">'\epsilon=0.01'</span>,<span class="string">'\epsilon=0.001'</span>)
+FS = <span class="string">'fontsize'</span>;
+title(<span class="string">'Boundary layers for three values of \epsilon'</span>,FS,16)
+</pre><img vspace="5" hspace="5" src="BoundaryLayer_03.png" alt=""> <p>It can be shown that the width of the boundary layer for this equation is O(eps).  Suppose we want to measure this in Chebfun.  One method would be to find the point where the solution goes through 0.5.  (This definition wouldn't work for larger eps.)</p><pre class="codeinput">width = @(eps) min(roots(L(eps)\1-.5));
+</pre><p>For example, here are the widths for the three curves just plotted:</p><pre class="codeinput">format <span class="string">long</span>
+w = [width(.1) width(.01) width(.001)]
+</pre><pre class="codeoutput">w =
+   0.088880675019131   0.007073961393037   0.000694537220660
+</pre><p>Let's add these points to the plot:</p><pre class="codeinput">MS = <span class="string">'markersize'</span>;
+plot(w,[.5 .5 .5],<span class="string">'.k'</span>,MS,18)
+</pre><img vspace="5" hspace="5" src="BoundaryLayer_04.png" alt=""> <p>We can also plot boundary layer width against epsilon. The dashed red line confirms the linear behavior.</p><pre class="codeinput">epsvec = [.1 .03 .01 .003 .001 .0003];
+<span class="keyword">for</span> j = 1:length(epsvec)
+    w(j) = width(epsvec(j));
+<span class="keyword">end</span>
+clf
+loglog(epsvec,w,<span class="string">'.-k'</span>,LW,1.6,MS,16), grid <span class="string">on</span>
+xlabel(<span class="string">'\epsilon'</span>,FS,16)
+ylabel(<span class="string">'width of boundary layer'</span>,FS,16)
+hold <span class="string">on</span>, plot(epsvec,epsvec,<span class="string">'--r'</span>,LW,2)
+</pre><img vspace="5" hspace="5" src="BoundaryLayer_05.png" alt=""> <p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Boundary layer for advection-diffusion equation
+% Nick Trefethen, 22 October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/ode/BoundaryLayer.m">ode/BoundaryLayer.m</a>)
+
+%%
+% Consider the steady-state linear advection-diffusion equation
+%
+% L_eps u = -eps u" - u' = 1,    u(0) = u(1) = 0 ,
+%
+% where eps is a small positive parameter.
+% The solution to this equation has a boundary layer near x=0.
+
+%%
+% In Chebfun, we can define the eps-dependent operator like this:
+dom = domain(0,1);
+L = @(eps) -eps*diff(dom,2) - diff(dom) & 'dirichlet';
+
+%%
+% Note that since the operator L above is linear, we are defining it to be
+% a linop. Another approach would be be to define a linear chebop as
+% follows:
+L2 = @(eps) chebop(@(u) -eps*diff(u,2)-diff(u),dom,0,0);
+%%
+% For eps=0.1 we get this picture:
+u = L(0.1)\1;
+LW = 'linewidth'; lw = 1.6;
+clf, plot(u,'b',LW,lw)
+grid on, axis([-0.03 1 0 1.03])
+
+%%
+% Let's add a curve for eps = 0.01:
+u = L(0.01)\1;
+hold on, plot(u,'r',LW,lw)
+
+%%
+% Here's eps = 0.001:
+u = L(0.001)\1;
+hold on, plot(u,LW,lw,'color',[0 .8 0])
+legend('\epsilon=0.1','\epsilon=0.01','\epsilon=0.001')
+FS = 'fontsize';
+title('Boundary layers for three values of \epsilon',FS,16)
+
+%%
+% It can be shown that the width of the boundary layer
+% for this equation is O(eps).  Suppose we want to measure this
+% in Chebfun.  One method would be to find the point where the 
+% solution goes through 0.5.  (This definition wouldn't work for
+% larger eps.)
+width = @(eps) min(roots(L(eps)\1-.5));
+
+%%
+% For example, here are the widths for the three curves just
+% plotted:
+format long
+w = [width(.1) width(.01) width(.001)]
+
+%%
+% Let's add these points to the plot:
+MS = 'markersize';
+plot(w,[.5 .5 .5],'.k',MS,18)
+
+%%
+% We can also plot boundary layer width against epsilon.
+% The dashed red line confirms the linear behavior.
+epsvec = [.1 .03 .01 .003 .001 .0003];
+for j = 1:length(epsvec)
+    w(j) = width(epsvec(j));
+end
+clf
+loglog(epsvec,w,'.-k',LW,1.6,MS,16), grid on
+xlabel('\epsilon',FS,16)
+ylabel('width of boundary layer',FS,16)
+hold on, plot(epsvec,epsvec,'REPLACE_WITH_DASH_DASHr',LW,2)
+
+##### SOURCE END #####
+--></body></html>

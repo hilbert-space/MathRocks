@@ -1,0 +1,170 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Eigenvalue level repulsion</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="LevelRepulsion.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Eigenvalue level repulsion</h1><!--introduction--><p>Nick Trefethen, October 2010</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/linalg/LevelRepulsion.m">linalg/LevelRepulsion.m</a>)</p><p>If A and B are real symmetric matrices of dimension n, then each will have n real eigenvalues, counted with multiplicity. If you morph one matrix into the other by the formula</p><p>A(t) = (1-t)A + tB ,</p><p>then as t increases from 0 to 1, the eigenvalues will change continuously from those of A to those of B.</p><p>It is possible for A(t) to have multiple eigenvalues for some t (i.e. fewer than n distinct eigenvalues), but generically, this will not happen.  That is to say, if A and B are selected at random in a reasonable sense from the set of all real symmetric matrices of dimension n, the probability will be zero that there will be any value of t for which A(t) has a multiple eigenvalue. This phenomenon of ``level repulsion'' or ``eigenvalue avoided crossings'' goes back to von Neumann and Wigner and is well known to physicists. It is illustrated on the cover of Peter Lax's textbook Linear Algebra [1].</p><p>We can illustrate the effect with Chebfun.  First we pick a pair of random matrices A and B:</p><pre class="codeinput">n = 10;
+randn(<span class="string">'seed'</span>,1);
+A = randn(n); A = A+A'; B = randn(n); B = B+B';
+</pre><p>We would now like to get our hands on the n functions of t representing the n eigenvalues of A(t).  In Chebfun, a convenient format for this result will be a quasimatrix with n columns.  The first column will contain a chebfun for the lowest eigenvalue of A(t) as a function of t, the 2nd column for the 2nd eigenvalue, and so on.</p><p>We can construct this quasimatrix as follows.  (The ``splitting off'' command has no effect, since splitting off is the default, but is included to show where one would put ``splitting on'' to handle a problem with curves actually crossing or coming very close.)</p><pre class="codeinput">ek = @(e,k) e(k);            <span class="comment">% returns kth element of the vector e</span>
+eigA = @(A) sort(eig(A));    <span class="comment">% returns sorted eigenvalues of the matrix A</span>
+eigk = @(A,k) ek(eigA(A),k); <span class="comment">% returns kth eigenvalue of the matrix A</span>
+d = domain(0,1);
+t = chebfun(<span class="string">'t'</span>,d);
+E = chebfun; tic
+<span class="keyword">for</span> k = 1:n
+   E(:,k) = chebfun(@(t) eigk((1-t)*A+t*B,k),d,<span class="string">'splitting'</span>,<span class="string">'off'</span>,<span class="string">'vectorize'</span>);
+<span class="keyword">end</span>
+FS = <span class="string">'fontsize'</span>; LW = <span class="string">'linewidth'</span>; MS = <span class="string">'markersize'</span>;
+figure, plot(E,LW,1.6), grid <span class="string">on</span>
+title(<span class="string">'Eigenvalues of (1-t)A + tB'</span>,FS,16);
+xlabel(<span class="string">'t'</span>,FS,12), toc
+</pre><pre class="codeoutput">Elapsed time is 1.488885 seconds.
+</pre><img vspace="5" hspace="5" src="LevelRepulsion_01.png" alt=""> <p>The 5th and 6th curves have a very close near-crossing.  We can find it like this:</p><pre class="codeinput">E5 = E(:,5); E6 = E(:,6);
+[minval,minpos] = min(E6-E5)
+</pre><pre class="codeoutput">minval =
+   0.019588198983145
+minpos =
+   0.866611938053634
+</pre><p>Let's zoom in and mark the minimal gap in red:</p><pre class="codeinput">axis([minpos-.05 minpos+.05 E5(minpos)-.4 E5(minpos)+.4])
+title([<span class="string">'Zooming in: the gap width is '</span> num2str(minval)],FS,16)
+hold <span class="string">on</span>, plot(minpos,E5(minpos),<span class="string">'.r'</span>,MS,18)
+hold <span class="string">on</span>, plot(minpos,E6(minpos),<span class="string">'.r'</span>,MS,18)
+</pre><img vspace="5" hspace="5" src="LevelRepulsion_02.png" alt=""> <p>References:</p><p>[1] P. Lax, Linear Algebra, Wiley, 1996.</p><p>[2] J. von Neumann and E. Wigner, Ueber das Verhalten von Eigenwerten bei adiabatischen Prozessen, Phys. Zeit. 30 (1929), 467-470.</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Eigenvalue level repulsion
+% Nick Trefethen, October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/linalg/LevelRepulsion.m">linalg/LevelRepulsion.m</a>)
+
+%%
+% If A and B are real symmetric matrices of dimension n, then each will
+% have n real eigenvalues, counted with multiplicity. If you morph one
+% matrix into the other by the formula
+%
+% A(t) = (1-t)A + tB ,
+%
+% then as t increases from 0 to 1, 
+% the eigenvalues will change continuously from those of A to those of B.
+
+%%
+% It is possible for A(t) to have multiple eigenvalues for some t (i.e.
+% fewer than n distinct eigenvalues), but generically, this will not
+% happen.  That is to say, if A and B are selected at random in a
+% reasonable sense from the set of all real symmetric matrices of dimension
+% n, the probability will be zero that there will be any value of t for
+% which A(t) has a multiple eigenvalue. This phenomenon of ``level
+% repulsion'' or ``eigenvalue avoided crossings'' goes back to von Neumann
+% and Wigner and is well known to physicists. It is illustrated on the
+% cover of Peter Lax's textbook Linear Algebra [1].
+
+%%
+% We can illustrate the effect with Chebfun.  First we pick a pair
+% of random matrices A and B:
+n = 10;
+randn('seed',1);
+A = randn(n); A = A+A'; B = randn(n); B = B+B';
+
+%%
+% We would now like to get our hands on the n functions of t representing
+% the n eigenvalues of A(t).  In Chebfun, a convenient format for this
+% result will be a quasimatrix with n columns.  The first column will
+% contain a chebfun for the lowest eigenvalue of A(t) as a function of t,
+% the 2nd column for the 2nd eigenvalue, and so on.
+
+%%
+% We can construct this quasimatrix as follows.  (The ``splitting off''
+% command has no effect, since splitting off is the default, but is
+% included to show where one would put ``splitting on'' to handle a problem
+% with curves actually crossing or coming very close.)
+ek = @(e,k) e(k);            % returns kth element of the vector e
+eigA = @(A) sort(eig(A));    % returns sorted eigenvalues of the matrix A
+eigk = @(A,k) ek(eigA(A),k); % returns kth eigenvalue of the matrix A
+d = domain(0,1);
+t = chebfun('t',d);
+E = chebfun; tic
+for k = 1:n
+   E(:,k) = chebfun(@(t) eigk((1-t)*A+t*B,k),d,'splitting','off','vectorize');
+end
+FS = 'fontsize'; LW = 'linewidth'; MS = 'markersize';
+figure, plot(E,LW,1.6), grid on
+title('Eigenvalues of (1-t)A + tB',FS,16);
+xlabel('t',FS,12), toc
+
+%%
+% The 5th and 6th curves have a very close near-crossing.  We can find it
+% like this:
+E5 = E(:,5); E6 = E(:,6);
+[minval,minpos] = min(E6-E5)
+
+%%
+% Let's zoom in and mark the minimal gap in red:
+axis([minpos-.05 minpos+.05 E5(minpos)-.4 E5(minpos)+.4])
+title(['Zooming in: the gap width is ' num2str(minval)],FS,16)
+hold on, plot(minpos,E5(minpos),'.r',MS,18)
+hold on, plot(minpos,E6(minpos),'.r',MS,18)
+
+%%
+% References:
+%
+% [1] P. Lax, Linear Algebra, Wiley, 1996.
+%
+% [2] J. von Neumann and E. Wigner, Ueber das Verhalten von Eigenwerten
+% bei adiabatischen Prozessen, Phys. Zeit. 30 (1929), 467-470.
+
+##### SOURCE END #####
+--></body></html>

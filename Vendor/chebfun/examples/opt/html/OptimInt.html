@@ -1,0 +1,148 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Optimization of a parameterised integral</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="OptimInt.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Optimization of a parameterised integral</h1><!--introduction--><p>Nick Hale, 17th October 2011</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/opt/OptimInt.m">opt/OptimInt.m</a>)</p><p>This example serves to show how easy it is to solve one of the example problems from the Oxford MSc in Mathematical Modelling and Scientific Computing week 0 MATLAB 'Crash Course' using Chebfun. (And also how easy it is to make a Chebfun Example!).</p><p>PROBLEM. For what values of a does    I(a) = int_{-1}^{1} sin(x) + sin(a x^2) dx = 1 ?</p><p>SOLUTION. Define the integrand as a function of x and a.</p><pre class="codeinput">F = @(x,a) sin(x) + sin(a*x.^2);
+</pre><p>For a given a, we can compute the integral using Chebfun's SUM command.</p><pre class="codeinput">I = @(a) sum(chebfun(@(x) F(x,a)));
+</pre><p>We compute the a chebfun of this result, for a ranging from 0 to 100.</p><pre class="codeinput">Ia = chebfun(@(a) I(a),<span class="string">'vectorize'</span>,[0 100]);
+</pre><p>The 'vectorize' flag is used, since I should not be evaluated with a vector.</p><p>We use Chebfun's ROOTS command to find where Ia equals 1.</p><pre class="codeinput">r = roots(Ia-1)
+</pre><pre class="codeoutput">r =
+    2.0117
+    3.1995
+</pre><p>We plot this, to make sure it looks sensible.</p><pre class="codeinput">plot(Ia,<span class="string">'linewidth'</span>,2), hold <span class="string">on</span>
+plot(r,Ia(r),<span class="string">'xr'</span>,<span class="string">'linewidth'</span>,2);
+</pre><img vspace="5" hspace="5" src="OptimInt_01.png" alt=""> <p>Since we have Ia as a chebfun, we can do other things, like find where I(a) = 0.25</p><pre class="codeinput">r = roots(Ia-0.25)
+plot(r,Ia(r),<span class="string">'xm'</span>,<span class="string">'linewidth'</span>,2); hold <span class="string">off</span>
+</pre><pre class="codeoutput">r =
+    0.3789
+   18.2260
+   19.7612
+   23.7538
+   26.9563
+   29.2915
+</pre><img vspace="5" hspace="5" src="OptimInt_02.png" alt=""> <p>or the value of a which maximises I</p><pre class="codeinput">m = max(Ia)
+</pre><pre class="codeoutput">m =
+    1.0567
+</pre><p>or the standard deviation of the gaps between the local minima for a between [0 100].</p><pre class="codeinput">[y x] = min(Ia,<span class="string">'local'</span>);
+f = std(diff(x(2:end-1)))
+</pre><pre class="codeoutput">f =
+    0.0090
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Optimization of a parameterised integral
+% Nick Hale, 17th October 2011
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/opt/OptimInt.m">opt/OptimInt.m</a>)
+
+%%
+% This example serves to show how easy it is to solve one of the example
+% problems from the Oxford MSc in Mathematical Modelling and Scientific
+% Computing week 0 MATLAB 'Crash Course' using Chebfun. (And also how easy 
+% it is to make a Chebfun Example!).
+
+%%
+% PROBLEM.
+% For what values of a does
+%    I(a) = int_{-1}^{1} sin(x) + sin(a x^2) dx = 1 ?
+
+%%
+% SOLUTION.
+% Define the integrand as a function of x and a.
+F = @(x,a) sin(x) + sin(a*x.^2);
+
+%%
+% For a given a, we can compute the integral using Chebfun's SUM command.
+I = @(a) sum(chebfun(@(x) F(x,a)));
+
+%%
+% We compute the a chebfun of this result, for a ranging from 0 to 100.
+Ia = chebfun(@(a) I(a),'vectorize',[0 100]);
+
+%%
+% The 'vectorize' flag is used, since I should not be evaluated with a
+% vector.
+
+%%
+% We use Chebfun's ROOTS command to find where Ia equals 1.
+r = roots(Ia-1)
+
+%%
+% We plot this, to make sure it looks sensible.
+plot(Ia,'linewidth',2), hold on
+plot(r,Ia(r),'xr','linewidth',2);
+
+%%
+% Since we have Ia as a chebfun, we can do other things, like find where
+% I(a) = 0.25
+
+r = roots(Ia-0.25)
+plot(r,Ia(r),'xm','linewidth',2); hold off
+
+%%
+% or the value of a which maximises I
+m = max(Ia)
+
+%%
+% or the standard deviation of the gaps
+% between the local minima for a between [0 100].
+[y x] = min(Ia,'local');
+f = std(diff(x(2:end-1)))
+
+
+##### SOURCE END #####
+--></body></html>

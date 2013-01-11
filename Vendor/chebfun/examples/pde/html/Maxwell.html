@@ -1,0 +1,163 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Maxwell's equations</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="Maxwell.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Maxwell's equations</h1><!--introduction--><p>Toby Driscoll, November 10, 2010</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/pde/Maxwell.m">pde/Maxwell.m</a>)</p><p>In one dimension in a simple medium, Maxwell's equations can be written as</p><pre class="language-matlab">E_t = c^2 B_x,   B_t = E_x
+</pre><p>where E is the z-component of the electric field, B is the y-component of the magnetic field, and c is the speed of light in the medium. A typical boundary condition is to set E=0, which implies a perfect conductor.</p><p>Here is how we can pose Maxwell's equations for solving in PDE15S, in a medium with c=1.</p><pre class="codeinput">pdefun = @(E,B,diff) [ diff(B), diff(E) ];
+bc.left = @(E,B,diff) E;
+bc.right = bc.left;
+</pre><p>Note how the spatial differentiation operator has to be accepted as an input argument in each case. Now we can define an initial condition and solve the problem.</p><pre class="codeinput">d = [-2,2];
+x = chebfun(<span class="string">'x'</span>,d);
+E0 = exp(-16*x.^2);
+t = 0:0.05:5;
+soln = pde15s(pdefun,t,[E0,-E0],bc,pdeset(<span class="string">'plot'</span>,<span class="string">'on'</span>));
+</pre><img vspace="5" hspace="5" src="Maxwell_01.png" alt=""> <p>The result is a cell array: soln{1} is a quasimatrix with each column representing E at a requested time, and soln{2} is the same for B. A space-time plot shows an inverted reflection of E off of the right boundary:</p><pre class="codeinput">[E,B] = deal(soln{:});
+waterfall(E,t,<span class="string">'simple'</span>)
+view(10,72)
+</pre><img vspace="5" hspace="5" src="Maxwell_02.png" alt=""> <p>In theory, energy is conserved. We can use this principle to check the accuracy of the numerical solution.</p><pre class="codeinput">energy = sum( E.^2 + B.^2, 1 );  <span class="comment">% integrate E^2 + B^2 in space</span>
+plot(t,energy-energy(1),<span class="string">'.-'</span>)
+</pre><img vspace="5" hspace="5" src="Maxwell_03.png" alt=""> <p>Clearly, a little dissipation is introduced by the time integration. The amount is compatible with the default tolerance of 1e-6 in PDE15S.</p><p>Because the problem is a linear evolution u_t = Au, where u=[E,B], we can use an operator exponential as an alternative for the time evolution. The block operator A is defined as</p><pre class="codeinput">A = chebop(d);
+A.op = @(x,E,B) [ diff(B), diff(E) ];
+A.lbc = @(E,B) E;
+A.rbc = @(E,B) E;
+</pre><p>Now we use expm to solve the linear evolution. We'll save time if we just apply one exponentiation repeatedly.</p><pre class="codeinput">Phi = expm( (t(2)-t(1))*A );
+u = [E0,-E0];
+<span class="keyword">for</span> n = 2:length(t), u=Phi*u; E(:,n) = u(:,1); B(:,n) = u(:,2);
+plot(u), drawnow, pause(eps), <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Maxwell_04.png" alt=""> <p>For linear propagation, expm is far more accurate than pde15s, as a check of energy conservation confirms.</p><pre class="codeinput">energy = sum( E.^2 + B.^2, 1 );  <span class="comment">% integrate E^2 + B^2 in space</span>
+plot(t,energy-energy(1),<span class="string">'.-'</span>)
+</pre><img vspace="5" hspace="5" src="Maxwell_05.png" alt=""> <p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Maxwell's equations
+% Toby Driscoll, November 10, 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/pde/Maxwell.m">pde/Maxwell.m</a>)
+
+%%
+% In one dimension in a simple medium, Maxwell's equations can be written as
+% 
+%   E_t = c^2 B_x,   B_t = E_x
+%
+% where E is the z-component of the electric field, B is the y-component
+% of the magnetic field, and c is the speed of light in the medium. A
+% typical boundary condition is to set E=0, which implies a perfect
+% conductor. 
+
+%%
+% Here is how we can pose Maxwell's equations for solving in PDE15S, in a
+% medium with c=1.
+pdefun = @(E,B,diff) [ diff(B), diff(E) ];
+bc.left = @(E,B,diff) E;
+bc.right = bc.left;
+
+%%
+% Note how the spatial differentiation operator has to be accepted as an
+% input argument in each case. Now we can define an initial condition and 
+% solve the problem. 
+d = [-2,2];
+x = chebfun('x',d);
+E0 = exp(-16*x.^2);
+t = 0:0.05:5;
+soln = pde15s(pdefun,t,[E0,-E0],bc,pdeset('plot','on'));
+
+%%
+% The result is a cell array: soln{1} is a quasimatrix with each column
+% representing E at a requested time, and soln{2} is the same for B. A
+% space-time plot shows an inverted reflection of E off of the right
+% boundary:
+[E,B] = deal(soln{:});
+waterfall(E,t,'simple')
+view(10,72)
+
+%% 
+% In theory, energy is conserved. We can use this principle to check the
+% accuracy of the numerical solution.
+energy = sum( E.^2 + B.^2, 1 );  % integrate E^2 + B^2 in space 
+plot(t,energy-energy(1),'.-')
+
+%%
+% Clearly, a little dissipation is introduced by the time integration. The
+% amount is compatible with the default tolerance of 1e-6 in PDE15S.
+
+%%
+% Because the problem is a linear evolution u_t = Au, where u=[E,B], we can
+% use an operator exponential as an alternative for the time evolution.
+% The block operator A is defined as
+
+A = chebop(d);
+A.op = @(x,E,B) [ diff(B), diff(E) ];
+A.lbc = @(E,B) E;
+A.rbc = @(E,B) E;
+
+%%
+% Now we use expm to solve the linear evolution. We'll save time if we just
+% apply one exponentiation repeatedly.
+Phi = expm( (t(2)-t(1))*A );
+u = [E0,-E0];
+for n = 2:length(t), u=Phi*u; E(:,n) = u(:,1); B(:,n) = u(:,2); 
+plot(u), drawnow, pause(eps), end
+
+%%
+% For linear propagation, expm is far more accurate than
+% pde15s, as a check of energy conservation confirms.
+energy = sum( E.^2 + B.^2, 1 );  % integrate E^2 + B^2 in space 
+plot(t,energy-energy(1),'.-')
+
+
+##### SOURCE END #####
+--></body></html>

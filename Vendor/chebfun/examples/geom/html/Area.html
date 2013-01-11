@@ -1,0 +1,184 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Area and centroid of a 2D region</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="Area.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Area and centroid of a 2D region</h1><!--introduction--><p>Stefan Guettel, October 2010</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/geom/Area.m">geom/Area.m</a>)</p><p>With Chebfun it is easy to compute with parametrized curves in the plane. For example, the following lines define a curve (x,y) as a pair of chebfuns in the variable t:</p><pre class="codeinput">t = chebfun(<span class="string">'t'</span>,[0,2*pi]);
+b = 1; m = 7; a = (m-1)*b;
+x = (a+b)*cos(t) - b*cos((a+b)/b*t);
+y = (a+b)*sin(t) - b*sin((a+b)/b*t);
+</pre><p>Such curves are called epicycloids, named by the Danish astronomer Ole Romer in 1674. Epicycloids can be produced by tracing a point on a circle which rolls out on a larger circle. R&oslash;mer discovered that cog-wheels with epicycloidal teeth turned with minimum friction. This is what our epicycloid looks like:</p><pre class="codeinput">LW = <span class="string">'linewidth'</span>; lw = 1.6;
+plot(x,y,LW,lw)
+axis <span class="string">equal</span>
+</pre><img vspace="5" hspace="5" src="Area_01.png" alt=""> <p>Note that although this curve is not smooth, the functions x(t) and y(t) that parameterize it are smooth, so Chebfun has no difficulty representing them by global polynomials:</p><pre class="codeinput">x
+y
+</pre><pre class="codeoutput">x = 
+   chebfun column (1 smooth piece)
+       interval       length   endpoint values   
+[       0,     6.3]       58        6        6   
+vertical scale = 7.4 
+y = 
+   chebfun column (1 smooth piece)
+       interval       length   endpoint values   
+[       0,     6.3]       54  9.6e-16 -4.7e-18   
+vertical scale = 7.9 
+</pre><p>With the following formula we can compute the area enclosed by the curve (x,y):</p><pre class="codeinput">format <span class="string">long</span>
+A = sum(x.*diff(y))
+</pre><pre class="codeoutput">A =
+     1.759291886010284e+02
+</pre><p>Let's compare this result with the exact area of the epicycloid, given (for integer m) by the formula</p><pre class="codeinput">exact = pi*b^2*(m^2+m)
+</pre><pre class="codeoutput">exact =
+     1.759291886010284e+02
+</pre><p>Here is a more complicated curve (now defined as a single complex-valued chebfun rather than a pair of real-valued chebfuns):</p><pre class="codeinput">z = exp(1i*t) + (1+1i)*sin(6*t).^2;
+plot(z,LW,lw)
+axis <span class="string">equal</span>
+</pre><img vspace="5" hspace="5" src="Area_02.png" alt=""> <p>Because this curve is a perturbed unit circle, with every perturbation occurring twice with opposite signs, the enclosed area should equal pi, as is confirmed by Chebfun:</p><pre class="codeinput">A = sum(real(z).*diff(imag(z)));
+[ A ; pi ]
+</pre><pre class="codeoutput">ans =
+   3.141592653589794
+   3.141592653589793
+</pre><p>We can compute and plot the centroid (or center of mass) of this region as follows:</p><pre class="codeinput">c = sum(diff(z).*z.*conj(z))/(2i*A);
+hold <span class="string">on</span>
+plot(c,<span class="string">'r+'</span>,LW,lw)
+</pre><img vspace="5" hspace="5" src="Area_03.png" alt=""> <p>If you use scissors to produce a piece of paper in this shape, it should remain balanced when placed on a vertical needle centered at the red cross. (If it doesn't, it's likely your handicraft precision isn't as good as Chebfun's!)</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Area and centroid of a 2D region
+% Stefan Guettel, October 2010
+
+%%
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/geom/Area.m">geom/Area.m</a>)
+
+%%
+% With Chebfun it is easy to compute with parametrized
+% curves in the plane. 
+% For example, the following lines define a curve
+% (x,y) as a pair of chebfuns in the variable t:
+
+t = chebfun('t',[0,2*pi]);
+b = 1; m = 7; a = (m-1)*b;
+x = (a+b)*cos(t) - b*cos((a+b)/b*t);
+y = (a+b)*sin(t) - b*sin((a+b)/b*t);
+
+%%
+% Such curves are called epicycloids, named by the Danish 
+% astronomer Ole Romer in 1674. Epicycloids can be produced 
+% by tracing a point on a circle which rolls out on a
+% larger circle. Rømer discovered that cog-wheels with 
+% epicycloidal teeth turned with minimum friction. 
+% This is what our epicycloid looks like:
+
+LW = 'linewidth'; lw = 1.6;
+plot(x,y,LW,lw)
+axis equal
+
+%% 
+% Note that although this curve is not smooth, the
+% functions x(t) and y(t) that parameterize it are
+% smooth, so Chebfun has no difficulty representing 
+% them by global polynomials:
+
+x
+y
+
+%%
+% With the following formula we can compute the area 
+% enclosed by the curve (x,y):
+
+format long
+A = sum(x.*diff(y))
+
+%%
+% Let's compare this result with the exact area of the
+% epicycloid, given (for integer m) by the formula
+
+exact = pi*b^2*(m^2+m)
+
+%%
+% Here is a more complicated curve (now defined as a
+% single complex-valued chebfun rather than a pair of
+% real-valued chebfuns):
+
+z = exp(1i*t) + (1+1i)*sin(6*t).^2;
+plot(z,LW,lw)
+axis equal
+
+%% 
+% Because this curve is a perturbed unit circle, with
+% every perturbation occurring twice with opposite 
+% signs, the enclosed area should equal pi, as is 
+% confirmed by Chebfun:
+
+A = sum(real(z).*diff(imag(z)));
+[ A ; pi ]
+
+%%
+% We can compute and plot the centroid (or center of 
+% mass) of this region as follows:
+
+c = sum(diff(z).*z.*conj(z))/(2i*A);
+hold on
+plot(c,'r+',LW,lw)
+
+%%
+% If you use scissors to produce a piece of paper in this 
+% shape, it should remain balanced when placed 
+% on a vertical needle centered at the red cross.
+% (If it doesn't, it's likely your handicraft precision 
+% isn't as good as Chebfun's!)
+
+
+##### SOURCE END #####
+--></body></html>

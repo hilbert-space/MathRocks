@@ -1,0 +1,208 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Dual points, lines, polygons and curves</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="DualCurves.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h1>Dual points, lines, polygons and curves</h1><!--introduction--><p>Alex Townsend, August 2011</p><!--/introduction--><p>(Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/geom/DualCurves.m">geom/DualCurves.m</a>)</p><pre class="codeinput"><span class="keyword">function</span> DualCurves
+</pre><p>In geometry many statements have an equally valid dual statement [1,2]. For example, "Two non-parallel lines intersect at exactly one point" is dual to "Two distinct points are joined by exactly one line" and "Three points lie on a line iff they are collinear" is dual to "Three lines meet at a point iff they are concurrent".</p><p>The dual of a point is a line: the point (a,b) is the dual to the line with gradient -a/b going through (-a/(a^2+b^2),-b/(a^2+b^2)). Conversely, the dual of a line is a point: the line y=mx+c is dual to the point (m/c,-1/c).</p><pre class="codeinput">FS = <span class="string">'FontSize'</span>; MS = <span class="string">'MarkerSize'</span>;
+a = 1; b = pi/3;
+dual = chebfun(@(x) -(a/b)*x-1/b,[-inf,inf]);
+plot(a,b,<span class="string">'x'</span>,MS,16), hold <span class="string">on</span>, plot(dual,<span class="string">'r'</span>), grid <span class="string">on</span>
+axis([-10 10 -10 10]), title(<span class="string">'A point and its dual'</span>,FS,16), hold <span class="string">off</span>
+</pre><img vspace="5" hspace="5" src="DualCurves_01.png" alt=""> <p>A polygon consists of edges (lines) and vertices (points). The dual of an edge is a point and the dual of a vertex is a line. Hence the dual of a polygon is also a polygon. In particular, odd-sided regular polygons are self-dual.</p><pre class="codeinput">t = chebfun(<span class="string">'x'</span>,[0,1]);
+vertices = [-2-1i 0-1i 2+1i 0+1i];
+polygon = (1-t)*vertices + t*circshift(vertices',-1)';
+plot(polygon,<span class="string">'b'</span>), hold <span class="string">on</span>, axis <span class="string">equal</span>, grid <span class="string">on</span>
+dual = DualOfPolygon(vertices); plot(dual,<span class="string">'r'</span>)
+title(<span class="string">'A polygon and its dual'</span>,FS,16), hold <span class="string">off</span>
+</pre><img vspace="5" hspace="5" src="DualCurves_02.png" alt=""> <p>A curve is the limit of piecewise linear curves, so we can extend the definition of dual to curves. Given any curve C, the dual curve is the set of points which are dual to the tangent lines of C.  Given any parameterised curve, there is a simple formula to compute its dual curve. Here is the dual of a smoothed heart-shaped curve.</p><pre class="codeinput">t = chebfun(<span class="string">'x'</span>,[0,2*pi]);
+x = 2*sin(t);
+y = 2*cos(t)-(1/2)*cos(2*t)-(1/4)*cos(3*t)-(1/8)*cos(4*t);
+plot(x+1i*y), hold <span class="string">on</span>, axis <span class="string">equal</span>, plot(DualOfCurve(x+1i*y),<span class="string">'r'</span>);
+title(<span class="string">'A curve and its dual'</span>,FS,16)
+</pre><img vspace="5" hspace="5" src="DualCurves_03.png" alt=""> <p>Here are the functions which were used to compute the duals:</p><pre class="codeinput">    <span class="keyword">function</span> g = DualOfPolygon(v)
+        <span class="comment">%DUALOFPOLYGON(V), computes dual polygon. v is array of complex-valued</span>
+        <span class="comment">%vertices of the polygon. g is a chebfun parameterising the dual</span>
+        <span class="comment">%polygon.</span>
+
+            w = circshift(v',-1)';
+            gradient = (imag(v)-imag(w))./(real(v)-real(w));
+            intercept = imag(v)-gradient.*real(v);
+            poly = (1./intercept).*(gradient-1i);
+            <span class="comment">%If edge is vertical replace NaN/Inf with dual point.</span>
+            poly(isnan(poly)) = -real(v(isnan(poly)));
+            poly(isinf(poly)) = -real(v(isinf(poly)));
+            <span class="comment">%Add in final edge of polygon.</span>
+            poly = [poly, poly(1)];
+            s = chebfun(<span class="string">'x'</span>,[0,1]);
+            p = (1-s)*poly + s*circshift(poly',-1)';
+            <span class="comment">%Concatenate chebfuns together.</span>
+            g = p(:,1); <span class="keyword">for</span> k=2:length(poly)-1, g=[g;p(:,k)]; <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">function</span> g = DualOfCurve(f)
+        <span class="comment">%DUALOFCURVE(F), computes dual curve.</span>
+        <span class="comment">% f is complex-valued chebfun parameterising a smooth curve. g is a</span>
+        <span class="comment">% chebfun parameterising the dual curve.</span>
+
+           rl = real(f);
+           im = imag(f);
+           <span class="comment">%Calculate parameterisation for dual curve.</span>
+           p = -diff(im)./(diff(rl).*im-rl.*diff(im));
+           q = diff(rl)./(diff(im).*rl-im.*diff(rl));
+           g = p+1i*q;
+    <span class="keyword">end</span>
+</pre><p>References</p><p>[1] Wikipedia, "Dual curve", <a href="http://en.wikipedia.org/wiki/Dual_curve">http://en.wikipedia.org/wiki/Dual_curve</a></p><p>[2] Wikipedia, "Dual polygon", <a href="http://en.wikipedia.org/wiki/Dual_polygon">http://en.wikipedia.org/wiki/Dual_polygon</a></p><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Dual points, lines, polygons and curves
+% Alex Townsend, August 2011
+
+%% 
+% (Chebfun example <a href="/tmp/chebfun_tmp/chebfun/examples/geom/DualCurves.m">geom/DualCurves.m</a>)
+
+function DualCurves
+%%
+% In geometry many statements have an equally valid dual statement [1,2].
+% For example, "Two non-parallel lines intersect at exactly one point" is
+% dual to "Two distinct points are joined by exactly one line" and "Three
+% points lie on a line iff they are collinear" is dual to "Three lines meet
+% at a point iff they are concurrent".
+
+%%
+% The dual of a point is a line: the point (a,b) is the dual to the line
+% with gradient -a/b going through (-a/(a^2+b^2),-b/(a^2+b^2)). Conversely,
+% the dual of a line is a point: the line y=mx+c is dual to the point
+% (m/c,-1/c).
+
+FS = 'FontSize'; MS = 'MarkerSize';
+a = 1; b = pi/3;
+dual = chebfun(@(x) -(a/b)*x-1/b,[-inf,inf]);
+plot(a,b,'x',MS,16), hold on, plot(dual,'r'), grid on
+axis([-10 10 -10 10]), title('A point and its dual',FS,16), hold off
+
+%% 
+% A polygon consists of edges (lines) and vertices (points). The dual of an
+% edge is a point and the dual of a vertex is a line. Hence the dual of a
+% polygon is also a polygon. In particular, odd-sided regular polygons are
+% self-dual.
+
+t = chebfun('x',[0,1]);
+vertices = [-2-1i 0-1i 2+1i 0+1i];
+polygon = (1-t)*vertices + t*circshift(vertices',-1)';
+plot(polygon,'b'), hold on, axis equal, grid on
+dual = DualOfPolygon(vertices); plot(dual,'r') 
+title('A polygon and its dual',FS,16), hold off
+
+%%
+% A curve is the limit of piecewise linear curves, so we can extend the
+% definition of dual to curves. Given any curve C, the dual curve is the
+% set of points which are dual to the tangent lines of C.  Given any
+% parameterised curve, there is a simple formula to compute its dual curve.
+% Here is the dual of a smoothed heart-shaped curve.
+
+t = chebfun('x',[0,2*pi]);
+x = 2*sin(t);
+y = 2*cos(t)-(1/2)*cos(2*t)-(1/4)*cos(3*t)-(1/8)*cos(4*t);
+plot(x+1i*y), hold on, axis equal, plot(DualOfCurve(x+1i*y),'r');
+title('A curve and its dual',FS,16)
+ 
+%%
+% Here are the functions which were used to compute the duals:
+
+    function g = DualOfPolygon(v)
+        %DUALOFPOLYGON(V), computes dual polygon. v is array of complex-valued
+        %vertices of the polygon. g is a chebfun parameterising the dual
+        %polygon.
+
+            w = circshift(v',-1)';
+            gradient = (imag(v)-imag(w))./(real(v)-real(w));
+            intercept = imag(v)-gradient.*real(v);
+            poly = (1./intercept).*(gradient-1i);
+            %If edge is vertical replace NaN/Inf with dual point.
+            poly(isnan(poly)) = -real(v(isnan(poly)));
+            poly(isinf(poly)) = -real(v(isinf(poly)));
+            %Add in final edge of polygon.
+            poly = [poly, poly(1)];
+            s = chebfun('x',[0,1]);
+            p = (1-s)*poly + s*circshift(poly',-1)';
+            %Concatenate chebfuns together.
+            g = p(:,1); for k=2:length(poly)-1, g=[g;p(:,k)]; end
+    end
+
+    function g = DualOfCurve(f)
+        %DUALOFCURVE(F), computes dual curve.
+        % f is complex-valued chebfun parameterising a smooth curve. g is a
+        % chebfun parameterising the dual curve.
+
+           rl = real(f); 
+           im = imag(f);
+           %Calculate parameterisation for dual curve.
+           p = -diff(im)./(diff(rl).*im-rl.*diff(im));
+           q = diff(rl)./(diff(im).*rl-im.*diff(rl));
+           g = p+1i*q;   
+    end
+
+%%
+% References
+%
+% [1] Wikipedia, "Dual curve", http://en.wikipedia.org/wiki/Dual_curve
+%
+% [2] Wikipedia, "Dual polygon", http://en.wikipedia.org/wiki/Dual_polygon
+
+end
+##### SOURCE END #####
+--></body></html>
