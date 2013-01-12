@@ -9,7 +9,7 @@ classdef OrnsteinUhlenbeck < KarhunenLoeve.Base
     end
 
     function C = calculate(this, s, t)
-      C = exp(-abs(s - t) / this.correlationLength);
+      C = exp(-sum(abs(s - t), 1) / this.correlationLength);
     end
   end
 

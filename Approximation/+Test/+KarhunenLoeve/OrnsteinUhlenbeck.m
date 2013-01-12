@@ -1,6 +1,6 @@
 setup;
 
-dimensionCount = 10;
+dimensionCount = 6;
 domainBoundary = 1;
 correlationLength = 1;
 kernel = @(s, t) exp(-abs(s - t) / correlationLength);
@@ -14,6 +14,18 @@ kl2 = KarhunenLoeve.Fredholm( ...
   'kernel', kernel, ...
   'dimensionCount', dimensionCount, ...
   'domainBoundary', domainBoundary);
+
+[ X1, X2 ] = meshgrid(linspace(-domainBoundary, domainBoundary, 50));
+
+n = ceil(sqrt(dimensionCount));
+m = ceil(dimensionCount / n);
+
+figure;
+for i = 1:dimensionCount
+  subplot(m, n, i);
+  C = kl1.values(i) * kl1.functions{i}(X1) .* kl1.functions{i}(X2);
+  surfc(X1, X2, C);
+end
 
 figure;
 line(1:dimensionCount, kl1.values, 'Marker', 'x');
