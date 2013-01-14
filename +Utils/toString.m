@@ -25,6 +25,8 @@ function string = toString(object, varargin)
     string = arrayToString(object, format);
   case 'cell'
     string = cellToString(object, varargin{:});
+  case 'function_handle'
+    string = func2str(object);
   otherwise
     error('The object class is not yet supported.');
   end

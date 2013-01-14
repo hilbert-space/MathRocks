@@ -1,15 +1,10 @@
 classdef OrnsteinUhlenbeck < KarhunenLoeve.Base
-  properties (SetAccess = 'private')
-    correlationLength
-  end
-
   methods
     function this = OrnsteinUhlenbeck(varargin)
-      this = this@KarhunenLoeve.Base(varargin{:});
-    end
-
-    function C = calculate(this, s, t)
-      C = exp(-sum(abs(s - t), 1) / this.correlationLength);
+      options = Options(varargin{:});
+      kernel = @(s, t) exp(-abs(s - t) / options.correlationLength);
+      options.set('kernel', kernel);
+      this = this@KarhunenLoeve.Base(options);
     end
   end
 

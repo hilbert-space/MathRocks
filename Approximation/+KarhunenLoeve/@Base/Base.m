@@ -1,5 +1,7 @@
 classdef Base < handle
   properties (SetAccess = 'private')
+    kernel
+
     domainBoundary
     dimensionCount
 
@@ -11,6 +13,10 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
       this.initialize(options);
+    end
+
+    function C = calculate(this, s, t)
+      C = this.kernel(s, t);
     end
 
     function C = approximate(this, s, t)
@@ -30,16 +36,13 @@ classdef Base < handle
     end
   end
 
-  methods (Abstract)
-    C = calculate(this, s, t);
-  end
-
   methods (Abstract, Access = 'protected')
     [ functions, values ] = construct(this, options)
   end
 
   methods (Access = 'private')
     function initialize(this, options)
+      this.kernel = options.kernel;
       this.domainBoundary = options.domainBoundary;
       [ this.functions, this.values ] = this.construct(options);
       this.dimensionCount = length(this.values);

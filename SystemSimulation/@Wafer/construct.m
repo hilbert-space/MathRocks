@@ -33,6 +33,7 @@ function construct(this, options)
   this.floorplan = floorplan;
   this.width  = max(floorplan(:, 1)) + dieW - min(floorplan(:, 1));
   this.height = max(floorplan(:, 2)) + dieH - min(floorplan(:, 2));
+  this.radius = sqrt((this.width / 2)^2 + (this.height / 2)^2);
 
   this.dieFloorplan = dieFloorplan;
   this.dieWidth = dieW;

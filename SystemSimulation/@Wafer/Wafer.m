@@ -3,6 +3,7 @@ classdef Wafer < handle
     floorplan
     width
     height
+    radius
 
     dieFloorplan
     dieWidth

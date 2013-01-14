@@ -54,6 +54,4 @@ function [ functions, values ] = construct(this, options)
 
     if isnan(dimension) && Utils.isSignificant(values, threshold), break; end
   end
-
-  this.correlationLength = options.correlationLength;
 end
