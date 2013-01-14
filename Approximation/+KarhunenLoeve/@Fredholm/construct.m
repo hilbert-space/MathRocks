@@ -29,6 +29,4 @@ function [ functions, values ] = construct(this, options)
   for i = 1:dimension
     functions{i} = V(:, i);
   end
-
-  this.kernel = kernel;
 end
