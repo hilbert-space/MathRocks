@@ -12,10 +12,10 @@ function [ functions, values ] = construct(this, options)
   c = 1 / options.correlationLength;
 
   if options.has('dimensionCount')
-    d = options.dimensionCount;
+    dimension = options.dimensionCount;
   else
-    d = NaN;
-    t = options.threshold;
+    dimension = NaN;
+    threshold = options.threshold;
   end
 
   omegas = zeros(1, 0);
@@ -29,8 +29,8 @@ function [ functions, values ] = construct(this, options)
   while true
     i = i + 1;
 
-    if ~isnan(d)
-      if i > d, break; end
+    if ~isnan(dimension)
+      if i > dimension, break; end
     end
 
     left  = (pi / (2 * a)) * (i - 1) + epsilon;
@@ -52,9 +52,7 @@ function [ functions, values ] = construct(this, options)
 
     values(i) = (2 * c) / (omegas(i)^2 + c^2);
 
-    if isnan(d)
-      if values(end) / sum(values) < (1 - t), break; end
-    end
+    if isnan(dimension) && Utils.isSignificant(values, threshold), break; end
   end
 
   this.correlationLength = options.correlationLength;

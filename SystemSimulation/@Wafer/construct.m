@@ -31,8 +31,8 @@ function construct(this, options)
   end
 
   this.floorplan = floorplan;
-  this.width = max(floorplan(:, 1)) + dieW;
-  this.height = max(floorplan(:, 2)) + dieH;
+  this.width  = max(floorplan(:, 1)) + dieW - min(floorplan(:, 1));
+  this.height = max(floorplan(:, 2)) + dieH - min(floorplan(:, 2));
 
   this.dieFloorplan = dieFloorplan;
   this.dieWidth = dieW;

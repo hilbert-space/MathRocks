@@ -16,18 +16,19 @@ function [ functions, values ] = construct(this, options)
     L = eigs(F, dimension, 'lm');
     alpha = [ ones(dimension, 1), - (1:dimension)' ] \ log(sqrt(L));
     L = exp(alpha(1)) .* (exp(alpha(2)) .^ (-(1:maxDimension)'));
+    dimension = Utils.chooseSignificant(L, threshold);
 
-    dimension = sum(cumsum(L) < threshold * sum(L)) + 1;
+    [ V, L ] = eigs(F, dimension, 'lm');
+    [ dimension, values ] = Utils.chooseSignificant(diag(L), threshold);
+  else
+    [ V, L ] = eigs(F, dimension, 'lm');
+    values = diag(L);
   end
-
-  [ V, L ] = eigs(F, dimension, 'lm');
 
   functions = cell(dimension, 1);
   for i = 1:dimension
     functions{i} = V(:, i);
   end
-
-  values = diag(L);
 
   this.kernel = kernel;
 end
