@@ -3,7 +3,7 @@ function construct(this, f, options)
 
   inputCount = options.inputCount;
   outputCount = options.get('outputCount', 1);
-  adaptivityControl = options.get('adaptivityControl', 'NormNormExpectation');
+  control = options.get('control', 'NormNormExpectation');
   tolerance = options.get('tolerance', 1e-3);
   minimalLevel = options.get('minimalLevel', 2);
   maximalLevel = options.get('maximalLevel', 10);
@@ -11,15 +11,15 @@ function construct(this, f, options)
   %
   % NOTE: We convert strings to numbers due to a possible speedup later on.
   %
-  switch adaptivityControl
+  switch control
   case 'InfNorm'
-    adaptivityControl = uint8(0);
+    control = uint8(0);
   case 'InfNormSurpluses'
-    adaptivityControl = uint8(1);
+    control = uint8(1);
   case 'InfNormSurpluses2'
-    adaptivityControl = uint8(2);
+    control = uint8(2);
   case 'NormNormExpectation'
-    adaptivityControl = uint8(3);
+    control = uint8(3);
   otherwise
     error('The specified adaptivity control method is unknown.');
   end
@@ -209,7 +209,7 @@ function construct(this, f, options)
     %
     % Adaptivity control.
     %
-    switch adaptivityControl
+    switch control
     case 0 % Infinity norm of surpluses and surpluses2
       nodeContribution = ...
         max(abs([ surpluses(oldNodeRange, :) surpluses2(oldNodeRange, :) ]), [], 2);

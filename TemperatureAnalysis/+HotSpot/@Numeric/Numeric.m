@@ -23,10 +23,8 @@ classdef Numeric < HotSpot.Base
     function [ T, Pleak ] = compute(this, P, varargin)
       if nargin == 2
         T = this.computeRegular(P);
-      elseif isa(varargin{1}, 'LeakagePower')
-        [ T, Pleak ] = this.computeWithLeakage(P, varargin{:});
       else
-        assert(false);
+        [ T, Pleak ] = this.computeWithLeakage(P, varargin{:});
       end
     end
   end

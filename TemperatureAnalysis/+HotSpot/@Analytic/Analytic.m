@@ -82,12 +82,8 @@ classdef Analytic < HotSpot.Base
     function [ T, Pleak ] = compute(this, Pdyn, varargin)
       if nargin == 2
         T = this.computeRegular(Pdyn);
-      elseif isa(varargin{1}, 'double')
-        T = this.computeSparse(Pdyn, varargin{:});
-      elseif isa(varargin{1}, 'LeakagePower')
-        [ T, Pleak ] = this.computeWithLeakage(Pdyn, varargin{:});
       else
-        assert(false);
+        [ T, Pleak ] = this.computeWithLeakage(Pdyn, varargin{:});
       end
     end
   end
@@ -110,40 +106,6 @@ classdef Analytic < HotSpot.Base
       for i = 2:stepCount
         X = E * X + D * P(:, i);
         T(:, i) = BT * X + Tamb;
-      end
-    end
-
-    function T = computeSparse(this, P, keepSteps)
-      [ processorCount, stepCount ] = size(P);
-      assert(processorCount == this.processorCount);
-
-      E = this.E;
-      D = this.D;
-      BT = this.BT;
-      Tamb = this.ambientTemperature;
-
-      %
-      % NOTE: It is assumed that `keepSteps' is sorted
-      % in the ascending order.
-      %
-      keepStepCount = length(keepSteps);
-      k = 1;
-
-      T = zeros(processorCount, keepStepCount);
-
-      X = D * P(:, 1);
-      if keepSteps(k) == 1
-        T(:, k) = BT * X + Tamb;
-        k = k + 1;
-      end
-
-      for i = 2:stepCount
-        X = E * X + D * P(:, i);
-        if keepSteps(k) == i
-          T(:, k) = BT * X + Tamb;
-          k = k + 1;
-          if k > keepStepCount, return; end
-        end
       end
     end
 
