@@ -1,4 +1,6 @@
-function plot(this)
+function plot(this, index)
+  if nargin == 1, index = []; end
+
   F = this.floorplan;
   DF = this.dieFloorplan;
   DW = this.dieWidth;
@@ -16,13 +18,19 @@ function plot(this)
     y = F(i, 2);
 
     h = draw(x, y, DW, DH);
-    set(h, 'FaceColor', 0.70 * [ 1 1 1 ]);
-    set(h, 'EdgeColor',        [ 1 1 1 ]);
 
-    for j = 1:size(DF, 1)
-      h = draw(x + X(j), y + Y(j), W(j), H(j));
-      set(h, 'FaceColor', Color.pick(j));
-      set(h, 'EdgeColor', [ 1 1 1 ]);
+    if ismember(i, index)
+      set(h, 'FaceColor', 0.17 * [ 1 1 1 ]);
+      set(h, 'EdgeColor',        [ 1 1 1 ]);
+    else
+      set(h, 'FaceColor', 0.70 * [ 1 1 1 ]);
+      set(h, 'EdgeColor',        [ 1 1 1 ]);
+
+      for j = 1:size(DF, 1)
+        h = draw(x + X(j), y + Y(j), W(j), H(j));
+        set(h, 'FaceColor', Color.pick(j));
+        set(h, 'EdgeColor', [ 1 1 1 ]);
+      end
     end
   end
 
