@@ -1,19 +1,24 @@
 function [ model, performance ] = construct(this, f, options)
   inputCount = options.get('inputCount', 1);
 
-  if options.has('nodes')
-    nodes = options.nodes;
-  else
-    nodeCount = options.get('nodeCount', 10 * inputCount);
-
-    nodes = rand(nodeCount, inputCount);
-    for i = 1:inputCount
-      nodes(:, i) = nodes(:, i) + randperm(nodeCount)' - 1;
-    end
-    nodes = nodes / nodeCount;
+  verbose = @(varargin) [];
+  if options.get('verbose', false)
+    verbose = @(varargin) fprintf(varargin{:});
   end
 
+  if options.has('nodes')
+    nodes = options.nodes;
+    nodeCount = size(nodes, 1);
+  else
+    nodeCount = options.get('nodeCount', 10 * inputCount);
+    nodes = lhsdesign(nodeCount, inputCount);
+  end
+
+  verbose('Kriging: collecting data (%d nodes)...\n', nodeCount);
+
+  time = tic;
   data = f(nodes);
+  verbose('Kriging: done in %.2f seconds.\n', toc(time));
 
   regression  = options.get('regressionModel',  @regpoly0);
   correlation = options.get('correlationModel', @corrgauss);
@@ -21,8 +26,13 @@ function [ model, performance ] = construct(this, f, options)
   lowerBound  = options.get('lowerBound', 1e-3 * ones(1, inputCount));
   upperBound  = options.get('upperBound', 1e+1 * ones(1, inputCount));
 
+  verbose('Kriging: processing the data (%d inputs, %d outputs)...\n', ...
+    inputCount, size(data, 2));
+
+  time = tic;
   [ this.model, this.performance ] = dacefit(nodes, data, ...
     regression, correlation, parameters, lowerBound, upperBound);
+  verbose('Kriging: done in %.2f seconds.\n', toc(time));
 end
 
 function nodes = constructSmolyak(dimension, order)
