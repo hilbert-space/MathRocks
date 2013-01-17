@@ -4,6 +4,7 @@ function setup
   use('ProbabilityTheory');
   use('Visualization');
   use('Vendor', 'chebfun');
+  use('Vendor', 'dace');
   use('Vendor', 'uninit');
   use('Vendor', 'sympoly');
   use('Vendor', 'DataHash');
