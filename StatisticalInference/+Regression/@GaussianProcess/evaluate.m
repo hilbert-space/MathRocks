@@ -1,6 +1,4 @@
 function [ mean, variance ] = evaluate(this, newNodes)
-  if nargout > 1, error('Variance is not supported yet.'); end
-
   nodes = this.nodes;
 
   nodeCount = size(nodes, 1);
@@ -15,14 +13,31 @@ function [ mean, variance ] = evaluate(this, newNodes)
   [ I, J ] = meshgrid(1:newNodeCount, 1:nodeCount);
   I = I'; J = J';
 
-  K = this.kernel(newNodes(I(:), :)', nodes(J(:), :)');
-  K = reshape(K, [ newNodeCount, nodeCount ]);
+  Kmix = this.kernel(newNodes(I(:), :)', nodes(J(:), :)');
+  Kmix = reshape(Kmix, [ newNodeCount, nodeCount ]);
 
-  mean = K * this.mapping;
+  mean = Kmix * this.inverseKy;
 
   %
   % 'Denormalize' the result.
   %
-  mean = repmat(this.responseMean, newNodeCount, 1) + mean .* ...
-    repmat(this.responseDeviation, newNodeCount, 1);
+  responseMean = repmat(this.responseMean, newNodeCount, 1);
+  responseDeviation = repmat(this.responseDeviation, newNodeCount, 1);
+  mean = responseMean + responseDeviation .* mean;
+
+  if nargout == 1, return; end
+
+  I = constructPairIndex(newNodeCount);
+  Knew = this.kernel(newNodes(I(:, 1), :)', newNodes(I(:, 2), :)');
+  Knew = constructSymmetricMatrix(Knew, I);
+
+  %
+  % The maximization tries to prevent the numerical noise.
+  %
+  variance = max(0, Knew - Kmix * this.inverseK * Kmix');
+
+  %
+  % Scaling as before.
+  %
+  variance = (responseDeviation * responseDeviation') .* variance;
 end

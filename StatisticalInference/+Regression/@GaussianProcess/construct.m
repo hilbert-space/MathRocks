@@ -63,7 +63,8 @@ function construct(this, options)
   %
   % Compute the multiplier of the mean of the posterior.
   %
-  mapping = K \ responses;
+  inverseK = inv(K);
+  inverseKy = inverseK * responses;
 
   verbose('Gaussian process: done in %.2f seconds.\n', toc(time));
 
@@ -78,5 +79,7 @@ function construct(this, options)
 
   this.nodes = nodes;
   this.kernel = kernel;
-  this.mapping = mapping;
+
+  this.inverseK = inverseK;
+  this.inverseKy = inverseKy;
 end
