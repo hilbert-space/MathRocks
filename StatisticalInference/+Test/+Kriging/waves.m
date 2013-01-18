@@ -1,4 +1,4 @@
-function oneDimensional
+function waves
   clear all;
   close all;
 
@@ -11,8 +11,10 @@ function oneDimensional
     y = 4 * x.^2 + 20 * sin(2 * x) - 14 * x + 1;
   end
 
-  surrogate = Kriging(@(u) evaluate(a + (b - a) * u), ...
-    'nodeCount', 20);
+  surrogate = Regression.Kriging( ...
+    'target', @(u) evaluate(a + (b - a) * u), ...
+    'nodeCount', 20, 'lowerBound', 1e-4, 'upperBound', 10, ...
+    'verbose', true);
 
   x = linspace(a, b, 50)';
 

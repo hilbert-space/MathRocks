@@ -1,17 +1,17 @@
 classdef Kriging < handle
-  properties (SetAccess = 'private')
+  properties (SetAccess = 'protected')
     model
     performance
   end
 
   methods
-    function this = Kriging(f, varargin)
+    function this = Kriging(varargin)
       options = Options(varargin{:});
-      this.construct(f, options);
+      this.construct(options);
     end
   end
 
   methods (Access = 'protected')
-    construct(this, f, options)
+    construct(this, options)
   end
 end
