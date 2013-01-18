@@ -11,14 +11,17 @@ function waves
     y = 4 * x.^2 + 20 * sin(2 * x) - 14 * x + 1;
   end
 
-  function k = kernel(t, s)
-    k = exp(-sum((t - s).^2, 1) / 2 / 0.2^2);
+  function [ k, dk ] = kernel(s, t, l)
+    n = sum((s - t).^2, 1) / 2;
+    k = exp(-n / l^2);
+    if nargout == 1, return; end
+    dk = k .* l^(-3) .* n;
   end
 
   surrogate = Regression.GaussianProcess( ...
     'target', @(u) target(a + (b - a) * u), 'kernel', @kernel, ...
-    'nodeCount', 10, 'lowerBound', 1e-4, 'upperBound', 10, ...
-    'verbose', true);
+    'parameters', 0.2, 'lowerBound', 1e-4, 'upperBound', 10, ...
+    'nodeCount', 10, 'verbose', true);
 
   x = linspace(a, b, 50)';
 

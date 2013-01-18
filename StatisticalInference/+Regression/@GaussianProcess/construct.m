@@ -54,10 +54,24 @@ function construct(this, options)
     repmat(responseDeviation, nodeCount, 1);
 
   %
+  % Optimize the parameters.
+  %
+  if ~isempty(lowerBound) || ~isempty(upperBound)
+    parameters = optimize(nodes, responses, kernel, ...
+      parameters, lowerBound, upperBound);
+  end
+
+  if isempty(parameters)
+    arguments = {};
+  else
+    arguments = { parameters };
+  end
+
+  %
   % Compute correlations between the nodes.
   %
   I = constructPairIndex(nodeCount);
-  K = kernel(nodes(I(:, 1), :)', nodes(I(:, 2), :)');
+  K = kernel(nodes(I(:, 1), :)', nodes(I(:, 2), :)', arguments{:});
   K = constructSymmetricMatrix(K, I);
 
   %
@@ -79,6 +93,7 @@ function construct(this, options)
 
   this.nodes = nodes;
   this.kernel = kernel;
+  this.arguments = arguments;
 
   this.inverseK = inverseK;
   this.inverseKy = inverseKy;
