@@ -34,6 +34,7 @@ function construct(this, options)
   parameters = options.get('parameters', []);
   lowerBound = options.get('lowerBound', []);
   upperBound = options.get('upperBound', []);
+  startCount = options.get('startCount', 1);
 
   verbose('Gaussian process: processing the data (%d inputs, %d outputs)...\n', ...
     inputCount, size(responses, 2));
@@ -58,7 +59,7 @@ function construct(this, options)
   %
   if ~isempty(lowerBound) || ~isempty(upperBound)
     parameters = optimize(nodes, responses, kernel, ...
-      parameters, lowerBound, upperBound);
+      parameters, lowerBound, upperBound, startCount);
   end
 
   if isempty(parameters)

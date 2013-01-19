@@ -15,43 +15,80 @@ function parameters = optimize(nodes, responses, kernel, ...
   function [ f, g ] = target(logParams)
     [ K, dK ] = kernel(nodes1, nodes2, exp(logParams));
     K = constructSymmetricMatrix(K, I);
-    dK = constructSymmetricMatrix(dK, I);
 
-    [ V, L ] = eig(K);
-    L = max(0, diag(L));
+    [ L, p ] = chol(K, 'lower');
 
-    iK = V * diag(1 ./ L) * V';
+    if p > 0
+      f = NaN;
+      g = NaN(1, parameterCount);
+      return;
+    end
+
+    iK = L' \ (L \ eye(nodeCount));
 
     iKy = iK * responses;
     iKyiKyT = iKy * iKy';
 
+    %
+    % The function itself.
+    %
     logp = -sum(diag(responses' * iKy)) / 2 - ...
-      sum(log(L)) / 2 - nodeCount * log(2 * pi) / 2;
-    dlogp = trace((iKyiKyT - iK) * dK) / 2;
-
+      2 * sum(log(diag(L))) / 2 - nodeCount * log(2 * pi) / 2;
     f = -logp;
-    g = -dlogp;
+
+    %
+    % The gradient of the function.
+    %
+    g = zeros(1, parameterCount);
+    for j = 1:parameterCount
+      dKj = constructSymmetricMatrix(dK(j, :), I);
+      dlogp = trace((iKyiKyT - iK) * dKj) / 2;
+      g(j) = -dlogp;
+    end
   end
 
   %
   % Choosing several starting points.
   %
   leftCount = startCount - size(startValues, 1);
-  leftValues = rand(leftCount, parameterCount);
-  leftValues = bsxfun(@plus, lowerBound, leftValues);
-  leftValues = bsxfun(@times, upperBound - lowerBound, leftValues);
-  startValues = [ startValues; leftValues ];
+  if leftCount > 0
+    leftValues = rand(leftCount, parameterCount);
+    leftValues = bsxfun(@plus, lowerBound, leftValues);
+    leftValues = bsxfun(@times, upperBound - lowerBound, leftValues);
+    startValues = [ startValues; leftValues ];
+  end
 
   options = optimset('Algorithm','interior-point', ...
     'GradObj', 'on', 'Display', 'off');
 
   results = zeros(startCount, parameterCount + 1);
-  for i = 1:startCount
-    [ results(i, 1:parameterCount), results(i, end) ] = ...
-      fmincon(@target, log(startValues(i, :)), [], [], [], [], ...
-        log(lowerBound), log(upperBound), [], options);
-  end
-  [ ~, I ] = sort(results(:, end));
 
+  skipCount = 0;
+
+  for i = 1:startCount
+    try
+      [ solution, fitness ] = fmincon(@target, ...
+        log(startValues(i, :)), [], [], [], [], ...
+        log(lowerBound), log(upperBound), [], options);
+    catch e
+      if strcmp(e.identifier, 'optim:barrier:UsrObjUndefAtX0')
+        skipCount = skipCount + 1;
+        solution = NaN(1, parameterCount);
+        fitness = Inf;
+      else
+        error(e);
+      end
+    end
+    results(i, :) = [ solution, fitness ];
+  end
+
+  if skipCount == startCount
+    error('All %d starting points have been skipped.', startCount);
+  elseif skipCount > 0
+    warning('%d starting points out of %d have been skipped.', ...
+      skipCount, startCount);
+  end
+
+  [ ~, I ] = sort(results(:, end));
   parameters = exp(results(I(1), 1:parameterCount));
 end
