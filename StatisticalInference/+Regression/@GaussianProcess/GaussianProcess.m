@@ -15,7 +15,7 @@ classdef GaussianProcess < handle
 
     nodes
     kernel
-    arguments
+    parameters
 
     inverseK
     inverseKy

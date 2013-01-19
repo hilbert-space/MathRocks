@@ -62,17 +62,11 @@ function construct(this, options)
       parameters, lowerBound, upperBound, startCount);
   end
 
-  if isempty(parameters)
-    arguments = {};
-  else
-    arguments = { parameters };
-  end
-
   %
   % Compute correlations between the nodes.
   %
   I = constructPairIndex(nodeCount);
-  K = kernel(nodes(I(:, 1), :)', nodes(I(:, 2), :)', arguments{:});
+  K = kernel(nodes(I(:, 1), :)', nodes(I(:, 2), :)', parameters);
   K = constructSymmetricMatrix(K, I);
 
   %
@@ -94,7 +88,7 @@ function construct(this, options)
 
   this.nodes = nodes;
   this.kernel = kernel;
-  this.arguments = arguments;
+  this.parameters = parameters;
 
   this.inverseK = inverseK;
   this.inverseKy = inverseKy;

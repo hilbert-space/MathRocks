@@ -76,16 +76,16 @@ function parameters = optimize(nodes, responses, kernel, ...
         solution = NaN(1, parameterCount);
         fitness = Inf;
       else
-        error(e);
+        throw(e);
       end
     end
     results(i, :) = [ solution, fitness ];
   end
 
   if skipCount == startCount
-    error('All %d starting points have been skipped.', startCount);
+    error('All starting points have been skipped (%d in total).', startCount);
   elseif skipCount > 0
-    warning('%d starting points out of %d have been skipped.', ...
+    warning('%d starting points have been skipped (out of %d).', ...
       skipCount, startCount);
   end
 
