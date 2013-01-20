@@ -33,9 +33,7 @@ function parameters = optimize(x, y, kernel, ...
     %
 
     iK = L' \ (L \ eye(nodeCount));
-
     iKy = iK * y;
-    iKyiKyT = iKy * iKy';
 
     %
     % NOTE: Since we assume y is n-dimensional, the product
@@ -49,35 +47,34 @@ function parameters = optimize(x, y, kernel, ...
     yTiKy = trace(yT * iKy);
 
     %
-    % NOTE: Since due after Cholesky K = L * L^T, the sum of the diagonal
+    % NOTE: Since due after Cholesky K = L * L', the sum of the diagonal
     % elements of L is the square root of the determinant of K; therefore,
     % we need to multiply by two in the logarithmic space.
     %
     logDetK = 2 * sum(log(diag(L)));
 
     %
-    % NOTE: Formally, we should also subtract
+    % NOTE: The last term is constant and, thus, can be dropped. The
+    % halving is also irrelevant for the optimization.
     %
-    %   nodeCount * log(2 * pi) / 2
-    %
-    % to get a complete log-likelihood.
-    %
-    logLikelihood = -yTiKy / 2 - logDetK / 2;
+    logLikelihood = -yTiKy / 2 - logDetK / 2 - nodeCount * log(2 * pi) / 2;
     f = -logLikelihood;
+
+    if nargout == 1, return; end
 
     %
     % Now, the gradient.
     %
     g = zeros(1, parameterCount);
-    iKyiKyTmiKd2 = (iKyiKyT - iK) / 2;
+    alpha = (iKy * iKy' - iK)' / 2;
     for j = 1:parameterCount
       dKj = constructSymmetricMatrix(dK(j, :), I);
       %
       % NOTE: Here is an efficent way to compute the trace of
       % the product of two square matrices.
       %
-      dlogp = sum(sum(iKyiKyTmiKd2 .* dKj'));
-      g(j) = -dlogp;
+      dLogLikelihood = sum(sum(alpha .* dKj));
+      g(j) = -dLogLikelihood;
     end
   end
 
