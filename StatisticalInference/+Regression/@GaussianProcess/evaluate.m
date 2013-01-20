@@ -1,4 +1,11 @@
 function [ mean, variance ] = evaluate(this, newNodes)
+  %
+  % Reference:
+  %
+  % C. Rasmussen and C. Williams. Gaussian Processes for Machine Learning,
+  % The MIT press, 2006, pp. 15--16.
+  %
+
   kernel = this.kernel;
   parameters = this.parameters;
   nodes = this.nodes;

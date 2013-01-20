@@ -1,11 +1,4 @@
 classdef GaussianProcess < handle
-  %
-  % Based on:
-  %
-  % C. Rasmussen and C. Williams. Gaussian Processes for Machine Learning,
-  % The MIT press, 2006, pp. 15--16.
-  %
-
   properties (SetAccess = 'protected')
     nodeMean
     nodeDeviation

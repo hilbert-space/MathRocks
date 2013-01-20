@@ -1,19 +1,20 @@
-function parameters = optimize(nodes, responses, kernel, ...
+function parameters = optimize(x, y, kernel, ...
   startValues, lowerBound, upperBound, startCount)
 
   if ~exist('startCount', 'var'), startCount = 1; end
 
-  nodeCount = size(nodes, 1);
+  nodeCount = size(x, 1);
   parameterCount = length(lowerBound);
   assert(length(upperBound) == parameterCount);
 
   I = constructPairIndex(nodeCount);
 
-  nodes1 = nodes(I(:, 1), :)';
-  nodes2 = nodes(I(:, 2), :)';
+  x1 = x(I(:, 1), :)';
+  x2 = x(I(:, 2), :)';
+  yT = y';
 
   function [ f, g ] = target(logParams)
-    [ K, dK ] = kernel(nodes1, nodes2, exp(logParams));
+    [ K, dK ] = kernel(x1, x2, exp(logParams));
     K = constructSymmetricMatrix(K, I);
 
     [ L, p ] = chol(K, 'lower');
@@ -24,25 +25,58 @@ function parameters = optimize(nodes, responses, kernel, ...
       return;
     end
 
+    %
+    % Reference:
+    %
+    % C. Rasmussen and C. Williams. Gaussian Processes for Machine Learning,
+    % The MIT press, 2006, pp. 19, 113--114.
+    %
+
     iK = L' \ (L \ eye(nodeCount));
 
-    iKy = iK * responses;
+    iKy = iK * y;
     iKyiKyT = iKy * iKy';
 
     %
-    % The function itself.
+    % NOTE: Since we assume y is n-dimensional, the product
     %
-    logp = -sum(diag(responses' * iKy)) / 2 - ...
-      2 * sum(log(diag(L))) / 2 - nodeCount * log(2 * pi) / 2;
-    f = -logp;
+    %   y' * K^(-1) * y
+    %
+    % yeilds an (n x n) matrix. Assuming independence of the outputs,
+    % we take the product of the corresponding probabilities (which is
+    % a sum in the logarithmic space).
+    %
+    yTiKy = trace(yT * iKy);
 
     %
-    % The gradient of the function.
+    % NOTE: Since due after Cholesky K = L * L^T, the sum of the diagonal
+    % elements of L is the square root of the determinant of K; therefore,
+    % we need to multiply by two in the logarithmic space.
+    %
+    logDetK = 2 * sum(log(diag(L)));
+
+    %
+    % NOTE: Formally, we should also subtract
+    %
+    %   nodeCount * log(2 * pi) / 2
+    %
+    % to get a complete log-likelihood.
+    %
+    logLikelihood = -yTiKy / 2 - logDetK / 2;
+    f = -logLikelihood;
+
+    %
+    % Now, the gradient.
     %
     g = zeros(1, parameterCount);
+    iKyiKyTmiKd2 = (iKyiKyT - iK) / 2;
     for j = 1:parameterCount
       dKj = constructSymmetricMatrix(dK(j, :), I);
-      dlogp = trace((iKyiKyT - iK) * dKj) / 2;
+      %
+      % NOTE: Here is an efficent way to compute the trace of
+      % the product of two square matrices.
+      %
+      dlogp = sum(sum(iKyiKyTmiKd2 .* dKj'));
       g(j) = -dlogp;
     end
   end
