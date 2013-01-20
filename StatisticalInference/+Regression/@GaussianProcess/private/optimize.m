@@ -7,7 +7,7 @@ function parameters = optimize(x, y, kernel, ...
   parameterCount = length(lowerBound);
   assert(length(upperBound) == parameterCount);
 
-  I = constructPairIndex(nodeCount);
+  I = index(nodeCount);
 
   x1 = x(I(:, 1), :)';
   x2 = x(I(:, 2), :)';
@@ -15,7 +15,7 @@ function parameters = optimize(x, y, kernel, ...
 
   function [ f, g ] = target(logParams)
     [ K, dK ] = kernel(x1, x2, exp(logParams));
-    K = constructSymmetricMatrix(K, I);
+    K = symmetrize(K, I);
 
     [ L, p ] = chol(K, 'lower');
 
@@ -68,7 +68,7 @@ function parameters = optimize(x, y, kernel, ...
     g = zeros(1, parameterCount);
     alpha = (iKy * iKy' - iK)' / 2;
     for j = 1:parameterCount
-      dKj = constructSymmetricMatrix(dK(j, :), I);
+      dKj = symmetrize(dK(j, :), I);
       %
       % NOTE: Here is an efficent way to compute the trace of
       % the product of two square matrices.

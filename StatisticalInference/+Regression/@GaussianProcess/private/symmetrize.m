@@ -1,4 +1,4 @@
-function M = constructSymmetricMatrix(V, I)
+function M = symmetrize(V, I)
   a = 1; b = 1; c = -2 * size(I, 1);
   count = (-b + sqrt(b^2 - 4 * a * c)) / 2 / a;
 

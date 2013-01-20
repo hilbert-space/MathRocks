@@ -36,9 +36,9 @@ function [ mean, variance ] = evaluate(this, newNodes)
 
   if nargout == 1, return; end
 
-  I = constructPairIndex(newNodeCount);
+  I = index(newNodeCount);
   Knew = this.kernel(newNodes(I(:, 1), :)', newNodes(I(:, 2), :)', parameters);
-  Knew = constructSymmetricMatrix(Knew, I);
+  Knew = symmetrize(Knew, I);
 
   %
   % The maximization tries to prevent the numerical noise.

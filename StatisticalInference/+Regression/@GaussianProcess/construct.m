@@ -65,9 +65,9 @@ function construct(this, options)
   %
   % Compute correlations between the nodes.
   %
-  I = constructPairIndex(nodeCount);
+  I = index(nodeCount);
   K = kernel(nodes(I(:, 1), :)', nodes(I(:, 2), :)', parameters);
-  K = constructSymmetricMatrix(K, I);
+  K = symmetrize(K, I);
 
   %
   % Compute the multiplier of the mean of the posterior.
