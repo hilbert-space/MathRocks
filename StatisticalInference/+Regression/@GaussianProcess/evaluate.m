@@ -22,7 +22,7 @@ function [ mean, variance ] = evaluate(this, newNodes)
   [ I, J ] = meshgrid(1:newNodeCount, 1:nodeCount);
   I = I'; J = J';
 
-  Kmix = this.kernel(newNodes(I(:), :)', nodes(J(:), :)', parameters);
+  Kmix = kernel.compute(newNodes(I(:), :)', nodes(J(:), :)', parameters);
   Kmix = reshape(Kmix, [ newNodeCount, nodeCount ]);
 
   mean = Kmix * this.inverseKy;
@@ -37,7 +37,7 @@ function [ mean, variance ] = evaluate(this, newNodes)
   if nargout == 1, return; end
 
   I = index(newNodeCount);
-  Knew = this.kernel(newNodes(I(:, 1), :)', newNodes(I(:, 2), :)', parameters);
+  Knew = kernel.compute(newNodes(I(:, 1), :)', newNodes(I(:, 2), :)', parameters);
   Knew = symmetrize(Knew, I);
 
   %

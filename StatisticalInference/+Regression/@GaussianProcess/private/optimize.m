@@ -1,7 +1,9 @@
-function parameters = optimize(x, y, kernel, ...
-  startValues, lowerBound, upperBound, startCount)
-
-  if ~exist('startCount', 'var'), startCount = 1; end
+function parameters = optimize(x, y, kernel)
+  compute = kernel.compute;
+  parameters = kernel.parameters;
+  lowerBound = kernel.lowerBound;
+  upperBound = kernel.upperBound;
+  startCount = kernel.get('startCount', 1);
 
   nodeCount = size(x, 1);
   parameterCount = length(lowerBound);
@@ -14,7 +16,7 @@ function parameters = optimize(x, y, kernel, ...
   yT = y';
 
   function [ f, g ] = target(logParams)
-    [ K, dK ] = kernel(x1, x2, exp(logParams));
+    [ K, dK ] = compute(x1, x2, exp(logParams));
     K = symmetrize(K, I);
 
     [ L, p ] = chol(K, 'lower');
@@ -70,7 +72,7 @@ function parameters = optimize(x, y, kernel, ...
     for j = 1:parameterCount
       dKj = symmetrize(dK(j, :), I);
       %
-      % NOTE: Here is an efficent way to compute the trace of
+      % NOTE: Here is an efficient way to compute the trace of
       % the product of two square matrices.
       %
       dLogLikelihood = sum(sum(alpha .* dKj));
@@ -79,14 +81,15 @@ function parameters = optimize(x, y, kernel, ...
   end
 
   %
-  % Choosing several starting points.
+  % Decide on starting points.
   %
-  leftCount = startCount - size(startValues, 1);
-  if leftCount > 0
-    leftValues = rand(leftCount, parameterCount);
-    leftValues = bsxfun(@plus, lowerBound, leftValues);
-    leftValues = bsxfun(@times, upperBound - lowerBound, leftValues);
-    startValues = [ startValues; leftValues ];
+  if startCount == 1
+    startValues = parameters;
+  else
+    p = rand(startCount - 1, parameterCount);
+    mn = repmat(lowerBound, startCount - 1, 1);
+    mx = repmat(upperBound, startCount - 1, 1);
+    startValues = [ parameters; mn.^(1 - p) .* mx.^p ];
   end
 
   options = optimset('Algorithm','interior-point', ...
@@ -98,11 +101,18 @@ function parameters = optimize(x, y, kernel, ...
 
   for i = 1:startCount
     try
-      [ solution, fitness ] = fmincon(@target, ...
-        log(startValues(i, :)), [], [], [], [], ...
-        log(lowerBound), log(upperBound), [], options);
+      %
+      % Bounded or unbounded? That is the question...
+      %
+      % [ solution, fitness ] = fmincon(@target, ...
+      %   log(startValues(i, :)), [], [], [], [], ...
+      %   log(lowerBound), log(upperBound), [], options);
+      %
+      [ solution, fitness ] = fminunc(@target, log(startValues(i, :)), options);
     catch e
-      if strcmp(e.identifier, 'optim:barrier:UsrObjUndefAtX0')
+      if strcmp(e.identifier, 'optim:barrier:UsrObjUndefAtX0') || ...
+        strcmp(e.identifier, 'optim:sfminbx:UsrObjUndefAtX0')
+
         skipCount = skipCount + 1;
         solution = NaN(1, parameterCount);
         fitness = Inf;

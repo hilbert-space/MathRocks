@@ -31,10 +31,6 @@ function construct(this, options)
   end
 
   kernel = options.kernel;
-  parameters = options.get('parameters', []);
-  lowerBound = options.get('lowerBound', []);
-  upperBound = options.get('upperBound', []);
-  startCount = options.get('startCount', 1);
 
   verbose('Gaussian process: processing the data (%d inputs, %d outputs)...\n', ...
     inputCount, size(responses, 2));
@@ -57,16 +53,21 @@ function construct(this, options)
   %
   % Optimize the parameters.
   %
-  if ~isempty(lowerBound) || ~isempty(upperBound)
-    parameters = optimize(nodes, responses, kernel, ...
-      parameters, lowerBound, upperBound, startCount);
+  if kernel.has('parameters')
+    if kernel.has('lowerBound') || kernel.has('upperBound')
+      parameters = optimize(nodes, responses, kernel);
+    else
+      parameters = kernel.parameters;
+    end
+  else
+    parameters = [];
   end
 
   %
   % Compute correlations between the nodes.
   %
   I = index(nodeCount);
-  K = kernel(nodes(I(:, 1), :)', nodes(I(:, 2), :)', parameters);
+  K = kernel.compute(nodes(I(:, 1), :)', nodes(I(:, 2), :)', parameters);
   K = symmetrize(K, I);
 
   %
