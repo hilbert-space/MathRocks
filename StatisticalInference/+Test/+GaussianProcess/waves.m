@@ -15,13 +15,13 @@ function waves
     s = params(1); % Standard deviation
     l = params(2); % Length scale
 
-    n = sum((x - y).^2, 1);
-    e = exp(-n / 2 / l^2);
+    n = (x - y).^2;
+    e = exp(-n / (2 * l^2));
     K = s^2 * e;
 
     if nargout == 1, return; end % Need derivatives?
 
-    dK = [ 2 * s * K; l^(-3) * K .* n ];
+    dK = [ 2 * s * e; l^(-3) * K .* n ];
   end
 
   kernel = Options( ...

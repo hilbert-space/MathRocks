@@ -18,7 +18,7 @@ function simple
 
     if nargout == 1, return; end % Need derivatives?
 
-    dK = [ 2 * s * e; K .* l^(-3) .* n ];
+    dK = [ 2 * s * e; l^(-3) * K .* n ];
   end
 
   kernel = Options( ...

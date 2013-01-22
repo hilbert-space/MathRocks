@@ -111,13 +111,14 @@ function parameters = optimize(x, y, kernel)
       [ solution, fitness ] = fminunc(@target, log(startValues(i, :)), options);
     catch e
       if strcmp(e.identifier, 'optim:barrier:UsrObjUndefAtX0') || ...
-        strcmp(e.identifier, 'optim:sfminbx:UsrObjUndefAtX0')
+        strcmp(e.identifier, 'optim:sfminbx:UsrObjUndefAtX0') || ...
+        strcmp(e.identifier, 'MATLAB:eig:matrixWithNaNInf')
 
         skipCount = skipCount + 1;
         solution = NaN(1, parameterCount);
         fitness = Inf;
       else
-        throw(e);
+        rethrow(e);
       end
     end
     results(i, :) = [ solution, fitness ];
