@@ -2,13 +2,12 @@ function string = toString(object, varargin)
   if numel(object) == 1 && ...
     (ismethod(object, 'toString') || isprop(object, 'toString'))
 
-    string = object.toString;
-    return;
+    object = object.toString;
   end
 
   switch class(object)
   case 'char'
-    string = object;
+    string = stringToString(object, varargin{:});
   case { 'int8', 'int16', 'int32', ...
     'uint8', 'uint16', 'uint32', 'double', 'logical' }
     string = arrayToString(object, varargin{:});
@@ -18,6 +17,14 @@ function string = toString(object, varargin)
     string = func2str(object);
   otherwise
     error('The object class is not yet supported.');
+  end
+end
+
+function string = stringToString(object, varargin)
+  if length(object) > 50
+    string = [ object(1:50), '...' ];
+  else
+    string = object;
   end
 end
 
@@ -55,13 +62,15 @@ function string = arrayToString(object, varargin)
           numberToString(delta(1), varargin{:}), ...
           numberToString(object(end), varargin{:}));
       end
-    else
+    elseif count <= 10
       string = numberToString(object(1), varargin{:});
       for i = 2:count
         string = sprintf('%s, %s', string, ...
           numberToString(object(i), varargin{:}));
       end
       string = [ '[ ', string, ' ]' ];
+    else
+      string = sprintf('[ < %d entries > ]', count);
     end
   end
 end

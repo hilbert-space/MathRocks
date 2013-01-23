@@ -64,8 +64,16 @@ classdef Options < dynamicprops
     end
 
     function this = subsasgn(this, s, v)
-      if length(s) == 1 && strcmp(s(1).type, '.') && ~isprop(this, s(1).subs)
-        this.set(s(1).subs, v);
+      if strcmp(s(1).type, '.')
+        if length(s) == 1
+          if ~isprop(this, s.subs)
+            this.set(s.subs, v);
+          else
+            this = builtin('subsasgn', this, s, v);
+          end
+        else
+          result = subsasgn(this.(s(1).subs), s(2:end), v);
+        end
       else
         this = builtin('subsasgn', this, s, v);
       end
