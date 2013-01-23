@@ -23,14 +23,14 @@ classdef Normal < ProbabilityDistribution.Base
       data = normrnd(this.mu, this.sigma, samples, dimension);
     end
 
-    function data = apply(this, data)
+    function data = cdf(this, data)
       data = normcdf(data, this.mu, this.sigma);
     end
 
-    function data = invert(this, data)
+    function data = icdf(this, data)
       data = norminv(data, this.mu, this.sigma);
     end
-    
+
     function data = pdf(this, data)
       data = normpdf(data, this.mu, this.sigma);
     end

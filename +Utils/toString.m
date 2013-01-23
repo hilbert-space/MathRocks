@@ -70,7 +70,7 @@ function string = arrayToString(object, varargin)
       end
       string = [ '[ ', string, ' ]' ];
     else
-      string = sprintf('[ < %d entries > ]', count);
+      string = sprintf('[ ... %d entries ... ]', count);
     end
   end
 end

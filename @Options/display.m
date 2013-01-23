@@ -3,7 +3,7 @@ function display(this, title, level)
     fprintf('%s:\n', title);
   end
 
-  nameWidth = 25;
+  nameWidth = 20;
   namePrefix = '  ';
 
   if nargin > 2

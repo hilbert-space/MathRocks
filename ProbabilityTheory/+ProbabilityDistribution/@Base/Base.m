@@ -12,7 +12,7 @@ classdef Base < handle
     function plot(this, varargin)
       options = Options(varargin{:});
       data = this.sample(options.get('samples', 1e3), 1);
-      Stats.observe(data, 'draw', true, options);
+      Data.observe(data, 'draw', true, options);
     end
 
     function display(this)
@@ -24,8 +24,8 @@ classdef Base < handle
 
   methods (Abstract)
     data = sample(this, samples, dimension)
-    data = apply(this, data)
-    data = invert(this, data)
+    data = cdf(this, data)
+    data = icdf(this, data)
     data = pdf(this, data)
   end
 end
