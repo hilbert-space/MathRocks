@@ -9,20 +9,9 @@ function string = toString(object, varargin)
   switch class(object)
   case 'char'
     string = object;
-  case 'double'
-    if isempty(varargin)
-      format = '%.2f';
-    else
-      format = varargin{1};
-    end
-    string = arrayToString(object, format);
-  case { 'uint8', 'uint16', 'uint32' }
-    if isempty(varargin)
-      format = '%d';
-    else
-      format = varargin{1};
-    end
-    string = arrayToString(object, format);
+  case { 'int8', 'int16', 'int32', ...
+    'uint8', 'uint16', 'uint32', 'double', 'logical' }
+    string = arrayToString(object, varargin{:});
   case 'cell'
     string = cellToString(object, varargin{:});
   case 'function_handle'
@@ -32,7 +21,15 @@ function string = toString(object, varargin)
   end
 end
 
-function string = arrayToString(object, format)
+function string = numberToString(object, varargin)
+  if isempty(varargin)
+    string = num2str(object);
+  else
+    string = sprintf(varargin{:}, object);
+  end
+end
+
+function string = arrayToString(object, varargin)
   object = object(:);
   count = numel(object);
 
@@ -40,24 +37,29 @@ function string = arrayToString(object, format)
   case 0
     string = '[]';
   case 1
-    string = sprintf(format, object(1));
+    string = numberToString(object, varargin{:});
   case 2
-    string = sprintf([ '[ ', format, ', ', format, ' ]' ], ...
-      object(1), object(2));
+    string = sprintf('[ %s, %s ]', ...
+      numberToString(object(1), varargin{:}), ...
+      numberToString(object(2), varargin{:}));
   otherwise
     delta = diff(object);
     if length(unique(delta)) == 1
       if delta(1) == 1
-        string = sprintf([ format, ':', format ], ...
-          object(1), object(end));
+        string = sprintf('%s:%s', ...
+          numberToString(object(1), varargin{:}), ...
+          numberToString(object(end), varargin{:}));
       else
-        string = sprintf([ format, ':', format, ':', format ], ...
-          object(1), delta(1), object(end));
+        string = sprintf('%s:%s:%s', ...
+          numberToString(object(1), varargin{:}), ...
+          numberToString(delta(1), varargin{:}), ...
+          numberToString(object(end), varargin{:}));
       end
     else
-      string = sprintf(format, object(1));
+      string = numberToString(object(1), varargin{:});
       for i = 2:count
-        string = sprintf([ '%s, ', format ], string, object(i));
+        string = sprintf('%s, %s', string, ...
+          numberToString(object(i), varargin{:}));
       end
       string = [ '[ ', string, ' ]' ];
     end

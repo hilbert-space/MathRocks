@@ -62,6 +62,14 @@ classdef Options < dynamicprops
     function result = has(this, name)
       result = isprop(this, name);
     end
+
+    function this = subsasgn(this, s, v)
+      if length(s) == 1 && strcmp(s(1).type, '.') && ~isprop(this, s(1).subs)
+        this.set(s(1).subs, v);
+      else
+        this = builtin('subsasgn', this, s, v);
+      end
+    end
   end
 
   methods (Static)
