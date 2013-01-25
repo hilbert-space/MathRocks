@@ -19,8 +19,8 @@ classdef Normal < ProbabilityDistribution.Base
       this.support = [ -Inf, Inf ];
     end
 
-    function data = sample(this, samples, dimension)
-      data = normrnd(this.mu, this.sigma, samples, dimension);
+    function data = sample(this, varargin)
+      data = normrnd(this.mu, this.sigma, varargin{:});
     end
 
     function data = cdf(this, data)

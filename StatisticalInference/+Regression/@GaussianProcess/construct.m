@@ -1,6 +1,4 @@
 function construct(this, options)
-  inputCount = options.get('inputCount', 1);
-
   verbose = @(varargin) [];
   if options.get('verbose', false)
     verbose = @(varargin) fprintf(varargin{:});
@@ -11,8 +9,9 @@ function construct(this, options)
   %
   if options.has('nodes')
     nodes = options.nodes;
-    nodeCount = size(nodes, 1);
+    [ nodeCount, inputCount ] = size(nodes);
   else
+    inputCount = options.get('inputCount', 1);
     nodeCount = options.get('nodeCount', 10 * inputCount);
     nodes = lhsdesign(nodeCount, inputCount);
   end

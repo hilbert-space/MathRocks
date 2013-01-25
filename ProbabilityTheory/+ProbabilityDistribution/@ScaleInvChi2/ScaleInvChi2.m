@@ -30,10 +30,10 @@ classdef ScaleInvChi2 < ProbabilityDistribution.Base
       this.support = [ 0, Inf ];
     end
 
-    function data = sample(this, samples, dimension)
+    function data = sample(this, varargin)
       nu = this.nu;
       tau2 = this.tau^2;
-      data = tau2 * nu ./ chi2rnd(nu, samples, dimension);
+      data = tau2 * nu ./ chi2rnd(nu, varargin{:});
     end
 
     function data = cdf(this, data)
