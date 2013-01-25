@@ -1,4 +1,13 @@
-function simple
+function Ebden
+  %
+  % Reference:
+  %
+  % E. Ebden. Gaussian Processes for Regression: A Quick Introduction.
+  % August 2008.
+  %
+  % http://www.robots.ox.ac.uk/~mebden/reports/GPtutorial.pdf
+  %
+
   clear all;
   close all;
 

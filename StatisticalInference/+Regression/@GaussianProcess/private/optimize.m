@@ -1,4 +1,4 @@
-function parameters = optimize(x, y, kernel)
+function parameters = optimize(x, y, kernel, noise)
   compute = kernel.compute;
   parameters = kernel.parameters;
   lowerBound = kernel.lowerBound;
@@ -17,7 +17,7 @@ function parameters = optimize(x, y, kernel)
 
   function [ f, g ] = target(logParams)
     [ K, dK ] = compute(x1, x2, exp(logParams));
-    K = symmetrize(K, I);
+    K = symmetrize(K, I) + noise;
 
     [ L, p ] = chol(K, 'lower');
 
@@ -31,7 +31,7 @@ function parameters = optimize(x, y, kernel)
     % Reference:
     %
     % C. Rasmussen and C. Williams. Gaussian Processes for Machine Learning,
-    % The MIT press, 2006, pp. 19, 113--114.
+    % The MIT press, 2006, pp. 19, 37, 113--114.
     %
 
     iK = L' \ (L \ eye(nodeCount));

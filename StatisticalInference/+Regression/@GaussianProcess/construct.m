@@ -29,6 +29,14 @@ function construct(this, options)
     verbose('Gaussian process: done in %.2f seconds.\n', toc(time));
   end
 
+  %
+  % Noisy?
+  %
+  noise = options.get('noiseVariance', 0);
+  if isscalar(noise) && noise ~= 0
+    noise = diag(noise * ones(1, nodeCount));
+  end
+
   kernel = options.kernel;
 
   verbose('Gaussian process: processing the data (%d inputs, %d outputs)...\n', ...
@@ -54,7 +62,7 @@ function construct(this, options)
   %
   if kernel.has('parameters')
     if kernel.has('lowerBound') || kernel.has('upperBound')
-      parameters = optimize(nodes, responses, kernel);
+      parameters = optimize(nodes, responses, kernel, noise);
     else
       parameters = kernel.parameters;
     end
@@ -72,7 +80,7 @@ function construct(this, options)
   %
   % Compute the multiplier of the mean of the posterior.
   %
-  inverseK = inv(K);
+  inverseK = inv(K + noise);
   inverseKy = inverseK * responses;
 
   verbose('Gaussian process: done in %.2f seconds.\n', toc(time));
