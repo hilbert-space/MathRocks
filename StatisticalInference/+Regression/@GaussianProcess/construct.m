@@ -73,9 +73,9 @@ function construct(this, options)
   %
   % Compute correlations between the nodes.
   %
-  I = index(nodeCount);
+  I = Utils.constructPairIndex(nodeCount);
   K = kernel.compute(nodes(I(:, 1), :)', nodes(I(:, 2), :)', parameters);
-  K = symmetrize(K, I);
+  K = Utils.symmetrizePairIndex(K, I);
 
   %
   % Compute the multiplier of the mean of the posterior.

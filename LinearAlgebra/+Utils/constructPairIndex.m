@@ -1,4 +1,4 @@
-function I = index(count)
+function I = constructPairIndex(count)
   I = zeros(count * (count + 1) / 2, 2);
   k = 0;
   for i = 1:count

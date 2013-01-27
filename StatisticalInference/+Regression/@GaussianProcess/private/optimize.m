@@ -9,7 +9,7 @@ function parameters = optimize(x, y, kernel, noise)
   parameterCount = length(lowerBound);
   assert(length(upperBound) == parameterCount);
 
-  I = index(nodeCount);
+  I = Utils.constructPairIndex(nodeCount);
 
   x1 = x(I(:, 1), :)';
   x2 = x(I(:, 2), :)';
@@ -17,7 +17,7 @@ function parameters = optimize(x, y, kernel, noise)
 
   function [ f, g ] = target(logParams)
     [ K, dK ] = compute(x1, x2, exp(logParams));
-    K = symmetrize(K, I) + noise;
+    K = Utils.symmetrizePairIndex(K, I) + noise;
 
     [ L, p ] = chol(K, 'lower');
 
@@ -70,7 +70,7 @@ function parameters = optimize(x, y, kernel, noise)
     g = zeros(1, parameterCount);
     alpha = (iKy * iKy' - iK)' / 2;
     for j = 1:parameterCount
-      dKj = symmetrize(dK(j, :), I);
+      dKj = Utils.symmetrizePairIndex(dK(j, :), I);
       %
       % NOTE: Here is an efficient way to compute the trace of
       % the product of two square matrices.

@@ -20,7 +20,7 @@ classdef Wafer < handle
     end
 
     function string = toString(this)
-      string = sprintf('%d_%d', this.dieCount, this.processorCount);
+      string = Utils.toString([ this.dieCount, this.processorCount ]);
     end
   end
 
