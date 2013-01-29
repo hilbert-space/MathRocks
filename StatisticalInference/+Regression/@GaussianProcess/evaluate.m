@@ -36,9 +36,9 @@ function [ mean, variance ] = evaluate(this, newNodes)
 
   if nargout == 1, return; end
 
-  I = index(newNodeCount);
+  I = Utils.constructPairIndex(newNodeCount);
   Knew = kernel.compute(newNodes(I(:, 1), :)', newNodes(I(:, 2), :)', parameters);
-  Knew = symmetrize(Knew, I);
+  Knew = Utils.symmetrizePairIndex(Knew, I);
 
   %
   % The maximization tries to prevent the numerical noise.
