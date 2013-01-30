@@ -1,7 +1,10 @@
 function construct(this, options)
-  verbose = @(varargin) [];
-  if options.get('verbose', false)
-    verbose = @(varargin) fprintf(varargin{:});
+  verbose = options.get('verbose', false);
+
+  if verbose
+    printf = @(varargin) fprintf(varargin{:});
+  else
+    printf = @(varargin) [];
   end
 
   %
@@ -23,10 +26,10 @@ function construct(this, options)
     responses = options.responses;
   else
     target = options.target;
-    verbose('Gaussian process: collecting data (%d nodes)...\n', nodeCount);
+    printf('Gaussian process: collecting data (%d nodes)...\n', nodeCount);
     time = tic;
     responses = target(nodes);
-    verbose('Gaussian process: done in %.2f seconds.\n', toc(time));
+    printf('Gaussian process: done in %.2f seconds.\n', toc(time));
   end
 
   %
@@ -39,7 +42,7 @@ function construct(this, options)
 
   kernel = options.kernel;
 
-  verbose('Gaussian process: processing the data (%d inputs, %d outputs)...\n', ...
+  printf('Gaussian process: processing the data (%d inputs, %d outputs)...\n', ...
     inputCount, size(responses, 2));
   time = tic;
 
@@ -62,7 +65,7 @@ function construct(this, options)
   %
   if kernel.has('parameters')
     if kernel.has('lowerBound') || kernel.has('upperBound')
-      parameters = optimize(nodes, responses, kernel, noise);
+      parameters = optimize(nodes, responses, kernel, noise, options);
     else
       parameters = kernel.parameters;
     end
@@ -83,7 +86,7 @@ function construct(this, options)
   inverseK = inv(K + noise);
   inverseKy = inverseK * responses;
 
-  verbose('Gaussian process: done in %.2f seconds.\n', toc(time));
+  printf('Gaussian process: done in %.2f seconds.\n', toc(time));
 
   %
   % Save everything.

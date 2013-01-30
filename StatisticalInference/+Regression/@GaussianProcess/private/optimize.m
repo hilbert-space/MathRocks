@@ -1,4 +1,4 @@
-function parameters = optimize(x, y, kernel, noise)
+function parameters = optimize(x, y, kernel, noise, options)
   compute = kernel.compute;
   parameters = kernel.parameters;
   lowerBound = kernel.lowerBound;
@@ -92,8 +92,16 @@ function parameters = optimize(x, y, kernel, noise)
     startValues = [ parameters; mn.^(1 - p) .* mx.^p ];
   end
 
-  options = optimset('Algorithm','interior-point', ...
-    'GradObj', 'on', 'Display', 'off');
+  optimizationOptions = optimset;
+  optimizationOptions.GradObj = 'on';
+  optimizationOptions.MaxFunEvals = ...
+    options.get('optimizationStepCount', 10 * parameterCount);
+
+  if options.get('verbose', false)
+    optimizationOptions.Display = 'iter';
+  else
+    optimizationOptions.Display = 'off';
+  end
 
   results = zeros(startCount, parameterCount + 1);
 
@@ -101,14 +109,8 @@ function parameters = optimize(x, y, kernel, noise)
 
   for i = 1:startCount
     try
-      %
-      % Bounded or unbounded? That is the question...
-      %
-      % [ solution, fitness ] = fmincon(@target, ...
-      %   log(startValues(i, :)), [], [], [], [], ...
-      %   log(lowerBound), log(upperBound), [], options);
-      %
-      [ solution, fitness ] = fminunc(@target, log(startValues(i, :)), options);
+      [ solution, fitness ] = fminunc(@target, ...
+        log(startValues(i, :)), optimizationOptions);
     catch e
       if strcmp(e.identifier, 'optim:barrier:UsrObjUndefAtX0') || ...
         strcmp(e.identifier, 'optim:sfminbx:UsrObjUndefAtX0') || ...
