@@ -16,7 +16,7 @@ function construct(this, options)
   waferCenterX = DS * columns / 2;
   waferCenterY = DS * rows / 2;
 
-  floorplan = zeros(0, 4);
+  floorplan = zeros(0, 6);
 
   for i = 1:rows
     for j = 1:columns
@@ -29,7 +29,7 @@ function construct(this, options)
         (j - 1) * DS + (DS - DW) / 2 - waferCenterX, ...
         (i - 1) * DS + (DS - DH) / 2 - waferCenterY, ...
         (j - 1) * DS                 - waferCenterX, ...
-        (i - 1) * DS                 - waferCenterY ];
+        (i - 1) * DS                 - waferCenterY, i, j ];
     end
   end
 
