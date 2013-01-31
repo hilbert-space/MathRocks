@@ -15,9 +15,8 @@ classdef LeakagePower < handle
   end
 
   properties (SetAccess = 'private')
-    toString
+    evaluate
 
-    evaluator
     Ldata
     Tdata
     Idata
@@ -25,53 +24,15 @@ classdef LeakagePower < handle
     stats
   end
 
-  properties
-    %
-    % The scaling coefficient from current to power.
-    %
-    C
-  end
-
   methods
     function this = LeakagePower(varargin)
-      [ data, options ] = Options.extract(varargin{:});
-      this.toString = options.toString;
-      this.initialize(options);
-
-      this.C = 1;
-
-      if ~isempty(data)
-        powerProfile = data{1};
-        P0 = this.evaluator(this.Lnom, this.Tref);
-        this.C = this.PleakPdyn * mean(powerProfile(:)) / P0;
-      end
-    end
-
-    function P = evaluate(this, L, T)
-      P = this.C * this.evaluator(L, T);
+      [ this.evaluate, this.Ldata, this.Tdata, this.Idata, this.stats ] = ...
+        LeakagePower.construct(varargin{:});
     end
   end
 
-  methods (Access = 'private')
-    [ evaluator, Ldata, Tdata, Idata, stats ] = construct(this, options)
-
-    function initialize(this, options)
-      filename = File.temporal([ class(this), '_', ...
-        DataHash(this.toString), '.mat' ]);
-
-      if File.exist(filename);
-        load(filename);
-      else
-        [ evaluator, Ldata, Tdata, Idata, stats ] = this.construct(options);
-        save(filename, 'evaluator', 'Ldata', 'Tdata', 'Idata', ...
-          'stats', '-v7.3');
-      end
-
-      this.evaluator = evaluator;
-      this.Ldata = Ldata;
-      this.Tdata = Tdata;
-      this.Idata = Idata;
-      this.stats = stats;
-    end
+  methods (Static)
+    [ logI, Lsym, Tsym, Ldata, Tdata, Idata, stats ] = fit(options)
+    [ evaluate, Ldata, Tdata, Idata, stats ] = construct(varargin)
   end
 end
