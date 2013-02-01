@@ -16,7 +16,7 @@ function string = toString(object, varargin)
   case 'function_handle'
     string = func2str(object);
   otherwise
-    error('The object class is not yet supported.');
+    string = sprintf('< ... an instance of %s ... >', class(object));
   end
 end
 
