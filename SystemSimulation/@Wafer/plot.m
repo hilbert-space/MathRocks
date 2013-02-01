@@ -29,7 +29,7 @@ function plot(this, index)
     end
   end
 
-  Plot.title('%d dies, %d cores each', prod(size(F)), length(W));
+  Plot.title('%d dies, %d cores each', size(F, 1), length(W));
   axis tight;
 end
 
