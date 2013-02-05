@@ -7,7 +7,7 @@ function string = toString(object, varargin)
 
   switch class(object)
   case 'char'
-    string = stringToString(object, varargin{:});
+    string = object;
   case { 'int8', 'int16', 'int32', ...
     'uint8', 'uint16', 'uint32', 'double', 'logical' }
     string = arrayToString(object, varargin{:});
@@ -16,15 +16,7 @@ function string = toString(object, varargin)
   case 'function_handle'
     string = func2str(object);
   otherwise
-    string = sprintf('< ... an instance of %s ... >', class(object));
-  end
-end
-
-function string = stringToString(object, varargin)
-  if length(object) > 50
-    string = [ object(1:50), '...' ];
-  else
-    string = object;
+    string = sprintf('<%s>', class(object));
   end
 end
 
@@ -70,7 +62,7 @@ function string = arrayToString(object, varargin)
       end
       string = [ '[ ', string, ' ]' ];
     else
-      string = sprintf('[ ... %d entries ... ]', count);
+      string = sprintf('[ %d entries ]', count);
     end
   end
 end
