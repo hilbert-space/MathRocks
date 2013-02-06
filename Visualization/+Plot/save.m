@@ -1,0 +1,6 @@
+function save(filename, varargin)
+  options = Options(varargin{:});
+  print(filename, '-painters', ...
+    [ '-d', options.get('format', 'pdf') ], ...
+    [ '-r', num2str(options.get('resolution', 400)) ]);
+end
