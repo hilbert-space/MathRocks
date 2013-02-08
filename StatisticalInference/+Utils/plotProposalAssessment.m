@@ -1,4 +1,4 @@
-function inspectProposalAssessment(theta, assessment)
+function plotProposalAssessment(theta, assessment)
   parameterCount = length(assessment);
 
   cols = floor(sqrt(parameterCount));
@@ -12,10 +12,10 @@ function inspectProposalAssessment(theta, assessment)
 
     grid = assessment(i).grid;
     logPosterior = assessment(i).logPosterior;
-    logGaussianDensity = assessment(i).logGaussianDensity;
+    logPosteriorApproximation = assessment(i).logPosteriorApproximation;
 
     line(grid, logPosterior, 'Color', c1);
-    line(grid, logGaussianDensity, 'Color', c2);
+    line(grid, logPosteriorApproximation, 'Color', c2);
 
     box off;
 
@@ -26,7 +26,6 @@ function inspectProposalAssessment(theta, assessment)
 
     line(theta(i) * [ 1 1 ], yBound, 'Color', 'k');
 
-    if i == 1, Plot.legend('Perturbed', 'Gaussian'); end
     Plot.limit(xBound, yBound);
     set(gca, 'XTick', xBound);
     set(gca, 'YTick', yBound);
@@ -34,5 +33,6 @@ function inspectProposalAssessment(theta, assessment)
     drawnow;
   end
 
-  Plot.name('Curvature at the posterior mode');
+  Plot.legend('Log-posterior', 'Approximated log-posterior');
+  Plot.landscape;
 end

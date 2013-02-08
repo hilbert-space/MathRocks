@@ -3,4 +3,5 @@ function Title(text, varargin)
     text = sprintf(text, varargin{:});
   end
   title(text, 'FontSize', 16);
+  set(gcf, 'name', text);
 end

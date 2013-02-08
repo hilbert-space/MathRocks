@@ -1,7 +1,10 @@
-function assessment = assessProposalDistribution( ...
-  computeLogPosterior, theta, covariance)
+function assessment = performProposalAssessment( ...
+  computeLogPosterior, theta, covariance, varargin)
 
-  pointCount = 30; % Keep it even!
+  options = Options(varargin{:});
+  pointCount = options.get('pointCount', 30);
+
+  assert(rem(pointCount, 2) == 0); % Keep it even!
 
   theta = theta(:);
   parameterCount = length(theta);
@@ -43,14 +46,14 @@ function assessment = assessProposalDistribution( ...
     grid = grid(I);
     logPosterior = logPosterior(I);
 
-    logGaussianDensity = ...
+    logPosteriorApproximation = ...
       computeLogGaussianDensity(grid, theta(i), deviation(i)) - ...
       computeLogGaussianDensity(theta(i), theta(i), deviation(i)) + ...
       logPosteriorMode;
 
     assessment(i).grid = grid;
     assessment(i).logPosterior = logPosterior;
-    assessment(i).logGaussianDensity = logGaussianDensity;
+    assessment(i).logPosteriorApproximation = logPosteriorApproximation;
   end
 end
 

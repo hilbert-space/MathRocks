@@ -12,7 +12,7 @@ function plot(this, index)
   X = DF(:, 3);
   Y = DF(:, 4);
 
-  figure('Position', [ 250, 250, 500, 500 ]);
+  figure('Position', [ 100, 100, 600, 600 ]);
 
   for i = 1:size(F, 1)
     h = draw(F(i, 3), F(i, 4), DS, DS);
