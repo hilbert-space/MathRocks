@@ -34,5 +34,4 @@ function plotProposalAssessment(theta, assessment)
   end
 
   Plot.legend('Log-posterior', 'Approximated log-posterior');
-  Plot.landscape;
 end
