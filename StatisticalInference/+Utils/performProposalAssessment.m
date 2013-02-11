@@ -6,8 +6,8 @@ function assessment = performProposalAssessment( ...
 
   assert(rem(pointCount, 2) == 0); % Keep it even!
 
-  theta = theta(:);
   parameterCount = length(theta);
+  logPosteriorMode = computeLogPosterior(theta);
 
   %
   % Compute approximate conditional standard deviations.
@@ -31,8 +31,6 @@ function assessment = performProposalAssessment( ...
     logPosterior = zeros(1, length(grid));
 
     point = theta;
-    logPosteriorMode = computeLogPosterior(point);
-
     for j = 1:length(grid)
       point(i) = grid(j);
       logPosterior(j) = computeLogPosterior(point);
