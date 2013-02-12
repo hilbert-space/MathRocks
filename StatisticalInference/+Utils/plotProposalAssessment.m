@@ -6,6 +6,7 @@ function plotProposalAssessment(theta, assessment)
 
   c1 = Color.pick(1);
   c2 = Color.pick(2);
+  c3 = Color.pick(5);
 
   for i = 1:parameterCount
     subplot(rows, cols, i);
@@ -24,7 +25,7 @@ function plotProposalAssessment(theta, assessment)
     xBound = [ grid(1), grid(end) ];
     xBound = round(xBound * 1000) / 1000;
 
-    line(theta(i) * [ 1 1 ], yBound, 'Color', 'k');
+    line(theta(i) * [ 1 1 ], yBound, 'Color', c3);
 
     Plot.limit(xBound, yBound);
     set(gca, 'XTick', xBound);
@@ -33,5 +34,5 @@ function plotProposalAssessment(theta, assessment)
     drawnow;
   end
 
-  Plot.legend('Log-posterior', 'Approximated log-posterior');
+  Plot.legend('Log-posterior', 'Approximated log-posterior', 'Log-posterior mode');
 end
