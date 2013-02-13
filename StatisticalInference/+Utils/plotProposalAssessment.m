@@ -22,8 +22,7 @@ function plotProposalAssessment(theta, assessment)
 
     yBound = ylim;
     yBound = [ floor(yBound(1)), ceil(yBound(2)) ];
-    xBound = [ grid(1), grid(end) ];
-    xBound = round(xBound * 1000) / 1000;
+    xBound = [ floor(grid(1) * 100), ceil(grid(end) * 100) ] / 100;
 
     line(theta(i) * [ 1 1 ], yBound, 'Color', c3);
 
