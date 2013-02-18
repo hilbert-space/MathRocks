@@ -1,4 +1,6 @@
-function varargout = cache(filename, f, varargin)
+function varargout = cache(stamp, f, varargin)
+  filename = [ stamp, '.mat' ];
+
   if File.exist(filename)
     load(filename);
   else
