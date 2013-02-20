@@ -31,18 +31,8 @@ function assessment = performProposalAssessment( ...
     Grid(i, i, :) = grid;
   end
 
-  if options.get('parallelize', false)
-    Grid = reshape(Grid, parameterCount, []);
-    logPosterior = zeros(1, size(Grid, 2));
-    parfor i = 1:size(Grid, 2)
-      logPosterior(i) = feval(logPosteriorFunction, Grid(:, i));
-    end
-    logPosterior = reshape(logPosterior, parameterCount, pointCount + 1);
-    Grid = reshape(Grid, parameterCount, parameterCount, pointCount + 1);
-  else
-    logPosterior = reshape(feval(logPosteriorFunction, ...
-      reshape(Grid, parameterCount, [])), parameterCount, pointCount + 1);
-  end
+  logPosterior = reshape(feval(logPosteriorFunction, ...
+    reshape(Grid, parameterCount, [])), parameterCount, pointCount + 1);
 
   for i = 1:parameterCount
     %
