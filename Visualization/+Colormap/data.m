@@ -1,6 +1,5 @@
-function values = map(localData, globalData, values)
+function values = data(localData, globalData, values)
   if nargin < 3, values = jet; end
-  if nargin == 0, return; end
 
   count = size(values, 1);
 
@@ -26,4 +25,6 @@ function values = map(localData, globalData, values)
   end
 
   values = values((1 + lower):(end - upper), :);
+
+  colormap(values);
 end

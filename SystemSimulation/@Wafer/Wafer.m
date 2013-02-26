@@ -1,5 +1,8 @@
 classdef Wafer < handle
   properties (SetAccess = 'private')
+    rowCount
+    columnCount
+
     floorplan
     width
     height
@@ -15,7 +18,7 @@ classdef Wafer < handle
 
   methods
     function this = Wafer(varargin)
-      options = Options('columns', 20, 'rows', 20, varargin{:});
+      options = Options('rowCount', 20, 'columnCount', 20, varargin{:});
       this.construct(options);
     end
 
