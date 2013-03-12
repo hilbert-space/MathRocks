@@ -6,11 +6,6 @@ level = 3;
 order = 6;
 rule = 6;
 
-order
-level
-log2(order + 1) - 1
-2^(level + 1) - 1
-
 subplot(1, 2, 1);
 color = Color.pick(1);
 

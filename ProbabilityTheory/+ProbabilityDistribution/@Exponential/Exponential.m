@@ -21,12 +21,16 @@ classdef Exponential < ProbabilityDistribution.Base
       data = exprnd(this.mu, samples, dimension);
     end
 
-    function data = apply(this, data)
+    function data = cdf(this, data)
       data = expcdf(data, this.mu);
     end
 
-    function data = invert(this, data)
+    function data = icdf(this, data)
       data = expinv(data, this.mu);
+    end
+
+    function data = pdf(this, data)
+      error('Not implemented yet.');
     end
   end
 end

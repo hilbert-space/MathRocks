@@ -15,9 +15,9 @@ classdef Heterogeneous < RandomVariables.Base
       this.correlation = correlation;
     end
 
-    function data = invert(this, data)
+    function data = icdf(this, data)
       for i = 1:this.dimension
-        data(:, i) = this.distributions{i}.invert(data(:, i));
+        data(:, i) = this.distributions{i}.icdf(data(:, i));
       end
     end
 

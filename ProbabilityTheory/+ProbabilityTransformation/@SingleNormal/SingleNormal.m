@@ -20,12 +20,12 @@ classdef SingleNormal < ProbabilityTransformation.Base
       %
       % Uniform RV.
       %
-      data = this.distribution.apply(data);
+      data = this.distribution.cdf(data);
 
       %
       % The RV with the desired distribution.
       %
-      data = this.variables.invert(data);
+      data = this.variables.icdf(data);
     end
   end
 

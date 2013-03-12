@@ -34,12 +34,12 @@ classdef Beta < ProbabilityDistribution.Base
       data = data * (this.b - this.a) + this.a;
     end
 
-    function data = apply(this, data)
+    function data = cdf(this, data)
       data = (data - this.a) / (this.b - this.a);
       data = betacdf(data, this.alpha, this.beta);
     end
 
-    function data = invert(this, data)
+    function data = icdf(this, data)
       data = betainv(data, this.alpha, this.beta);
       data = data * (this.b - this.a) + this.a;
     end

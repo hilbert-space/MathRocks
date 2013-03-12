@@ -20,7 +20,7 @@ classdef Uniform < ProbabilityTransformation.Base
       %
       % Independent RVs with the desired distributions.
       %
-      data = this.variables.invert(data);
+      data = this.variables.icdf(data);
     end
   end
 

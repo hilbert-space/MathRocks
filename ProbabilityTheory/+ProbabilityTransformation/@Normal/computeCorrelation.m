@@ -29,8 +29,8 @@ function correlation = computeCorrelation(this, rvs)
 
       rho0 = rvs.correlation(i, j);
 
-      weightsOne = weights .* (rv1.invert(distribution.apply(nodes(:, 1))) - mu1);
-      two = @(rho) rv2.invert(distribution.apply(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
+      weightsOne = weights .* (rv1.icdf(distribution.cdf(nodes(:, 1))) - mu1);
+      two = @(rho) rv2.icdf(distribution.cdf(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
       goal = @(rho) abs(rho0 - sum(weightsOne .* two(rho)) / sigma1 / sigma2);
 
       [ correlation(i, j), ~, ~, out ] = ...

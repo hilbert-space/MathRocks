@@ -36,4 +36,4 @@ corr(data)
 
 %% Draw the result.
 %
-observeData(data, 'method', 'histogram', 'draw', true);
+Data.observe(data, 'method', 'histogram', 'draw', true);

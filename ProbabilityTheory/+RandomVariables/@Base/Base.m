@@ -10,7 +10,7 @@ classdef Base < handle
   end
 
   methods (Abstract)
-    data = invert(this, data)
+    data = icdf(this, data)
     result = isIndependent(this)
   end
 end

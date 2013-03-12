@@ -23,12 +23,16 @@ classdef Gamma < ProbabilityDistribution.Base
       data = gamrnd(this.a, this.b, samples, dimension);
     end
 
-    function data = apply(this, data)
+    function data = cdf(this, data)
       data = gamcdf(data, this.a, this.b);
     end
 
-    function data = invert(this, data)
+    function data = icdf(this, data)
       data = gaminv(data, this.a, this.b);
+    end
+
+    function data = pdf(this, data)
+      error('Not implemented yet.');
     end
   end
 end

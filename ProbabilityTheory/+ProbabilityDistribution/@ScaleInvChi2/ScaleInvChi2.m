@@ -37,11 +37,11 @@ classdef ScaleInvChi2 < ProbabilityDistribution.Base
     end
 
     function data = cdf(this, data)
-      error('Not implemented.');
+      error('Not implemented yet.');
     end
 
     function data = icdf(this, data)
-      error('Not implemented.');
+      error('Not implemented yet.');
     end
 
     function data = pdf(this, data)

@@ -54,12 +54,12 @@ classdef Normal < ProbabilityTransformation.Base
       %
       % Dependent uniform RVs.
       %
-      data = this.distribution.apply(data);
+      data = this.distribution.cdf(data);
 
       %
       % Dependent RVs with the desired distributions.
       %
-      data = this.variables.invert(data);
+      data = this.variables.icdf(data);
     end
   end
 

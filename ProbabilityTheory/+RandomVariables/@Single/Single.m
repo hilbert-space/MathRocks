@@ -9,8 +9,8 @@ classdef Single < RandomVariables.Base
       this.distribution = distribution;
     end
 
-    function data = invert(this, data)
-      data = this.distribution.invert(data);
+    function data = icdf(this, data)
+      data = this.distribution.icdf(data);
     end
 
     function result = isIndependent(this)

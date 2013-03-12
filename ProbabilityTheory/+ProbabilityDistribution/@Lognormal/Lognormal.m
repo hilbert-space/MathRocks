@@ -24,11 +24,11 @@ classdef Lognormal < ProbabilityDistribution.Base
       data = lognrnd(this.mu, this.sigma, samples, dimension);
     end
 
-    function data = apply(this, data)
+    function data = cdf(this, data)
       data = logncdf(data, this.mu, this.sigma);
     end
 
-    function data = invert(this, data)
+    function data = icdf(this, data)
       data = logninv(data, this.mu, this.sigma);
     end
 
