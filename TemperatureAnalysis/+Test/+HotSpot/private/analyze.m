@@ -22,7 +22,7 @@ function analyze(method)
   time = tic;
   for i = 1:iterationCount
     [ T, stats ] = hotspot.compute(Pdyn, ...
-      'method', 'DynamicSteadyStateWithLeakage', 'leakage', leakage);
+      'method', 'TransientWithLeakage', 'leakage', leakage);
   end
   time = toc(time) / iterationCount;
   fprintf('Average computational time: %.4f s\n', time);
