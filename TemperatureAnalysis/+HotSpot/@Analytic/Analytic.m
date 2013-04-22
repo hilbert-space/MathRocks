@@ -29,20 +29,20 @@ classdef Analytic < HotSpot.Base
 
     %
     % Eigenvalue decomposition of Gt
-    % A = Q * L * Q^T
+    % A = U * L * U^T
     %
     L
-    Q
-    QT
+    U
+    UT
 
     %
-    % E = exp(A * t) = Q * diag(exp(li * dt)) * Q^T
+    % E = exp(A * t) = U * diag(exp(li * dt)) * U^T
     %
     E
 
     %
     % D = A^(-1) * (exp(A * t) - I) * B
-    %   = Q * diag((exp(li * t) - 1) / li) * Q^T * B
+    %   = U * diag((exp(li * t) - 1) / li) * U^T * B
     %
     D
   end
@@ -69,69 +69,20 @@ classdef Analytic < HotSpot.Base
       B = this.Cm12 * M;
       this.BT = B';
 
-      [ Q, L ] = eig(this.A);
+      [ U, L ] = eig(this.A);
 
       this.L = diag(L);
-      this.Q = Q;
-      this.QT = Q';
+      this.U = U;
+      this.UT = U';
 
-      this.E = this.Q * diag(exp(dt * this.L)) * this.QT;
-      this.D = this.Q * diag((exp(dt * this.L) - 1) ./ this.L) * this.QT * B;
+      this.E = this.U * diag(exp(dt * this.L)) * this.UT;
+      this.D = this.U * diag((exp(dt * this.L) - 1) ./ this.L) * this.UT * B;
     end
 
-    function [ T, Pleak ] = compute(this, Pdyn, varargin)
-      if nargin == 2
-        T = this.computeRegular(Pdyn);
-      else
-        [ T, Pleak ] = this.computeWithLeakage(Pdyn, varargin{:});
-      end
-    end
-  end
-
-  methods (Access = 'protected')
-    function T = computeRegular(this, P)
-      [ processorCount, stepCount ] = size(P);
-      assert(processorCount == this.processorCount);
-
-      E = this.E;
-      D = this.D;
-      BT = this.BT;
-      Tamb = this.ambientTemperature;
-
-      T = zeros(processorCount, stepCount);
-
-      X = D * P(:, 1);
-      T(:, 1) = BT * X + Tamb;
-
-      for i = 2:stepCount
-        X = E * X + D * P(:, i);
-        T(:, i) = BT * X + Tamb;
-      end
-    end
-
-    function [ T, Pleak ] = computeWithLeakage(this, Pdyn, leakage, L)
-      [ processorCount, stepCount ] = size(Pdyn);
-      assert(processorCount == this.processorCount);
-
-      if nargin < 4, L = leakage.Lnom; end
-
-      E = this.E;
-      D = this.D;
-      BT = this.BT;
-      Tamb = this.ambientTemperature;
-
-      T = zeros(processorCount, stepCount);
-      Pleak = zeros(processorCount, stepCount);
-
-      Pleak(:, 1) = leakage.evaluate(L, Tamb);
-      X = D * (Pdyn(:, 1) + Pleak(:, 1));
-      T(:, 1) = BT * X + Tamb;
-
-      for i = 2:stepCount
-        Pleak(:, i) = leakage.evaluate(L, T(:, i - 1));
-        X = E * X + D * (Pdyn(:, i) + Pleak(:, i));
-        T(:, i) = BT * X + Tamb;
-      end
+    function varargout = compute(this, Pdyn, varargin)
+      options = Options(varargin{:});
+      varargout = cell(1, nargout);
+      [ varargout{:} ] = this.([ 'compute', options.method ])(Pdyn, options);
     end
   end
 end
