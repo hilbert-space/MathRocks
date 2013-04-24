@@ -11,7 +11,7 @@ function [ T, stats ] = computeDynamicSteadyStateWithLeakage(this, Pdyn, options
   Lambda = this.L;
 
   Tamb = this.ambientTemperature;
-  samplingInterval = this.samplingInterval;
+  dt = this.samplingInterval;
 
   leak = options.leakage.evaluate;
   L = options.get('L', options.leakage.Lnom);
@@ -31,7 +31,7 @@ function [ T, stats ] = computeDynamicSteadyStateWithLeakage(this, Pdyn, options
       W(:, i) = E * W(:, i - 1) + Q(:, i);
     end
 
-    X(:, 1) = U * diag(1 ./ (1 - exp(samplingInterval * ...
+    X(:, 1) = U * diag(1 ./ (1 - exp(dt * ...
       stepCount * Lambda))) * UT * W(:, stepCount);
 
     for i = 2:stepCount
