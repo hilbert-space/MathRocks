@@ -1,11 +1,5 @@
-function analyze(method)
-  use('Vendor', 'DataHash');
-
-  iterationCount = 100;
-
-  Pdyn = 2 * dlmread(File.join('+Test', 'Assets', '04.ptrace'), '', 1, 0).';
-
-  use('SystemSimulation');
+function analyze(method, analysis, iterationCount)
+  Pdyn = 2 * dlmread(File.join('+Test', 'Assets', '004.ptrace'), '', 1, 0).';
 
   leakage = LeakagePower( ...
     'dynamicPower', Pdyn, ...
@@ -13,16 +7,16 @@ function analyze(method)
     'order', [ 1, 2 ], ...
     'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
 
-  hotspot = HotSpot.(method)( ...
-    'floorplan', File.join('+Test', 'Assets', '04.flp'), ...
+  hotspot = Temperature.(method).(analysis)( ...
+    'floorplan', File.join('+Test', 'Assets', '004.flp'), ...
     'config', File.join('+Test', 'Assets', 'hotspot.config'), ...
-    'line', 'sampling_intvl 1e-3');
+    'line', 'sampling_intvl 1e-3', ...
+    'leakage', leakage);
 
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount
-    [ T, stats ] = hotspot.compute(Pdyn, ...
-      'method', 'TransientWithLeakage', 'leakage', leakage);
+    [ T, output ] = hotspot.compute(Pdyn);
   end
   time = toc(time) / iterationCount;
   fprintf('Average computational time: %.4f s\n', time);
@@ -50,6 +44,6 @@ function analyze(method)
   for i = 1:hotspot.processorCount
     color = Color.pick(i);
     line(time, Pdyn(i, :), 'Color', color);
-    line(time, stats.Pleak(i, :), 'Color', color, 'LineStyle', '--');
+    line(time, output.Pleak(i, :), 'Color', color, 'LineStyle', '--');
   end
 end

@@ -1,4 +1,4 @@
-function T = computeTransient(this, P, options)
+function T = computeTransient(this, P, varargin)
   [ processorCount, stepCount ] = size(P);
   assert(processorCount == this.processorCount);
 

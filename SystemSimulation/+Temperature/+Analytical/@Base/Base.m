@@ -1,4 +1,4 @@
-classdef Analytic < HotSpot.Base
+classdef Base < Temperature.LeakageAware
   properties (Access = 'protected')
     %
     % Original system:
@@ -48,8 +48,8 @@ classdef Analytic < HotSpot.Base
   end
 
   methods
-    function this = Analytic(varargin)
-      this = this@HotSpot.Base(varargin{:});
+    function this = Base(varargin)
+      this = this@Temperature.LeakageAware(varargin{:});
 
       nodeCount = this.nodeCount;
       processorCount = this.processorCount;
@@ -77,12 +77,6 @@ classdef Analytic < HotSpot.Base
 
       this.E = this.U * diag(exp(dt * this.L)) * this.UT;
       this.D = this.U * diag((exp(dt * this.L) - 1) ./ this.L) * this.UT * B;
-    end
-
-    function varargout = compute(this, Pdyn, varargin)
-      options = Options(varargin{:});
-      varargout = cell(1, nargout);
-      [ varargout{:} ] = this.([ 'compute', options.method ])(Pdyn, options);
     end
   end
 end

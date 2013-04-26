@@ -1,4 +1,4 @@
-function T = computeDynamicSteadyState(this, Pdyn, varargin)
+function T = computeWithoutLeakage(this, Pdyn, options)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);

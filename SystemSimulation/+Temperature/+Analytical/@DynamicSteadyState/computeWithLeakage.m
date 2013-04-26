@@ -1,4 +1,6 @@
-function [ T, stats ] = computeDynamicSteadyStateWithLeakage(this, Pdyn, options)
+function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
+  options = Options(varargin{:});
+
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
@@ -13,8 +15,9 @@ function [ T, stats ] = computeDynamicSteadyStateWithLeakage(this, Pdyn, options
   Tamb = this.ambientTemperature;
   dt = this.samplingInterval;
 
-  leak = options.leakage.evaluate;
-  L = options.get('L', options.leakage.Lnom);
+  leakage = this.leakage;
+  leak = leakage.evaluate;
+  L = options.get('L', leakage.Lnom);
 
   iterationLimit = options.get('iterationLimit', 10);
   tolerance = options.get('tolerance', 0.5);
@@ -56,6 +59,6 @@ function [ T, stats ] = computeDynamicSteadyStateWithLeakage(this, Pdyn, options
     if delta < tolerance, break; end
   end
 
-  stats.iterationCount = i;
-  stats.Pleak = Pleak;
+  output.iterationCount = i;
+  output.Pleak = Pleak;
 end
