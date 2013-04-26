@@ -22,10 +22,13 @@ classdef LeakageAware < Temperature.HotSpot
         [ T, output ] = computeWithLeakage(this, Pdyn, varargin{:});
       end
     end
-  end
 
-  methods (Abstract)
-    T = computeWithoutLeakage(this, Pdyn, varargin)
-    [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
+    function T = computeWithoutLeakage(this, Pdyn, varargin)
+      error('Not implemented yet.');
+    end
+
+    function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
+      error('Not implemented yet.');
+    end
   end
 end
