@@ -1,5 +1,4 @@
-function [ logI, Lsym, Tsym, Ldata, Tdata, Idata, stats ] = construct(options)
-  filename = options.filename;
+function [ evaluate, stats ] = construct(this, Ldata, Tdata, Idata, options)
   order = options.order;
   scale = options.scale;
 
@@ -7,12 +6,6 @@ function [ logI, Lsym, Tsym, Ldata, Tdata, Idata, stats ] = construct(options)
 
   assert(numel(order) == 2);
   assert(size(scale, 1) == 2 && size(scale, 2) == maxOrder + 1);
-
-  data = dlmread(filename, '\t', 1, 0);
-
-  Ldata = data(:, 1);
-  Tdata = Utils.toKelvin(data(:, 2));
-  Idata = data(:, 3);
 
   [ fitresult, ~, expectation, deviation ] = ...
     performPolynomialFit(Ldata, Tdata, log(Idata), order);
@@ -49,4 +42,38 @@ function [ logI, Lsym, Tsym, Ldata, Tdata, Idata, stats ] = construct(options)
 
     logI = logI + alpha * values(i) * Lnorm^Lorder * Tnorm^Torder;
   end
+
+  if options.has('dynamicPower')
+    Pmean = this.PleakPdyn * mean(options.dynamicPower(:));
+    P0 = exp(double(subs(subs(logI, Lsym, this.Lnom), Tsym, this.Tref)));
+    powerScale = Pmean / P0;
+  else
+    powerScale = 1;
+  end
+
+  [ arguments, body ] = Utils.toFunctionString(logI, Lsym, Tsym);
+  string = sprintf('@(%s)%s*exp(%s)', ...
+    arguments, num2string(powerScale, 'longg'), body);
+
+  evaluate = str2func(string);
+end
+
+function [ fitresult, gof, expectation, deviation ] = ...
+  performPolynomialFit(L, T, I, order)
+
+  [ X, Y, Z ] = prepareSurfaceData(L, T, I);
+  X = [ X, Y ];
+  Y = Z;
+
+  type = fittype(sprintf('poly%d%d', order(1), order(2)));
+
+  count = order(1) * order(2) + 1;
+
+  options = fitoptions(type);
+  options.Normalize = 'off';
+  options.Lower = -Inf(1, count);
+  options.Upper =  Inf(1, count);
+
+  [ X, expectation, deviation ] = curvefit.normalize(X);
+  [ fitresult, gof ] = fit(X, Y, type, options);
 end

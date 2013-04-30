@@ -1,9 +1,6 @@
 setup;
 
-use('TemperatureAnalysis');
-use('Vendor', 'DataHash');
-
-leakage = LeakagePower( ...
+leakage = LeakagePowerjPolynomialRegression( ...
   'filename', File.join('+Test', 'Assets', 'inverter_45nm.leak'), ...
   'order', [ 1 2 ], ...
   'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
@@ -13,10 +10,9 @@ plot(leakage);
 
 Lnom = LeakagePower.Lnom;
 Ldev = 0.05 * Lnom;
-Lmin = Lnom - 4 * Ldev;
-Lmax = Lnom + 4 * Ldev;
+Lmin = Lnom - 5 * Ldev;
+Lmax = Lnom + 5 * Ldev;
 
-Tnom = Utils.toKelvin(27);
 Tmin = Utils.toKelvin(0);
 Tmax = Utils.toKelvin(200);
 
