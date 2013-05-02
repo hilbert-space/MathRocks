@@ -6,8 +6,6 @@ classdef LinearInterpolation < LeakagePower.Base
 
     function P = evaluate(this, L, T)
       output = this.output;
-      L = (L - output.expectation(1)) / output.deviation(1);
-      T = (T - output.expectation(2)) / output.deviation(2);
       P = output.powerScale * feval(output.fitobject, L, T);
     end
   end

@@ -12,10 +12,14 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   leakage = this.leakage;
   L = options.get('L', leakage.Lnom);
 
+  if isscalar(L)
+    L = L * ones(processorCount, 1);
+  end
+
   T = zeros(processorCount, stepCount);
   Pleak = zeros(processorCount, stepCount);
 
-  Pleak(:, 1) = leakage.evaluate(L, Tamb);
+  Pleak(:, 1) = leakage.evaluate(L, Tamb * ones(processorCount, 1));
   X = D * (Pdyn(:, 1) + Pleak(:, 1));
   T(:, 1) = BT * X + Tamb;
 

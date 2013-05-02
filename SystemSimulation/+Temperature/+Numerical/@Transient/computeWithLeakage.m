@@ -12,6 +12,10 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   leakage = this.leakage;
   L = options.get('L', leakage.Lnom);
 
+  if isscalar(L)
+    L = L * ones(processorCount, 1);
+  end
+
   T = zeros(processorCount, stepCount);
   Pleak = zeros(processorCount, stepCount);
 

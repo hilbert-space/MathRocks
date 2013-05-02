@@ -1,5 +1,7 @@
 setup;
 
+iterationCount = 1e3;
+
 leakage = LeakagePower.PolynomialRegression( ...
   'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000.leak'), ...
   'order', [ 1 2 ], ...
@@ -31,7 +33,12 @@ for i = 1:100
   end
 end
 
-i = leakage.evaluate(l, t);
+fprintf('Running %d iterations...\n', iterationCount);
+time = tic;
+for k = 1:iterationCount
+  i = leakage.evaluate(l, t);
+end
+fprintf('Average computational time: %.4f s\n', toc(time) / iterationCount);
 
 hold on;
 

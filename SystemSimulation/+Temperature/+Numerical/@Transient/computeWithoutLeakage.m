@@ -7,7 +7,7 @@ function T = computeWithoutLeakage(this, P, varargin)
   dt = this.samplingInterval;
   Tamb = this.ambientTemperature;
 
-  T = zeros(stepCount, processorCount);
+  T = zeros(processorCount, stepCount);
   T0 = Tamb * ones(1, this.nodeCount);
 
   for i = 1:stepCount
@@ -15,8 +15,6 @@ function T = computeWithoutLeakage(this, P, varargin)
       At * (Tt - Tamb) + Bt * P(:, i), [ 0, dt ], T0);
 
     T0 = T0(end, :);
-    T(i, :) = T0(1:processorCount);
+    T(:, i) = T0(1:processorCount);
   end
-
-  T = transpose(T);
 end

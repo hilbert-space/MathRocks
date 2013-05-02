@@ -1,4 +1,4 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
+function [ Tcurrent, output ] = computeWithLeakage(this, Pdyn, varargin)
   options = Options(varargin{:});
 
   nodeCount = this.nodeCount;
@@ -18,7 +18,14 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   leakage = this.leakage;
   L = options.get('L', leakage.Lnom);
 
+  if isscalar(L)
+    L = L * ones(size(Pdyn));
+  else
+    L = Utils.replicate(L(:), 1, stepCount);
+  end
+
   iterationLimit = options.get('iterationLimit', 10);
+  temperatureLimit = options.get('temperatureLimit', Inf);
   tolerance = options.get('tolerance', 0.5);
 
   W = zeros(nodeCount, stepCount);
@@ -43,21 +50,31 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     T = BT * X + Tamb;
   end
 
-  k = 1;
-
-  Pleak = leakage.evaluate(L, Tamb * ones(size(Pdyn)));
-  T = computeOne(Pdyn + Pleak);
+  Pcurrent = Pdyn + leakage.evaluate(L, Tamb * ones(size(Pdyn)));
+  Tcurrent = computeOne(Pcurrent);
 
   for k = 2:iterationLimit
-    Pleak = leakage.evaluate(L, T);
-    Tnew = computeOne(Pdyn + Pleak);
+    Tlast = Tcurrent;
 
-    delta = max(abs(Tnew(:) - T(:)));
-    T = Tnew;
+    Pcurrent = Pdyn + leakage.evaluate(L, Tcurrent);
+    Tcurrent = computeOne(Pcurrent);
 
-    if delta < tolerance, break; end
+    if max(max(Tcurrent)) > temperatureLimit
+      %
+      % Thermal runaway
+      %
+      k = iterationLimit;
+      break;
+    end
+
+    if max(max(abs(Tcurrent - Tlast))) < tolerance
+      %
+      % Successful convergence
+      %
+      break;
+    end
   end
 
   output.iterationCount = k;
-  output.Pleak = Pleak;
+  output.Pleak = Pcurrent - Pdyn;
 end
