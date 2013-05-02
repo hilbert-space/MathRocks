@@ -16,7 +16,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   dt = this.samplingInterval;
 
   leakage = this.leakage;
-  leak = leakage.evaluate;
   L = options.get('L', leakage.Lnom);
 
   iterationLimit = options.get('iterationLimit', 10);
@@ -44,13 +43,13 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     T = BT * X + Tamb;
   end
 
-  i = 1;
+  k = 1;
 
-  Pleak = leak(L, Tamb * ones(size(Pdyn)));
+  Pleak = leakage.evaluate(L, Tamb * ones(size(Pdyn)));
   T = computeOne(Pdyn + Pleak);
 
-  for i = 2:iterationLimit
-    Pleak = leak(L, T);
+  for k = 2:iterationLimit
+    Pleak = leakage.evaluate(L, T);
     Tnew = computeOne(Pdyn + Pleak);
 
     delta = max(abs(Tnew(:) - T(:)));
@@ -59,6 +58,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     if delta < tolerance, break; end
   end
 
-  output.iterationCount = i;
+  output.iterationCount = k;
   output.Pleak = Pleak;
 end

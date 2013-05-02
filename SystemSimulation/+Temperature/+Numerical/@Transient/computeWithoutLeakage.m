@@ -1,4 +1,4 @@
-function T = computeTransient(this, P, varargin)
+function T = computeWithoutLeakage(this, P, varargin)
   [ processorCount, stepCount ] = size(P);
   assert(processorCount == this.processorCount);
 
