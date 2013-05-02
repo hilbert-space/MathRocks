@@ -1,20 +1,20 @@
 setup;
 
-leakage = LeakagePowerjPolynomialRegression( ...
-  'filename', File.join('+Test', 'Assets', 'inverter_45nm.leak'), ...
+leakage = LeakagePower.PolynomialRegression( ...
+  'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000.leak'), ...
   'order', [ 1 2 ], ...
-  'scale', [ 1, 0.7, 0; 1, 1, 1 ]);
+  'scale', [ 1, 1, 1; 1, 1, 1 ]);
 
 display(leakage);
 plot(leakage);
 
-Lnom = LeakagePower.Lnom;
+Lnom = LeakagePower.Base.Lnom;
 Ldev = 0.05 * Lnom;
 Lmin = Lnom - 5 * Ldev;
 Lmax = Lnom + 5 * Ldev;
 
 Tmin = Utils.toKelvin(0);
-Tmax = Utils.toKelvin(200);
+Tmax = Utils.toKelvin(1000);
 
 L = linspace(Lmin, Lmax, 100);
 T = linspace(Tmin, Tmax, 100);

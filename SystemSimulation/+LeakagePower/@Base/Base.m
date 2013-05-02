@@ -14,14 +14,12 @@ classdef Base < handle
     Tref = Utils.toKelvin(120);
   end
 
-  properties (SetAccess = 'private')
-    evaluate
-
+  properties (SetAccess = 'protected')
     Ldata
     Tdata
     Idata
 
-    stats
+    output
   end
 
   methods
@@ -35,22 +33,24 @@ classdef Base < handle
       this.Idata = data(:, 3);
 
       filename = File.temporal([ 'LeakagePower_', ...
-        DataHash(Utils.toString(options)), '.mat' ]);
+        DataHash({ class(this), Utils.toString(options) }), '.mat' ]);
 
       if File.exist(filename);
         load(filename);
       else
-        [ evaluate, stats ] = this.construct( ...
-          this.Ldata, this.Tdata, this.Idata, options);
-        save(filename, 'evaluate', 'stats', '-v7.3');
+        output = this.construct(this.Ldata, this.Tdata, this.Idata, options);
+        save(filename, 'output', '-v7.3');
       end
 
-      this.evaluate = evaluate;
-      this.stats = stats;
+      this.output = output;
     end
   end
 
+  methods (Abstract)
+    P = evaluate(this, L, T)
+  end
+
   methods (Abstract, Access = 'protected')
-    [ evaluate, stats ] = construct(this, Ldata, Tdata, Idata, options)
+    output = construct(this, Ldata, Tdata, Idata, options)
   end
 end
