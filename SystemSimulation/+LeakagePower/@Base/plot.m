@@ -26,7 +26,7 @@ function plot(this)
     'Parent', h);
 
   Plot.title('Leakage current (NRMSE %.2f%%)', error * 100);
-  Plot.label('Channel length, mm', 'Temperature, C', ...
+  Plot.label('Channel length, m', 'Temperature, C', ...
     'Leakage current, A');
 
   grid on;
