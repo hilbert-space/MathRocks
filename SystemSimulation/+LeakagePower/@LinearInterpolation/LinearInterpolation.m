@@ -6,7 +6,8 @@ classdef LinearInterpolation < LeakagePower.Base
 
     function P = evaluate(this, L, T)
       output = this.output;
-      P = output.powerScale * feval(output.fitobject, L, T);
+      P = output.powerScale * ...
+        interpolate(output.Lgrid, output.Tgrid, output.Igrid, L, T);
     end
   end
 
