@@ -2,8 +2,8 @@ setup;
 
 iterationCount = 1e3;
 
-leakage = LeakagePower.LinearInterpolation( ...
-  'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000.leak'));
+leakage = LeakagePower.LinearInterpolation('filename', ...
+  File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_08.leak'));
 
 display(leakage);
 plot(leakage);

@@ -15,10 +15,7 @@ classdef Base < handle
   end
 
   properties (SetAccess = 'protected')
-    Ldata
-    Tdata
-    Idata
-
+    filename
     output
   end
 
@@ -26,11 +23,7 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      data = dlmread(options.filename, '\t', 1, 0);
-
-      this.Ldata = data(:, 1);
-      this.Tdata = Utils.toKelvin(data(:, 2));
-      this.Idata = data(:, 3);
+      this.filename = options.filename;
 
       filename = File.temporal([ 'LeakagePower_', ...
         DataHash({ class(this), Utils.toString(options) }), '.mat' ]);
@@ -38,7 +31,8 @@ classdef Base < handle
       if File.exist(filename);
         load(filename);
       else
-        output = this.construct(this.Ldata, this.Tdata, this.Idata, options);
+        [ Ldata, Tdata, Idata ] = LeakagePower.Base.load(this.filename);
+        output = this.construct(Ldata, Tdata, Idata, options);
         save(filename, 'output', '-v7.3');
       end
 
@@ -52,5 +46,14 @@ classdef Base < handle
 
   methods (Abstract, Access = 'protected')
     output = construct(this, Ldata, Tdata, Idata, options)
+  end
+
+  methods (Static)
+    function [ Ldata, Tdata, Idata ] = load(filename)
+      data = dlmread(filename, '\t', 1, 0);
+      Ldata = data(:, 1);
+      Tdata = Utils.toKelvin(data(:, 2));
+      Idata = data(:, 3);
+    end
   end
 end

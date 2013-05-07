@@ -1,7 +1,5 @@
 function plot(this)
-  Ldata = this.Ldata;
-  Tdata = this.Tdata;
-  Idata = this.Idata;
+  [ Ldata, Tdata, Idata ] = LeakagePower.Base.load(this.filename);
   Ipred = this.evaluate(Ldata, Tdata);
 
   error = Error.computeNRMSE(Idata, Ipred);
