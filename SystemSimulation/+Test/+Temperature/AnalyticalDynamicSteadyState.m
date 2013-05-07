@@ -1,3 +1,3 @@
 function AnalyticalDynamicSteadyState
-  analyze('Analytical', 'DynamicSteadyState', 100);
+  analyze('Analytical', 'DynamicSteadyState', 10);
 end

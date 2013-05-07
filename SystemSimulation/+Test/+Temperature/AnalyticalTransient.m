@@ -1,3 +1,3 @@
 function AnalyticalTransient
-  analyze('Analytical', 'Transient', 100);
+  analyze('Analytical', 'Transient', 10);
 end

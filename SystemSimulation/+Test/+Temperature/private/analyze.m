@@ -3,11 +3,8 @@ function analyze(method, analysis, iterationCount)
 
   Pdyn = 2 * dlmread(File.join('+Test', 'Assets', '004.ptrace'), '', 1, 0).';
 
-  leakage = LeakagePower.PolynomialRegression( ...
-    'dynamicPower', Pdyn, ...
-    'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000.leak'), ...
-    'order', [ 1, 2 ], ...
-    'scale', [ 1, 1, 1; 1, 1, 1 ]);
+  leakage = LeakagePower.LinearInterpolation('dynamicPower', Pdyn, ...
+    'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_08.leak'));
 
   temperature = Temperature.(method).(analysis)( ...
     'floorplan', File.join('+Test', 'Assets', '004.flp'), ...
@@ -25,4 +22,13 @@ function analyze(method, analysis, iterationCount)
 
   Utils.plotPowerTemperature(Pdyn, output.Pleak, ...
     T, temperature.samplingInterval);
+
+  Ptot  = mean(Pdyn(:) + output.Pleak(:));
+  Pdyn  = mean(Pdyn(:));
+  Pleak = mean(output.Pleak(:));
+
+  fprintf('Average total power:        %.2f W\n', Ptot);
+  fprintf('Average dynamic power:      %.2f W\n', Pdyn);
+  fprintf('Average leakage power:      %.2f W\n', Pleak);
+  fprintf('Leakage to dynamic ratio:   %.2f\n', Pleak / Pdyn);
 end
