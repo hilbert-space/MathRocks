@@ -6,7 +6,7 @@ classdef LinearInterpolation < LeakagePower.Base
 
     function P = evaluate(this, L, T)
       output = this.output;
-      P = output.powerScale * output.F(L.', T.').';
+      P = output.powerScale * reshape(output.F(L(:), T(:)), size(L));
     end
   end
 
