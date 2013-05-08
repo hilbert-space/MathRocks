@@ -62,7 +62,13 @@ function string = arrayToString(object, varargin)
       end
       string = [ '[ ', string, ' ]' ];
     else
-      string = sprintf('[ %d entries ]', count);
+      string = sprintf('[ %d entries: %s', count, ...
+        numberToString(object(1), varargin{:}));
+      for i = 2:10
+        string = sprintf('%s, %s', string, ...
+          numberToString(object(i), varargin{:}));
+      end
+      string = [ string, ', ... ]' ];
     end
   end
 end
