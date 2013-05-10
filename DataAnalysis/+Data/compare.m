@@ -50,7 +50,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     assert(nnz(mcx - sdx) == 0, 'The supports are invalid.');
 
-    localError(i) = Error.computeNRMSE(one, two);
+    localError(i) = Error.computeRMSE(one, two);
 
     if ~draw, continue; end
 
@@ -62,12 +62,12 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     end
 
     Data.draw(mcx, one, two, options);
-    Plot.title('Dimension %d (NRMSE %.2f %%)', i, localError(i) * 100);
+    Plot.title('Dimension %d (RMSE %.2f)', i, localError(i));
     labels = options.get('labels', {});
     Plot.legend(labels{:});
   end
 
-  globalError = sqrt(sum(localError .^ 2) / dimension);
+  globalError = Error.computeRMSE(localError);
 end
 
 function [ globalError, localError ] = compare3D(oneData, twoData, options)
@@ -87,7 +87,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
     increase(h);
   end
 
-  globalError = sqrt(sum(localError(:) .^ 2) / (dimension * codimension));
+  globalError = Error.computeRMSE(localError);
 
   if ~draw, return; end
 
@@ -98,10 +98,10 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   for i = 1:dimension
     labels{end + 1} = num2str(i);
-    line(time, localError(i, :) * 100, 'Color', Color.pick(i));
+    line(time, localError(i, :), 'Color', Color.pick(i));
   end
 
   Plot.title('Error evolution');
-  Plot.label('', 'NRMSE, %');
+  Plot.label('', 'RMSE');
   legend(labels{:});
 end

@@ -2,6 +2,7 @@ function error = computeRMSE(observed, predicted, dimension)
   %
   % Computes the root-mean-square error.
   %
+  if nargin < 2, predicted = 0; end
   if nargin < 3
    observed = observed(:);
    predicted = predicted(:);
