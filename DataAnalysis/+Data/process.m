@@ -1,34 +1,37 @@
-function [ x, data ] = process(x, data, options)
+function data = process(x, data, options)
   method = options.get('method', 'smooth');
 
   switch method
   case 'smooth'
-    [ x, data ] = processKernelDensity(x, data, options);
+    data = processKernelDensity(x, data, options);
   case 'histogram'
-    [ x, data ] = processHistogram(x, data, options);
+    data = processHistogram(x, data, options);
   case 'piecewise'
-    [ x, data ] = processHistogram(x, data, options);
+    data = processHistogram(x, data, options);
   otherwise
     error('The method is unknown.');
   end
 end
 
-function [ x, data ] = processHistogram(x, data, options)
-  x = x(:);
-  data = data(:);
-
+function data = processHistogram(x, data, options)
   if length(x) == 1
-    data = [ 1 ];
+    data = 1;
     return;
   end
 
-  dx = x(2:end) - x(1:end - 1);
-  dx = [ dx(1); dx; dx(end) ];
+  x = x(:);
+  data = data(:);
 
+  %
+  % NOTE: The buckets are assumed to be evenly spaced.
+  %
+  assert(~any(abs(diff(diff(x))) > sqrt(eps)));
+
+  %
+  % NOTE: We discard the last one due to 'help histc'.
+  %
   data = histc(data, [ -Inf; x; Inf ]);
-  data = data(1:end - 1) ./ dx;
-
-  x = [ x(1) - dx(1); x ];
+  data(end) = [];
 
   switch options.get('function', 'pdf')
   case 'pdf'
@@ -41,7 +44,7 @@ function [ x, data ] = processHistogram(x, data, options)
   end
 end
 
-function [ x, data ] = processKernelDensity(x, data, options)
+function data = processKernelDensity(x, data, options)
   data = ksdensity(data, x, ...
     'function', options.get('function', 'pdf'));
 end

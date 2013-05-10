@@ -45,10 +45,8 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     x = Utils.constructLinearSpace(one, two, options);
 
-    [ mcx, one ] = Data.process(x, one, options);
-    [ sdx, two ] = Data.process(x, two, options);
-
-    assert(nnz(mcx - sdx) == 0, 'The supports are invalid.');
+    one = Data.process(x, one, options);
+    two = Data.process(x, two, options);
 
     localError(i) = Error.computeRMSE(one, two);
 
@@ -61,7 +59,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
       figure;
     end
 
-    Data.draw(mcx, one, two, options);
+    Data.draw(x, one, two, options);
     Plot.title('Dimension %d (RMSE %.2f)', i, localError(i));
     labels = options.get('labels', {});
     Plot.legend(labels{:});
@@ -83,7 +81,8 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   localError = zeros(dimension, codimension);
 
   for i = 1:codimension
-    [ ~, localError(:, i) ] = compare2D(oneData(:, :, i), twoData(:, :, i), options);
+    [ ~, localError(:, i) ] = compare2D( ...
+      oneData(:, :, i), twoData(:, :, i), options);
     increase(h);
   end
 
