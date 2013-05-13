@@ -1,12 +1,10 @@
 function data = process(x, data, options)
-  method = options.get('method', 'smooth');
+  options = Options('algorithm', 'kdensity', 'quantity', 'pdf', options);
 
-  switch method
-  case 'smooth'
+  switch options.algorithm
+  case 'kdensity'
     data = processKernelDensity(x, data, options);
   case 'histogram'
-    data = processHistogram(x, data, options);
-  case 'piecewise'
     data = processHistogram(x, data, options);
   otherwise
     error('The method is unknown.');
@@ -33,7 +31,7 @@ function data = processHistogram(x, data, options)
   data = histc(data, [ -Inf; x; Inf ]);
   data(end) = [];
 
-  switch options.get('function', 'pdf')
+  switch options.quantity
   case 'pdf'
     data = data / sum(data);
   case 'cdf'
@@ -45,6 +43,5 @@ function data = processHistogram(x, data, options)
 end
 
 function data = processKernelDensity(x, data, options)
-  data = ksdensity(data, x, ...
-    'function', options.get('function', 'pdf'));
+  data = ksdensity(data, x, 'function', options.quantity);
 end

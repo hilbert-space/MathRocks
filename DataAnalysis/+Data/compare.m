@@ -13,6 +13,9 @@ function [ globalError, localError ] = compare(varargin)
   assert(dimensions == 2 || dimensions == 3, ...
     'The given number of dimensions is not supported.');
 
+  options = Options('draw', false, 'layout', 'tiles', 'labels', {}, ...
+    'errorMetric', 'NRMSE', options);
+
   if dimensions == 2
     [ globalError, localError ] = compare2D(data{1}, data{2}, options);
   else
@@ -24,11 +27,8 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
   [ ~, dimension ] = size(oneData);
   assert(dimension == size(twoData, 2), 'The dimensions are invalid.');
 
-  draw = options.get('draw', false);
-
-  if draw
-    layout = options.get('layout', 'tiles');
-    switch layout
+  if options.draw
+    switch options.layout
     case 'tiles'
       figure;
     case 'separate'
@@ -48,11 +48,11 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     one = Data.process(x, one, options);
     two = Data.process(x, two, options);
 
-    localError(i) = Error.computeRMSE(one, two);
+    localError(i) = Error.([ 'compute', options.errorMetric ])(one, two);
 
-    if ~draw, continue; end
+    if ~options.draw, continue; end
 
-    switch layout
+    switch options.layout
     case 'tiles'
       subplot(1, dimension, i);
     case 'separate'
@@ -60,12 +60,12 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     end
 
     Data.draw(x, one, two, options);
-    Plot.title('Dimension %d (RMSE %.2f)', i, localError(i));
-    labels = options.get('labels', {});
-    Plot.legend(labels{:});
+    Plot.title('Dimension %d (%s %.2f %%)', i, ...
+      options.errorMetric, localError(i));
+    Plot.legend(options.labels{:});
   end
 
-  globalError = Error.computeRMSE(localError);
+  globalError = mean(localError(:));
 end
 
 function [ globalError, localError ] = compare3D(oneData, twoData, options)
@@ -73,8 +73,8 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   assert(dimension == size(twoData, 2) && codimension == size(twoData, 3), ...
     'The dimensions are invalid.');
 
-  draw = options.get('draw', false);
-  options.update('draw', false);
+  draw = options.draw;
+  options = Options(options, 'draw', false);
 
   h = Bar('Comparison: step %d out of %d.', codimension);
 
@@ -86,7 +86,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
     increase(h);
   end
 
-  globalError = Error.computeRMSE(localError);
+  globalError = mean(localError(:));
 
   if ~draw, return; end
 
@@ -101,6 +101,6 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   end
 
   Plot.title('Error evolution');
-  Plot.label('', 'RMSE');
+  Plot.label('', options.errorMetric);
   legend(labels{:});
 end
