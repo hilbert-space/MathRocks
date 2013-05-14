@@ -1,14 +1,12 @@
 function draw(x, varargin)
   [ data, options ] = Options.extract(varargin{:});
-  method = options.get('method', 'smooth');
+  options = Options('method', 'smooth', options);
 
-  switch method
-  case 'smooth'
+  switch options.method
+  case { 'smooth', 'piecewise' }
     drawLines(x, data, options);
   case 'histogram'
     drawHistogram(x, data, options);
-  case 'piecewise'
-    drawLines(x, data, options);
   otherwise
     error('The method is unknown.');
   end

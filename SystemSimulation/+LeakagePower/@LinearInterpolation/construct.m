@@ -18,4 +18,9 @@ function output = construct(this, Ldata, Tdata, Idata, options)
   else
     output.powerScale = 1;
   end
+
+  output.Lmin = min(Ldata);
+  output.Lmax = max(Ldata);
+  output.Tmin = min(Tdata);
+  output.Tmax = max(Tdata);
 end

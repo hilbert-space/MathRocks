@@ -1,10 +1,10 @@
 function data = process(x, data, options)
-  options = Options('algorithm', 'kdensity', 'quantity', 'pdf', options);
+  options = Options('method', 'smooth', 'quantity', 'pdf', options);
 
-  switch options.algorithm
-  case 'kdensity'
+  switch options.method
+  case 'smooth'
     data = processKernelDensity(x, data, options);
-  case 'histogram'
+  case { 'histogram', 'piecewise' }
     data = processHistogram(x, data, options);
   otherwise
     error('The method is unknown.');
@@ -24,11 +24,9 @@ function data = processHistogram(x, data, options)
   % NOTE: The buckets are assumed to be evenly spaced.
   %
   assert(~any(abs(diff(diff(x))) > sqrt(eps)));
+  dx = x(2) - x(1);
 
-  %
-  % NOTE: We discard the last one due to 'help histc'.
-  %
-  data = histc(data, [ -Inf; x; Inf ]);
+  data = histc(data, [ (x - dx / 2); x(end) + dx / 2 ]);
   data(end) = [];
 
   switch options.quantity
