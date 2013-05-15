@@ -4,15 +4,19 @@ function [ nodes, weights ] = constructSparse(this, options)
   order = options.order;
 
   switch ruleName
+  case 'GaussHermite'
+    [ nodes, weights ] = constructSmolyak( ...
+      dimension, order, 'GaussHermiteHW', options.get('ruleArguments', {}));
   case 'GaussHermiteHW'
     [ nodes, weights ] = nwspgr('gqn', dimension, order);
   otherwise
-    [ nodes, weights ] = constructSmolyak( ...
-      dimension, order, ruleName, options.get('ruleArguments', {}));
+    assert(false);
   end
 end
 
-function [ nodes, weights ] = constructSmolyak(dimension, order, name, arguments)
+function [ nodes, weights ] = constructSmolyak( ...
+  dimension, order, name, arguments)
+
   %
   % Florian Heiss and Viktor Winschel, Likelihood approximation by numerical
   % integration on sparse grids, Journal of Econometrics, Volume 144, 2008,
@@ -57,35 +61,30 @@ function [ nodes, weights ] = constructSmolyak(dimension, order, name, arguments
 
       nodeCount = nodeCount + newNodeCount(j);
     end
-  end
 
-  %
-  % Merge repeated nodes.
-  %
-  i = 0;
-  while true
-    nodeCount = size(nodes, 1);
+    %
+    % Merge repeated nodes.
+    %
+    [ nodes, I ] = sortrows(nodes);
+    weights = weights(I);
+    keepIndex = 1;
+    lastKeep = 1;
 
-    i = i + 1;
-    if i >= nodeCount, break; end
-
-    I = [];
-    for j = (i + 1):nodeCount
-      delta = norm(nodes(i, :) - nodes(j, :), Inf);
-      if delta > sqrt(2) * eps, continue; end
-      I(end + 1) = j;
+    for j = 2:size(nodes, 1)
+      if nodes(j, :) == nodes(j - 1, :)
+        weights(lastKeep) = weights(lastKeep) + weights(j);
+      else
+        lastKeep = j;
+        keepIndex = [ keepIndex; j ];
+      end
     end
-    if isempty(I), continue; end
 
-    weights(i) = weights(i) + sum(weights(I));
-    nodes(I, :) = [];
-    weights(I) = [];
+    nodes = nodes(keepIndex, :);
+    weights = weights(keepIndex);
   end
 
-  % nodes(abs(nodes) < sqrt(2) * eps) = 0;
-
-  [ nodes, I ] = sortrows(nodes);
-  weights = weights(I);
-
+  %
+  % Normalize the weights.
+  %
   weights = weights / sum(weights);
 end
