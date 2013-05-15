@@ -35,7 +35,14 @@ classdef HotSpot < handle
     function this = HotSpot(varargin)
       options = Options(varargin{:});
 
-      floorplan = options.floorplan;
+      if options.has('die')
+        floorplan = options.die.filename;
+      elseif options.has('floorplan');
+        floorplan = options.floorplan;
+      else
+        assert(false);
+      end
+
       config = options.config;
       line = options.get('line', '');
 

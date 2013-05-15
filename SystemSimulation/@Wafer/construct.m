@@ -1,16 +1,11 @@
 function construct(this, options)
-  dieFloorplan = dlmread(options.floorplan, '', 0, 1);
+  die = Die(options);
 
   columnCount = options.columnCount;
   rowCount = options.rowCount;
 
-  W = dieFloorplan(:, 1);
-  H = dieFloorplan(:, 2);
-  X = dieFloorplan(:, 3);
-  Y = dieFloorplan(:, 4);
-
-  DW = max(X + W);
-  DH = max(Y + H);
+  DW = die.width;
+  DH = die.height;
   DS = max(DW, DH);
 
   waferCenterX = DS * columnCount / 2;
@@ -51,10 +46,8 @@ function construct(this, options)
   this.height = DS * rowCount;
   this.radius = sqrt((this.width / 2)^2 + (this.height / 2)^2);
 
-  this.dieFloorplan = dieFloorplan;
-  this.dieWidth = DW;
-  this.dieHeight = DH;
+  this.die = die;
 
   this.dieCount = size(floorplan, 1);
-  this.processorCount = size(dieFloorplan, 1);
+  this.processorCount = die.processorCount;
 end

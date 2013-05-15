@@ -8,9 +8,7 @@ classdef Wafer < handle
     height
     radius
 
-    dieFloorplan
-    dieWidth
-    dieHeight
+    die
 
     dieCount
     processorCount

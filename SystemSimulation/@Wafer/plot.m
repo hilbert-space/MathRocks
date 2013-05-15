@@ -2,10 +2,8 @@ function plot(this, index)
   if nargin == 1, index = []; end
 
   F = this.floorplan;
-  DF = this.dieFloorplan;
-  DW = this.dieWidth;
-  DH = this.dieHeight;
-  DS = max(DW, DH);
+  DF = this.die.floorplan;
+  DS = max(this.die.width, this.die.height);
 
   W = DF(:, 1);
   H = DF(:, 2);
