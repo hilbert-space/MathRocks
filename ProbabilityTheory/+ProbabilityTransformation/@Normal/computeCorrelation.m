@@ -2,7 +2,7 @@ function correlation = computeCorrelation(this, rvs)
   dimension = rvs.dimension;
 
   qd = Quadrature(this.quadratureOptions, ...
-    'method', 'tensor', 'dimension', 2, 'ruleName', 'GaussHermite');
+    'method', 'tensor', 'dimension', 2, 'ruleName', 'GaussHermiteHW');
 
   nodes = qd.nodes;
   weights = qd.weights;
@@ -33,9 +33,7 @@ function correlation = computeCorrelation(this, rvs)
       two = @(rho) rv2.icdf(distribution.cdf(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
       goal = @(rho) abs(rho0 - sum(weightsOne .* two(rho)) / sigma1 / sigma2);
 
-      [ correlation(i, j), ~, ~, out ] = ...
-        fminbnd(goal, -1, 1, this.optimizationOptions);
-
+      correlation(i, j) = fminbnd(goal, -1, 1, this.optimizationOptions);
       correlation(j, i) = correlation(i, j);
     end
   end

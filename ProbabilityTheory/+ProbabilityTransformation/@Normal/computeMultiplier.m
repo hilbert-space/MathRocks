@@ -1,4 +1,3 @@
-function multiplier = computeMultiplier(this, correlation)
-  [ coeff, latent ] = pcacov(correlation);
-  multiplier = diag(sqrt(latent)) * coeff.';
+function multiplier = computeMultiplier(this, C)
+  multiplier = Utils.decomposeCorrelation(C)';
 end

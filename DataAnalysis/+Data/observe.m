@@ -39,7 +39,7 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      [ x, one ] = Data.process(x, one, options);
+      one = Data.process(x, one, options);
 
       Data.draw(x, one, options);
     end
