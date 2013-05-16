@@ -29,8 +29,8 @@ classdef Beta < ProbabilityDistribution.Base
       this.support = [ this.a, this. b ];
     end
 
-    function data = sample(this, samples, dimension)
-      data = betarnd(this.alpha, this.beta, samples, dimension);
+    function data = sample(this, varargin);
+      data = betarnd(this.alpha, this.beta, varargin{:});
       data = data * (this.b - this.a) + this.a;
     end
 

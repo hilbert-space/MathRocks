@@ -1,11 +1,11 @@
 setup;
 
-samples = 1e6;
-dimension = 2;
+sampleCount = 1e6;
+dimensionCount = 2;
 
 %% Generate a correlation matrix.
 %
-correlation = Utils.generateCorrelation(dimension);
+correlation = Utils.generateCorrelation(dimensionCount);
 fprintf('Desired correlation matrix:\n');
 correlation
 
@@ -16,18 +16,19 @@ distribution = ProbabilityDistribution.Exponential();
 %% Construct a vector of correlated RVs.
 %
 rvsDependent = RandomVariables.Homogeneous( ...
-  distribution, correlation);
+  'distribution', distribution, 'correlation', correlation);
 
 %% Transform the dependent RVs into independent ones.
 %
-transformation = ProbabilityTransformation.Normal(rvsDependent);
+transformation = ProbabilityTransformation.Normal( ...
+  'variables', rvsDependent);
 
 fprintf('Transformed correlation matrix:\n');
 transformation.correlation
 
 %% Sample the transformed RVs.
 %
-data = transformation.sample(samples);
+data = transformation.sample(sampleCount);
 
 fprintf('Obtained correlation matrix:\n');
 corr(data)

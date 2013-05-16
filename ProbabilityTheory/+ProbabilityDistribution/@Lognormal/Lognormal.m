@@ -20,8 +20,8 @@ classdef Lognormal < ProbabilityDistribution.Base
       this.support = [ 0, Inf ];
     end
 
-    function data = sample(this, samples, dimension)
-      data = lognrnd(this.mu, this.sigma, samples, dimension);
+    function data = sample(this, varargin)
+      data = lognrnd(this.mu, this.sigma, varargin{:});
     end
 
     function data = cdf(this, data)

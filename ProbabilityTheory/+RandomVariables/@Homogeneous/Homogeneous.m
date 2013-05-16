@@ -5,11 +5,14 @@ classdef Homogeneous < RandomVariables.Base
   end
 
   methods
-    function this = Homogeneous(distribution, correlation)
-      this = this@RandomVariables.Base(size(correlation, 1));
+    function this = Homogeneous(varargin)
+      options = Options(varargin{:});
 
-      this.distribution = distribution;
-      this.correlation = correlation;
+      this = this@RandomVariables.Base( ...
+        'dimensionCount', size(options.correlation, 1));
+
+      this.distribution = options.distribution;
+      this.correlation = options.correlation;
     end
 
     function data = icdf(this, data)

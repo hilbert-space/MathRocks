@@ -1,26 +1,26 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
-    dimension
+    dimensionCount
     variables
     distribution
   end
 
   methods
-    function this = Base(variables, varargin)
+    function this = Base(varargin)
       options = Options(varargin{:});
-      this.initialize(variables, options);
+      this.initialize(options);
     end
   end
 
   methods (Abstract)
-    data = sample(this, samples)
+    data = sample(this, sampleCount)
     data = evaluate(this, data)
   end
 
   methods (Access = 'protected')
-    function initialize(this, variables, options)
-      this.dimension = variables.dimension;
-      this.variables = variables;
+    function initialize(this, options)
+      this.dimensionCount = options.variables.dimensionCount;
+      this.variables = options.variables;
     end
   end
 end

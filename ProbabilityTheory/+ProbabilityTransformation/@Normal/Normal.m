@@ -33,11 +33,11 @@ classdef Normal < ProbabilityTransformation.Base
       this = this@ProbabilityTransformation.Base(varargin{:});
     end
 
-    function data = sample(this, samples)
+    function data = sample(this, sampleCount)
       %
       % Independent normal RVs.
       %
-      data = this.distribution.sample(samples, this.dimension);
+      data = this.distribution.sample(sampleCount, this.dimensionCount);
 
       %
       % Dependent RVs with the desired distributions.
@@ -70,8 +70,8 @@ classdef Normal < ProbabilityTransformation.Base
   methods (Access = 'protected')
     multiplier = computeMultiplier(this, correlation)
 
-    function initialize(this, variables, options)
-      initialize@ProbabilityTransformation.Base(this, variables, options);
+    function initialize(this, options)
+      initialize@ProbabilityTransformation.Base(this, options);
 
       this.quadratureOptions = ...
         options.get('quadratureOptions', Options('order', 5));
@@ -81,10 +81,10 @@ classdef Normal < ProbabilityTransformation.Base
 
       this.distribution = ProbabilityDistribution.Normal();
 
-      this.correlation = this.computeCorrelation(variables);
+      this.correlation = this.computeCorrelation(options.variables);
       this.multiplier = this.computeMultiplier(this.correlation);
 
-      this.dimension = size(this.multiplier, 1);
+      this.dimensionCount = size(this.multiplier, 1);
     end
   end
 end

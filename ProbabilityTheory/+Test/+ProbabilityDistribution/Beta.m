@@ -1,6 +1,6 @@
 setup;
 
-samples = 1e6;
+sampleCount = 1e6;
 
 alpha = 1;
 beta = 3;
@@ -10,7 +10,7 @@ b = 5;
 distribution = ProbabilityDistribution.Beta( ...
   'alpha', alpha, 'beta', beta, 'a', a, 'b', b);
 
-data = distribution.sample(samples, 1);
+data = distribution.sample(sampleCount, 1);
 
 Data.observe(data, 'range', 'unbounded', ...
   'method', 'histogram', 'draw', true);

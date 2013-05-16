@@ -19,8 +19,8 @@ classdef Gamma < ProbabilityDistribution.Base
       this.support = [ 0, Inf ];
     end
 
-    function data = sample(this, samples, dimension)
-      data = gamrnd(this.a, this.b, samples, dimension);
+    function data = sample(this, varargin)
+      data = gamrnd(this.a, this.b, varargin{:});
     end
 
     function data = cdf(this, data)

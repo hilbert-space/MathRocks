@@ -5,18 +5,21 @@ classdef Heterogeneous < RandomVariables.Base
   end
 
   methods
-    function this = Heterogeneous(distributions, correlation)
-      this = this@RandomVariables.Base(size(correlation, 1));
+    function this = Heterogeneous(varargin)
+      options = Options(varargin{:});
 
-      assert(all(this.dimension == length(distributions)), ...
+      this = this@RandomVariables.Base( ...
+        'dimensionCount', size(options.correlation, 1));
+
+      assert(all(this.dimensionCount == length(options.distributions)), ...
         'The number of distributions is invalid.');
 
-      this.distributions = distributions;
-      this.correlation = correlation;
+      this.distributions = options.distributions;
+      this.correlation = options.correlation;
     end
 
     function data = icdf(this, data)
-      for i = 1:this.dimension
+      for i = 1:this.dimensionCount
         data(:, i) = this.distributions{i}.icdf(data(:, i));
       end
     end

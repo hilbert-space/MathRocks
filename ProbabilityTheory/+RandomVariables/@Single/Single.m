@@ -4,9 +4,12 @@ classdef Single < RandomVariables.Base
   end
 
   methods
-    function this = Single(distribution)
-      this = this@RandomVariables.Base(1)
-      this.distribution = distribution;
+    function this = Single(varargin)
+      options = Options(varargin{:});
+
+      this = this@RandomVariables.Base('dimensionCount', 1);
+
+      this.distribution = options.distribution;
     end
 
     function data = icdf(this, data)

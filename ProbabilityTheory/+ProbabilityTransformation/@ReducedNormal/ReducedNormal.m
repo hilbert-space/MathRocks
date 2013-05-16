@@ -15,9 +15,9 @@ classdef ReducedNormal < ProbabilityTransformation.Normal
   methods (Access = 'protected')
     multiplier = computeMultiplier(this, correlation)
 
-    function initialize(this, variable, options)
-      this.threshold = options.get('threshold', 95);
-      initialize@ProbabilityTransformation.Normal(this, variable, options);
+    function initialize(this, options)
+      this.threshold = options.threshold;
+      initialize@ProbabilityTransformation.Normal(this, options);
     end
   end
 end

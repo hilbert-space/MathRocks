@@ -1,5 +1,5 @@
 function correlation = computeCorrelation(this, rvs)
-  dimension = rvs.dimension;
+  dimensionCount = rvs.dimensionCount;
 
   qd = Quadrature(this.quadratureOptions, ...
     'method', 'tensor', 'dimension', 2, 'ruleName', 'GaussHermiteHW');
@@ -9,15 +9,15 @@ function correlation = computeCorrelation(this, rvs)
 
   distribution = this.distribution;
 
-  correlation = eye(dimension);
+  correlation = eye(dimensionCount);
 
   %
   % Just to eliminate unnecessary work if the RVs are independent.
   %
-  if dimension == 1 || rvs.isIndependent(), return; end
+  if dimensionCount == 1 || rvs.isIndependent(), return; end
 
-  for i = 1:dimension
-    for j = (i + 1):dimension
+  for i = 1:dimensionCount
+    for j = (i + 1):dimensionCount
       rv1 = rvs{i};
       rv2 = rvs{j};
 

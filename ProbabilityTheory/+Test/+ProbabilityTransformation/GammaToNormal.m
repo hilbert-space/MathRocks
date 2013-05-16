@@ -1,6 +1,6 @@
 setup;
 
-samples = 1e6;
+sampleCount = 1e6;
 
 %% Generate a correlation matrix.
 %
@@ -18,18 +18,19 @@ distributions = { ...
 %% Construct a vector of correlated RVs.
 %
 rvsDependent = RandomVariables.Heterogeneous( ...
-  distributions, correlation);
+  'distributions', distributions, 'correlation', correlation);
 
 %% Transform the dependent RVs into independent ones.
 %
-transformation = ProbabilityTransformation.Normal(rvsDependent);
+transformation = ProbabilityTransformation.Normal( ...
+  'variables', rvsDependent);
 
 fprintf('Transformed correlation matrix:\n');
 transformation.correlation
 
 %% Sample the transformed RVs.
 %
-data = transformation.sample(samples);
+data = transformation.sample(sampleCount);
 
 fprintf('Obtained correlation matrix:\n');
 corr(data)

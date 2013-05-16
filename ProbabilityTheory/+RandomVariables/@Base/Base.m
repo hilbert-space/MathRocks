@@ -1,11 +1,12 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
-    dimension
+    dimensionCount
   end
 
   methods
-    function this = Base(dimension)
-      this.dimension = dimension;
+    function this = Base(varargin)
+      options = Options(varargin{:});
+      this.dimensionCount = options.dimensionCount;
     end
   end
 

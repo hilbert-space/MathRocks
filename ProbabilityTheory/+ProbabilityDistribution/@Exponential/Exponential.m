@@ -17,8 +17,8 @@ classdef Exponential < ProbabilityDistribution.Base
       this.support = [ 0, Inf ];
     end
 
-    function data = sample(this, samples, dimension)
-      data = exprnd(this.mu, samples, dimension);
+    function data = sample(this, varargin)
+      data = exprnd(this.mu, varargin{:});
     end
 
     function data = cdf(this, data)
