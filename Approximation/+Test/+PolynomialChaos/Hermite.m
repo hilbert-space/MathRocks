@@ -1,5 +1,4 @@
 function Hermite
-  clear all;
   setup;
 
   chaos = PolynomialChaos.Hermite( ...

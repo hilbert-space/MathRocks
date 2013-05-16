@@ -1,9 +1,6 @@
 function JacobiBeta11
   setup;
 
-  use('ProbabilityTheory');
-  use('Visualization');
-
   order = 1;
   sampleCount = 1e5;
 

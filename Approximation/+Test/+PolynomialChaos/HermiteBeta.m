@@ -1,14 +1,14 @@
 function HermiteBeta
-  clear all;
   setup;
 
   sampleCount = 1e4;
 
   distribution = ProbabilityDistribution.Beta( ...
     'alpha', 1.4, 'beta', 3, 'a', 0, 'b', 2);
-  variable = RandomVariables.Single(distribution);
+  variable = RandomVariables.Single('distribution', distribution);
 
-  transformation = ProbabilityTransformation.SingleNormal(variable);
+  transformation = ProbabilityTransformation.SingleNormal( ...
+    'variables', variable);
 
   %% Monte Carlo simulations.
   %

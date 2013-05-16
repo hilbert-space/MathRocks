@@ -1,14 +1,14 @@
 function HermiteLognormal
-  clear all;
   setup;
 
   sampleCount = 1e4;
 
   distribution = ProbabilityDistribution.Lognormal( ...
     'mu', 0, 'sigma', 0.8);
-  variables = RandomVariables.Single(distribution);
+  variables = RandomVariables.Single('distribution', distribution);
 
-  transformation = ProbabilityTransformation.SingleNormal(variables);
+  transformation = ProbabilityTransformation.SingleNormal( ...
+    'variables', variables);
 
   %% Monte Carlo simulations.
   %

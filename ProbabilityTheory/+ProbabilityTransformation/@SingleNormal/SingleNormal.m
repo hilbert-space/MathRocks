@@ -30,8 +30,8 @@ classdef SingleNormal < ProbabilityTransformation.Base
   end
 
   methods (Access = 'protected')
-    function initialize(this, variable, options)
-      initialize@ProbabilityTransformation.Base(this, variable, options);
+    function initialize(this, options)
+      initialize@ProbabilityTransformation.Base(this, options);
       this.distribution = ProbabilityDistribution.Normal();
     end
   end

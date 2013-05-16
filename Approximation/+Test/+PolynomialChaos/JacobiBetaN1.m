@@ -1,19 +1,16 @@
 function JacobiBetaN1
   setup;
 
-  use('ProbabilityTheory');
-  use('Visualization');
-
   order = 6;
   sampleCount = 1e5;
-  dimension = 4;
+  dimensionCount = 4;
 
   f = @(x) exp(prod(x, 2));
 
   distribution = ProbabilityDistribution.Beta( ...
     'alpha', 2, 'beta', 2, 'a', -1, 'b', 1);
 
-  samples = distribution.sample(sampleCount, dimension);
+  samples = distribution.sample(sampleCount, dimensionCount);
 
   %% Monte Carlo simulation.
   %
@@ -23,7 +20,7 @@ function JacobiBetaN1
   %
   chaos = PolynomialChaos.Jacobi(f, ...
     'order', order, ...
-    'inputCount', dimension, ...
+    'inputCount', dimensionCount, ...
     'outputCount', 1, ...
     'quadratureOptions', ...
       Options('method', 'tensor', 'order', 5), ...
