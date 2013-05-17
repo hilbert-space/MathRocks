@@ -60,8 +60,8 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     end
 
     Data.draw(x, one, two, options);
-    Plot.title('Dimension %d (%s %.2f %%)', i, ...
-      options.errorMetric, localError(i));
+    Plot.title('Dimension %d (%s %s)', i, ...
+      options.errorMetric, num2str(localError(i)));
     Plot.legend(options.labels{:});
   end
 
