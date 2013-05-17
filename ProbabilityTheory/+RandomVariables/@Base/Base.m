@@ -13,5 +13,6 @@ classdef Base < handle
   methods (Abstract)
     data = icdf(this, data)
     result = isIndependent(this)
+    result = isFamily(this, name)
   end
 end

@@ -1,3 +1,3 @@
-function multiplier = computeMultiplier(this, C)
-  multiplier = Utils.decomposeCorrelation(C, this.threshold)';
+function multiplier = computeMultiplier(this, C, options)
+  multiplier = Utils.decomposeCorrelation(C, options.threshold)';
 end

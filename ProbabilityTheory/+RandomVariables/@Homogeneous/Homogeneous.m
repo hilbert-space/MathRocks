@@ -23,6 +23,10 @@ classdef Homogeneous < RandomVariables.Base
       result = Utils.isIndependent(this.correlation);
     end
 
+    function result = isFamily(this, name)
+      result = isa(this.distribution, [ 'ProbabilityDistribution.', name ]);
+    end
+
     function value = subsref(this, S)
       if length(S) == 1 && strcmp('{}', S.type)
         value = this.distribution;

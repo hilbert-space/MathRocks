@@ -1,18 +1,4 @@
 classdef Normal < ProbabilityTransformation.Base
-  properties
-    %
-    % Configuration of the numerical integration procedure
-    % used to match the correlation coefficients.
-    %
-    quadratureOptions
-
-    %
-    % Configuration of the numerical root finding procedure
-    % used to match the correlation coefficients.
-    %
-    optimizationOptions
-  end
-
   properties (SetAccess = 'private')
     %
     % The correlation matrix as produced by the pure probability
@@ -64,25 +50,18 @@ classdef Normal < ProbabilityTransformation.Base
   end
 
   methods (Access = 'private')
-    correlation = computeCorrelation(this, rvs)
+    correlation = computeCorrelation(this, options)
   end
 
   methods (Access = 'protected')
-    multiplier = computeMultiplier(this, correlation)
+    multiplier = computeMultiplier(this, correlation, options)
 
     function initialize(this, options)
       initialize@ProbabilityTransformation.Base(this, options);
 
-      this.quadratureOptions = ...
-        options.get('quadratureOptions', Options('order', 5));
-
-      this.optimizationOptions = ...
-        options.get('optimizationOptions', optimset('TolX', 1e-6));
-
       this.distribution = ProbabilityDistribution.Normal();
-
-      this.correlation = this.computeCorrelation(options.variables);
-      this.multiplier = this.computeMultiplier(this.correlation);
+      this.correlation = this.computeCorrelation(options);
+      this.multiplier = this.computeMultiplier(this.correlation, options);
 
       this.dimensionCount = size(this.multiplier, 1);
     end

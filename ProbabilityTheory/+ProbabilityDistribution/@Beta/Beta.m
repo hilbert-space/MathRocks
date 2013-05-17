@@ -8,7 +8,7 @@ classdef Beta < ProbabilityDistribution.Base
 
   methods
     function this = Beta(varargin)
-      this = this@ProbabilityDistribution.Base()
+      this = this@ProbabilityDistribution.Base();
 
       options = Options( ...
         'alpha', 1, 'beta', 1, 'a', 0, 'b', 1, varargin{:});
@@ -29,7 +29,7 @@ classdef Beta < ProbabilityDistribution.Base
       this.support = [ this.a, this. b ];
     end
 
-    function data = sample(this, varargin);
+    function data = sample(this, varargin)
       data = betarnd(this.alpha, this.beta, varargin{:});
       data = data * (this.b - this.a) + this.a;
     end

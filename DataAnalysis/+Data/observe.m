@@ -6,12 +6,17 @@ function observe(varargin)
 end
 
 function observe2D(data, options)
-  [ ~, dimension ] = size(data);
+  [ dataCount, dimensionCount ] = size(data);
+
+  if dimensionCount > dataCount
+    warning('Suspicious data: %d dimensions > %d data points.', ...
+      dimensionCount, dataCount);
+  end
 
   switch options.get('layout', 'tiles')
   case 'joint'
     figure;
-    for i = 1:dimension
+    for i = 1:dimensionCount
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
@@ -20,7 +25,7 @@ function observe2D(data, options)
       Data.draw(x, one, options, 'color', Color.pick(i));
     end
   case 'separate'
-    for i = 1:dimension
+    for i = 1:dimensionCount
       figure;
 
       one = data(:, i);
@@ -33,8 +38,8 @@ function observe2D(data, options)
   case 'tiles'
     figure;
 
-    for i = 1:dimension
-      subplot(1, dimension, i);
+    for i = 1:dimensionCount
+      subplot(1, dimensionCount, i);
 
       one = data(:, i);
 

@@ -28,6 +28,16 @@ classdef Heterogeneous < RandomVariables.Base
       result = Utils.isIndependent(this.correlation);
     end
 
+    function result = isFamily(this, name)
+      result = true;
+      for i = 1:this.dimensionCount
+        if ~isa(this.distributions{i}, [ 'ProbabilityDistribution.', name ])
+          result = false;
+          break;
+        end
+      end
+    end
+
     function value = subsref(this, S)
       if length(S) == 1 && strcmp('{}', S.type)
         value = builtin('subsref', this.distributions, S);

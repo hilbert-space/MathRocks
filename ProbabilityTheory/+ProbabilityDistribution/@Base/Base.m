@@ -11,7 +11,7 @@ classdef Base < handle
 
     function plot(this, varargin)
       options = Options(varargin{:});
-      data = this.sample(options.get('samples', 1e3), 1);
+      data = this.sample(options.get('sampleCount', 1e3), 1);
       Data.observe(data, 'draw', true, options);
     end
 
@@ -23,7 +23,7 @@ classdef Base < handle
   end
 
   methods (Abstract)
-    data = sample(this, samples, dimension)
+    data = sample(this, varargin)
     data = cdf(this, data)
     data = icdf(this, data)
     data = pdf(this, data)

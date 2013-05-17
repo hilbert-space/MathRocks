@@ -24,8 +24,13 @@ function [ globalError, localError ] = compare(varargin)
 end
 
 function [ globalError, localError ] = compare2D(oneData, twoData, options)
-  [ ~, dimension ] = size(oneData);
-  assert(dimension == size(twoData, 2), 'The dimensions are invalid.');
+  [ dataCount, dimensionCount ] = size(oneData);
+  assert(dimensionCount == size(twoData, 2), 'The dimensions are invalid.');
+
+  if dimensionCount > dataCount
+    warning('Suspicious data: %d dimensions > %d data points.', ...
+      dimensionCount, dataCount);
+  end
 
   if options.draw
     switch options.layout
@@ -37,9 +42,9 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     end
   end
 
-  localError = zeros(1, dimension);
+  localError = zeros(1, dimensionCount);
 
-  for i = 1:dimension
+  for i = 1:dimensionCount
     one = oneData(:, i);
     two = twoData(:, i);
 
@@ -54,7 +59,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     switch options.layout
     case 'tiles'
-      subplot(1, dimension, i);
+      subplot(1, dimensionCount, i);
     case 'separate'
       figure;
     end
@@ -69,18 +74,19 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 end
 
 function [ globalError, localError ] = compare3D(oneData, twoData, options)
-  [ ~, dimension, codimension ] = size(oneData);
-  assert(dimension == size(twoData, 2) && codimension == size(twoData, 3), ...
+  [ ~, dimensionCount, codimensionCount ] = size(oneData);
+  assert(dimensionCount == size(twoData, 2) && ...
+    codimensionCount == size(twoData, 3), ...
     'The dimensions are invalid.');
 
   draw = options.draw;
   options = Options(options, 'draw', false);
 
-  h = Bar('Comparison: step %d out of %d.', codimension);
+  h = Bar('Comparison: step %d out of %d.', codimensionCount);
 
-  localError = zeros(dimension, codimension);
+  localError = zeros(dimensionCount, codimensionCount);
 
-  for i = 1:codimension
+  for i = 1:codimensionCount
     [ ~, localError(:, i) ] = compare2D( ...
       oneData(:, :, i), twoData(:, :, i), options);
     increase(h);
@@ -93,9 +99,9 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   figure;
 
   labels = {};
-  time = 0:(codimension - 1);
+  time = 0:(codimensionCount - 1);
 
-  for i = 1:dimension
+  for i = 1:dimensionCount
     labels{end + 1} = num2str(i);
     line(time, localError(i, :), 'Color', Color.pick(i));
   end
