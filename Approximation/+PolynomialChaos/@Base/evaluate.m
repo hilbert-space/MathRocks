@@ -23,7 +23,7 @@ function values = evaluate(this, nodes, coefficients)
     values = rvProduct * (rvMap * coefficients);
   case 3
     values = zeros(nodeCount, dimensions(2), dimensions(3));
-    for i = 1:thirdDimension
+    for i = 1:dimensions(3)
       values(:, :, i) = rvProduct * (rvMap * coefficients(:, :, i));
     end
   otherwise
