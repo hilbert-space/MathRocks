@@ -83,6 +83,10 @@ classdef Base < handle
     norm = computeNormalizationConstant(this, i, index)
   end
 
+  methods (Abstract)
+    data = sample(this, sampleCount, varargin)
+  end
+
   methods (Access = 'private')
     basis = constructBasis(this, x, order, index)
     [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...

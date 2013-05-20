@@ -5,7 +5,9 @@ function values = evaluate(this, nodes, coefficients)
   rvMap = this.rvMap;
 
   monomialCount = size(rvPower, 1);
-  nodeCount = size(nodes, 1);
+  [ nodeCount, rvCount ] = size(nodes);
+
+  assert(rvCount == this.inputCount);
 
   rvProduct = zeros(nodeCount, monomialCount);
 
@@ -14,5 +16,17 @@ function values = evaluate(this, nodes, coefficients)
       nodes, Utils.replicate(rvPower(i, :), nodeCount, 1)), 2);
   end
 
-  values = rvProduct * (rvMap * coefficients);
+  dimensions = size(coefficients);
+
+  switch length(dimensions)
+  case 2
+    values = rvProduct * (rvMap * coefficients);
+  case 3
+    values = zeros(nodeCount, dimensions(2), dimensions(3));
+    for i = 1:thirdDimension
+      values(:, :, i) = rvProduct * (rvMap * coefficients(:, :, i));
+    end
+  otherwise
+    assert(false);
+  end
 end

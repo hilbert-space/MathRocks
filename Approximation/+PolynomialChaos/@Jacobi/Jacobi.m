@@ -10,6 +10,16 @@ classdef Jacobi < PolynomialChaos.Base
     function this = Jacobi(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
     end
+
+    function data = sample(this, sampleCount, varargin)
+      %
+      % NOTE: We have +1 here as MATLAB's interpretation of the Beta distribution
+      % is different from the one used for Jocobi chaos.
+      %
+      data = betarnd(this.alpha + 1, this.beta + 1, sampleCount, this.inputCount);
+      data = data * (this.b - this.a) + this.a;
+      data = this.evaluate(data, varargin{:});
+    end
   end
 
   methods (Access = 'protected')

@@ -3,6 +3,11 @@ classdef Hermite < PolynomialChaos.Base
     function this = Hermite(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
     end
+
+    function data = sample(this, sampleCount, varargin)
+      data = normrnd(0, 1, sampleCount, this.inputCount);
+      data = this.evaluate(data, varargin{:});
+    end
   end
 
   methods (Access = 'protected')
@@ -23,7 +28,7 @@ classdef Hermite < PolynomialChaos.Base
     function [ nodes, weights ] = constructQuadrature(this, options)
       quadrature = Quadrature( ...
         'dimension', this.inputCount, ...
-        'ruleName', 'GaussHermite', ...
+        'ruleName', 'GaussHermiteHW', ...
         options);
 
       nodes = quadrature.nodes;
