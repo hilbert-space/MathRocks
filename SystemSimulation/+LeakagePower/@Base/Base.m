@@ -38,6 +38,10 @@ classdef Base < handle
 
       this.output = output;
     end
+
+    function string = toString(this)
+      string = sprintf('%s(%s)', class(this), this.filename);
+    end
   end
 
   methods (Abstract)

@@ -16,7 +16,7 @@ classdef Die < handle
     end
 
     function string = toString(this)
-      string = this.filename;
+      string = sprintf('%s(%s)', class(this), this.filename);
     end
   end
 
