@@ -1,5 +1,7 @@
 classdef Normal < ProbabilityTransformation.Base
   properties (SetAccess = 'private')
+    distribution
+
     %
     % The correlation matrix as produced by the pure probability
     % transformation.

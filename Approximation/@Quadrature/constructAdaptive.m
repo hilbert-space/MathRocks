@@ -1,5 +1,5 @@
 function [ nodes, weights ] = constructAdaptive(this, options)
-  dimension = options.dimension;
+  dimensionCount = options.dimensionCount;
   polynomialOrder = options.polynomialOrder;
 
   %
@@ -14,10 +14,7 @@ function [ nodes, weights ] = constructAdaptive(this, options)
   [ nodes, weights ] = this.constructSparse(options);
 
   sparseNodeCount = size(nodes, 1);
-  tensorNodeCount = order^dimension;
-
-  % fprintf('Quadrature: dimension %d, order %d, tensor %d, sparse %d.\n', ...
-  %   dimension, order, tensorNodeCount, sparseNodeCount);
+  tensorNodeCount = order^dimensionCount;
 
   if sparseNodeCount >= tensorNodeCount
     [ nodes, weights ] = this.constructTensor(options);

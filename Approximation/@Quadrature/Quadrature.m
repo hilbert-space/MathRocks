@@ -1,6 +1,6 @@
 classdef Quadrature < handle
   properties (SetAccess = 'private')
-    dimension
+    dimensionCount
 
     nodes
     weights
@@ -14,7 +14,7 @@ classdef Quadrature < handle
     end
 
     function result = integrate(this, f)
-      values = eval(f, this.nodes);
+      values = feval(f, this.nodes);
       codimension = size(values, 1);
       result = sum(Utils.replicate(this.weights, codimension, 1) .* values, 2);
     end
@@ -25,7 +25,7 @@ classdef Quadrature < handle
     [ nodes, weights ] = constructSparse(this, options)
 
     function initialize(this, options)
-      this.dimension = options.dimension;
+      this.dimensionCount = options.dimensionCount;
 
       filename = File.temporal([ class(this), '_', ...
         DataHash(Utils.toString(options)), '.mat' ]);

@@ -25,8 +25,8 @@ C1 = corr(data);
 
 %% Transformation with reduction.
 %
-transformation = ProbabilityTransformation.ReducedNormal( ...
-  'variables', rvsDependent, 'threshold', 0.95);
+transformation = ProbabilityTransformation.Normal( ...
+  'variables', rvsDependent, 'threshold', 0.99);
 data = transformation.sample(sampleCount);
 C2 = corr(data);
 

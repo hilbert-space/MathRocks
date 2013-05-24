@@ -1,10 +1,7 @@
 function plot(this, varargin)
-  dimension = this.dimension;
-
-  assert(dimension == 2);
+  assert(this.dimensionCount == 2);
 
   nodes = this.nodes;
-  nodeCount = this.nodeCount;
 
   plot(nodes(:, 1), nodes(:, 2), ...
     'LineStyle', 'None', 'Marker', 'o', varargin{:});

@@ -5,10 +5,11 @@ function HermiteBeta
 
   distribution = ProbabilityDistribution.Beta( ...
     'alpha', 1.4, 'beta', 3, 'a', 0, 'b', 2);
-  variable = RandomVariables.Single('distribution', distribution);
+  variables = RandomVariables.Homogeneous( ...
+    'distribution', distribution, 'correlation', 1);
 
-  transformation = ProbabilityTransformation.SingleNormal( ...
-    'variables', variable);
+  transformation = ProbabilityTransformation.Normal( ...
+    'variables', variables);
 
   %% Monte Carlo simulations.
   %
