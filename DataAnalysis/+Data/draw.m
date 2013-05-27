@@ -26,7 +26,17 @@ function drawBar(x, data, color)
 end
 
 function drawLines(x, data, options)
-  for i = 1:length(data)
-    line(x, data{i}, 'Color', options.get('color', Color.pick(i)));
+  count = length(data);
+  styles = options.get('styles', {});
+
+  if isempty(styles)
+    for i = 1:count
+      line(x, data{i}, 'Color', options.get('color', Color.pick(i)));
+    end
+  else
+    for i = 1:count
+      style = styles{i};
+      line(x, data{i}, style{:});
+    end
   end
 end

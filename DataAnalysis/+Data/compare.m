@@ -34,7 +34,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
   if options.draw
     switch options.layout
-    case 'tiles'
+    case { 'one', 'tiles' }
       figure;
     case 'separate'
     otherwise
@@ -58,16 +58,35 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     if ~options.draw, continue; end
 
     switch options.layout
+    case 'one'
+      styles = { ...
+        { 'Color', Color.pick(i) }, ...
+        { 'Color', Color.pick(i), 'LineStyle', '--' }};
     case 'tiles'
       subplot(1, dimensionCount, i);
+      styles = { ...
+        { 'Color', Color.pick(1) }, ...
+        { 'Color', Color.pick(2) }};
     case 'separate'
       figure;
+      styles = { ...
+        { 'Color', Color.pick(1) }, ...
+        { 'Color', Color.pick(2) }};
     end
 
-    Data.draw(x, one, two, options);
-    Plot.title('Dimension %d (%s %s)', i, ...
-      options.errorMetric, num2str(localError(i)));
-    Plot.legend(options.labels{:});
+    Data.draw(x, one, two, options, 'styles', styles);
+
+    switch options.layout
+    case { 'tiles', 'separate' }
+      Plot.title('Dimension %d (%s %s)', i, ...
+        options.errorMetric, num2str(localError(i)));
+      Plot.legend(options.labels{:});
+    end
+  end
+
+  switch options.layout
+  case 'one'
+    Plot.title('All dimensions');
   end
 
   globalError = mean(localError(:));
