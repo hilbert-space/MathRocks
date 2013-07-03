@@ -1,7 +1,7 @@
 function options = systemSimulation(varargin)
   options = Options(varargin{:});
 
-  path = File.join('+Test', 'Assets');
+  path = File.join(File.trace, '..', '+Test', 'Assets');
 
   %
   % Platform and application
