@@ -23,8 +23,8 @@ classdef Base < handle
       filename = options.get('filename', []);
       if isempty(filename)
         filename = sprintf('MonteCarlo_%s.mat', ...
-        DataHash({ Pdyn, Utils.toString(this.process), ...
-          Utils.toString(this.temperature), sampleCount }));
+          DataHash({ Pdyn, Utils.toString(this.process), ...
+            Utils.toString(this.temperature), sampleCount }));
       end
 
       if File.exist(filename)
@@ -42,7 +42,7 @@ classdef Base < handle
         time = tic;
         parfor i = 1:sampleCount
           Tdata(:, :, i) = this.temperature.computeWithLeakage( ...
-            Pdyn, varargin{:}, 'L', L(:, i));
+            Pdyn, options, 'L', L(:, i));
         end
         time = toc(time);
 
@@ -65,6 +65,7 @@ classdef Base < handle
     end
 
     function Tdata = evaluate(this, Pdyn, rvs, varargin)
+      options = Options(varargin{:});
       [ processorCount, stepCount ] = size(Pdyn);
 
       sampleCount = size(rvs, 1);
@@ -74,7 +75,7 @@ classdef Base < handle
 
       parfor i = 1:sampleCount
         Tdata(:, :, i) = this.temperature.computeWithLeakage( ...
-          Pdyn, varargin{:}, 'L', L(:, i));
+          Pdyn, options, 'L', L(:, i));
       end
 
       Tdata = permute(Tdata, [ 3 1 2 ]);
