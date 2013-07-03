@@ -30,5 +30,9 @@ classdef LeakageAware < Temperature.HotSpot
     function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       error('Not implemented yet.');
     end
+
+    function string = toString(this)
+      string = sprintf('%s(%s)', class(this), this.leakage.toString);
+    end
   end
 end

@@ -2,11 +2,7 @@ function ChaosTransient(varargin)
   close all;
   setup;
 
-  options = Options(varargin{:});
-
-  iterationCount = options.get('iterationCount', 10);
-
-  options = Configure.systemSimulation(options);
+  options = Configure.systemSimulation(varargin{:});
   options = Configure.processVariation(options);
   options = Configure.polynomialChaos(options);
 
@@ -15,6 +11,8 @@ function ChaosTransient(varargin)
   plot(options.power, options.dynamicPower);
 
   chaos = Temperature.Chaos.Transient(options);
+
+  iterationCount = options.get('iterationCount', 10);
 
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;

@@ -1,11 +1,13 @@
-function MonteCarloTransient
+function MonteCarloTransient(varargin)
   close all;
   setup;
 
+  options = Configure.systemSimulation(varargin{:});
+  options = Configure.processVariation(options);
+  options = Configure.polynomialChaos(options);
+
   chaosSampleCount = 1e5;
   carloSampleCount = 1e4;
-
-  options = Test.configure;
 
   time = options.samplingInterval * (0:(options.stepCount - 1));
 
