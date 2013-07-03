@@ -7,5 +7,5 @@ function values = gradient(color1, color2, colorCount)
   values = color1 + (color2 - color1) .* ...
     repmat(linspace(0, 1, colorCount)', 1, 3);
 
-  colormap(values);
+  if nargout == 0, colormap(values); end
 end

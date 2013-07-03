@@ -26,5 +26,5 @@ function values = data(localData, globalData, values)
 
   values = values((1 + lower):(end - upper), :);
 
-  colormap(values);
+  if nargout == 0, colormap(values); end
 end
