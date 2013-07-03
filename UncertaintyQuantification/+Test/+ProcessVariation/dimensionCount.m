@@ -37,8 +37,8 @@ function options = configure(varargin)
 
   processorCount = options.getSet('processorCount', 4);
 
-  options.die = Die('floorplan', ...
-    File.join('+Test', 'Assets', sprintf('%03d.flp', processorCount)));
+  options.die = Die('floorplan', File.join('..', 'SystemSimulation', ...
+    '+Test', 'Assets', sprintf('%03d.flp', processorCount)));
   options.nominal = 45e-9;
 
   options = Configure.processVariation(options);
