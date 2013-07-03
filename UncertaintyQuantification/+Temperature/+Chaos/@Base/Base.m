@@ -80,6 +80,6 @@ classdef Base < Temperature.Analytical.Base
   end
 
   methods (Abstract)
-    [ T, output ] = solve(this, Pdyn, rvs, varargin)
+    [ T, output ] = solve(this, Pdyn, L, varargin)
   end
 end
