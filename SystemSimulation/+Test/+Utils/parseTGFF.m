@@ -1,7 +1,7 @@
 %% Load a platform and an application.
 %
 [ platform, application ] = Utils.parseTGFF( ...
-  File.join('+Test', 'Assets', '002_020.tgff'));
+  File.join('+Test', 'Assets', '002_040.tgff'));
 
 display(platform);
 display(application);

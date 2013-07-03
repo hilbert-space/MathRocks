@@ -1,13 +1,27 @@
 function analyze(method, analysis, iterationCount)
   setup;
 
-  Pdyn = 2 * dlmread(File.join('+Test', 'Assets', '004.ptrace'), '', 1, 0).';
-
-  leakage = LeakagePower.LinearInterpolation('dynamicPower', Pdyn, ...
-    'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_08.leak'));
+  %
+  % Platform and application
+  %
+  [ platform, application ] = Utils.parseTGFF( ...
+    File.join('+Test', 'Assets', '004_080.tgff'));
+  schedule = Schedule.Dense(platform, application);
 
   die = Die('floorplan', File.join('+Test', 'Assets', '004.flp'));
   plot(die);
+
+  %
+  % Dynamic power
+  %
+  power = DynamicPower(1e-3);
+  Pdyn = power.compute(schedule);
+
+  %
+  % Leakage model
+  %
+  leakage = LeakagePower.LinearInterpolation('dynamicPower', Pdyn, ...
+    'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_08.leak'));
 
   temperature = Temperature.(method).(analysis)('die', die, ...
     'config', File.join('+Test', 'Assets', 'hotspot.config'), ...
