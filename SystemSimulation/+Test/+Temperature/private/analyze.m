@@ -1,31 +1,10 @@
 function analyze(method, analysis, iterationCount)
   setup;
 
-  %
-  % Platform and application
-  %
-  [ platform, application ] = Utils.parseTGFF( ...
-    File.join('+Test', 'Assets', '004_080.tgff'));
-  schedule = Schedule.Dense(platform, application);
+  options = Configure.systemSimulation;
+  Pdyn = options.dynamicPower;
 
-  die = Die('floorplan', File.join('+Test', 'Assets', '004.flp'));
-  plot(die);
-
-  %
-  % Dynamic power
-  %
-  power = DynamicPower(1e-3);
-  Pdyn = power.compute(schedule);
-
-  %
-  % Leakage model
-  %
-  leakage = LeakagePower.LinearInterpolation('dynamicPower', Pdyn, ...
-    'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_08.leak'));
-
-  temperature = Temperature.(method).(analysis)('die', die, ...
-    'config', File.join('+Test', 'Assets', 'hotspot.config'), ...
-    'line', 'sampling_intvl 1e-3', 'leakage', leakage);
+  temperature = Temperature.(method).(analysis)(options.temperatureOptions);
 
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
