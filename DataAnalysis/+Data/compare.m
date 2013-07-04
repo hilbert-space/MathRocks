@@ -34,7 +34,10 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
   if options.draw
     switch options.layout
-    case { 'one', 'tiles' }
+    case 'one'
+      figure;
+      labels = {};
+    case 'tiles'
       figure;
     case 'separate'
     otherwise
@@ -77,8 +80,16 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     Data.draw(x, one, two, options, 'styles', styles);
 
     switch options.layout
+    case 'one'
+      labels{end + 1} = sprintf('%d', i);
+      labels{end + 1} = sprintf('%d: %s %s', ...
+        i, options.errorMetric, num2str(localError(i)));
+      if ~isempty(options.labels)
+        labels{end - 1} = [ options.labels{1}, ' ', labels{end - 1} ];
+        labels{end - 0} = [ options.labels{2}, ' ', labels{end - 0} ];
+      end
     case { 'tiles', 'separate' }
-      Plot.title('Dimension %d (%s %s)', i, ...
+      Plot.title('Dimension %d: %s %s', i, ...
         options.errorMetric, num2str(localError(i)));
       Plot.legend(options.labels{:});
     end
@@ -87,6 +98,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
   switch options.layout
   case 'one'
     Plot.title('All dimensions');
+    Plot.legend(labels{:});
   end
 
   globalError = mean(localError(:));
@@ -117,15 +129,35 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   figure;
 
-  labels = {};
-  time = 0:(codimensionCount - 1);
+  oneExp = squeeze(mean(oneData, 1));
+  twoExp = squeeze(mean(twoData, 1));
+  expectationError = abs(oneExp - twoExp);
 
-  for i = 1:dimensionCount
-    labels{end + 1} = num2str(i);
-    line(time, localError(i, :), 'Color', Color.pick(i));
-  end
+  oneVar = squeeze(var(oneData, [], 1));
+  twoVar = squeeze(var(twoData, [], 1));
+  varianceError = abs(oneVar - twoVar);
 
-  Plot.title('Error evolution');
+  subplot(1, 3, 1);
+  Plot.title('Expectation (%s %.4f)', options.errorMetric, ...
+    Error.([ 'compute', options.errorMetric ])(oneExp, twoExp));
+  Plot.label('', 'Absolute error');
+  subplot(1, 3, 2);
+  Plot.title('Variance (%s %.4f)', options.errorMetric, ...
+    Error.([ 'compute', options.errorMetric ])(oneVar, twoVar));
+  Plot.label('', 'Absolute error');
+  subplot(1, 3, 3);
+  Plot.title('Distribution (mean %.4f)', globalError);
   Plot.label('', options.errorMetric);
-  legend(labels{:});
+  Plot.name('Errors of empirical expectation, variance, and distribution');
+
+  time = 0:(codimensionCount - 1);
+  for i = 1:dimensionCount
+    color = Color.pick(i);
+    subplot(1, 3, 1);
+    line(time, expectationError(i, :), 'Color', color);
+    subplot(1, 3, 2);
+    line(time, varianceError(i, :), 'Color', color);
+    subplot(1, 3, 3);
+    line(time, localError(i, :), 'Color', color);
+  end
 end
