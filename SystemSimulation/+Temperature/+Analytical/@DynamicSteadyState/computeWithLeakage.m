@@ -20,8 +20,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   L = options.get('L', leakage.Lnom * ones(processorCount, 1));
   assert(size(L, 1) == processorCount);
 
-  iterationLimit = options.get('iterationLimit', 10);
-  temperatureLimit = options.get('temperatureLimit', Inf);
+  iterationLimit = options.get('iterationLimit', 20);
+  temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
   tolerance = options.get('tolerance', 0.5);
 
   W = zeros(nodeCount, stepCount);

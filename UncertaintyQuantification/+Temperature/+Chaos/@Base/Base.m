@@ -1,4 +1,4 @@
-classdef Base < Temperature.Analytical.Base
+classdef Base < handle
   properties (SetAccess = 'protected')
     process
     chaos
@@ -8,7 +8,6 @@ classdef Base < Temperature.Analytical.Base
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      this = this@Temperature.Analytical.Base(options.temperatureOptions);
       this.process = ProcessVariation.(options.processModel)( ...
         options.processOptions);
 
@@ -41,14 +40,19 @@ classdef Base < Temperature.Analytical.Base
       end
     end
 
-    function [ Texp, output ] = compute(this, Pdyn, varargin)
+    function [ Texp, output ] = expand(this, Pdyn, varargin)
+      [ processorCount, stepCount ] = size(Pdyn);
+
       chaos = this.chaos;
       process = this.process;
 
-      coefficients = chaos.expand(@(rvs) transpose(this.solve( ...
-        Pdyn, transpose(process.evaluate(rvs)), varargin{:})));
+      function result = target(rvs)
+        L = transpose(process.evaluate(rvs));
+        T = this.computeWithLeakage(Pdyn, 'L', L, varargin{:});
+        result = transpose(reshape(T, processorCount * stepCount, []));
+      end
 
-      [ processorCount, stepCount ] = size(Pdyn);
+      coefficients = chaos.expand(@target, varargin{:});
 
       Texp = reshape(coefficients(1, :), processorCount, stepCount);
 
@@ -64,22 +68,12 @@ classdef Base < Temperature.Analytical.Base
         processorCount, stepCount);
     end
 
-    function Tdata = sample(this, coefficients, sampleCount)
-      Tdata = this.chaos.sample(sampleCount, coefficients);
+    function Tdata = sample(this, output, sampleCount)
+      Tdata = this.chaos.sample(sampleCount, output.coefficients);
     end
 
-    function Tdata = evaluate(this, coefficients, rvs)
-      Tdata = this.chaos.evaluate(rvs, coefficients);
+    function Tdata = evaluate(this, output, rvs)
+      Tdata = this.chaos.evaluate(rvs, output.coefficients);
     end
-
-    function display(this)
-      display@Temperature.Analytical.Base(this);
-      display(this.process);
-      display(this.chaos);
-    end
-  end
-
-  methods (Abstract)
-    [ T, output ] = solve(this, Pdyn, L, varargin)
   end
 end

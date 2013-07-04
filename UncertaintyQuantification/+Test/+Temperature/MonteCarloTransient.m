@@ -33,7 +33,7 @@ function MonteCarloTransient(varargin)
   %
   if Terminal.question('Compare expectations, variances, and PDFs? ')
     tic;
-    Tdata1 = chaos.sample(output1.coefficients, chaosSampleCount);
+    Tdata1 = chaos.sample(output1, chaosSampleCount);
     fprintf('Polynomial chaos: sampling time %.2f s (%d samples).\n', ...
       toc, chaosSampleCount);
 
@@ -58,7 +58,13 @@ function MonteCarloTransient(varargin)
   %
   % Sweeping the random parameters.
   %
-  rvs = -7:0.2:7;
+  switch options.processModel
+  case 'Normal'
+    rvs = -7:0.2:7;
+  otherwise
+    assert(false);
+  end
+
   index = uint8(1);
   while Terminal.question('Sweep random variables? ')
     index = Terminal.request( ...
@@ -72,7 +78,7 @@ function MonteCarloTransient(varargin)
       RVs(:, i) = rvs;
     end
 
-    Tdata1 = chaos.evaluate(output1.coefficients, RVs);
+    Tdata1 = chaos.evaluate(output1, RVs);
     Tdata2 = mc.evaluate(options.dynamicPower, RVs);
 
     Tdata1 = Utils.toCelsius(Tdata1(:, :, k));
