@@ -82,15 +82,15 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     switch options.layout
     case 'one'
       labels{end + 1} = sprintf('%d', i);
-      labels{end + 1} = sprintf('%d: %s %s', ...
-        i, options.errorMetric, num2str(localError(i)));
+      labels{end + 1} = sprintf('%d: %s %.4f', ...
+        i, options.errorMetric, localError(i));
       if ~isempty(options.labels)
         labels{end - 1} = [ options.labels{1}, ' ', labels{end - 1} ];
         labels{end - 0} = [ options.labels{2}, ' ', labels{end - 0} ];
       end
     case { 'tiles', 'separate' }
-      Plot.title('Dimension %d: %s %s', i, ...
-        options.errorMetric, num2str(localError(i)));
+      Plot.title('Dimension %d: %s %.4f', i, ...
+        options.errorMetric, localError(i));
       Plot.legend(options.labels{:});
     end
   end
