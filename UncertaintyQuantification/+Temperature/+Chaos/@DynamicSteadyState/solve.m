@@ -56,7 +56,10 @@ function [ T, output ] = solve(this, Pdyn, L, varargin)
     Pcurrent = Pdyn + leakage.evaluate(l, Tamb * ones(size(l)));
     Tcurrent = computeOne(Pcurrent);
 
-    for k = 2:iterationLimit
+    k = 1;
+    while k < iterationLimit
+      k = k + 1;
+
       Tlast = Tcurrent;
 
       Pcurrent = Pdyn + leakage.evaluate(l, Tcurrent);
