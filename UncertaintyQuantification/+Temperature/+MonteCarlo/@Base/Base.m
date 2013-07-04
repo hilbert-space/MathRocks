@@ -1,7 +1,6 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
     process
-    temperature
   end
 
   methods
@@ -11,7 +10,7 @@ classdef Base < handle
         options.processOptions, 'threshold', 1);
     end
 
-    function [ Texp, output ] = compute(this, Pdyn, varargin)
+    function [ Texp, output ] = estimate(this, Pdyn, varargin)
       options = Options(varargin{:});
       verbose = options.get('verbose', false);
 
@@ -23,8 +22,7 @@ classdef Base < handle
       filename = options.get('filename', []);
       if isempty(filename)
         filename = sprintf('MonteCarlo_%s.mat', ...
-          DataHash({ Pdyn, Utils.toString(this.process), ...
-            Utils.toString(this.temperature), sampleCount }));
+          DataHash({ Pdyn, this.toString, sampleCount }));
       end
 
       if File.exist(filename)
@@ -41,7 +39,7 @@ classdef Base < handle
 
         time = tic;
         parfor i = 1:sampleCount
-          Tdata(:, :, i) = this.temperature.computeWithLeakage( ...
+          Tdata(:, :, i) = this.computeWithLeakage( ...
             Pdyn, options, 'L', L(:, i));
         end
         time = toc(time);
@@ -74,11 +72,15 @@ classdef Base < handle
       Tdata = zeros(processorCount, stepCount, sampleCount);
 
       parfor i = 1:sampleCount
-        Tdata(:, :, i) = this.temperature.computeWithLeakage( ...
+        Tdata(:, :, i) = this.computeWithLeakage( ...
           Pdyn, options, 'L', L(:, i));
       end
 
       Tdata = permute(Tdata, [ 3 1 2 ]);
+    end
+
+    function string = toString(this)
+      string = Utils.toString(this.process);
     end
   end
 end
