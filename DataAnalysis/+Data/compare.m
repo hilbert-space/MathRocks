@@ -113,14 +113,22 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   draw = options.draw;
   options = Options(options, 'draw', false);
 
-  h = Bar('Comparison: step %d out of %d.', codimensionCount);
-
   localError = zeros(dimensionCount, codimensionCount);
 
-  for i = 1:codimensionCount
-    [ ~, localError(:, i) ] = compare2D( ...
-      oneData(:, :, i), twoData(:, :, i), options);
-    increase(h);
+  if matlabpool('size') > 0
+    h = Bar(sprintf('Comparison of %d steps in parallel...', codimensionCount), 100, 50);
+    parfor i = 1:codimensionCount
+      [ ~, localError(:, i) ] = compare2D( ...
+        oneData(:, :, i), twoData(:, :, i), options);
+    end
+    close(h);
+  else
+    h = Bar('Comparison: step %d out of %d.', codimensionCount);
+    for i = 1:codimensionCount
+      [ ~, localError(:, i) ] = compare2D( ...
+        oneData(:, :, i), twoData(:, :, i), options);
+      increase(h);
+    end
   end
 
   globalError = mean(localError(:));

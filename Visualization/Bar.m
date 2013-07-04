@@ -8,7 +8,9 @@ classdef Bar < handle
 
   methods
     function this = Bar(template, total, done)
+      if nargin < 2, total = 1; end
       if nargin < 3, done = 0; end
+
       this.template = template;
       this.total = total;
       this.done = done;
@@ -21,8 +23,17 @@ classdef Bar < handle
         'edgecolor', color, 'facecolor', color);
     end
 
+    function set(this, done)
+      this.done = done;
+      this.update;
+    end
+
     function increase(this)
       this.done = this.done + 1;
+      this.update;
+    end
+
+    function update(this)
       waitbar(this.done / this.total, this.handle, ...
         sprintf(this.template, this.done, this.total));
       if this.done == this.total, close(this); end
