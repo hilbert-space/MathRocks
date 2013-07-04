@@ -1,23 +1,29 @@
-function analyze(analysis, varargin)
+function analyze(method, analysis, varargin)
   close all;
   setup;
 
   options = Configure.systemSimulation(varargin{:});
   options = Configure.processVariation(options);
-  options = Configure.polynomialChaos(options);
+
+  switch method
+  case 'Chaos'
+    options = Configure.polynomialChaos(options);
+  case 'ASGC'
+    options = Configure.ASGC(options);
+  end
 
   plot(options.die);
   plot(options.schedule);
   plot(options.power, options.dynamicPower);
 
-  chaos = Temperature.Chaos.(analysis)(options);
+  surrogate = Temperature.(method).(analysis)(options);
 
   iterationCount = options.get('iterationCount', 10);
 
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount
-    [ Texp, output ] = chaos.compute(options.dynamicPower);
+    [ Texp, output ] = surrogate.compute(options.dynamicPower);
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
@@ -25,7 +31,11 @@ function analyze(analysis, varargin)
 
   Utils.plotTemperatureVariation(time, ...
     { Utils.toCelsius(Texp) }, { output.Tvar });
-  showCoefficients(time, { output.coefficients });
+
+  switch method
+  case 'Chaos'
+    showCoefficients(time, { output.coefficients });
+  end
 end
 
 function showCoefficients(~, coefficientSet)
@@ -37,7 +47,7 @@ function showCoefficients(~, coefficientSet)
     for j = 1:setCount
       subplot(1, setCount, j);
       heatmap(flipud(abs(squeeze(coefficientSet{j}(2:end, i, :)))));
-      Plot.title('Magnitude (PE%d)', i);
+      Plot.title('Magnitude %d', i);
       Plot.label('Time', 'Coefficient');
     end
   end

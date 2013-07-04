@@ -47,21 +47,21 @@ function plotTemperatureVariation(time, expectationSet, varianceSet, varargin)
         'Color', color, 'LineWidth', 1);
 
       if ~isempty(labels{j})
-        prefix = sprintf('%s: ', labels{j});
+        prefix = sprintf('%s ', labels{j});
       else
         prefix = '';
       end
 
       if isempty(varianceSet{j})
-        legend{end + 1} = sprintf('%sPE%d', prefix, i);
+        legend{end + 1} = sprintf('%s%d', prefix, i);
         continue;
       else
-        legend{end + 1} = sprintf('%sPE%d: Expectation', prefix, i);
+        legend{end + 1} = sprintf('%s%d: Expectation', prefix, i);
       end
 
       line(time, expectationSet{j}(i, :) + sqrt(varianceSet{j}(i, :)), ...
         'Color', color, 'LineStyle', '--');
-      legend{end + 1} = sprintf('%sPE%d: Deviation', prefix, i);
+      legend{end + 1} = sprintf('%s%d: Deviation', prefix, i);
     end
 
     switch layout

@@ -1,3 +1,3 @@
 function ChaosTransient(varargin)
-  analyze('Transient', varargin{:});
+  analyze('Chaos', 'Transient', varargin{:});
 end

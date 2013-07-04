@@ -17,7 +17,7 @@ classdef Base < handle
           'inputCount', this.process.dimensionCount, ...
           'quadratureOptions', Options( ...
             'ruleName', 'GaussHermiteHW'), ...
-          options.chaosOptions);
+          options.surrogateOptions);
       case 'Beta'
         distribution = this.process.transformation.customDistribution;
 
@@ -34,7 +34,7 @@ classdef Base < handle
           'inputCount', this.process.dimensionCount, ...
           'alpha', alpha - 1, 'beta', beta - 1, 'a', a, 'b', b, ...
           'quadratureOptions', Options('ruleName', 'GaussJacobi'), ...
-          options.chaosOptions);
+          options.surrogateOptions);
       otherwise
         assert(false);
       end
@@ -52,7 +52,7 @@ classdef Base < handle
         result = transpose(reshape(T, processorCount * stepCount, []));
       end
 
-      coefficients = chaos.expand(@target, varargin{:});
+      coefficients = chaos.expand(@target);
 
       Texp = reshape(coefficients(1, :), processorCount, stepCount);
 

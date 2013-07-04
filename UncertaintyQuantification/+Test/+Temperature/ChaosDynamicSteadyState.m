@@ -1,3 +1,3 @@
 function ChaosDynamicSteadyState(varargin)
-  analyze('DynamicSteadyState', 'iterationCount', 1, varargin{:});
+  analyze('Chaos', 'DynamicSteadyState', 'iterationCount', 1, varargin{:});
 end
