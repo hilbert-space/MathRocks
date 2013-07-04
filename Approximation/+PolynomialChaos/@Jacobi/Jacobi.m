@@ -14,7 +14,7 @@ classdef Jacobi < PolynomialChaos.Base
     function data = sample(this, sampleCount, varargin)
       %
       % NOTE: We have +1 here as MATLAB's interpretation of the Beta distribution
-      % is different from the one used for Jocobi chaos.
+      % is different from the one used for the Jocobi chaos.
       %
       data = betarnd(this.alpha + 1, this.beta + 1, sampleCount, this.inputCount);
       data = data * (this.b - this.a) + this.a;
@@ -31,6 +31,12 @@ classdef Jacobi < PolynomialChaos.Base
     end
 
     function basis = constructUnivariateBasis(this, x, order)
+      %
+      % Reference:
+      %
+      % http://en.wikipedia.org/wiki/Jacobi_polynomials#Recurrence_relation
+      %
+
       assert(order >= 0);
 
       basis(1) = sympoly(1);
@@ -63,6 +69,12 @@ classdef Jacobi < PolynomialChaos.Base
     end
 
     function norm = computeNormalizationConstant(this, i, index)
+      %
+      % Reference:
+      %
+      % http://en.wikipedia.org/wiki/Jacobi_polynomials#Basic_properties
+      %
+
       n = index(i, :) - 1;
 
       alpha = this.alpha;
@@ -72,14 +84,15 @@ classdef Jacobi < PolynomialChaos.Base
 
       c = 2^(alpha + beta_ + 1) ./ (2 * n + alpha + beta_ + 1);
       d = gamma(n + alpha + 1) .* gamma(n + beta_ + 1) ./ ...
-        (gamma(n + 1) .* gamma(n + alpha + beta_ + 1));
+        (gamma(n + alpha + beta_ + 1) .* gamma(n + 1));
 
       %
-      % NOTE: The product of the above two cancels out all the weight;
+      % NOTE: The product of the above two cancels out the weight;
       % however, we want to preserve the beta weight and, therefore,
-      % divide by the following constant.
+      % divide by the following constant. Also, +1 is due to the fact
+      % pointed out earlier.
       %
-      e = (b - a)^(alpha + beta_ + 1) * beta(alpha + 1, beta_ + 1);
+      e = (b - a)^(alpha + 1 + beta_ + 1 - 1) * beta(alpha + 1, beta_ + 1);
 
       norm = prod(c .* d ./ e);
     end
