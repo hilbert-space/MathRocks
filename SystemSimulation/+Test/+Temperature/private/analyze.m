@@ -14,12 +14,12 @@ function analyze(method, analysis, iterationCount)
   time = toc(time) / iterationCount;
   fprintf('Average computational time: %.4f s\n', time);
 
-  Utils.plotPowerTemperature(Pdyn, output.Pleak, ...
+  Utils.plotPowerTemperature(Pdyn, output.P - Pdyn, ...
     T, temperature.samplingInterval);
 
-  Ptot  = mean(Pdyn(:) + output.Pleak(:));
+  Ptot  = mean(output.P(:));
   Pdyn  = mean(Pdyn(:));
-  Pleak = mean(output.Pleak(:));
+  Pleak = mean(output.P(:) - Pdyn(:));
 
   fprintf('Average total power:        %.2f W\n', Ptot);
   fprintf('Average dynamic power:      %.2f W\n', Pdyn);

@@ -10,24 +10,30 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   Tamb = this.ambientTemperature;
 
   leakage = this.leakage;
-  L = options.get('L', leakage.Lnom);
 
-  if isscalar(L)
-    L = L * ones(processorCount, 1);
-  end
+  L = options.get('L', leakage.Lnom * ones(processorCount, 1));
+  assert(size(L, 1) == processorCount);
 
-  T = zeros(processorCount, stepCount);
-  Pleak = zeros(processorCount, stepCount);
+  sampleCount = size(L, 2);
 
-  Pleak(:, 1) = leakage.evaluate(L, Tamb * ones(processorCount, 1));
-  X = D * (Pdyn(:, 1) + Pleak(:, 1));
-  T(:, 1) = BT * X + Tamb;
+  T = zeros(processorCount, stepCount, sampleCount);
+  P = zeros(processorCount, stepCount, sampleCount);
+
+  P_ = bsxfun(@plus, Pdyn(:, 1), leakage.evaluate(L, Tamb * ones(size(L))));
+  X_ = D * P_;
+  T_ = BT * X_ + Tamb;
+
+  T(:, 1, :) = T_;
+  P(:, 1, :) = P_;
 
   for i = 2:stepCount
-    Pleak(:, i) = leakage.evaluate(L, T(:, i - 1));
-    X = E * X + D * (Pdyn(:, i) + Pleak(:, i));
-    T(:, i) = BT * X + Tamb;
+    P_ = bsxfun(@plus, Pdyn(:, i), leakage.evaluate(L, T_));
+    X_ = E * X_ + D * P_;
+    T_ = BT * X_ + Tamb;
+
+    T(:, i, :) = T_;
+    P(:, i, :) = P_;
   end
 
-  output.Pleak = Pleak;
+  output.P = P;
 end

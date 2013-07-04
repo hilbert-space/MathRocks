@@ -1,4 +1,4 @@
-function [ Tcurrent, output ] = computeWithLeakage(this, Pdyn, varargin)
+function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   options = Options(varargin{:});
 
   nodeCount = this.nodeCount;
@@ -16,13 +16,9 @@ function [ Tcurrent, output ] = computeWithLeakage(this, Pdyn, varargin)
   dt = this.samplingInterval;
 
   leakage = this.leakage;
-  L = options.get('L', leakage.Lnom);
 
-  if isscalar(L)
-    L = L * ones(size(Pdyn));
-  else
-    L = Utils.replicate(L(:), 1, stepCount);
-  end
+  L = options.get('L', leakage.Lnom * ones(processorCount, 1));
+  assert(size(L, 1) == processorCount);
 
   iterationLimit = options.get('iterationLimit', 10);
   temperatureLimit = options.get('temperatureLimit', Inf);
@@ -31,50 +27,67 @@ function [ Tcurrent, output ] = computeWithLeakage(this, Pdyn, varargin)
   W = zeros(nodeCount, stepCount);
   X = zeros(nodeCount, stepCount);
 
-  function T = computeOne(P)
-    Q = D * P;
+  function T_ = computeOne(P_)
+    Q = D * P_;
 
     W(:, 1) = Q(:, 1);
 
-    for i = 2:stepCount
-      W(:, i) = E * W(:, i - 1) + Q(:, i);
+    for k = 2:stepCount
+      W(:, k) = E * W(:, k - 1) + Q(:, k);
     end
 
     X(:, 1) = U * diag(1 ./ (1 - exp(dt * ...
       stepCount * Lambda))) * UT * W(:, stepCount);
 
-    for i = 2:stepCount
-      X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
+    for k = 2:stepCount
+      X(:, k) = E * X(:, k - 1) + Q(:, k - 1);
     end
 
-    T = BT * X + Tamb;
+    T_ = BT * X + Tamb;
   end
 
-  Pcurrent = Pdyn + leakage.evaluate(L, Tamb * ones(size(Pdyn)));
-  Tcurrent = computeOne(Pcurrent);
+  sampleCount = size(L, 2);
 
-  for k = 2:iterationLimit
-    Tlast = Tcurrent;
+  T = zeros(processorCount, stepCount, sampleCount);
+  P = zeros(processorCount, stepCount, sampleCount);
+  iterationCount = zeros(1, sampleCount);
 
-    Pcurrent = Pdyn + leakage.evaluate(L, Tcurrent);
+  for i = 1:sampleCount
+    l = Utils.replicate(L(:, i), 1, stepCount);
+
+    Pcurrent = Pdyn + leakage.evaluate(l, Tamb * ones(size(l)));
     Tcurrent = computeOne(Pcurrent);
 
-    if max(max(Tcurrent)) > temperatureLimit
-      %
-      % Thermal runaway
-      %
-      k = iterationLimit;
-      break;
+    j = 1;
+    while j < iterationLimit
+      j = j + 1;
+
+      Tlast = Tcurrent;
+
+      Pcurrent = Pdyn + leakage.evaluate(l, Tcurrent);
+      Tcurrent = computeOne(Pcurrent);
+
+      if max(max(Tcurrent)) > temperatureLimit
+        %
+        % Thermal runaway
+        %
+        j = iterationLimit;
+        break;
+      end
+
+      if max(max(abs(Tcurrent - Tlast))) < tolerance
+        %
+        % Successful convergence
+        %
+        break;
+      end
     end
 
-    if max(max(abs(Tcurrent - Tlast))) < tolerance
-      %
-      % Successful convergence
-      %
-      break;
-    end
+    T(:, :, i) = Tcurrent;
+    P(:, :, i) = Pcurrent;
+    iterationCount(i) = j;
   end
 
-  output.iterationCount = k;
-  output.Pleak = Pcurrent - Pdyn;
+  output.P = P;
+  output.iterationCount = iterationCount;
 end
