@@ -16,6 +16,10 @@ function [ globalError, localError ] = compare(varargin)
   options = Options('draw', false, 'layout', 'tiles', 'labels', {}, ...
     'errorMetric', 'NRMSE', options);
 
+  if ~options.has('distanceMetric');
+    options.distanceMetric = options.errorMetric;
+  end
+
   if dimensions == 2
     [ globalError, localError ] = compare2D(data{1}, data{2}, options);
   else
@@ -56,7 +60,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     one = Data.process(x, one, options);
     two = Data.process(x, two, options);
 
-    localError(i) = Error.compute(options.errorMetric, one, two);
+    localError(i) = Error.compute(options.distanceMetric, one, two);
 
     if ~options.draw, continue; end
 
@@ -83,14 +87,14 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     case 'one'
       labels{end + 1} = sprintf('%d', i);
       labels{end + 1} = sprintf('%d: %s %.4f', ...
-        i, options.errorMetric, localError(i));
+        i, options.distanceMetric, localError(i));
       if ~isempty(options.labels)
         labels{end - 1} = [ options.labels{1}, ' ', labels{end - 1} ];
         labels{end - 0} = [ options.labels{2}, ' ', labels{end - 0} ];
       end
     case { 'tiles', 'separate' }
       Plot.title('Dimension %d: %s %.4f', i, ...
-        options.errorMetric, localError(i));
+        options.distanceMetric, localError(i));
       Plot.legend(options.labels{:});
     end
   end
@@ -155,7 +159,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   Plot.label('', 'Absolute error');
   subplot(1, 3, 3);
   Plot.title('Distribution (mean %.4f)', globalError);
-  Plot.label('', options.errorMetric);
+  Plot.label('', options.distanceMetric);
   Plot.name('Errors of empirical expectation, variance, and distribution');
 
   time = 0:(codimensionCount - 1);
