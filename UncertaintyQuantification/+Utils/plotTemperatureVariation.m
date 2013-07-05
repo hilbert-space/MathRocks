@@ -34,34 +34,34 @@ function plotTemperatureVariation(time, expectationSet, varianceSet, varargin)
     switch layout
     case 'separate'
       figure;
-      Plot.title('Temperature');
+      Plot.title('Temperature %d', i);
       Plot.label('Time, s', 'Temperature, C');
       Plot.limit(time);
       legend = {};
     case 'one'
     end
 
-    color = Color.pick(i);
     for j = 1:setCount
-      line(time, expectationSet{j}(i, :), ...
+      switch layout
+      case 'separate'
+        color = Color.pick(j);
+      otherwise
+        color = Color.pick(i);
+      end
+
+      line(time, Utils.toCelsius(expectationSet{j}(i, :)), ...
         'Color', color, 'LineWidth', 1);
 
-      if ~isempty(labels{j})
-        prefix = sprintf('%s ', labels{j});
-      else
-        prefix = '';
-      end
+      legend{end + 1} = labels{j};
+      if isempty(varianceSet{j}), continue; end
 
-      if isempty(varianceSet{j})
-        legend{end + 1} = sprintf('%s%d', prefix, i);
-        continue;
-      else
-        legend{end + 1} = sprintf('%s%d: Expectation', prefix, i);
-      end
+      legend{end} = [ legend{end}, ': Expectation' ];
 
-      line(time, expectationSet{j}(i, :) + sqrt(varianceSet{j}(i, :)), ...
+      line(time, Utils.toCelsius( ...
+        expectationSet{j}(i, :) + sqrt(varianceSet{j}(i, :))), ...
         'Color', color, 'LineStyle', '--');
-      legend{end + 1} = sprintf('%s%d: Deviation', prefix, i);
+
+      legend{end + 1} = sprintf('%s: Deviation', labels{j});
     end
 
     switch layout
