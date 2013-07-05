@@ -29,8 +29,7 @@ function analyze(method, analysis, varargin)
 
   time = options.samplingInterval * (1:options.stepCount);
 
-  Utils.plotTemperatureVariation(time, ...
-    { Utils.toCelsius(Texp) }, { output.Tvar });
+  Utils.plotTemperatureVariation(time, { Texp }, { output.Tvar });
 
   switch method
   case 'Chaos'

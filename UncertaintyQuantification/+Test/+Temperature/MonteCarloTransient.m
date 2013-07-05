@@ -17,7 +17,7 @@ function MonteCarloTransient(varargin)
   %
   % One polynomial chaos.
   %
-  chaos = Temperature.Chaos.Transient(options);
+  pc = Temperature.Chaos.Transient(options);
 
   %
   % Monte Carlo simulations.
@@ -25,7 +25,7 @@ function MonteCarloTransient(varargin)
   mc = Temperature.MonteCarlo.Transient(options);
 
   tic;
-  [ Texp1, output1 ] = chaos.compute(options.dynamicPower);
+  [ pcTexp, pcOutput ] = pc.compute(options.dynamicPower);
   fprintf('Polynomial chaos: construction time %.2f s.\n', toc);
 
   %
@@ -33,26 +33,24 @@ function MonteCarloTransient(varargin)
   %
   if Terminal.question('Compare expectations, variances, and PDFs? ')
     tic;
-    Tdata1 = chaos.sample(output1, chaosSampleCount);
+    pcOutput.Tdata = pc.sample(pcOutput, chaosSampleCount);
     fprintf('Polynomial chaos: sampling time %.2f s (%d samples).\n', ...
       toc, chaosSampleCount);
 
-    [ Texp2, output2 ] = mc.compute(options.dynamicPower, ...
+    [ mcTexp, mcOutput ] = mc.compute(options.dynamicPower, ...
       'sampleCount', carloSampleCount, 'verbose', true);
 
-    labels = { 'PC', 'MC' };
+    Utils.plotTemperatureVariation(time, ...
+      { pcTexp, mcTexp }, { pcOutput.Tvar, mcOutput.Tvar }, ...
+      'labels', { 'PC', 'MC' });
 
-    Utils.drawTemperature(time, ...
-      { Utils.toCelsius(Texp1), Utils.toCelsius(Texp2) }, ...
-      { output1.Tvar, output2.Tvar }, 'labels', labels);
+    pcTdata = Utils.toCelsius(pcOutput.Tdata);
+    mcTdata = Utils.toCelsius(mcOutput.Tdata);
 
-    Tdata1 = Utils.toCelsius(Tdata1);
-    Tdata2 = Utils.toCelsius(output2.Tdata);
-
-    Data.compare(Tdata1, Tdata2, ...
+    Data.compare(pcTdata, mcTdata, ...
       'method', 'histogram', 'range', 'unbounded', ...
       'layout', 'separate', 'draw', true, ...
-      'labels', labels);
+      'labels', { 'PC', 'MC' });
   end
 
   %
@@ -71,24 +69,24 @@ function MonteCarloTransient(varargin)
      'prompt', sprintf('Which random variables? [%s] ', Utils.toString(index)), ...
      'type', 'uint8', 'default', index);
 
-    if any(index > chaos.process.dimensionCount), continue; end
+    if any(index > pc.process.dimensionCount), continue; end
 
-    RVs = zeros(length(rvs), chaos.process.dimensionCount);
+    RVs = zeros(length(rvs), pc.process.dimensionCount);
     for i = index
       RVs(:, i) = rvs;
     end
 
-    Tdata1 = chaos.evaluate(output1, RVs);
-    Tdata2 = mc.evaluate(options.dynamicPower, RVs);
+    pcTdata = pc.evaluate(pcOutput, RVs);
+    mcTdata = mc.evaluate(options.dynamicPower, RVs);
 
-    Tdata1 = Utils.toCelsius(Tdata1(:, :, k));
-    Tdata2 = Utils.toCelsius(Tdata2(:, :, k));
+    pcTdata = Utils.toCelsius(pcTdata(:, :, k));
+    mcTdata = Utils.toCelsius(mcTdata(:, :, k));
 
     figure;
     for i = 1:options.processorCount
       color = Color.pick(i);
-      line(rvs, Tdata1(:, i), 'Color', color, 'Marker', 'o');
-      line(rvs, Tdata2(:, i), 'Color', color, 'Marker', 'x');
+      line(rvs, pcTdata(:, i), 'Color', color, 'Marker', 'o');
+      line(rvs, mcTdata(:, i), 'Color', color, 'Marker', 'x');
     end
     Plot.title('Sweep at %.3f s', timeSlice);
     Plot.label('Random parameter', 'Temperature, C');
