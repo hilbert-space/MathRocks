@@ -1,4 +1,4 @@
-function plotTemperatureVariation(time, expectationSet, varianceSet, varargin)
+function temperatureVariation(time, expectationSet, varianceSet, varargin)
   if nargin < 3
     varianceSet = [];
     varargin = {};

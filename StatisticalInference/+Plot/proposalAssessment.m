@@ -1,4 +1,4 @@
-function plotProposalAssessment(theta, assessment)
+function proposalAssessment(theta, assessment)
   parameterCount = length(assessment);
 
   cols = floor(sqrt(parameterCount));

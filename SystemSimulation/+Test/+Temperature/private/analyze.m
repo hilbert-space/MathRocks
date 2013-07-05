@@ -14,7 +14,7 @@ function analyze(method, analysis, iterationCount)
   time = toc(time) / iterationCount;
   fprintf('Average computational time: %.4f s\n', time);
 
-  Utils.plotPowerTemperature(Pdyn, output.P - Pdyn, ...
+  Plot.powerTemperature(Pdyn, output.P - Pdyn, ...
     T, temperature.samplingInterval);
 
   Ptot  = mean(output.P(:));

@@ -1,4 +1,4 @@
-function plotPowerTemperature(Pdyn, Pleak, T, samplingInterval)
+function powerTemperature(Pdyn, Pleak, T, samplingInterval)
   if nargin < 4, samplingInterval = 1; end
 
   [ processorCount, stepCount ] = size(Pdyn);
