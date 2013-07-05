@@ -1,3 +1,3 @@
-function result = compute(type, varargin)
-  result = Error.([ 'compute', type ])(varargin{:});
+function error = compute(type, varargin)
+  error = Error.([ 'compute', type ])(varargin{:});
 end

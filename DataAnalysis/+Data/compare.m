@@ -56,7 +56,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     one = Data.process(x, one, options);
     two = Data.process(x, two, options);
 
-    localError(i) = Error.([ 'compute', options.errorMetric ])(one, two);
+    localError(i) = Error.compute(options.errorMetric, one, two);
 
     if ~options.draw, continue; end
 
@@ -147,11 +147,11 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   subplot(1, 3, 1);
   Plot.title('Expectation (%s %.4f)', options.errorMetric, ...
-    Error.([ 'compute', options.errorMetric ])(oneExp, twoExp));
+    Error.compute(options.errorMetric, oneExp, twoExp));
   Plot.label('', 'Absolute error');
   subplot(1, 3, 2);
   Plot.title('Variance (%s %.4f)', options.errorMetric, ...
-    Error.([ 'compute', options.errorMetric ])(oneVar, twoVar));
+    Error.compute(options.errorMetric, oneVar, twoVar));
   Plot.label('', 'Absolute error');
   subplot(1, 3, 3);
   Plot.title('Distribution (mean %.4f)', globalError);
