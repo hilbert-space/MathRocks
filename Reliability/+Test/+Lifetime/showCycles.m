@@ -15,6 +15,6 @@ function showCycles
 
   [ ~, output ] = lifetime.predict(T);
 
-  Plot.thermalCycles(lifetime, T, output);
-  Plot.reliability(lifetime, T, output);
+  Plot.thermalCycles(T, output);
+  Plot.reliability(T, output);
 end

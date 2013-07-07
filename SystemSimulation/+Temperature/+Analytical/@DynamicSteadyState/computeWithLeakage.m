@@ -1,6 +1,10 @@
 function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   options = Options(varargin{:});
 
+  iterationLimit   = options.get('iterationLimit', 20);
+  temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
+  tolerance        = options.get('tolerance', 0.5);
+
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
@@ -17,77 +21,74 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   leakage = this.leakage;
 
-  L = options.get('L', leakage.Lnom * ones(processorCount, 1));
-  assert(size(L, 1) == processorCount);
-
-  iterationLimit = options.get('iterationLimit', 20);
-  temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
-  tolerance = options.get('tolerance', 0.5);
-
-  W = zeros(nodeCount, stepCount);
-  X = zeros(nodeCount, stepCount);
-
-  function T_ = computeOne(P_)
-    Q = D * P_;
-
-    W(:, 1) = Q(:, 1);
-
-    for k = 2:stepCount
-      W(:, k) = E * W(:, k - 1) + Q(:, k);
-    end
-
-    X(:, 1) = U * diag(1 ./ (1 - exp(dt * ...
-      stepCount * Lambda))) * UT * W(:, stepCount);
-
-    for k = 2:stepCount
-      X(:, k) = E * X(:, k - 1) + Q(:, k - 1);
-    end
-
-    T_ = BT * X + Tamb;
+  if ~options.has('L')
+    L = leakage.Lnom * ones(processorCount, 1, stepCount);
+  else
+    assert(size(options.L, 1) == processorCount);
+    L = repmat(options.L, [ 1, 1, stepCount ]);
   end
 
   sampleCount = size(L, 2);
 
-  T = zeros(processorCount, stepCount, sampleCount);
-  P = zeros(processorCount, stepCount, sampleCount);
+  Pdyn = permute(repmat(Pdyn, [ 1, 1, sampleCount ]), [ 1 3 2 ]);
+
+  T = Tamb * ones(processorCount, sampleCount, stepCount);
+  P = zeros(processorCount, sampleCount, stepCount);
+
+  Q = zeros(nodeCount, sampleCount, stepCount);
+  W = zeros(nodeCount, sampleCount, stepCount);
+  X = zeros(nodeCount, sampleCount, stepCount);
+
+  Tlast = Tamb;
+  I = 1:sampleCount;
   iterationCount = zeros(1, sampleCount);
 
-  for i = 1:sampleCount
-    l = Utils.replicate(L(:, i), 1, stepCount);
+  for i = 1:iterationLimit
+    P(:, I, :) = Pdyn(:, I, :) + ...
+      leakage.evaluate(L(:, I, :), T(:, I, :));
 
-    Pcurrent = Pdyn + leakage.evaluate(l, Tamb * ones(size(l)));
-    Tcurrent = computeOne(Pcurrent);
+    Q(:, I, 1) = D * P(:, I, 1);
+    W(:, I, 1) = Q(:, I, 1);
 
-    j = 1;
-    while j < iterationLimit
-      j = j + 1;
-
-      Tlast = Tcurrent;
-
-      Pcurrent = Pdyn + leakage.evaluate(l, Tcurrent);
-      Tcurrent = computeOne(Pcurrent);
-
-      if max(max(Tcurrent)) > temperatureLimit
-        %
-        % Thermal runaway
-        %
-        j = iterationLimit;
-        break;
-      end
-
-      if max(max(abs(Tcurrent - Tlast))) < tolerance
-        %
-        % Successful convergence
-        %
-        break;
-      end
+    for j = 2:stepCount
+      Q(:, I, j) = D * P(:, I, j);
+      W(:, I, j) = E * W(:, I, j - 1) + Q(:, I, j);
     end
 
-    T(:, :, i) = Tcurrent;
-    P(:, :, i) = Pcurrent;
-    iterationCount(i) = j;
+    X(:, I, 1) = U * diag(1 ./ (1 - exp(dt * ...
+      stepCount * Lambda))) * UT * W(:, I, stepCount);
+    T(:, I, 1) = BT * X(:, I, 1) + Tamb;
+
+    for j = 2:stepCount
+      X(:, I, j) = E * X(:, I, j - 1) + Q(:, I, j - 1);
+      T(:, I, j) = BT * X(:, I, j) + Tamb;
+    end
+
+    Tcurrent = permute(T(:, I, :), [ 1, 3, 2 ]);
+    Tcurrent = reshape(Tcurrent, [], length(I));
+
+    %
+    % Thermal runaway
+    %
+    J = find(max(Tcurrent, [], 1) > temperatureLimit);
+    iterationCount(I(J)) = Inf;
+
+    %
+    % Successful convergence
+    %
+    K = find(max(abs(Tcurrent - Tlast), [], 1) < tolerance);
+    iterationCount(I(K)) = i;
+
+    Tlast = Tcurrent;
+
+    M = union(J, K);
+    I(M) = [];
+    Tlast(:, M) = [];
+
+    if isempty(I), break; end
   end
 
-  output.P = P;
+  T = permute(T, [ 1, 3, 2 ]);
+  output.P = permute(P, [ 1, 3, 2 ]);
   output.iterationCount = iterationCount;
 end

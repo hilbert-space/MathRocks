@@ -63,12 +63,8 @@ classdef Base < handle
       end
     end
 
-    function new = expand(this, f, old)
-      if nargin > 2
-        new = this.projection * f(this.nodes, this.evaluation * old);
-      else
-        new = this.projection * f(this.nodes);
-      end
+    function coefficients = expand(this, f, varargin)
+      coefficients = this.projection * f(this.nodes, varargin{:});
     end
   end
 

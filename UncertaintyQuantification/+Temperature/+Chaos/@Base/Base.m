@@ -41,31 +41,26 @@ classdef Base < handle
     end
 
     function [ Texp, output ] = expand(this, Pdyn, varargin)
-      [ processorCount, stepCount ] = size(Pdyn);
-
-      chaos = this.chaos;
-      process = this.process;
-
       function result = target(rvs)
-        L = transpose(process.evaluate(rvs));
+        sampleCount = size(rvs, 1);
+        L = transpose(this.process.evaluate(rvs));
         T = this.computeWithLeakage(Pdyn, 'L', L, varargin{:});
-        result = transpose(reshape(T, processorCount * stepCount, []));
+        result = transpose(reshape(T, [], sampleCount));
       end
 
-      coefficients = chaos.expand(@target);
+      coefficients = this.chaos.expand(@target, varargin{:});
+      [ termCount, outputCount ] = size(coefficients);
 
-      Texp = reshape(coefficients(1, :), processorCount, stepCount);
+      Texp = reshape(coefficients(1, :), this.processorCount, []);
 
       if nargout < 2, return; end
 
-      outputCount = processorCount * stepCount;
-
       output.Tvar = reshape(sum(coefficients(2:end, :).^2 .* ...
-        Utils.replicate(chaos.norm(2:end), 1, outputCount), 1), ...
-        processorCount, stepCount);
+        Utils.replicate(this.chaos.norm(2:end), 1, outputCount), 1), ...
+        this.processorCount, []);
 
-      output.coefficients = reshape(coefficients, chaos.termCount, ...
-        processorCount, stepCount);
+      output.coefficients = reshape(coefficients, termCount, ...
+        this.processorCount, []);
     end
 
     function Tdata = sample(this, output, sampleCount)

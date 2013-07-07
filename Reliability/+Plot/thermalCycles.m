@@ -1,6 +1,7 @@
-function thermalCycles(lifetime, T, output)
+function thermalCycles(T, output)
   [ processorCount, stepCount ] = size(T);
-  time = (0:(stepCount - 1)) * lifetime.samplingInterval;
+
+  time = (0:(stepCount - 1)) * output.samplingInterval;
 
   I = zeros(processorCount, stepCount);
   P = zeros(processorCount, stepCount);

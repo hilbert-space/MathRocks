@@ -1,3 +1,3 @@
 function plot(this, powerProfile)
-  Utils.plotPowerTemperature(powerProfile, [], [], this.samplingInterval);
+  Plot.powerTemperature(powerProfile, [], [], this.samplingInterval);
 end

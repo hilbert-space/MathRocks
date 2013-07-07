@@ -172,6 +172,12 @@ classdef Lifetime < handle
 
       output.totalDamage = totalDamage;
       output.totalMTTF   = totalMTTF;
+
+      output.processorCount = processorCount;
+      output.stepCount = stepCount;
+
+      output.beta = this.beta;
+      output.samplingInterval = this.samplingInterval;
     end
   end
 
