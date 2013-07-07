@@ -1,9 +1,9 @@
 function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   options = Options(varargin{:});
 
-  iterationLimit   = options.get('iterationLimit', 20);
+  iterationLimit   = options.get('iterationLimit',   20);
   temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
-  tolerance        = options.get('tolerance', 0.5);
+  tolerance        = options.get('tolerance',        0.5);
 
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);

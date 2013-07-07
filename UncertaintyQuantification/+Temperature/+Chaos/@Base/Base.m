@@ -48,7 +48,7 @@ classdef Base < handle
         result = transpose(reshape(T, [], sampleCount));
       end
 
-      coefficients = this.chaos.expand(@target, varargin{:});
+      coefficients = this.chaos.expand(@target);
       [ termCount, outputCount ] = size(coefficients);
 
       Texp = reshape(coefficients(1, :), this.processorCount, []);
