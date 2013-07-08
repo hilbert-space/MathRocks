@@ -64,26 +64,25 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       T(:, I, j) = BT * X(:, I, j) + Tamb;
     end
 
-    Tcurrent = permute(T(:, I, :), [ 1, 3, 2 ]);
-    Tcurrent = reshape(Tcurrent, [], length(I));
+    Tcurrent = T(:, I, :);
 
     %
     % Thermal runaway
     %
-    J = find(max(Tcurrent, [], 1) > temperatureLimit);
+    J = find(max(max(Tcurrent, [], 1), [], 3) > temperatureLimit);
     iterationCount(I(J)) = Inf;
 
     %
     % Successful convergence
     %
-    K = find(max(abs(Tcurrent - Tlast), [], 1) < tolerance);
+    K = find(max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < tolerance);
     iterationCount(I(K)) = i;
 
     Tlast = Tcurrent;
 
     M = union(J, K);
     I(M) = [];
-    Tlast(:, M) = [];
+    Tlast(:, M, :) = [];
 
     if isempty(I), break; end
   end
