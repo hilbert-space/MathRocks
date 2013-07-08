@@ -3,6 +3,6 @@ function P = packPeaks(T, output)
   T = permute(T, [ 3, 2, 1 ]);
   P = zeros(profileCount, 0);
   for i = 1:output.processorCount
-    P = [ P, T(:, output.peaks{i}(:, 1), i) ];
+    P = [ P, T(:, output.peakIndex{i}, i) ];
   end
 end

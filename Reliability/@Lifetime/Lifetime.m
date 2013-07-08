@@ -144,12 +144,13 @@ classdef Lifetime < handle
       period = stepCount * this.samplingInterval;
 
       damage = zeros(processorCount, 1);
-      peaks  = cell(processorCount, 1);
+      peakIndex = cell(processorCount, 1);
       cycles = cell(processorCount, 1);
 
       factor = 0;
       for i = 1:processorCount
-        [ N, peaks{i}, cycles{i} ] = this.calculateCyclesToFailure(T(i, :));
+        [ N, peaks, cycles{i} ] = this.calculateCyclesToFailure(T(i, :));
+        peakIndex{i} = peaks(:, 1);
 
         %
         % NOTE: The enumerator is not standard; here
@@ -166,12 +167,12 @@ classdef Lifetime < handle
       if nargout < 2, return; end
 
       output.damage = damage;
-      output.peaks  = peaks;
+      output.peakIndex = peakIndex;
       output.cycles = cycles;
-      output.MTTF   = period ./ damage;
+      output.MTTF = period ./ damage;
 
       output.totalDamage = totalDamage;
-      output.totalMTTF   = totalMTTF;
+      output.totalMTTF = totalMTTF;
 
       output.processorCount = processorCount;
       output.stepCount = stepCount;

@@ -32,6 +32,8 @@ function options = systemSimulation(varargin)
     options.stepCount = size(options.dynamicPower, 2);
   end
 
+  options.timeLine = (0:(options.stepCount - 1)) * options.samplingInterval;
+
   resample = options.get('resample', 1);
   if resample > 1
     options.stepCount = options.stepCount * resample;

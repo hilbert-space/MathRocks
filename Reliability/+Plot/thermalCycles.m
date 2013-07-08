@@ -1,35 +1,14 @@
 function thermalCycles(T, output)
   [ processorCount, stepCount ] = size(T);
 
+  T = Utils.toCelsius(T);
   time = (0:(stepCount - 1)) * output.samplingInterval;
 
-  I = zeros(processorCount, stepCount);
-  P = zeros(processorCount, stepCount);
-
   cycleLegend = {};
-
   for i = 1:processorCount
-    MTTF = output.MTTF(i);
-    peaks = output.peaks{i};
-    cycles = output.cycles{i};
-
-    cycleLegend{end + 1} = ...
-      sprintf('Cycles %.1f (MTTF %.2e)', sum(cycles), MTTF);
-
-    if size(peaks, 1) == 0
-      j = [ 1; stepCount ];
-      p = T(i, j);
-    else
-      j = peaks(:, 1);
-      p = peaks(:, 2);
-    end
-
-    I(i, 1:length(j)) = j;
-    P(i, 1:length(j)) = p;
+    cycleLegend{end + 1} = sprintf('Cycles %.1f (MTTF %.2e)', ...
+      sum(output.cycles{i}), output.MTTF(i));
   end
-
-  T = Utils.toCelsius(T);
-  P = Utils.toCelsius(P);
 
   figure;
 
@@ -42,12 +21,12 @@ function thermalCycles(T, output)
   YLim = get(gca, 'YLim');
 
   % Outline minima and maxima
-  Plot.lines(time, P, 'index', I, ...
+  Plot.lines(time, T, 'index', output.peakIndex, ...
     'style', { 'LineStyle', 'none', 'Marker', 'x' });
 
   % Draw curves only by minima and maxima
   subplot(2, 1, 2);
-  Plot.lines(time, P, 'index', I, ...
+  Plot.lines(time, T, 'index', output.peakIndex, ...
     'labels', { 'Time, s', 'Temperature, C' });
 
   maxT = max(T(:));

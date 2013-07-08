@@ -14,7 +14,7 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
   layout = options.get('layout', 'separate');
 
   setCount = length(expectationSet);
-  processorCount = size(expectationSet{1}, 1);
+  [ processorCount, stepCount ] = size(expectationSet{1});
 
   labels = options.get('labels', cell(1, setCount));
 
@@ -30,6 +30,9 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
     assert(false);
   end
 
+  index = options.get('index', {});
+  I = 1:stepCount;
+
   for i = 1:processorCount
     switch layout
     case 'separate'
@@ -41,6 +44,8 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
     case 'one'
     end
 
+    if ~isempty(index), I = index{i}; end
+
     for j = 1:setCount
       switch layout
       case 'separate'
@@ -49,19 +54,26 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
         color = Color.pick(i);
       end
 
-      line(time, Utils.toCelsius(expectationSet{j}(i, :)), ...
+      line(time(I), Utils.toCelsius(expectationSet{j}(i, I)), ...
         'Color', color, 'LineWidth', 1);
 
       legend{end + 1} = labels{j};
       if isempty(varianceSet{j}), continue; end
 
-      legend{end} = [ legend{end}, ': Expectation' ];
+      if ~isempty(legend{end})
+        legend{end} = [ legend{end}, ': ' ];
+      end
+      legend{end} = [ legend{end}, 'Expectation' ];
 
-      line(time, Utils.toCelsius( ...
-        expectationSet{j}(i, :) + sqrt(varianceSet{j}(i, :))), ...
+      line(time(I), Utils.toCelsius( ...
+        expectationSet{j}(i, I) + sqrt(varianceSet{j}(i, I))), ...
         'Color', color, 'LineStyle', '--');
 
-      legend{end + 1} = sprintf('%s: Deviation', labels{j});
+      legend{end + 1} = labels{j};
+      if ~isempty(legend{end})
+        legend{end} = [ legend{end}, ': ' ];
+      end
+      legend{end} = [ legend{end}, 'Deviation' ];
     end
 
     switch layout
