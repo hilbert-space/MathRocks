@@ -9,14 +9,26 @@ function options = systemSimulation(varargin)
   processorCount = options.getSet('processorCount', 4);
   taskCount = options.getSet('taskCount', 20 * processorCount);
 
-  tgffConfig = File.join(path, ...
-    sprintf('%03d_%03d.tgff', processorCount, taskCount));
-
-  [ options.platform, options.application ] = Utils.parseTGFF(tgffConfig);
+  tgffFilename = options.get('tgffFilename', ...
+    File.join(path, sprintf('%03d_%03d.tgff', processorCount, taskCount)));
+  [ options.platform, options.application ] = Utils.parseTGFF(tgffFilename);
   options.schedule = Schedule.Dense(options.platform, options.application);
 
-  options.die = Die('floorplan', ...
+  readProcessorCount = length(options.platform.processors);
+  assert(readProcessorCount == processorCount);
+
+  readTaskCount = length(options.application.tasks);
+  if readTaskCount ~= taskCount
+    %
+    % NOTE: It is a rather common thing for TGFF.
+    %
+    taskCount = readTaskCount;
+    options.taskCount = readTaskCount;
+  end
+
+  floorplanFilename = options.get('floorplanFilename', ...
     File.join(path, sprintf('%03d.flp', processorCount)));
+  options.die = Die('floorplan', floorplanFilename);
 
   %
   % Dynamic power
@@ -44,15 +56,19 @@ function options = systemSimulation(varargin)
   %
   % Leakage power
   %
+  leakageFilename = options.get('leakageFilename', ...
+    File.join(path, 'inverter_45nm_L5_T1000_08.leak'));
   options.leakage = LeakagePower.LinearInterpolation( ...
     'dynamicPower', options.dynamicPower, ...
-    'filename', File.join(path, 'inverter_45nm_L5_T1000_08.leak'));
+    'filename', leakageFilename);
 
   %
   % Temperature
   %
+  hotspotFilename = options.get('hotspotFilename', ...
+    File.join(path, 'hotspot.config'));
   options.temperatureOptions = Options('die', options.die, ...
-    'config', File.join(path, 'hotspot.config'), ...
+    'config', hotspotFilename, ...
     'line', sprintf('sampling_intvl %.4e', options.samplingInterval), ...
     'leakage', options.leakage);
 end
