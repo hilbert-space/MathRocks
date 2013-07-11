@@ -29,7 +29,7 @@ function [ T, output ] = condensedEquation(this, Pdyn, options)
 
   iterationCount = zeros(1, sampleCount);
 
-  function Version1
+  function condensedEquation1
     T = Tamb * ones(processorCount, stepCount, sampleCount);
     P = zeros(processorCount, stepCount, sampleCount);
 
@@ -85,9 +85,8 @@ function [ T, output ] = condensedEquation(this, Pdyn, options)
     output.P = P;
   end
 
-  function Version2
-    L = repmat(options.L, [ 1, 1, stepCount ]);
-
+  function condensedEquation2
+    L = repmat(L, [ 1, 1, stepCount ]);
     Pdyn = permute(repmat(Pdyn, [ 1, 1, sampleCount ]), [ 1 3 2 ]);
 
     T = Tamb * ones(processorCount, sampleCount, stepCount);
@@ -148,7 +147,7 @@ function [ T, output ] = condensedEquation(this, Pdyn, options)
     output.P = permute(P, [ 1, 3, 2 ]);
   end
 
-  eval([ 'Version', num2str(options.get('version', 1)) ]);
+  eval([ 'condensedEquation', num2str(options.get('version', 1)) ]);
 
   output.iterationCount = iterationCount;
 end
@@ -178,48 +177,109 @@ function [ T, output ] = blockCirculant(this, Pdyn, options)
     invA{i} = inv(A(:, :, i));
   end
 
-  T = Tamb * ones(processorCount, stepCount, sampleCount);
-  P = zeros(processorCount, stepCount, sampleCount);
+  function blockCirculant1
+    T = Tamb * ones(processorCount, stepCount, sampleCount);
+    P = zeros(processorCount, stepCount, sampleCount);
 
-  X = zeros(nodeCount, stepCount);
+    X = zeros(nodeCount, stepCount);
 
-  for i = 1:sampleCount
-    l = Utils.replicate(L(:, i), 1, stepCount);
+    for i = 1:sampleCount
+      l = Utils.replicate(L(:, i), 1, stepCount);
+
+      Tlast = Tamb;
+
+      for j = 1:iterationLimit
+        P(:, :, i) = Pdyn + leakage.evaluate(l, T(:, :, i));
+
+        B = fft(-D * P(:, :, i), stepCount, 2);
+
+        for k = 1:stepCount
+          X(:, k) = invA{k} * B(:, k);
+        end
+
+        Tcurrent = BT * ifft(X, stepCount, 2) + Tamb;
+        T(:, :, i) = Tcurrent;
+
+        if max(max(Tcurrent)) > temperatureLimit
+          %
+          % Thermal runaway
+          %
+          j = Inf;
+          break;
+        end
+
+        if max(max(abs(Tcurrent - Tlast))) < tolerance
+          %
+          % Successful convergence
+          %
+          break;
+        end
+
+        Tlast = Tcurrent;
+      end
+
+      iterationCount(i) = j;
+    end
+  end
+
+  function blockCirculant2
+    L = permute(repmat(L, [ 1, 1, stepCount ]), [ 1, 3, 2 ]);
+    Pdyn = repmat(Pdyn, [ 1, 1, sampleCount ]);
+
+    T = Tamb * ones(processorCount, stepCount, sampleCount);
+    P = zeros(processorCount, stepCount, sampleCount);
+
+    X = zeros(nodeCount, stepCount, sampleCount);
+    Y = zeros(nodeCount, stepCount, sampleCount);
 
     Tlast = Tamb;
+    I = 1:sampleCount;
 
-    for j = 1:iterationLimit
-      P(:, :, i) = Pdyn + leakage.evaluate(l, T(:, :, i));
+    for i = 1:iterationLimit
+      P(:, :, I) = Pdyn(:, :, I) + ...
+        leakage.evaluate(L(:, :, I), T(:, :, I));
 
-      B = fft(-D * P(:, :, i), stepCount, 2);
-
-      for k = 1:stepCount
-        X(:, k) = invA{k} * B(:, k);
+      for j = I
+        Y(:, :, j) = -D * P(:, :, j);
       end
 
-      Tcurrent = BT * ifft(X, stepCount, 2) + Tamb;
-      T(:, :, i) = Tcurrent;
+      B = fft(Y(:, :, I), stepCount, 2);
 
-      if max(max(Tcurrent)) > temperatureLimit
-        %
-        % Thermal runaway
-        %
-        j = Inf;
-        break;
+      for j = 1:stepCount
+        X(:, j, I) = invA{j} * squeeze(B(:, j, :));
       end
 
-      if max(max(abs(Tcurrent - Tlast))) < tolerance
-        %
-        % Successful convergence
-        %
-        break;
+      Y(:, :, I) = ifft(X(:, :, I), stepCount, 2);
+
+      for j = I
+        T(:, :, j) = BT * Y(:, :, j) + Tamb;
       end
+
+      Tcurrent = T(:, :, I);
+
+      %
+      % Thermal runaway
+      %
+      J = find(max(max(Tcurrent, [], 1), [], 2) > temperatureLimit);
+      iterationCount(I(J)) = Inf;
+
+      %
+      % Successful convergence
+      %
+      K = find(max(max(abs(Tcurrent - Tlast), [], 1), [], 2) < tolerance);
+      iterationCount(I(K)) = i;
+
+      M = union(J, K);
+      I(M) = [];
+
+      if isempty(I), break; end
 
       Tlast = Tcurrent;
+      Tlast(:, :, M) = [];
     end
-
-    iterationCount(i) = j;
   end
+
+  eval([ 'blockCirculant', num2str(options.get('version', 1)) ]);
 
   output.P = P;
   output.iterationCount = iterationCount;
