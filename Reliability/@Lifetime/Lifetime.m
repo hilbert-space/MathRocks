@@ -186,15 +186,16 @@ classdef Lifetime < handle
     function [ N, peaks, cycles ] = calculateCyclesToFailure(this, T)
       [ maxPeaks, minPeaks ] = peakdet(T, this.peakThreshold);
       peaks = [ maxPeaks; minPeaks ];
-      [ ~, I ] = sort(peaks(:, 1));
-      peaks = peaks(I, :);
 
       if size(peaks, 1) == 0
         N = [];
-        peaks = [];
+        peaks = zeros(0, 2);
         cycles = [];
         return;
       end
+
+      [ ~, I ] = sort(peaks(:, 1));
+      peaks = peaks(I, :);
 
       rain = rainflow(peaks(:, 2));
 
