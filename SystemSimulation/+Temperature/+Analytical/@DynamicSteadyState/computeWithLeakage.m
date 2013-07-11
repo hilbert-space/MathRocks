@@ -173,9 +173,9 @@ function [ T, output ] = blockCirculant(this, Pdyn, options)
   A = cat(3, this.E, -eye(nodeCount));
   A = conj(fft(A, stepCount, 3));
 
-  LU = cell(stepCount, 2);
+  invA = cell(1, stepCount);
   for i = 1:stepCount
-    [ LU{i, 1}, LU{i, 2} ] = lu(A(:, :, i));
+    invA{i} = inv(A(:, :, i));
   end
 
   T = Tamb * ones(processorCount, stepCount, sampleCount);
@@ -194,7 +194,7 @@ function [ T, output ] = blockCirculant(this, Pdyn, options)
       B = fft(-D * P(:, :, i), stepCount, 2);
 
       for k = 1:stepCount
-        X(:, k) = LU{k, 2} \ (LU{k, 1} \ B(:, k));
+        X(:, k) = invA{k} * B(:, k);
       end
 
       Tcurrent = BT * ifft(X, stepCount, 2) + Tamb;
