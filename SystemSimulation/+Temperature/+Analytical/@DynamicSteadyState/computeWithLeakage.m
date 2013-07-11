@@ -1,13 +1,16 @@
 function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   options = Options(varargin{:});
+  [ T, output ] = feval( ...
+    options.get('algorithm', 'condensedEquation'), this, Pdyn, options);
+end
 
+function [ T, output ] = condensedEquation(this, Pdyn, options)
   iterationLimit   = options.get('iterationLimit', 20);
   temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
   tolerance        = options.get('tolerance', 0.5);
 
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
-  assert(processorCount == this.processorCount);
 
   E = this.E;
   D = this.D;
@@ -20,9 +23,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   dt = this.samplingInterval;
 
   leakage = this.leakage;
-
   L = options.get('L', leakage.Lnom * ones(processorCount, 1));
-  assert(size(L, 1) == processorCount);
 
   sampleCount = size(L, 2);
 
@@ -149,5 +150,77 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   eval([ 'Version', num2str(options.get('version', 1)) ]);
 
+  output.iterationCount = iterationCount;
+end
+
+function [ T, output ] = blockCirculant(this, Pdyn, options)
+  iterationLimit   = options.get('iterationLimit', 20);
+  temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
+  tolerance        = options.get('tolerance', 0.5);
+
+  nodeCount = this.nodeCount;
+  [ processorCount, stepCount ] = size(Pdyn);
+
+  D = this.D;
+  BT = this.BT;
+  Tamb = this.ambientTemperature;
+
+  leakage = this.leakage;
+  L = options.get('L', leakage.Lnom * ones(processorCount, 1));
+
+  sampleCount = size(L, 2);
+
+  A = cat(3, this.E, -eye(nodeCount));
+  A = conj(fft(A, stepCount, 3));
+
+  LU = cell(stepCount, 2);
+  for i = 1:stepCount
+    [ LU{i, 1}, LU{i, 2} ] = lu(A(:, :, i));
+  end
+
+  T = Tamb * ones(processorCount, stepCount, sampleCount);
+  P = zeros(processorCount, stepCount, sampleCount);
+
+  X = zeros(nodeCount, stepCount);
+
+  for i = 1:sampleCount
+    l = Utils.replicate(L(:, i), 1, stepCount);
+
+    Tlast = Tamb;
+
+    for j = 1:iterationLimit
+      P(:, :, i) = Pdyn + leakage.evaluate(l, T(:, :, i));
+
+      B = fft(-D * P(:, :, i), stepCount, 2);
+
+      for k = 1:stepCount
+        X(:, k) = LU{k, 2} \ (LU{k, 1} \ B(:, k));
+      end
+
+      Tcurrent = BT * ifft(X, stepCount, 2) + Tamb;
+      T(:, :, i) = Tcurrent;
+
+      if max(max(Tcurrent)) > temperatureLimit
+        %
+        % Thermal runaway
+        %
+        j = Inf;
+        break;
+      end
+
+      if max(max(abs(Tcurrent - Tlast))) < tolerance
+        %
+        % Successful convergence
+        %
+        break;
+      end
+
+      Tlast = Tcurrent;
+    end
+
+    iterationCount(i) = j;
+  end
+
+  output.P = P;
   output.iterationCount = iterationCount;
 end

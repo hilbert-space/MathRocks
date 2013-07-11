@@ -1,7 +1,7 @@
-function analyze(method, analysis, iterationCount)
+function analyze(method, analysis, iterationCount, varargin)
   setup;
 
-  options = Configure.systemSimulation;
+  options = Configure.systemSimulation(varargin{:});
   Pdyn = options.dynamicPower;
 
   temperature = Temperature.(method).(analysis)(options.temperatureOptions);
@@ -9,7 +9,7 @@ function analyze(method, analysis, iterationCount)
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount
-    [ T, output ] = temperature.compute(Pdyn);
+    [ T, output ] = temperature.compute(Pdyn, options);
   end
   time = toc(time) / iterationCount;
   fprintf('Average computational time: %.4f s\n', time);

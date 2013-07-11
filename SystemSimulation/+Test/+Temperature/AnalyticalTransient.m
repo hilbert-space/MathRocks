@@ -1,3 +1,3 @@
-function AnalyticalTransient
-  analyze('Analytical', 'Transient', 10);
+function AnalyticalTransient(varargin)
+  analyze('Analytical', 'Transient', 10, varargin{:});
 end

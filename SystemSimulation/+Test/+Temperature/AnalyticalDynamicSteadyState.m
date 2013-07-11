@@ -1,3 +1,3 @@
-function AnalyticalDynamicSteadyState
-  analyze('Analytical', 'DynamicSteadyState', 10);
+function AnalyticalDynamicSteadyState(varargin)
+  analyze('Analytical', 'DynamicSteadyState', 10, varargin{:});
 end

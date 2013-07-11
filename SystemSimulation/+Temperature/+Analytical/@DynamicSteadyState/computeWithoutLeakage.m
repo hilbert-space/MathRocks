@@ -5,8 +5,7 @@ end
 
 function T = condensedEquation(this, Pdyn)
   nodeCount = this.nodeCount;
-  [ processorCount, stepCount ] = size(Pdyn);
-  assert(processorCount == this.processorCount);
+  stepCount = size(Pdyn, 1);
 
   E = this.E;
   D = this.D;
@@ -33,25 +32,17 @@ end
 
 function T = blockCirculant(this, Pdyn)
   nodeCount = this.nodeCount;
-  [ processorCount, stepCount ] = size(Pdyn);
-  assert(processorCount == this.processorCount);
+  stepCount = size(Pdyn, 2);
 
-  E = this.E;
-  D = this.D;
+  A = cat(3, this.E, -eye(nodeCount));
+  A = conj(fft(A, stepCount, 3));
 
-  A = zeros(2, nodeCount, nodeCount);
-  A(1, :, :) = E;
-  A(2, :, :) = -eye(nodeCount);
-
-  B = -D * Pdyn;
-
-  A = conj(fft(A, stepCount, 1));
-  B = fft(B, stepCount, 2);
+  B = fft(-this.D * Pdyn, stepCount, 2);
 
   X = zeros(nodeCount, stepCount);
 
   for i = 1:stepCount
-    X(:, i) = squeeze(A(i, :, :)) \ B(:, i);
+    X(:, i) = A(:, :, i) \ B(:, i);
   end
 
   T = this.BT * ifft(X, stepCount, 2) + this.ambientTemperature;
