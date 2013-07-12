@@ -66,6 +66,10 @@ classdef HotSpot < handle
       this.leakage = options.get('leakage', []);
     end
 
+    function [ T, output ] = compute(this, Pdyn, varargin)
+      [ T, output ] = this.solve(Pdyn, Options(varargin{:}));
+    end
+
     function display(this)
       fprintf('%s:\n', class(this));
       fprintf('  Processing elements: %d\n', this.processorCount);
@@ -88,7 +92,7 @@ classdef HotSpot < handle
   end
 
   methods (Abstract)
-    [ T, output ] = compute(this, Pdyn, varargin)
+    [ T, output ] = solve(this, Pdyn, options)
   end
 
   methods (Static, Access = 'private')

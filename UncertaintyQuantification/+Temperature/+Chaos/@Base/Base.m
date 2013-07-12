@@ -44,7 +44,7 @@ classdef Base < handle
       function result = target(rvs)
         sampleCount = size(rvs, 1);
         L = transpose(this.process.evaluate(rvs));
-        T = this.computeWithLeakage(Pdyn, 'L', L, varargin{:});
+        T = this.solve(Pdyn, Options(varargin{:}, 'L', L));
         result = transpose(reshape(T, [], sampleCount));
       end
 

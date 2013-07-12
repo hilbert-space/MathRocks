@@ -34,7 +34,7 @@ classdef Base < handle
       function result = target(rvs)
         rvs = delta + (1 - 2 * delta) * rvs;
         L = transpose(process.evaluate(distribution.icdf(rvs)));
-        T = this.computeWithLeakage(Pdyn, 'L', L, varargin{:});
+        T = this.solve(Pdyn, Options(varargin{:}, 'L', L));
         result = transpose(reshape(T, processorCount * stepCount, []));
       end
 

@@ -39,8 +39,7 @@ classdef Base < handle
 
         time = tic;
         parfor i = 1:sampleCount
-          Tdata(:, :, i) = this.computeWithLeakage( ...
-            Pdyn, options, 'L', L(:, i));
+          Tdata(:, :, i) = this.solve(Pdyn, Options(options, 'L', L(:, i)));
         end
         time = toc(time);
 
@@ -72,8 +71,7 @@ classdef Base < handle
       Tdata = zeros(processorCount, stepCount, sampleCount);
 
       parfor i = 1:sampleCount
-        Tdata(:, :, i) = this.computeWithLeakage( ...
-          Pdyn, options, 'L', L(:, i));
+        Tdata(:, :, i) = this.solve(Pdyn, Options(options, 'L', L(:, i)));
       end
 
       Tdata = permute(Tdata, [ 3 1 2 ]);

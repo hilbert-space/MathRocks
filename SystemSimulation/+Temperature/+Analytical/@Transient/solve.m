@@ -1,9 +1,9 @@
-function [ T, output ] = compute(this, Pdyn, varargin)
+function [ T, output ] = solve(this, Pdyn, options)
   if isempty(this.leakage)
     T = computeWithoutLeakage(this, Pdyn);
     output = struct;
   else
-    [ T, output ] = computeWithLeakage(this, Pdyn, Options(varargin{:}));
+    [ T, output ] = computeWithLeakage(this, Pdyn, options);
   end
 end
 
