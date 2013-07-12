@@ -96,20 +96,20 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     end
   case 2 % Faster but less memory efficient
     L = permute(repmat(L, [ 1, 1, stepCount ]), [ 1, 3, 2 ]);
-    Pdyn = repmat(Pdyn, [ 1, 1, sampleCount ]);
 
     T = Tamb * ones(processorCount, stepCount, sampleCount);
-    P = zeros(processorCount, stepCount, sampleCount);
+    P = repmat(Pdyn, [ 1, 1, sampleCount ]);
 
     X = zeros(nodeCount, stepCount, sampleCount);
     Y = zeros(nodeCount, stepCount, sampleCount);
 
+    PleakLast = 0;
     Tlast = Tamb;
     I = 1:sampleCount;
 
     for i = 1:iterationLimit
-      P(:, :, I) = Pdyn(:, :, I) + ...
-        leakage.evaluate(L(:, :, I), T(:, :, I));
+      PleakCurrent = leakage.evaluate(L(:, :, I), T(:, :, I));
+      P(:, :, I) = P(:, :, I) - PleakLast + PleakCurrent;
 
       for j = I
         Y(:, :, j) = -D * P(:, :, j);
@@ -145,6 +145,9 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       I(M) = [];
 
       if isempty(I), break; end
+
+      PleakLast = PleakCurrent;
+      PleakLast(:, M, :) = [];
 
       Tlast = Tcurrent;
       Tlast(:, :, M) = [];
