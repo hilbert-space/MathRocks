@@ -1,6 +1,34 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
-  options = Options(varargin{:});
+function [ T, output ] = compute(this, Pdyn, varargin)
+  if isempty(this.leakage)
+    T = computeWithoutLeakage(this, Pdyn);
+    output = struct;
+  else
+    [ T, output ] = computeWithLeakage(this, Pdyn, Options(varargin{:}));
+  end
+end
 
+function T = computeWithoutLeakage(this, Pdyn)
+  [ processorCount, stepCount ] = size(Pdyn);
+  assert(processorCount == this.processorCount);
+
+  E = this.E;
+  D = this.D;
+  BT = this.BT;
+  Tamb = this.ambientTemperature;
+
+  Q = D * Pdyn;
+  X = Q(:, 1);
+
+  T = zeros(processorCount, stepCount);
+  T(:, 1) = BT * X + Tamb;
+
+  for i = 2:stepCount
+    X = E * X + Q(:, i);
+    T(:, i) = BT * X + Tamb;
+  end
+end
+
+function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
 

@@ -1,4 +1,31 @@
 function [ T, output ] = blockCirculant(this, Pdyn, options)
+  if isempty(this.leakage)
+    T = computeWithoutLeakage(this, Pdyn);
+    output = struct;
+  else
+    [ T, output ] = computeWithLeakage(this, Pdyn, options);
+  end
+end
+
+function T = computeWithoutLeakage(this, Pdyn)
+  nodeCount = this.nodeCount;
+  stepCount = size(Pdyn, 2);
+
+  A = cat(3, this.E, -eye(nodeCount));
+  A = conj(fft(A, stepCount, 3));
+
+  B = fft(-this.D * Pdyn, stepCount, 2);
+
+  X = zeros(nodeCount, stepCount);
+
+  for i = 1:stepCount
+    X(:, i) = A(:, :, i) \ B(:, i);
+  end
+
+  T = this.BT * ifft(X, stepCount, 2) + this.ambientTemperature;
+end
+
+function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   iterationLimit   = options.get('iterationLimit', 20);
   temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
   tolerance        = options.get('tolerance', 0.5);

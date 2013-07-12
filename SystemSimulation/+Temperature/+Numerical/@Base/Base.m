@@ -1,4 +1,4 @@
-classdef Base < Temperature.LeakageAware
+classdef Base < Temperature.HotSpot
   properties (Access = 'protected')
     At
     Bt
@@ -6,7 +6,7 @@ classdef Base < Temperature.LeakageAware
 
   methods
     function this = Base(varargin)
-      this = this@Temperature.LeakageAware(varargin{:});
+      this = this@Temperature.HotSpot(varargin{:});
 
       nodeCount = this.nodeCount;
       processorCount = this.processorCount;

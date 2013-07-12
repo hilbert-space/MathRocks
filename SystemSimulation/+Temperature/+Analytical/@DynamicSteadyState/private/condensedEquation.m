@@ -1,4 +1,40 @@
 function [ T, output ] = condensedEquation(this, Pdyn, options)
+  if isempty(this.leakage)
+    T = computeWithoutLeakage(this, Pdyn);
+    output = struct;
+  else
+    [ T, output ] = computeWithLeakage(this, Pdyn, options);
+  end
+end
+
+function T = computeWithoutLeakage(this, Pdyn)
+  nodeCount = this.nodeCount;
+  stepCount = size(Pdyn, 1);
+
+  E = this.E;
+  D = this.D;
+
+  Q = D * Pdyn;
+
+  W = zeros(nodeCount, stepCount);
+  W(:, 1) = Q(:, 1);
+
+  for i = 2:stepCount
+    W(:, i) = E * W(:, i - 1) + Q(:, i);
+  end
+
+  X = zeros(nodeCount, stepCount);
+  X(:, 1) = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
+    stepCount * this.L))) * this.UT * W(:, stepCount);
+
+  for i = 2:stepCount
+    X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
+  end
+
+  T = this.BT * X + this.ambientTemperature;
+end
+
+function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   iterationLimit   = options.get('iterationLimit', 20);
   temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
   tolerance        = options.get('tolerance', 0.5);

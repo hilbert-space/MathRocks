@@ -1,14 +1,14 @@
 classdef HotSpot < handle
   properties (SetAccess = 'private')
     %
-    % The number of thermal nodes
-    %
-    nodeCount
-
-    %
     % The number of active nodes
     %
     processorCount
+
+    %
+    % The number of thermal nodes
+    %
+    nodeCount
 
     %
     % The sampling interval
@@ -29,6 +29,11 @@ classdef HotSpot < handle
     % The conductance matrix
     %
     conductance
+
+    %
+    % The leakage model
+    %
+    leakage
   end
 
   methods
@@ -57,11 +62,33 @@ classdef HotSpot < handle
       [ this.capacitance, this.conductance, this.nodeCount, ...
         this.processorCount, this.samplingInterval, this.ambientTemperature ] = ...
         Temperature.HotSpot.constructModel(floorplan, config, line);
+
+      this.leakage = options.get('leakage', []);
+    end
+
+    function display(this)
+      fprintf('%s:\n', class(this));
+      fprintf('  Processing elements: %d\n', this.processorCount);
+      fprintf('  Thermal nodes:       %d\n', this.nodeCount);
+      fprintf('  Sampling interval:   %.2e s\n', this.samplingInterval);
+      fprintf('  Ambient temperature: %.2f C\n', ...
+        Utils.toCelsius(this.ambientTemperature));
+
+      if isempty(this.leakage), return; end
+
+      fprintf('  Leakage model:       %s\n', class(this.leakage));
+    end
+
+    function string = toString(this)
+      string = sprintf('%s(processors %d, nodes %d, sampling %.2e, ambient %.2f, leakage %s)', ...
+        class(this), this.processorCount, this.nodeCount, ...
+        this.samplingInterval, this.ambientTemperature, ...
+        Utils.toString(this.leakage));
     end
   end
 
   methods (Abstract)
-    T = compute(this, Pdyn, varargin)
+    [ T, output ] = compute(this, Pdyn, varargin)
   end
 
   methods (Static, Access = 'private')
