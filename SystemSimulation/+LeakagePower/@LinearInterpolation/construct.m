@@ -1,13 +1,26 @@
 function output = construct(this, Ldata, Tdata, Idata, options)
-  Lcount = length(unique(Ldata));
-  Tcount = length(unique(Tdata));
+  LCount = options.get('LCount', 101);
+  TCount = options.get('TCount', 101);
 
-  Lgrid = reshape(Ldata, Tcount, Lcount);
-  Tgrid = reshape(Tdata, Tcount, Lcount);
-  Igrid = reshape(Idata, Tcount, Lcount);
+  readLCount = length(unique(Ldata));
+  readTCount = length(unique(Tdata));
+
+  LDivision = round(readLCount / LCount);
+  TDivision = round(readTCount / TCount);
+
+  LIndex = 1:LDivision:readLCount;
+  TIndex = 1:TDivision:readTCount;
+
+  Lgrid = reshape(Ldata, readTCount, readLCount);
+  Tgrid = reshape(Tdata, readTCount, readLCount);
+  Igrid = reshape(Idata, readTCount, readLCount);
 
   assert(size(unique(Lgrid, 'rows'), 1) == 1);
   assert(size(unique(Tgrid', 'rows'), 1) == 1);
+
+  Lgrid = Lgrid(TIndex, LIndex);
+  Tgrid = Tgrid(TIndex, LIndex);
+  Igrid = Igrid(TIndex, LIndex);
 
   output.F = griddedInterpolant(Lgrid', Tgrid', Igrid', 'linear', 'none');
 
