@@ -1,5 +1,5 @@
 function [ T, output ] = condensedEquation(this, Pdyn, options)
-  if isempty(this.leakage)
+  if isempty(options.get('leakage', this.leakage))
     T = computeWithoutLeakage(this, Pdyn);
     output = struct;
   else
@@ -9,7 +9,7 @@ end
 
 function T = computeWithoutLeakage(this, Pdyn)
   nodeCount = this.nodeCount;
-  stepCount = size(Pdyn, 1);
+  stepCount = size(Pdyn, 2);
 
   E = this.E;
   D = this.D;

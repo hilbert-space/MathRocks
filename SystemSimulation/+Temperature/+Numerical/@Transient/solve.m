@@ -1,5 +1,5 @@
 function [ T, output ] = solve(this, Pdyn, options)
-  if isempty(this.leakage)
+  if isempty(options.get('leakage', this.leakage))
     T = computeWithoutLeakage(this, Pdyn);
     output = struct;
   else
