@@ -1,14 +1,15 @@
-function output = construct(this, Ldata, Tdata, Idata, options)
+function output = construct(this, Lgrid, Tgrid, Igrid, options)
   order = options.order;
-  scale = options.scale;
 
   maxOrder = max(order);
+
+  scale = options.get('scale', ones(2, maxOrder + 1));
 
   assert(numel(order) == 2);
   assert(size(scale, 1) == 2 && size(scale, 2) == maxOrder + 1);
 
   [ fitobject, expectation, deviation ] = ...
-    performPolynomialFit(Ldata, Tdata, log(Idata), order);
+    performPolynomialFit(Lgrid(:), Tgrid(:), log(Igrid(:)), order);
 
   values = coeffvalues(fitobject);
   names = coeffnames(fitobject);
@@ -58,11 +59,7 @@ function output = construct(this, Ldata, Tdata, Idata, options)
 end
 
 function [ fitobject, expectation, deviation ] = ...
-  performPolynomialFit(L, T, I, order)
-
-  [ X, Y, Z ] = prepareSurfaceData(L, T, I);
-  X = [ X, Y ];
-  Y = Z;
+  performPolynomialFit(X, Y, Z, order)
 
   type = fittype(sprintf('poly%d%d', order(1), order(2)));
 
@@ -73,6 +70,6 @@ function [ fitobject, expectation, deviation ] = ...
   options.Lower = -Inf(1, count);
   options.Upper =  Inf(1, count);
 
-  [ X, expectation, deviation ] = curvefit.normalize(X);
-  fitobject = fit(X, Y, type, options);
+  [ XY, expectation, deviation ] = curvefit.normalize([ X, Y ]);
+  fitobject = fit(XY, Z, type, options);
 end

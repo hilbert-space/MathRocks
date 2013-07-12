@@ -15,15 +15,14 @@ classdef Base < handle
   end
 
   properties (SetAccess = 'protected')
-    filename
+    options
     output
   end
 
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
-
-      this.filename = options.filename;
+      this.options = options;
 
       filename = File.temporal([ 'LeakagePower_', ...
         DataHash({ class(this), Utils.toString(options) }), '.mat' ]);
@@ -31,8 +30,16 @@ classdef Base < handle
       if File.exist(filename);
         load(filename);
       else
-        [ Ldata, Tdata, Idata ] = LeakagePower.Base.load(this.filename);
-        output = this.construct(Ldata, Tdata, Idata, options);
+        [ Lgrid, Tgrid, Igrid ] = ...
+          LeakagePower.Base.load(options);
+
+        output = this.construct(Lgrid, Tgrid, Igrid, options);
+
+        output.Lmin = min(Lgrid(:));
+        output.Lmax = max(Lgrid(:));
+        output.Tmin = min(Tgrid(:));
+        output.Tmax = max(Tgrid(:));
+
         save(filename, 'output', '-v7.3');
       end
 
@@ -40,7 +47,8 @@ classdef Base < handle
     end
 
     function string = toString(this)
-      string = sprintf('%s(%s)', class(this), this.filename);
+      string = sprintf('%s(%s)', ...
+        class(this), this.options.filename);
     end
   end
 
@@ -53,11 +61,35 @@ classdef Base < handle
   end
 
   methods (Static)
-    function [ Ldata, Tdata, Idata ] = load(filename)
-      data = dlmread(filename, '\t', 1, 0);
+    function [ Lgrid, Tgrid, Igrid ] = load(options)
+      data = dlmread(options.filename, '\t', 1, 0);
+
       Ldata = data(:, 1);
       Tdata = Utils.toKelvin(data(:, 2));
       Idata = data(:, 3);
+
+      LCount = options.get('LCount', 101);
+      TCount = options.get('TCount', 101);
+
+      readLCount = length(unique(Ldata));
+      readTCount = length(unique(Tdata));
+
+      LDivision = round(readLCount / LCount);
+      TDivision = round(readTCount / TCount);
+
+      LIndex = 1:LDivision:readLCount;
+      TIndex = 1:TDivision:readTCount;
+
+      Lgrid = reshape(Ldata, readTCount, readLCount);
+      Tgrid = reshape(Tdata, readTCount, readLCount);
+      Igrid = reshape(Idata, readTCount, readLCount);
+
+      assert(size(unique(Lgrid, 'rows'), 1) == 1);
+      assert(size(unique(Tgrid', 'rows'), 1) == 1);
+
+      Lgrid = Lgrid(TIndex, LIndex);
+      Tgrid = Tgrid(TIndex, LIndex);
+      Igrid = Igrid(TIndex, LIndex);
     end
   end
 end

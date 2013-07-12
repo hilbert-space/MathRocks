@@ -1,22 +1,15 @@
 function plot(this)
-  [ Ldata, Tdata, Idata ] = LeakagePower.Base.load(this.filename);
-  Ipred = this.evaluate(Ldata, Tdata);
+  [ Lgrid, Tgrid, Igrid ] = LeakagePower.Base.load(this.options);
+  Ipred = this.evaluate(Lgrid, Tgrid);
 
-  error = Error.computeNRMSE(Idata, Ipred);
+  error = Error.computeNRMSE(Igrid, Ipred);
 
   figure;
   h = subplot(1, 1, 1);
 
-  Luni = sort(unique(Ldata));
-  Tuni = sort(unique(Tdata));
+  mesh(Lgrid, Utils.toCelsius(Tgrid), Igrid);
 
-  [ L, T ] = meshgrid(Luni, Tuni);
-
-  I = griddata(Ldata, Tdata, Idata, L, T);
-
-  mesh(L, Utils.toCelsius(T), I);
-
-  line(Ldata, Utils.toCelsius(Tdata), Ipred, ...
+  line(Lgrid, Utils.toCelsius(Tgrid), Ipred, ...
     'LineStyle', 'None', ...
     'Marker', 'o', ...
     'MarkerEdgeColor', 'w', ...
