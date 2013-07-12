@@ -15,17 +15,15 @@ function T = computeWithoutLeakage(this, Pdyn)
   D = this.D;
 
   Q = D * Pdyn;
-
-  W = zeros(nodeCount, stepCount);
-  W(:, 1) = Q(:, 1);
+  W = Q(:, 1);
 
   for i = 2:stepCount
-    W(:, i) = E * W(:, i - 1) + Q(:, i);
+    W = E * W + Q(:, i);
   end
 
   X = zeros(nodeCount, stepCount);
   X(:, 1) = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
-    stepCount * this.L))) * this.UT * W(:, stepCount);
+    stepCount * this.L))) * this.UT * W;
 
   for i = 2:stepCount
     X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
@@ -64,7 +62,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     T = Tamb * ones(processorCount, stepCount, sampleCount);
     P = zeros(processorCount, stepCount, sampleCount);
 
-    W = zeros(nodeCount, stepCount);
     X = zeros(nodeCount, stepCount);
 
     for i = 1:sampleCount
@@ -76,14 +73,14 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
         P(:, :, i) = Pdyn + leakage.evaluate(l, T(:, :, i));
 
         Q = D * P(:, :, i);
-        W(:, 1) = Q(:, 1);
+        W = Q(:, 1);
 
         for k = 2:stepCount
-          W(:, k) = E * W(:, k - 1) + Q(:, k);
+          W = E * W + Q(:, k);
         end
 
         X(:, 1) = U * diag(1 ./ (1 - exp(dt * ...
-          stepCount * Lambda))) * UT * W(:, stepCount);
+          stepCount * Lambda))) * UT * W;
 
         for k = 2:stepCount
           X(:, k) = E * X(:, k - 1) + Q(:, k - 1);
@@ -122,8 +119,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     P = zeros(processorCount, sampleCount, stepCount);
 
     Q = zeros(nodeCount, sampleCount, stepCount);
-    W = zeros(nodeCount, sampleCount, stepCount);
-    X = zeros(nodeCount, sampleCount, stepCount);
+    W = zeros(nodeCount, sampleCount);
 
     Tlast = Tamb;
     I = 1:sampleCount;
@@ -133,20 +129,20 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
         leakage.evaluate(L(:, I, :), T(:, I, :));
 
       Q(:, I, 1) = D * P(:, I, 1);
-      W(:, I, 1) = Q(:, I, 1);
+      W(:, I) = Q(:, I, 1);
 
       for j = 2:stepCount
         Q(:, I, j) = D * P(:, I, j);
-        W(:, I, j) = E * W(:, I, j - 1) + Q(:, I, j);
+        W(:, I) = E * W(:, I) + Q(:, I, j);
       end
 
-      X(:, I, 1) = U * diag(1 ./ (1 - exp(dt * ...
-        stepCount * Lambda))) * UT * W(:, I, stepCount);
-      T(:, I, 1) = BT * X(:, I, 1) + Tamb;
+      X = U * diag(1 ./ (1 - exp(dt * ...
+        stepCount * Lambda))) * UT * W(:, I);
+      T(:, I, 1) = BT * X + Tamb;
 
       for j = 2:stepCount
-        X(:, I, j) = E * X(:, I, j - 1) + Q(:, I, j - 1);
-        T(:, I, j) = BT * X(:, I, j) + Tamb;
+        X = E * X + Q(:, I, j - 1);
+        T(:, I, j) = BT * X + Tamb;
       end
 
       Tcurrent = T(:, I, :);
