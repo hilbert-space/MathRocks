@@ -4,9 +4,9 @@ classdef Hermite < PolynomialChaos.Base
       this = this@PolynomialChaos.Base(varargin{:});
     end
 
-    function data = sample(this, sampleCount, varargin)
+    function data = sample(this, output, sampleCount)
       data = normrnd(0, 1, sampleCount, this.inputCount);
-      data = this.evaluate(data, varargin{:});
+      data = this.evaluate(output, data);
     end
   end
 
@@ -25,8 +25,17 @@ classdef Hermite < PolynomialChaos.Base
       end
     end
 
-    function [ nodes, weights ] = constructQuadrature(this, options)
+    function [ nodes, weights ] = constructQuadrature( ...
+      this, polynomialOrder, options)
+
+      %
+      % NOTE: A n-order Gaussian quadrature rule integrates
+      % polynomials of order (2 * n - 1) exactly. We want to have
+      % exactness for polynomials of order (2 * n) where n is the
+      % order of polynomial chaos expansions. So, +1 here.
+      %
       quadrature = Quadrature( ...
+        'order', polynomialOrder + 1, ...
         'dimensionCount', this.inputCount, ...
         'ruleName', 'GaussHermiteHW', ...
         options);

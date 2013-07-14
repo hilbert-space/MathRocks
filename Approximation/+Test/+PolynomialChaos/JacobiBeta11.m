@@ -11,13 +11,9 @@ function JacobiBeta11
 
   samples = distribution.sample(sampleCount, 1);
 
-  %% Monte Carlo simulation.
-  %
   mcData = f(samples);
 
-  %% Polynomial Chaos expansion.
-  %
-  chaos = PolynomialChaos.Jacobi(f, ...
+  pc = PolynomialChaos.Jacobi( ...
     'order', order, ...
     'inputCount', 1, ...
     'outputCount', 1, ...
@@ -27,10 +23,10 @@ function JacobiBeta11
     'beta', distribution.beta - 1, ...
     'a', distribution.a, ...
     'b', distribution.b);
+  display(pc);
 
-  display(chaos);
+  pcOutput = pc.expand(f);
+  pcData = pc.evaluate(pcOutput, samples);
 
-  apData = chaos.evaluate(samples);
-
-  assess(chaos, apData, mcData, distribution);
+  assess(mcData, pcData, pcOutput, distribution);
 end

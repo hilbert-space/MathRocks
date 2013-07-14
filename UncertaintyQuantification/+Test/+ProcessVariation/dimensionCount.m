@@ -1,6 +1,5 @@
 function dimensionCount
   setup;
-  close all;
 
   sampleCount = 1e5;
   processorCount = [ 2 4 8 16 32 ];
@@ -10,13 +9,8 @@ function dimensionCount
 
     process = ProcessVariation.(options.processModel)(options.processOptions);
 
-    title = sprintf('Processors: %d, Variables: %d\n', ...
+    fprintf('Processors: %d, Variables: %d\n', ...
       processorCount(i), process.dimensionCount);
-
-    plot(options.die);
-    Plot.title(title);
-
-    fprintf(title);
     fprintf('%10s%20s%15s\n', 'Processor', 'Expectation, nm', 'Deviation, %');
 
     L = process.sample(sampleCount);

@@ -1,6 +1,4 @@
-function values = evaluate(this, nodes, coefficients)
-  if nargin < 3, coefficients = this.coefficients; end
-
+function values = evaluate(this, output, nodes);
   rvPower = this.rvPower;
   rvMap = this.rvMap;
 
@@ -16,6 +14,7 @@ function values = evaluate(this, nodes, coefficients)
       nodes, Utils.replicate(rvPower(i, :), nodeCount, 1)), 2);
   end
 
+  coefficients = output.coefficients;
   dimensions = size(coefficients);
 
   switch length(dimensions)

@@ -11,23 +11,25 @@ classdef Jacobi < PolynomialChaos.Base
       this = this@PolynomialChaos.Base(varargin{:});
     end
 
-    function data = sample(this, sampleCount, varargin)
+    function data = sample(this, output, sampleCount)
       %
       % NOTE: We have +1 here as MATLAB's interpretation of the Beta distribution
       % is different from the one used for the Jocobi chaos.
       %
-      data = betarnd(this.alpha + 1, this.beta + 1, sampleCount, this.inputCount);
+      data = betarnd(this.alpha + 1, this.beta + 1, ...
+        sampleCount, this.inputCount);
       data = data * (this.b - this.a) + this.a;
-      data = this.evaluate(data, varargin{:});
+      data = this.evaluate(output, data);
     end
   end
 
   methods (Access = 'protected')
-    function configure(this, options)
+    function initialize(this, options)
       this.alpha = options.alpha;
       this.beta = options.beta;
       this.a = options.a;
       this.b = options.b;
+      initialize@PolynomialChaos.Base(this, options);
     end
 
     function basis = constructUnivariateBasis(this, x, order)
@@ -57,8 +59,17 @@ classdef Jacobi < PolynomialChaos.Base
       end
     end
 
-    function [ nodes, weights ] = constructQuadrature(this, options)
+    function [ nodes, weights ] = constructQuadrature( ...
+      this, polynomialOrder, options)
+
+      %
+      % NOTE: A n-order Gaussian quadrature rule integrates
+      % polynomials of order (2 * n - 1) exactly. We want to have
+      % exactness for polynomials of order (2 * n) where n is the
+      % order of polynomial chaos expansions. So, +1 here.
+      %
       quadrature = Quadrature( ...
+        'order', polynomialOrder + 1, ...
         'dimensionCount', this.inputCount, ...
         'ruleName', 'GaussJacobi', ...
         'ruleArguments', { this.alpha, this.beta, this.a, this.b }, ...

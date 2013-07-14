@@ -1,26 +1,11 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
-    %
-    % The stochastic (input) dimension.
-    %
-    inputCount
-
-    %
-    % The maximal total order of the multivariate polynomials.
-    %
     order
 
-    %
-    % The expectation and variance.
-    %
-    expectation
-    variance
-
+    inputCount
     nodeCount
     termCount
-  end
 
-  properties (SetAccess = 'protected')
     nodes
     norm
     projection
@@ -38,59 +23,38 @@ classdef Base < handle
     % the monomials.
     %
     rvMap
-
-    %
-    % The coefficients of the polynomial chaos expansion.
-    %
-    coefficients
   end
 
   methods
     function this = Base(varargin)
-      if isa(varargin{1}, 'function_handle')
-        f = varargin{1};
-        options = Options('method', 'totalOrder', varargin{2:end});
-      else
-        f = [];
-        options = Options('method', 'totalOrder', varargin{1:end});
-      end
-
-      this.configure(options);
+      options = Options('method', 'totalOrder', varargin{:});
       this.initialize(options);
-
-      if ~isempty(f)
-        this.expandPermanent(f);
-      end
     end
 
-    function coefficients = expand(this, f, varargin)
+    function output = expand(this, f, varargin)
       coefficients = this.projection * f(this.nodes, varargin{:});
+
+      output.expectation = coefficients(1, :);
+      output.variance = sum(coefficients(2:end, :).^2 .* ...
+        Utils.replicate(this.norm(2:end), 1, size(coefficients, 2)), 1);
+      output.coefficients = coefficients;
+    end
+
+    function display(this)
+      options = Options( ...
+        'Input dimension', this.inputCount, ...
+        'Polynomial order', this.order, ...
+        'Polynomial terms', this.termCount, ...
+        'Monomial terms', size(this.rvPower, 1), ...
+        'Quadrature nodes', this.nodeCount);
+      display(options, 'Polynomial chaos');
     end
   end
 
   methods (Access = 'protected')
-    function configure(this, options)
-    end
-  end
-
-  methods (Abstract, Access = 'protected')
-    basis = constructUnivariateBasis(this, x, order)
-    [ nodes, weights ] = constructQuadrature(this, options)
-    norm = computeNormalizationConstant(this, i, index)
-  end
-
-  methods (Abstract)
-    data = sample(this, sampleCount, varargin)
-  end
-
-  methods (Access = 'private')
-    basis = constructBasis(this, x, order, index)
-    [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-      construct(this, options)
-
     function initialize(this, options)
-      this.inputCount = options.inputCount;
       this.order = options.order;
+      this.inputCount = options.inputCount;
 
       filename = File.temporal([ class(this), '_', ...
         DataHash(Utils.toString(options)), '.mat' ]);
@@ -114,18 +78,21 @@ classdef Base < handle
       this.rvPower = rvPower;
       this.rvMap = rvMap;
     end
+  end
 
-    function expandPermanent(this, f)
-      %
-      % Now, we expand the given function and compute its statistics.
-      %
-      coefficients = this.projection * f(this.nodes);
-      outputCount = size(coefficients, 2);
+  methods (Abstract, Access = 'protected')
+    basis = constructUnivariateBasis(this, x, order)
+    [ nodes, weights ] = constructQuadrature(this, options)
+    norm = computeNormalizationConstant(this, i, index)
+  end
 
-      this.coefficients = coefficients;
-      this.expectation = coefficients(1, :);
-      this.variance = sum(coefficients(2:end, :).^2 .* ...
-        Utils.replicate(this.norm(2:end), 1, outputCount), 1);
-    end
+  methods (Abstract)
+    data = sample(this, output, sampleCount)
+  end
+
+  methods (Access = 'private')
+    basis = constructBasis(this, x, order, index)
+    [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
+      construct(this, options)
   end
 end

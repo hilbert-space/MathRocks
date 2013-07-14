@@ -1,13 +1,13 @@
-function assess(chaos, apData, mcData, distribution)
+function assess(mcData, pcData, pcOutput, distribution)
   fprintf('Monte Carlo:\n');
   fprintf('  Expectation: %.4f\n', mean(mcData));
   fprintf('  Variance:    %.4f\n', var(mcData));
 
   fprintf('Polynomial chaos:\n');
-  fprintf('  Expectation: %.4f\n', chaos.expectation);
-  fprintf('  Variance:    %.4f\n', chaos.variance);
+  fprintf('  Expectation: %.4f\n', pcOutput.expectation);
+  fprintf('  Variance:    %.4f\n', pcOutput.variance);
 
-  Data.compare(mcData, apData, 'draw', true);
+  Data.compare(mcData, pcData, 'draw', true);
 
   if nargin > 3
     fprintf('Exact:\n');

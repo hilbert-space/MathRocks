@@ -48,27 +48,24 @@ classdef Base < handle
         result = transpose(reshape(T, [], sampleCount));
       end
 
-      coefficients = this.chaos.expand(@target);
-      [ termCount, outputCount ] = size(coefficients);
+      chaosOutput = this.chaos.expand(@target);
 
-      Texp = reshape(coefficients(1, :), this.processorCount, []);
+      Texp = reshape(chaosOutput.expectation, this.processorCount, []);
 
       if nargout < 2, return; end
 
-      output.Tvar = reshape(sum(coefficients(2:end, :).^2 .* ...
-        Utils.replicate(this.chaos.norm(2:end), 1, outputCount), 1), ...
-        this.processorCount, []);
+      output.Tvar = reshape(chaosOutput.variance, this.processorCount, []);
 
-      output.coefficients = reshape(coefficients, termCount, ...
-        this.processorCount, []);
+      output.coefficients = reshape(chaosOutput.coefficients, ...
+        this.chaos.termCount, this.processorCount, []);
     end
 
-    function Tdata = sample(this, output, sampleCount)
-      Tdata = this.chaos.sample(sampleCount, output.coefficients);
+    function Tdata = sample(this, varargin)
+      Tdata = this.chaos.sample(varargin{:});
     end
 
-    function Tdata = evaluate(this, output, rvs)
-      Tdata = this.chaos.evaluate(rvs, output.coefficients);
+    function Tdata = evaluate(this, varargin)
+      Tdata = this.chaos.evaluate(varargin{:});
     end
   end
 end

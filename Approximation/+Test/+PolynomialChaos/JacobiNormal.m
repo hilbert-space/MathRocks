@@ -3,21 +3,14 @@ function JacobiNormal
 
   sampleCount = 1e4;
 
-  %% Choose a distribution.
-  %
   normal = ProbabilityDistribution.Normal( ...
     'mu', 0, 'sigma', 1);
   beta = ProbabilityDistribution.Beta( ...
     'alpha', 2, 'beta', 2, 'a', -1, 'b', 1);
 
-  %% Monte Carlo simulations.
-  %
   mcData = normal.sample(sampleCount, 1);
 
-  %% Polynomial chaos expansion.
-  %
-  chaos = PolynomialChaos.Jacobi( ...
-    @(x) normal.icdf(beta.cdf(x)), ...
+  pc = PolynomialChaos.Jacobi( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
     'order', 10, ...
@@ -26,12 +19,11 @@ function JacobiNormal
     'a', beta.a, ...
     'b', beta.b, ...
     'quadratureOptions', Options( ...
-      'method', 'adaptive', ...
-      'polynomialOrder', 10));
+      'method', 'adaptive'));
+  display(pc);
 
-  display(chaos);
+  pcOutput = pc.expand(@(x) normal.icdf(beta.cdf(x)));
+  pcData = pc.evaluate(pcOutput, beta.sample(sampleCount, 1));
 
-  apData = chaos.evaluate(beta.sample(sampleCount, 1));
-
-  assess(chaos, apData, mcData, normal);
+  assess(mcData, pcData, pcOutput, normal);
 end

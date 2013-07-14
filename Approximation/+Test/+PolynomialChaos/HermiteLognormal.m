@@ -11,24 +11,19 @@ function HermiteLognormal
   transformation = ProbabilityTransformation.Normal( ...
     'variables', variables);
 
-  %% Monte Carlo simulations.
-  %
   mcData = distribution.sample(sampleCount, 1);
 
-  %% Polynomial chaos expansion.
-  %
-  chaos = PolynomialChaos.Hermite( ...
-    @transformation.evaluate, ...
+  pc = PolynomialChaos.Hermite( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
     'order', 6, ...
     'quadratureOptions', Options( ...
       'method', 'tensor', ...
       'order', 10));
+  display(pc);
 
-  display(chaos);
+  pcOutput = pc.expand(@transformation.evaluate);
+  pcData = pc.evaluate(pcOutput, normrnd(0, 1, sampleCount, 1));
 
-  apData = chaos.evaluate(normrnd(0, 1, sampleCount, 1));
-
-  assess(chaos, apData, mcData, distribution);
+  assess(mcData, pcData, pcOutput, distribution);
 end

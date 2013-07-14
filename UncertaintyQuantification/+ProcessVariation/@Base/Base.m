@@ -15,7 +15,8 @@ classdef Base < handle
       this.deviation = options.deviation;
 
       [ this.variance, this.correlation ] = this.correlate(options);
-      this.transformation = this.transform(this.variance, this.correlation, options);
+      this.transformation = this.transform( ...
+        this.variance, this.correlation, options);
 
       this.dimensionCount = this.transformation.dimensionCount;
     end

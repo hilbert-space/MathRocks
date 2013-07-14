@@ -1,7 +1,7 @@
 function HermiteStep
   setup;
 
-  approximation = PolynomialChaos.Hermite(@(x) problem(x), ...
+  pc = PolynomialChaos.Hermite( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
     'order', 10, ...
@@ -9,10 +9,12 @@ function HermiteStep
       'method', 'tensor', ...
       'order', 11));
 
+  output = pc.expand(@(x) problem(x));
+
   x = linspace(-3, 3).';
 
   y1 = problem(x);
-  y2 = approximation.evaluate(x);
+  y2 = pc.evaluate(output, x);
 
   figure;
 
