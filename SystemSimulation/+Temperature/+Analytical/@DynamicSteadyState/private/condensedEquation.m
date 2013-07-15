@@ -43,12 +43,11 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   E = this.E;
   D = this.D;
   BT = this.BT;
-  U = this.U;
-  UT = this.UT;
-  Lambda = this.L;
+
+  Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
+    stepCount * this.L))) * this.UT;
 
   Tamb = this.ambientTemperature;
-  dt = this.samplingInterval;
 
   leakage = this.leakage;
   L = options.get('L', leakage.Lnom * ones(processorCount, 1));
@@ -74,14 +73,11 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
 
         Q = D * P(:, :, i);
         W = Q(:, 1);
-
         for k = 2:stepCount
           W = E * W + Q(:, k);
         end
 
-        X(:, 1) = U * diag(1 ./ (1 - exp(dt * ...
-          stepCount * Lambda))) * UT * W;
-
+        X(:, 1) = Z * W;
         for k = 2:stepCount
           X(:, k) = E * X(:, k - 1) + Q(:, k - 1);
         end
@@ -119,29 +115,26 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     P = zeros(processorCount, sampleCount, stepCount);
 
     Q = zeros(nodeCount, sampleCount, stepCount);
-    W = zeros(nodeCount, sampleCount);
 
     Tlast = Tamb;
     I = 1:sampleCount;
 
     for i = 1:iterationLimit
-      P(:, I, :) = Pdyn(:, I, :) + ...
-        leakage.evaluate(L(:, I, :), T(:, I, :));
-
-      Q(:, I, 1) = D * P(:, I, 1);
-      W(:, I) = Q(:, I, 1);
-
-      for j = 2:stepCount
-        Q(:, I, j) = D * P(:, I, j);
-        W(:, I) = E * W(:, I) + Q(:, I, j);
+      for j = 1:stepCount
+        P(:, I, j) = Pdyn(:, I, j) + ...
+          leakage.evaluate(L(:, I, j), T(:, I, j));
       end
 
-      X = U * diag(1 ./ (1 - exp(dt * ...
-        stepCount * Lambda))) * UT * W(:, I);
-      T(:, I, 1) = BT * X + Tamb;
-
+      Q(:, I, 1) = D * P(:, I, 1);
+      W = Q(:, I, 1);
       for j = 2:stepCount
-        X = E * X + Q(:, I, j - 1);
+        Q(:, I, j) = D * P(:, I, j);
+        W = E * W + Q(:, I, j);
+      end
+
+      X = Z * W;
+      for j = 1:stepCount
+        X = E * X + Q(:, I, j);
         T(:, I, j) = BT * X + Tamb;
       end
 
@@ -150,16 +143,16 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       %
       % Thermal runaway
       %
-      J = find(max(max(Tcurrent, [], 1), [], 3) > temperatureLimit);
+      J = max(max(Tcurrent, [], 1), [], 3) > temperatureLimit;
       iterationCount(I(J)) = Inf;
 
       %
       % Successful convergence
       %
-      K = find(max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < tolerance);
+      K = max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < tolerance;
       iterationCount(I(K)) = i;
 
-      M = union(J, K);
+      M = J | K;
       I(M) = [];
 
       if isempty(I), break; end

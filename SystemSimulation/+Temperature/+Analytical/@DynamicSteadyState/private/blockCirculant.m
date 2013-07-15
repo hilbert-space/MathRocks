@@ -132,16 +132,16 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       %
       % Thermal runaway
       %
-      J = find(max(max(Tcurrent, [], 1), [], 2) > temperatureLimit);
+      J = max(max(Tcurrent, [], 1), [], 2) > temperatureLimit;
       iterationCount(I(J)) = Inf;
 
       %
       % Successful convergence
       %
-      K = find(max(max(abs(Tcurrent - Tlast), [], 1), [], 2) < tolerance);
+      K = max(max(abs(Tcurrent - Tlast), [], 1), [], 2) < tolerance;
       iterationCount(I(K)) = i;
 
-      M = union(J, K);
+      M = J | K;
       I(M) = [];
 
       if isempty(I), break; end
