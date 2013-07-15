@@ -42,25 +42,25 @@ classdef HotSpot < handle
 
       if options.has('die')
         floorplan = options.die.filename;
-      elseif options.has('floorplan');
-        floorplan = options.floorplan;
       else
-        assert(false);
+        floorplan = options.floorplan;
       end
-
-      config = options.config;
-      line = options.get('line', '');
 
       if ~File.exist(floorplan)
         error('The floorplan file does not exist.');
       end
 
+      config = options.hotspotOptions.config;
+
       if ~File.exist(config)
         error('The configuration file does not exist.');
       end
 
-      [ this.capacitance, this.conductance, this.nodeCount, ...
-        this.processorCount, this.samplingInterval, this.ambientTemperature ] = ...
+      line = options.hotspotOptions.get('line', '');
+
+      [ this.capacitance, this.conductance, ...
+        this.nodeCount, this.processorCount, ...
+        this.samplingInterval, this.ambientTemperature ] = ...
         Utils.constructHotSpot(floorplan, config, line);
 
       if options.has('leakage')

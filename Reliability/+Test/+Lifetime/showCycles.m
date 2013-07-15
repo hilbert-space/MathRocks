@@ -5,7 +5,7 @@ function showCycles
   options = Configure.systemSimulation('processorCount', 2);
   Pdyn = options.dynamicPower;
 
-  temperature = Temperature.Analytical.DynamicSteadyState(options.temperatureOptions);
+  temperature = Temperature.Analytical.DynamicSteadyState(options);
   [ T, output ] = temperature.compute(Pdyn);
 
   Plot.powerTemperature(Pdyn, output.P - Pdyn, ...

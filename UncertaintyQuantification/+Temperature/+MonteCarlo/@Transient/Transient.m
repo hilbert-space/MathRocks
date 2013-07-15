@@ -5,8 +5,7 @@ classdef Transient < ...
   methods
     function this = Transient(varargin)
       options = Options(varargin{:});
-      this = this@Temperature.Numerical.Transient( ...
-        options.temperatureOptions);
+      this = this@Temperature.Numerical.Transient(options);
       this = this@Temperature.MonteCarlo.Base(options);
     end
 

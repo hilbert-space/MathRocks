@@ -4,7 +4,7 @@ function analyze(method, analysis, iterationCount, varargin)
   options = Configure.systemSimulation(varargin{:});
   Pdyn = options.dynamicPower;
 
-  temperature = Temperature.(method).(analysis)(options.temperatureOptions);
+  temperature = Temperature.(method).(analysis)(options);
 
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
