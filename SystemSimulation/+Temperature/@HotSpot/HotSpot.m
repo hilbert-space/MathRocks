@@ -63,7 +63,12 @@ classdef HotSpot < handle
         this.processorCount, this.samplingInterval, this.ambientTemperature ] = ...
         Utils.constructHotSpot(floorplan, config, line);
 
-      this.leakage = options.get('leakage', []);
+      if options.has('leakage')
+        this.leakage = options.leakage;
+      elseif options.has('leakageModel')
+        this.leakage = LeakagePower.(options.leakageModel)( ...
+          options.leakageOptions);
+      end
     end
 
     function [ T, output ] = compute(this, Pdyn, varargin)

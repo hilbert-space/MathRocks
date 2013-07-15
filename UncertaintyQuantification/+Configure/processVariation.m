@@ -1,5 +1,5 @@
 function options = processVariation(varargin)
-  options = Options('processModel', 'Beta', varargin{:});
+  options = Options(varargin{:});
 
   if options.has('nominal')
     expectation = options.nominal;
@@ -34,6 +34,7 @@ function options = processVariation(varargin)
   lse = 0.50 * max(options.die.width, options.die.height);
   lou = lse;
 
+  options.getSet('processModel', 'Beta');
   options.processOptions = Options( ...
     'die', options.die, ...
     'expectation', expectation, ...

@@ -1,5 +1,5 @@
 function plot(this)
-  [ Lgrid, Tgrid, Igrid ] = LeakagePower.Base.load(this.options);
+  [ Lgrid, Tgrid, Igrid ] = Utils.loadLeakageData(this.options);
   Ipred = this.evaluate(Lgrid, Tgrid);
 
   error = Error.computeNRMSE(Igrid, Ipred);

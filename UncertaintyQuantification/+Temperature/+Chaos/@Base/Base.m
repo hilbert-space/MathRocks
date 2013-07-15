@@ -8,8 +8,12 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      this.process = ProcessVariation.(options.processModel)( ...
-        options.processOptions);
+      if options.has('process')
+        this.process = options.process;
+      else
+        this.process = ProcessVariation.(options.processModel)( ...
+          options.processOptions);
+      end
 
       switch options.processModel
       case 'Normal'
