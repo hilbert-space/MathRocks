@@ -45,8 +45,8 @@ classdef Base < handle
     end
 
     function string = toString(this)
-      string = sprintf('%s(%s)', ...
-        class(this), this.options.filename);
+      string = sprintf('%s(%s)', class(this), ...
+        Utils.toString(this.options));
     end
   end
 
