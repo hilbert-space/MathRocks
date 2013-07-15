@@ -61,7 +61,7 @@ classdef HotSpot < handle
 
       [ this.capacitance, this.conductance, this.nodeCount, ...
         this.processorCount, this.samplingInterval, this.ambientTemperature ] = ...
-        Temperature.HotSpot.constructModel(floorplan, config, line);
+        Utils.constructHotSpot(floorplan, config, line);
 
       this.leakage = options.get('leakage', []);
     end

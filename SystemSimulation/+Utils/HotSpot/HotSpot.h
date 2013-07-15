@@ -2,10 +2,10 @@
 #define __HOTSPOT_H__
 
 extern "C" {
-#include <hotspot/util.h>
-#include <hotspot/flp.h>
-#include <hotspot/temperature.h>
-#include <hotspot/temperature_block.h>
+#include <util.h>
+#include <flp.h>
+#include <temperature.h>
+#include <temperature_block.h>
 }
 
 #include <string>
