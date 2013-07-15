@@ -3,10 +3,8 @@ function options = processVariation(varargin)
 
   if options.has('nominal')
     expectation = options.nominal;
-  elseif options.has('leakage');
-    expectation = options.leakage.Lnom;
   else
-    assert(false);
+    expectation = LeakagePower.Base.Lnom;
   end
 
   deviation = options.get('deviation', 0.05 * expectation);
