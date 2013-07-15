@@ -133,8 +133,9 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       end
 
       X = Z * W;
-      for j = 1:stepCount
-        X = E * X + Q(:, I, j);
+      T(:, I, 1) = BT * X + Tamb;
+      for j = 2:stepCount
+        X = E * X + Q(:, I, j - 1);
         T(:, I, j) = BT * X + Tamb;
       end
 
