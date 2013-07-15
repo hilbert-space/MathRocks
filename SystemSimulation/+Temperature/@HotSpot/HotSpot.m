@@ -65,7 +65,7 @@ classdef HotSpot < handle
 
       if options.has('leakage')
         this.leakage = options.leakage;
-      elseif options.has('leakageModel')
+      else
         this.leakage = LeakagePower.(options.leakageModel)( ...
           options.leakageOptions);
       end

@@ -43,8 +43,8 @@ function [ Lgrid, Tgrid, Igrid ] = loadLeakageData(varargin)
   LDivision = round(readLCount / LCount);
   TDivision = round(readTCount / TCount);
 
-  TIndex = 1:TDivision:readTCount;
   LIndex = 1:LDivision:readLCount;
+  TIndex = 1:TDivision:readTCount;
 
   Lgrid = reshape(Ldata, readTCount, readLCount);
   Tgrid = reshape(Tdata, readTCount, readLCount);
