@@ -30,9 +30,7 @@ classdef Base < handle
       if File.exist(filename);
         load(filename);
       else
-        [ Lgrid, Tgrid, Igrid ] = ...
-          LeakagePower.Base.load(options);
-
+        [ Lgrid, Tgrid, Igrid ] = Utils.loadLeakageData(options);
         output = this.construct(Lgrid, Tgrid, Igrid, options);
 
         output.Lmin = min(Lgrid(:));
@@ -58,38 +56,5 @@ classdef Base < handle
 
   methods (Abstract, Access = 'protected')
     output = construct(this, Ldata, Tdata, Idata, options)
-  end
-
-  methods (Static)
-    function [ Lgrid, Tgrid, Igrid ] = load(options)
-      data = dlmread(options.filename, '\t', 1, 0);
-
-      Ldata = data(:, 1);
-      Tdata = Utils.toKelvin(data(:, 2));
-      Idata = data(:, 3);
-
-      LCount = options.get('LCount', 101);
-      TCount = options.get('TCount', 101);
-
-      readLCount = length(unique(Ldata));
-      readTCount = length(unique(Tdata));
-
-      LDivision = round(readLCount / LCount);
-      TDivision = round(readTCount / TCount);
-
-      LIndex = 1:LDivision:readLCount;
-      TIndex = 1:TDivision:readTCount;
-
-      Lgrid = reshape(Ldata, readTCount, readLCount);
-      Tgrid = reshape(Tdata, readTCount, readLCount);
-      Igrid = reshape(Idata, readTCount, readLCount);
-
-      assert(size(unique(Lgrid, 'rows'), 1) == 1);
-      assert(size(unique(Tgrid', 'rows'), 1) == 1);
-
-      Lgrid = Lgrid(TIndex, LIndex);
-      Tgrid = Tgrid(TIndex, LIndex);
-      Igrid = Igrid(TIndex, LIndex);
-    end
   end
 end
