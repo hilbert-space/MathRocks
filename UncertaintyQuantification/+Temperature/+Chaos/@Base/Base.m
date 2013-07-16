@@ -85,8 +85,9 @@ classdef Base < handle
 
       if LMin == 0 && LMax == 0, return; end
 
-      warning('Detected %d values below the minimal one', ...
-        ' and %d values above the maximal one.', LMin, LMax);
+      warning([ 'Detected %d and %d values below the minimal one', ...
+        ' and above the maximal one, respectively, out of %d.' ], ...
+        LMin, LMax, prod(size(L)));
     end
 
     function T = postprocess(this, T, output, options)
@@ -95,7 +96,7 @@ classdef Base < handle
 
       if ~options.get('verbose', false), return; end
 
-      runawayCount = isnan(output.iterationCount);
+      runawayCount = sum(isnan(output.iterationCount));
 
       if runawayCount == 0, return; end
 
