@@ -17,6 +17,8 @@ classdef Base < handle
   properties (SetAccess = 'protected')
     options
     output
+    LRange
+    TRange
   end
 
   methods
@@ -33,15 +35,15 @@ classdef Base < handle
         [ Lgrid, Tgrid, Igrid ] = Utils.loadLeakageData(options);
         output = this.construct(Lgrid, Tgrid, Igrid, options);
 
-        output.Lmin = min(Lgrid(:));
-        output.Lmax = max(Lgrid(:));
-        output.Tmin = min(Tgrid(:));
-        output.Tmax = max(Tgrid(:));
+        LRange = [ min(Lgrid(:)), max(Lgrid(:)) ];
+        TRange = [ min(Tgrid(:)), max(Tgrid(:)) ];
 
-        save(filename, 'output', '-v7.3');
+        save(filename, 'output', 'LRange', 'TRange', '-v7.3');
       end
 
       this.output = output;
+      this.LRange = LRange;
+      this.TRange = TRange;
     end
 
     function string = toString(this)

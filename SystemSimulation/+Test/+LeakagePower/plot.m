@@ -12,8 +12,8 @@ display(leakage);
 plot(leakage);
 
 [ L, T ] = meshgrid( ...
-  linspace(leakage.output.Lmin, leakage.output.Lmax, pointCount), ...
-  linspace(leakage.output.Tmin, leakage.output.Tmax, pointCount));
+  linspace(leakage.LRange(1), leakage.LRange(2), pointCount), ...
+  linspace(leakage.TRange(1), leakage.TRange(2), pointCount));
 
 fprintf('Running %d iterations...\n', iterationCount);
 time = tic;

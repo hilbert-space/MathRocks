@@ -23,7 +23,7 @@ function options = systemSimulation(varargin)
     % NOTE: It is a rather common thing for TGFF.
     %
     taskCount = readTaskCount;
-    options.taskCount = readTaskCount;
+    options.taskCount = taskCount;
   end
 
   options.die = Die('floorplan', ...

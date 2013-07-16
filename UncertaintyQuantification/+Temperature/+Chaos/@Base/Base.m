@@ -45,11 +45,12 @@ classdef Base < handle
     end
 
     function [ Texp, output ] = expand(this, Pdyn, varargin)
-      function result = target(rvs)
-        sampleCount = size(rvs, 1);
-        L = transpose(this.process.evaluate(rvs));
-        T = this.solve(Pdyn, Options(varargin{:}, 'L', L));
-        result = transpose(reshape(T, [], sampleCount));
+      options = Options(varargin{:});
+
+      function T = target(rvs)
+        L = this.preprocess(rvs, options);
+        [ T, solveOutput ] = this.solve(Pdyn, Options(options, 'L', L));
+        T = this.postprocess(T, solveOutput, options);
       end
 
       chaosOutput = this.chaos.expand(@target);
@@ -70,6 +71,36 @@ classdef Base < handle
 
     function Tdata = evaluate(this, varargin)
       Tdata = this.chaos.evaluate(varargin{:});
+    end
+  end
+
+  methods (Access = 'protected')
+    function L = preprocess(this, rvs, options)
+      L = transpose(this.process.evaluate(rvs));
+
+      if ~options.get('verbose', false), return; end
+
+      LMin = sum(L(:) < this.leakage.LRange(1));
+      LMax = sum(L(:) > this.leakage.LRange(2));
+
+      if LMin == 0 && LMax == 0, return; end
+
+      warning('Detected %d values below the minimal one', ...
+        ' and %d values above the maximal one.', LMin, LMax);
+    end
+
+    function T = postprocess(this, T, output, options)
+      sampleCount = size(T, 3);
+      T = transpose(reshape(T, [], sampleCount));
+
+      if ~options.get('verbose', false), return; end
+
+      runawayCount = isnan(output.iterationCount);
+
+      if runawayCount == 0, return; end
+
+      warning('Detected %d thermal runaways out of %d samples.', ...
+        runawayCount, sampleCount);
     end
   end
 end

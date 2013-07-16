@@ -167,13 +167,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   end
 
   I = isnan(iterationCount);
-  runawayCount = sum(I);
-  if runawayCount > 0
-    T(:, :, I) = NaN;
-    P(:, :, I) = NaN;
-    warning(sprintf('Detected %d runaways out of %d samples.', ...
-      runawayCount, sampleCount));
-  end
+  T(:, :, I) = NaN;
+  P(:, :, I) = NaN;
 
   output.P = P;
   output.iterationCount = iterationCount;
