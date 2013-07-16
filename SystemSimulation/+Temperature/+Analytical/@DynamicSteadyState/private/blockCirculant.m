@@ -78,7 +78,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
           %
           % Thermal runaway
           %
-          j = Inf;
+          j = NaN;
           break;
         end
 
@@ -133,7 +133,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       % Thermal runaway
       %
       J = max(max(Tcurrent, [], 1), [], 2) > temperatureLimit;
-      iterationCount(I(J)) = Inf;
+      iterationCount(I(J)) = NaN;
 
       %
       % Successful convergence
@@ -151,6 +151,15 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     end
   otherwise
     assert(false);
+  end
+
+  I = isnan(iterationCount);
+  runawayCount = sum(I);
+  if runawayCount > 0
+    T(:, :, I) = NaN;
+    P(:, :, I) = NaN;
+    warning(sprintf('Detected %d runaways out of %d samples.', ...
+      runawayCount, sampleCount));
   end
 
   output.P = P;

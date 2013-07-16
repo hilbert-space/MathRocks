@@ -14,7 +14,6 @@ classdef Base < handle
       options = Options(varargin{:});
       verbose = options.get('verbose', false);
 
-      [ processorCount, stepCount ] = size(Pdyn);
       sampleCount = options.get('sampleCount', 1e3);
 
       %

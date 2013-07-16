@@ -89,7 +89,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
           %
           % Thermal runaway
           %
-          j = Inf;
+          j = NaN;
           break;
         end
 
@@ -105,8 +105,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
 
       iterationCount(i) = j;
     end
-
-    output.P = P;
   case 2 % Faster but less memory efficient
     L = repmat(L, [ 1, 1, stepCount ]);
     Pdyn = permute(repmat(Pdyn, [ 1, 1, sampleCount ]), [ 1 3 2 ]);
@@ -145,7 +143,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       % Thermal runaway
       %
       J = max(max(Tcurrent, [], 1), [], 3) > temperatureLimit;
-      iterationCount(I(J)) = Inf;
+      iterationCount(I(J)) = NaN;
 
       %
       % Successful convergence
@@ -163,10 +161,20 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     end
 
     T = permute(T, [ 1, 3, 2 ]);
-    output.P = permute(P, [ 1, 3, 2 ]);
+    P = permute(P, [ 1, 3, 2 ]);
   otherwise
     assert(false);
   end
 
+  I = isnan(iterationCount);
+  runawayCount = sum(I);
+  if runawayCount > 0
+    T(:, :, I) = NaN;
+    P(:, :, I) = NaN;
+    warning(sprintf('Detected %d runaways out of %d samples.', ...
+      runawayCount, sampleCount));
+  end
+
+  output.P = P;
   output.iterationCount = iterationCount;
 end
