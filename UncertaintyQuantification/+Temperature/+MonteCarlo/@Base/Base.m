@@ -17,6 +17,12 @@ classdef Base < handle
       [ processorCount, stepCount ] = size(Pdyn);
       sampleCount = options.get('sampleCount', 1e3);
 
+      %
+      % NOTE: We always generate samples of L, even though the futher
+      % MC simulations might be cached. The reason is to advance the RNG
+      % of MATLAB and have the same bahavior of the computations outside
+      % this method.
+      %
       L = transpose(this.process.sample(sampleCount));
 
       filename = options.get('filename', []);
@@ -35,16 +41,15 @@ classdef Base < handle
           fprintf('Monte Carlo: running %d simulations...\n', sampleCount);
         end
 
-        Tdata = zeros(processorCount, stepCount, sampleCount);
-
         time = tic;
-        parfor i = 1:sampleCount
-          Tdata(:, :, i) = this.solve(Pdyn, Options(options, 'L', L(:, i)));
-        end
-        time = toc(time);
+
+        Tdata = this.solve(Pdyn, Options(options, 'L', L));
 
         Texp = mean(Tdata, 3);
         Tvar = var(Tdata, [], 3);
+        Tdata = permute(Tdata, [ 3 1 2 ]);
+
+        time = toc(time);
 
         save(filename, 'Texp', 'Tvar', 'Tdata', 'time', '-v7.3');
       end
@@ -54,8 +59,6 @@ classdef Base < handle
           time, sampleCount);
       end
 
-      Tdata = permute(Tdata, [ 3 1 2 ]);
-
       output.Tvar = Tvar;
       output.Tdata = Tdata;
       output.time = time;
@@ -63,17 +66,9 @@ classdef Base < handle
 
     function Tdata = evaluate(this, Pdyn, rvs, varargin)
       options = Options(varargin{:});
-      [ processorCount, stepCount ] = size(Pdyn);
 
-      sampleCount = size(rvs, 1);
       L = transpose(this.process.evaluate(rvs));
-
-      Tdata = zeros(processorCount, stepCount, sampleCount);
-
-      parfor i = 1:sampleCount
-        Tdata(:, :, i) = this.solve(Pdyn, Options(options, 'L', L(:, i)));
-      end
-
+      Tdata = this.solve(Pdyn, Options(options, 'L', L));
       Tdata = permute(Tdata, [ 3 1 2 ]);
     end
 
