@@ -184,8 +184,7 @@ classdef Lifetime < handle
 
   methods (Access = 'private')
     function [ N, peaks, cycles ] = calculateCyclesToFailure(this, T)
-      [ maxPeaks, minPeaks ] = peakdet(T, this.peakThreshold);
-      peaks = [ maxPeaks; minPeaks ];
+      peaks = Utils.detectPeaks(T, this.peakThreshold);
 
       if size(peaks, 1) == 0
         N = [];
