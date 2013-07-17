@@ -36,7 +36,7 @@ classdef Base < handle
 
       output.expectation = coefficients(1, :);
       output.variance = sum(coefficients(2:end, :).^2 .* ...
-        Utils.replicate(this.norm(2:end), 1, size(coefficients, 2)), 1);
+        repmat(this.norm(2:end), [ 1, size(coefficients, 2) ]), 1);
       output.coefficients = coefficients;
     end
 

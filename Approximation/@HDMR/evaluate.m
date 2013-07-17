@@ -9,7 +9,7 @@ function values = evaluate(this, nodes)
 
   nodeCount = size(nodes, 1);
 
-  offset = Utils.replicate(this.offset, nodeCount, 1);
+  offset = repmat(this.offset, [ nodeCount, 1 ]);
 
   interpolantCount = length(interpolants);
 

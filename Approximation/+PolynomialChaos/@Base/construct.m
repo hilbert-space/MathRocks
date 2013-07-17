@@ -74,7 +74,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
   rvProduct = zeros(nodeCount, monomialCount);
   for i = 1:monomialCount
     rvProduct(:, i) = prod(realpow( ...
-      nodes, Utils.replicate(rvPower(i, :), nodeCount, 1)), 2);
+      nodes, repmat(rvPower(i, :), [ nodeCount, 1 ])), 2);
   end
 
   evaluation = rvProduct * rvMap;

@@ -64,7 +64,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     X = zeros(nodeCount, stepCount);
 
     for i = 1:sampleCount
-      l = Utils.replicate(L(:, i), 1, stepCount);
+      l = repmat(L(:, i), [ 1, stepCount ]);
 
       Tlast = Tamb;
 
@@ -118,10 +118,13 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     I = 1:sampleCount;
 
     for i = 1:iterationLimit
-      for j = 1:stepCount
-        P(:, I, j) = Pdyn(:, I, j) + ...
-          leakage.evaluate(L(:, I, j), T(:, I, j));
-      end
+      P(:, I, :) = Pdyn(:, I, :) + ...
+        leakage.evaluate(L(:, I, :), T(:, I, :));
+
+      % for j = 1:stepCount
+      %   P(:, I, j) = Pdyn(:, I, j) + ...
+      %     leakage.evaluate(L(:, I, j), T(:, I, j));
+      % end
 
       Q(:, I, 1) = D * P(:, I, 1);
       W = Q(:, I, 1);

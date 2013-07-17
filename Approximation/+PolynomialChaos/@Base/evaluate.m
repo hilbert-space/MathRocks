@@ -1,4 +1,4 @@
-function values = evaluate(this, output, nodes);
+function values = evaluate(this, output, nodes)
   rvPower = this.rvPower;
   rvMap = this.rvMap;
 
@@ -11,7 +11,7 @@ function values = evaluate(this, output, nodes);
 
   for i = 1:monomialCount
     rvProduct(:, i) = prod(realpow( ...
-      nodes, Utils.replicate(rvPower(i, :), nodeCount, 1)), 2);
+      nodes, repmat(rvPower(i, :), [ nodeCount, 1 ])), 2);
   end
 
   coefficients = output.coefficients;
