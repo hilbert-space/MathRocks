@@ -21,7 +21,7 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
   switch layout
   case 'separate'
   case 'one'
-    figure;
+    if options.get('figure', true), figure; end
     Plot.title('Temperature');
     Plot.label('Time, s', 'Temperature, C');
     Plot.limit(time);

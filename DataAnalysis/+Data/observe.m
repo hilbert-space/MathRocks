@@ -14,13 +14,14 @@ function observe2D(data, options)
   end
 
   switch options.get('layout', 'tiles')
-  case 'joint'
-    figure;
+  case 'one'
+    if options.get('figure', true), figure; end
+
     for i = 1:dimensionCount
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      [ x, one ] = Data.process(x, one, options);
+      one = Data.process(x, one, options);
 
       Data.draw(x, one, options, 'color', Color.pick(i));
     end
@@ -31,12 +32,12 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      [ x, one ] = Data.process(x, one, options);
+      one = Data.process(x, one, options);
 
       Data.draw(x, one, options);
     end
   case 'tiles'
-    figure;
+    if options.get('figure', true), figure; end
 
     for i = 1:dimensionCount
       subplot(1, dimensionCount, i);
