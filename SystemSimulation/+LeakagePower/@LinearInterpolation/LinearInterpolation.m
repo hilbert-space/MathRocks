@@ -6,14 +6,6 @@ classdef LinearInterpolation < LeakagePower.Base
 
     function P = evaluate(this, L, T)
       output = this.output;
-
-      %
-      % NOTE: Here we are trying to protect the interpolant
-      % from the values outside the data range.
-      %
-      L = max(min(L, output.Lmax), output.Lmin);
-      T = max(min(T, output.Tmax), output.Tmin);
-
       P = output.powerScale * reshape(output.F(L(:), T(:)), size(L));
     end
   end
