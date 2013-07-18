@@ -1,7 +1,10 @@
 function options = systemSimulation(varargin)
   options = Options(varargin{:});
 
-  path = File.join(File.trace, '..', '+Test', 'Assets');
+  paths = { File.join(File.trace, '..', '+Test', 'Assets') };
+  if options.has('assetPath')
+    paths = [ { options.assetPath }, paths ];
+  end
 
   %
   % Platform and application
@@ -9,9 +12,8 @@ function options = systemSimulation(varargin)
   processorCount = options.getSet('processorCount', 4);
   taskCount = options.getSet('taskCount', 20 * processorCount);
 
-  tgffFilename = options.get('tgffFilename', ...
-    File.join(path, sprintf('%03d_%03d.tgff', processorCount, taskCount)));
-  [ options.platform, options.application ] = Utils.parseTGFF(tgffFilename);
+  [ options.platform, options.application ] = Utils.parseTGFF( ...
+    File.choose(paths, sprintf('%03d_%03d.tgff', processorCount, taskCount)));
   options.schedule = Schedule.Dense(options.platform, options.application);
 
   readProcessorCount = length(options.platform.processors);
@@ -27,7 +29,7 @@ function options = systemSimulation(varargin)
   end
 
   options.die = Die('floorplan', ...
-    File.join(path, sprintf('%03d.flp', processorCount)));
+    File.choose(paths, sprintf('%03d.flp', processorCount)));
 
   %
   % Dynamic power
@@ -58,14 +60,14 @@ function options = systemSimulation(varargin)
   options.getSet('leakageModel' , 'LinearInterpolation');
   options.leakageOptions = Options( ...
     'dynamicPower', options.dynamicPower, ...
-    'filename', File.join(path, 'inverter_45nm_L5_T1000_08.leak'), ...
+    'filename', File.choose(paths, 'inverter_45nm_L5_T1000_08.leak'), ...
     options.get('leakageOptions', Options()));
 
   %
   % Temperature
   %
   options.hotspotOptions = Options( ...
-    'config', File.join(path, 'hotspot.config'), ...
+    'config', File.choose(paths, 'hotspot.config'), ...
     'line', sprintf('sampling_intvl %.4e', options.samplingInterval), ...
     options.get('hotspotOptions', Options()));
 end
