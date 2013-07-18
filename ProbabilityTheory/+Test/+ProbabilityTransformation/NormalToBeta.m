@@ -49,6 +49,6 @@ fprintf('Infinity norm with empirical:    %e\n', norm(C0 - C3, Inf));
 %% Draw the result.
 %
 Data.compare(data1, data3, 'method', 'histogram', ...
-  'draw', true, 'labels', { 'Without reduction', 'Empirical' });
+  'draw', true, 'names', { 'Without reduction', 'Empirical' });
 Data.compare(data2, data3, 'method', 'histogram', ...
-  'draw', true, 'labels', { 'With reduction', 'Empirical' });
+  'draw', true, 'names', { 'With reduction', 'Empirical' });

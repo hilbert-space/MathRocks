@@ -13,7 +13,7 @@ function [ globalError, localError ] = compare(varargin)
   assert(dimensions == 2 || dimensions == 3, ...
     'The given number of dimensions is not supported.');
 
-  options = Options('draw', false, 'layout', 'tiles', 'labels', {}, ...
+  options = Options('draw', false, 'layout', 'tiles', 'names', {}, ...
     'errorMetric', 'NRMSE', options);
 
   if ~options.has('distanceMetric');
@@ -40,7 +40,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     switch options.layout
     case 'one'
       figure;
-      labels = {};
+      legend = {};
     case 'tiles'
       figure;
     case 'separate'
@@ -85,24 +85,24 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     switch options.layout
     case 'one'
-      labels{end + 1} = sprintf('%d', i);
-      labels{end + 1} = sprintf('%d: %s %.4f', ...
+      legend{end + 1} = sprintf('%d', i);
+      legend{end + 1} = sprintf('%d: %s %.4f', ...
         i, options.distanceMetric, localError(i));
-      if ~isempty(options.labels)
-        labels{end - 1} = [ options.labels{1}, ' ', labels{end - 1} ];
-        labels{end - 0} = [ options.labels{2}, ' ', labels{end - 0} ];
+      if ~isempty(options.names)
+        legend{end - 1} = [ options.names{1}, ' ', legend{end - 1} ];
+        legend{end - 0} = [ options.names{2}, ' ', legend{end - 0} ];
       end
     case { 'tiles', 'separate' }
       Plot.title('Dimension %d: %s %.4f', i, ...
         options.distanceMetric, localError(i));
-      Plot.legend(options.labels{:});
+      Plot.legend(options.names{:});
     end
   end
 
   switch options.layout
   case 'one'
     Plot.title('All dimensions');
-    Plot.legend(labels{:});
+    Plot.legend(legend{:});
   end
 
   globalError = mean(localError(:));

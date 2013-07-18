@@ -1,5 +1,5 @@
-function temperatureVariation(time, expectationSet, varianceSet, varargin)
-  if nargin < 3
+function temperatureVariation(expectationSet, varianceSet, varargin)
+  if nargin < 2
     varianceSet = [];
     varargin = {};
   end
@@ -16,14 +16,22 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
   setCount = length(expectationSet);
   [ processorCount, stepCount ] = size(expectationSet{1});
 
-  labels = options.get('labels', cell(1, setCount));
+  names = options.get('names', cell(1, setCount));
+
+  if options.has('time')
+    time = options.time;
+    labels = { 'Time, s', 'Temperature, C' };
+  else
+    time = 0:(stepCount - 1);
+    labels = { 'Time, #', 'Temperature, C' };
+  end
 
   switch layout
   case 'separate'
   case 'one'
     if options.get('figure', true), figure; end
     Plot.title('Temperature');
-    Plot.label('Time, s', 'Temperature, C');
+    Plot.label(labels{:});
     Plot.limit(time);
     legend = {};
   otherwise
@@ -38,7 +46,7 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
     case 'separate'
       figure;
       Plot.title('Temperature %d', i);
-      Plot.label('Time, s', 'Temperature, C');
+      Plot.label(labels{:});
       Plot.limit(time);
       legend = {};
     case 'one'
@@ -57,7 +65,7 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
       line(time(I), Utils.toCelsius(expectationSet{j}(i, I)), ...
         'Color', color, 'LineWidth', 1);
 
-      legend{end + 1} = labels{j};
+      legend{end + 1} = names{j};
       if isempty(varianceSet{j}), continue; end
 
       if ~isempty(legend{end})
@@ -69,7 +77,7 @@ function temperatureVariation(time, expectationSet, varianceSet, varargin)
         expectationSet{j}(i, I) + sqrt(varianceSet{j}(i, I))), ...
         'Color', color, 'LineStyle', '--');
 
-      legend{end + 1} = labels{j};
+      legend{end + 1} = names{j};
       if ~isempty(legend{end})
         legend{end} = [ legend{end}, ': ' ];
       end

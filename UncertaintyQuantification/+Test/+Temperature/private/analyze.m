@@ -23,7 +23,6 @@ function analyze(method, analysis, varargin)
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
-  time = options.samplingInterval * (1:options.stepCount);
-
-  Plot.temperatureVariation(time, Texp, output.Tvar, 'layout', 'one');
+  Plot.temperatureVariation(Texp, output.Tvar, ...
+    'time', options.timeLine, 'layout', 'one');
 end

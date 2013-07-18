@@ -9,8 +9,6 @@ function MonteCarloTransient(varargin)
   chaosSampleCount = 1e5;
   carloSampleCount = 1e4;
 
-  time = options.samplingInterval * (0:(options.stepCount - 1));
-
   timeSlice = options.stepCount * options.samplingInterval / 2;
   k = floor(timeSlice / options.samplingInterval);
 
@@ -40,9 +38,9 @@ function MonteCarloTransient(varargin)
     [ mcTexp, mcOutput ] = mc.compute(options.dynamicPower, ...
       'sampleCount', carloSampleCount, 'verbose', true);
 
-    Plot.temperatureVariation(time, ...
-      { pcTexp, mcTexp }, { pcOutput.Tvar, mcOutput.Tvar }, ...
-      'labels', { 'PC', 'MC' });
+    Plot.temperatureVariation({ pcTexp, mcTexp }, ...
+       { pcOutput.Tvar, mcOutput.Tvar }, ...
+      'time', options.timeLine, 'names', { 'PC', 'MC' });
 
     pcTdata = Utils.toCelsius(pcOutput.Tdata);
     mcTdata = Utils.toCelsius(mcOutput.Tdata);
@@ -50,7 +48,7 @@ function MonteCarloTransient(varargin)
     Data.compare(pcTdata, mcTdata, ...
       'method', 'histogram', 'range', 'unbounded', ...
       'layout', 'separate', 'draw', true, ...
-      'labels', { 'PC', 'MC' });
+      'names', { 'PC', 'MC' });
   end
 
   %
