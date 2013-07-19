@@ -76,6 +76,8 @@ classdef HotSpot < handle
       this.ambientTemperature = ...
         options.get('ambientTemperature', Utils.toKelvin(45));
 
+      if options.get('coarseHotSpot', false), this.coarsen; end
+
       %
       % Leakage model
       %
@@ -114,6 +116,49 @@ classdef HotSpot < handle
 
   methods (Abstract)
     [ T, output ] = solve(this, Pdyn, options)
+  end
+
+  methods (Access = 'private')
+    function coarsen(this)
+      processorCount = this.processorCount;
+      nodeCount = this.nodeCount;
+
+      Cold = this.capacitance;
+      Gold = this.conductance;
+
+      %
+      % Processing elements
+      %
+
+      %
+      % Thermal interface material
+      %
+
+      %
+      % Heat spreader
+      %
+
+      %
+      % Heat sink
+      %
+      I = [ (3 * processorCount + 1):(4 * processorCount), ...
+        (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 8) ];
+      J = setdiff(1:nodeCount, I);
+
+      Cnew = Cold(J);
+      Cnew(end + 1) = sum(Cold(I));
+
+      Gnew = Gold(J, J);
+      Gnew(end + 1, end + 1) = sum(diag(Gold(I, I)));
+      for i = 1:length(I)
+        Gnew(end, 1:(end - 1)) = Gnew(end, 1:(end - 1)) + Gold(I(i), J);
+        Gnew(1:(end - 1), end) = Gnew(1:(end - 1), end) + Gold(J, I(i));
+      end
+
+      this.nodeCount = length(Cnew);
+      this.capacitance = Cnew;
+      this.conductance = Gnew;
+    end
   end
 
   methods (Static, Access = 'private')
