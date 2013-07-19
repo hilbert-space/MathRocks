@@ -34,9 +34,10 @@ function options = systemSimulation(varargin)
   %
   % Dynamic power
   %
-  options.power = DynamicPower(options.getSet('samplingInterval', 1e-3));
-  options.dynamicPower = options.getSet('powerScale', 1) * ...
-    options.power.compute(options.schedule);
+  options.samplingInterval = 1e-3;
+  options.power = DynamicPower( ...
+    'samplingInterval', options.samplingInterval, 'powerScale', 1);
+  options.dynamicPower = options.power.compute(options.schedule);
 
   if options.has('stepCount')
     options.dynamicPower = Utils.stretch( ...
@@ -66,8 +67,6 @@ function options = systemSimulation(varargin)
   %
   % Temperature
   %
-  options.hotspotOptions = Options( ...
-    'config', File.choose(paths, 'hotspot.config'), ...
-    'line', sprintf('sampling_intvl %.4e', options.samplingInterval), ...
-    options.get('hotspotOptions', Options()));
+  options.ambientTemperature = Utils.toKelvin(45);
+  options.hotspotConfiguration = File.choose(paths, 'hotspot.config');
 end

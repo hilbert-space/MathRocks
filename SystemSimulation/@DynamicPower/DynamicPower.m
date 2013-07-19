@@ -1,11 +1,14 @@
 classdef DynamicPower < handle
   properties (SetAccess = 'protected')
     samplingInterval
+    powerScale
   end
 
   methods
-    function this = DynamicPower(samplingInterval)
-      this.samplingInterval = samplingInterval;
+    function this = DynamicPower(varargin)
+      options = Options(varargin{:});
+      this.samplingInterval = options.samplingInterval;
+      this.powerScale = options.get('powerScale', 1);
     end
 
     function profile = compute(this, schedule)
@@ -29,6 +32,8 @@ classdef DynamicPower < handle
           profile(i, s:e) = processors{i}.dynamicPower(tasks{j}.type);
         end
       end
+
+      profile = this.powerScale * profile;
     end
   end
 end

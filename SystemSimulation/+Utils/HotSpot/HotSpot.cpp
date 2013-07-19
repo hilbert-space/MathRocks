@@ -57,12 +57,6 @@ HotSpot::HotSpot(const std::string &floorplan_file,
 
 	populate_R_model(model, floorplan);
 	populate_C_model(model, floorplan);
-
-	node_count = model->block->n_nodes;
-	processor_count = floorplan->n_units;
-
-	sampling_interval = config.sampling_intvl;
-	ambient_temperature = config.ambient;
 }
 
 HotSpot::~HotSpot()
@@ -75,6 +69,7 @@ void HotSpot::get_capacitance(double *capacitance) const
 {
 	const double *a = model->block->a;
 
+	size_t node_count = get_node_count();
 	for (size_t i = 0; i < node_count; i++)
 		capacitance[i] = a[i];
 }
@@ -83,6 +78,7 @@ void HotSpot::get_conductance(double *conductance) const
 {
 	double const * const * const b = model->block->b;
 
+	size_t node_count = get_node_count();
 	for (size_t i = 0; i < node_count; i++)
 		for (size_t j = 0; j < node_count; j++)
 			conductance[i * node_count + j] = b[i][j];

@@ -50,19 +50,35 @@ classdef HotSpot < handle
         error('The floorplan file does not exist.');
       end
 
-      config = options.hotspotOptions.config;
+      config = options.hotspotConfiguration;
 
       if ~File.exist(config)
         error('The configuration file does not exist.');
       end
 
-      line = options.hotspotOptions.get('line', '');
+      line = options.get('hotspotLine', '');
 
-      [ this.capacitance, this.conductance, ...
-        this.nodeCount, this.processorCount, ...
-        this.samplingInterval, this.ambientTemperature ] = ...
+      %
+      % Thermal model
+      %
+      [ this.capacitance, this.conductance ] = ...
         Utils.constructHotSpot(floorplan, config, line);
 
+      this.processorCount = options.processorCount;
+      this.nodeCount = length(this.capacitance);
+
+      %
+      % NOTE: HotSpot v5.01 (and some earlier versions) is implied.
+      %
+      assert(4 * this.processorCount + 12 == this.nodeCount);
+
+      this.samplingInterval = options.samplingInterval;
+      this.ambientTemperature = ...
+        options.get('ambientTemperature', Utils.toKelvin(45));
+
+      %
+      % Leakage model
+      %
       if options.has('leakage')
         this.leakage = options.leakage;
       else

@@ -14,40 +14,19 @@ class HotSpot
 {
 	protected:
 
-	size_t node_count;
-	size_t processor_count;
-
-	double sampling_interval;
-	double ambient_temperature;
-
 	thermal_config_t config;
 	flp_t *floorplan;
 	RC_model_t *model;
 
 	public:
 
-	HotSpot(const std::string &floorplan, const std::string &config_file,
+	HotSpot(const std::string &floorplan_file, const std::string &config_file,
 		const std::string &config_line);
 	virtual ~HotSpot();
 
 	inline size_t get_node_count() const
 	{
-		return node_count;
-	}
-
-	inline size_t get_processor_count() const
-	{
-		return processor_count;
-	}
-
-	inline double get_sampling_interval() const
-	{
-		return sampling_interval;
-	}
-
-	inline double get_ambient_temperature() const
-	{
-		return ambient_temperature;
+		return model->block->n_nodes;
 	}
 
 	void get_capacitance(double *capacitance) const;

@@ -5,11 +5,11 @@ using namespace std;
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-	string floorplan = from_matlab<string>(prhs[0]);
+	string floorplan_file = from_matlab<string>(prhs[0]);
 	string config_file = from_matlab<string>(prhs[1]);
 	string config_line = from_matlab<string>(prhs[2]);
 
-	HotSpot hotspot(floorplan, config_file, config_line);
+	HotSpot hotspot(floorplan_file, config_file, config_line);
 
 	size_t node_count = hotspot.get_node_count();
 
@@ -26,8 +26,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 	plhs[0] = capacitance;
 	plhs[1] = conductance;
-	plhs[2] = to_matlab<double>(hotspot.get_node_count());
-	plhs[3] = to_matlab<double>(hotspot.get_processor_count());
-	plhs[4] = to_matlab<double>(hotspot.get_sampling_interval());
-	plhs[5] = to_matlab<double>(hotspot.get_ambient_temperature());
 }
