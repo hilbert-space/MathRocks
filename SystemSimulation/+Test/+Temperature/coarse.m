@@ -18,7 +18,9 @@ function coarse
     fine.nodeCount, coarse.nodeCount);
   Plot.label('Time, s', 'Temperature, C');
   for i = 1:options.processorCount
-    line(time, abs(Tfine(i, :) - Tcoarse(i, :)), 'Color', Color.pick(i));
+    color = Color.pick(i);
+    line(time, Tfine(i, :), 'Color', color);
+    line(time, Tcoarse(i, :), 'Color', color, 'LineStyle', '--');
   end
   Plot.limit(time);
 end
