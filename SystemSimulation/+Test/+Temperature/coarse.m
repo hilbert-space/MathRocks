@@ -14,12 +14,11 @@ function coarse
 
   time = options.timeLine;
 
-  Plot.title('Fine vs Coarse Temperature Analysis');
+  Plot.title('Fine (%d nodes) vs. Coarse (%d nodes)', ...
+    fine.nodeCount, coarse.nodeCount);
   Plot.label('Time, s', 'Temperature, C');
   for i = 1:options.processorCount
-    color = Color.pick(i);
-    line(time, Tfine(i, :), 'Color', color);
-    line(time, Tcoarse(i, :), 'Color', color, 'LineStyle', '--');
+    line(time, abs(Tfine(i, :) - Tcoarse(i, :)), 'Color', Color.pick(i));
   end
   Plot.limit(time);
 end

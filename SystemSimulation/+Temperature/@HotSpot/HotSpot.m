@@ -45,7 +45,7 @@ classdef HotSpot < handle
       circuit = this.constructCircuit(options);
 
       if options.get('coarseHotSpot', false)
-        circuit = this.coarsen(circuit, options);
+        circuit = this.coarsen(circuit);
       end
 
       this.circuit = circuit;
@@ -122,54 +122,47 @@ classdef HotSpot < handle
       circuit.processorCount = processorCount;
       circuit.nodeCount = 4 * processorCount + 12;
 
-      [ circuit.A, circuit.B, circuit.G, circuit.Gamb ] = ...
+      [ circuit.A, circuit.B, circuit.G, Gamb ] = ...
         Utils.constructHotSpot(floorplan, config, line);
 
+      circuit.Gamb = [ zeros(3 * processorCount, 1); Gamb ];
+
       assert(circuit.nodeCount == length(circuit.A));
-
-      circuit.Isink = [ (3 * processorCount + 1):(4 * processorCount), ...
-        (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 8) ];
-
-      circuit.Iamb = [ (3 * processorCount + 1):(4 * processorCount), ...
-        (4 * processorCount + 1):(4 * processorCount + 4 + 8) ];
+      assert(circuit.nodeCount == length(circuit.Gamb));
     end
 
-    function circuit = coarsen(this, circuit, options)
-      [ A, B ] = this.merge(circuit.A, circuit.B, circuit.Isink);
-      circuit.A = A;
-      circuit.B = B;
-      circuit.nodeCount = length(A);
+    function circuit = coarsen(this, circuit)
+      processorCount = circuit.processorCount;
+
+      %
+      % Heat sink
+      %
+      circuit = this.mergeParallel(circuit, ...
+        (4 * processorCount + 4 + 4 + 1):(4 * processorCount + 4 + 4 + 4));
+
+      circuit = this.mergeParallel(circuit, ...
+        (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 4));
     end
 
-    function [ Anew, Bnew ] = merge(this, Aold, Bold, I)
-      nodeCount = length(Aold);
-      J = setdiff(1:nodeCount, I);
+    function circuit = mergeParallel(this, circuit, I)
+      circuit.A(end + 1) = sum(circuit.A(I));
+      circuit.A(I) = [];
 
-      Anew = Aold(J);
-      Anew(end + 1) = sum(Aold(I));
+      J = setdiff(1:circuit.nodeCount, I);
+      circuit.G = [ circuit.G(J, J), sum(circuit.G(J, I), 2);
+        sum(circuit.G(I, J), 1), 0 ];
 
-      Bnew = Bold(J, J);
-      Bnew(end + 1, end + 1) = sum(diag(Bold(I, I)));
-      for i = 1:length(I)
-        K = J(J < I(i));
-        count = length(K);
-        Bnew(end, 1:count) = Bnew(end, 1:count) + Bold(I(i), K);
-        Bnew(1:count, end) = Bnew(1:count, end) + Bold(K, I(i));
-      end
+      circuit.Gamb(end + 1) = sum(circuit.Gamb(I));
+      circuit.Gamb(I) = [];
+
+      circuit.B = this.constructB(circuit.G, circuit.Gamb);
+
+      circuit.nodeCount = length(circuit.A);
     end
 
-    function B = constructB(this, G, Gamb, Iamb)
-      nodeCount = size(G, 1);
-
-      %
-      % Non-diagonal
-      %
-      B = -1 ./ (1 ./ G + 1 ./ G.');
-
-      %
-      % Diagonal
-      %
-      B(Iamb, Iamb) = B(Iamb, Iamb) + diag(Gamb);
+    function B = constructB(this, G, Gamb)
+      nodeCount = length(Gamb);
+      B = -1 ./ (1 ./ G + 1 ./ G.') + diag(Gamb);
       for i = 1:nodeCount
         B(i, i) = sum([ B(i, i), -B(i, [ 1:(i - 1), (i + 1):nodeCount ]) ]);
       end
