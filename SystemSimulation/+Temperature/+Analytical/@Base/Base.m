@@ -4,12 +4,12 @@ classdef Base < Temperature.HotSpot
     % Original system:
     %
     %   C * dZ/dt + G * Z = M * P
-    %   T = M^T * Z + T_amb
+    %   T = M^T * Z + Tamb
     %
     % Transformed system:
     %
     %   dX/dt = A * X + B * P
-    %   T = B^T * X + T_amb
+    %   T = B^T * X + Tamb
     %
 
     %
@@ -55,7 +55,7 @@ classdef Base < Temperature.HotSpot
       processorCount = this.processorCount;
       dt = this.samplingInterval;
 
-      this.Cm12 = diag(sqrt(1 ./ this.capacitance));
+      this.Cm12 = diag(sqrt(1 ./ this.circuit.A));
 
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
@@ -63,7 +63,7 @@ classdef Base < Temperature.HotSpot
       %
       % Make sure that the matrix A is symmetric.
       %
-      A = this.Cm12 * (-this.conductance) * this.Cm12;
+      A = this.Cm12 * (-this.circuit.B) * this.Cm12;
       this.A = triu(A) + transpose(triu(A, 1));
 
       B = this.Cm12 * M;

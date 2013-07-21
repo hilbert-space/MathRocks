@@ -1,11 +1,12 @@
 function coarse
+  close all;
   setup;
 
-  options = Configure.systemSimulation('processorCount', 2);
+  options = Configure.systemSimulation('processorCount', 1);
 
-  fine = Temperature.Analytical.Transient(options, ...
+  fine = Temperature.Analytical.DynamicSteadyState(options, ...
     'coarseHotSpot', false);
-  coarse = Temperature.Analytical.Transient(options, ...
+  coarse = Temperature.Analytical.DynamicSteadyState(options, ...
     'coarseHotSpot', true);
 
   Tfine = Utils.toCelsius(fine.compute(options.dynamicPower, options));

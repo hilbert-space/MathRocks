@@ -65,21 +65,40 @@ HotSpot::~HotSpot()
 	free_flp(floorplan, FALSE);
 }
 
-void HotSpot::get_capacitance(double *capacitance) const
+void HotSpot::get_A(double *A) const
 {
 	const double *a = model->block->a;
 
-	size_t node_count = get_node_count();
-	for (size_t i = 0; i < node_count; i++)
-		capacitance[i] = a[i];
+	size_t count = get_node_count();
+	for (size_t i = 0; i < count; i++)
+		A[i] = a[i];
 }
 
-void HotSpot::get_conductance(double *conductance) const
+void HotSpot::get_B(double *B) const
 {
 	double const * const * const b = model->block->b;
 
-	size_t node_count = get_node_count();
-	for (size_t i = 0; i < node_count; i++)
-		for (size_t j = 0; j < node_count; j++)
-			conductance[i * node_count + j] = b[i][j];
+	size_t count = get_node_count();
+	for (size_t i = 0; i < count; i++)
+		for (size_t j = 0; j < count; j++)
+			B[i * count + j] = b[i][j];
+}
+
+void HotSpot::get_G(double *G) const
+{
+	double const * const * const g = model->block->g;
+
+	size_t count = get_node_count();
+	for (size_t i = 0; i < count; i++)
+		for (size_t j = 0; j < count; j++)
+			G[i * count + j] = g[i][j];
+}
+
+void HotSpot::get_G_amb(double *G_amb) const
+{
+	const double *g_amb = model->block->g_amb;
+
+	size_t count = get_processor_count() + EXTRA;
+	for (size_t i = 0; i < count; i++)
+		G_amb[i] = g_amb[i];
 }

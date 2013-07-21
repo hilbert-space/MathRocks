@@ -1,6 +1,18 @@
 classdef HotSpot < handle
   properties (SetAccess = 'private')
     %
+    % The thermal circuit by HotSpot:
+    %
+    %   diag(A) * dT / dt + B * (T - Tamb) = P
+    %
+    %   * A    - the capacitance vector,
+    %   * B    - the coefficient matrix based on G and Gamb,
+    %   * G    - the conductance matrix, and
+    %   * Gamb - the conductance vector of the ambient nodes.
+    %
+    circuit
+
+    %
     % The number of active nodes
     %
     processorCount
@@ -21,16 +33,6 @@ classdef HotSpot < handle
     ambientTemperature
 
     %
-    % The capacitance vector
-    %
-    capacitance
-
-    %
-    % The conductance matrix
-    %
-    conductance
-
-    %
     % The leakage model
     %
     leakage
@@ -40,47 +42,20 @@ classdef HotSpot < handle
     function this = HotSpot(varargin)
       options = Options(varargin{:});
 
-      if options.has('die')
-        floorplan = options.die.filename;
-      else
-        floorplan = options.floorplan;
+      circuit = this.constructCircuit(options);
+
+      if options.get('coarseHotSpot', false)
+        circuit = this.coarsen(circuit, options);
       end
 
-      if ~File.exist(floorplan)
-        error('The floorplan file does not exist.');
-      end
-
-      config = options.hotspotConfiguration;
-
-      if ~File.exist(config)
-        error('The configuration file does not exist.');
-      end
-
-      line = options.get('hotspotLine', '');
-
-      %
-      % Thermal model
-      %
-      [ this.capacitance, this.conductance ] = ...
-        Utils.constructHotSpot(floorplan, config, line);
-
-      this.processorCount = options.processorCount;
-      this.nodeCount = length(this.capacitance);
-
-      %
-      % NOTE: HotSpot v5.01 (and some earlier versions) is implied.
-      %
-      assert(4 * this.processorCount + 12 == this.nodeCount);
+      this.circuit = circuit;
+      this.processorCount = circuit.processorCount;
+      this.nodeCount = circuit.nodeCount;
 
       this.samplingInterval = options.samplingInterval;
       this.ambientTemperature = ...
         options.get('ambientTemperature', Utils.toKelvin(45));
 
-      if options.get('coarseHotSpot', false), this.coarsen; end
-
-      %
-      % Leakage model
-      %
       if options.has('leakage')
         this.leakage = options.leakage;
       else
@@ -119,45 +94,85 @@ classdef HotSpot < handle
   end
 
   methods (Access = 'private')
-    function coarsen(this)
-      processorCount = this.processorCount;
-      nodeCount = this.nodeCount;
+    function circuit = constructCircuit(this, options)
+      processorCount = options.processorCount;
 
-      Cold = this.capacitance;
-      Gold = this.conductance;
-
-      %
-      % Processing elements
-      %
-
-      %
-      % Thermal interface material
-      %
-
-      %
-      % Heat spreader
-      %
-
-      %
-      % Heat sink
-      %
-      I = [ (3 * processorCount + 1):(4 * processorCount), ...
-        (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 8) ];
-      J = setdiff(1:nodeCount, I);
-
-      Cnew = Cold(J);
-      Cnew(end + 1) = sum(Cold(I));
-
-      Gnew = Gold(J, J);
-      Gnew(end + 1, end + 1) = sum(diag(Gold(I, I)));
-      for i = 1:length(I)
-        Gnew(end, 1:(end - 1)) = Gnew(end, 1:(end - 1)) + Gold(I(i), J);
-        Gnew(1:(end - 1), end) = Gnew(1:(end - 1), end) + Gold(J, I(i));
+      if options.has('die')
+        floorplan = options.die.filename;
+      else
+        floorplan = options.floorplan;
       end
 
-      this.nodeCount = length(Cnew);
-      this.capacitance = Cnew;
-      this.conductance = Gnew;
+      if ~File.exist(floorplan)
+        error('The floorplan file does not exist.');
+      end
+
+      config = options.hotspotConfiguration;
+
+      if ~File.exist(config)
+        error('The configuration file does not exist.');
+      end
+
+      line = options.get('hotspotLine', '');
+
+      %
+      % NOTE: HotSpot v5.01 (and some earlier versions) is implied.
+      %
+      circuit = struct;
+      circuit.processorCount = processorCount;
+      circuit.nodeCount = 4 * processorCount + 12;
+
+      [ circuit.A, circuit.B, circuit.G, circuit.Gamb ] = ...
+        Utils.constructHotSpot(floorplan, config, line);
+
+      assert(circuit.nodeCount == length(circuit.A));
+
+      circuit.Isink = [ (3 * processorCount + 1):(4 * processorCount), ...
+        (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 8) ];
+
+      circuit.Iamb = [ (3 * processorCount + 1):(4 * processorCount), ...
+        (4 * processorCount + 1):(4 * processorCount + 4 + 8) ];
+    end
+
+    function circuit = coarsen(this, circuit, options)
+      [ A, B ] = this.merge(circuit.A, circuit.B, circuit.Isink);
+      circuit.A = A;
+      circuit.B = B;
+      circuit.nodeCount = length(A);
+    end
+
+    function [ Anew, Bnew ] = merge(this, Aold, Bold, I)
+      nodeCount = length(Aold);
+      J = setdiff(1:nodeCount, I);
+
+      Anew = Aold(J);
+      Anew(end + 1) = sum(Aold(I));
+
+      Bnew = Bold(J, J);
+      Bnew(end + 1, end + 1) = sum(diag(Bold(I, I)));
+      for i = 1:length(I)
+        K = J(J < I(i));
+        count = length(K);
+        Bnew(end, 1:count) = Bnew(end, 1:count) + Bold(I(i), K);
+        Bnew(1:count, end) = Bnew(1:count, end) + Bold(K, I(i));
+      end
+    end
+
+    function B = constructB(this, G, Gamb, Iamb)
+      nodeCount = size(G, 1);
+
+      %
+      % Non-diagonal
+      %
+      B = -1 ./ (1 ./ G + 1 ./ G.');
+
+      %
+      % Diagonal
+      %
+      B(Iamb, Iamb) = B(Iamb, Iamb) + diag(Gamb);
+      for i = 1:nodeCount
+        B(i, i) = sum([ B(i, i), -B(i, [ 1:(i - 1), (i + 1):nodeCount ]) ]);
+      end
     end
   end
 

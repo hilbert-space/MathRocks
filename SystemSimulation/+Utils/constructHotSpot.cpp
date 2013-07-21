@@ -11,19 +11,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 	HotSpot hotspot(floorplan_file, config_file, config_line);
 
+	size_t processor_count = hotspot.get_processor_count();
 	size_t node_count = hotspot.get_node_count();
 
-	mxArray *capacitance = mxCreateDoubleMatrix(node_count, 1, mxREAL);
-	mxArray *conductance = mxCreateDoubleMatrix(node_count, node_count, mxREAL);
+	mxArray *A = mxCreateDoubleMatrix(node_count, 1, mxREAL);
+	mxArray *B = mxCreateDoubleMatrix(node_count, node_count, mxREAL);
+	mxArray *G = mxCreateDoubleMatrix(node_count, node_count, mxREAL);
+	mxArray *G_amb = mxCreateDoubleMatrix(processor_count + EXTRA, 1, mxREAL);
 
-	double *_capacitance = mxGetPr(capacitance);
-	double *_conductance = mxGetPr(conductance);
+	double *_A = mxGetPr(A);
+	double *_B = mxGetPr(B);
+	double *_G = mxGetPr(G);
+	double *_G_amb = mxGetPr(G_amb);
 
-	hotspot.get_capacitance(_capacitance);
-	hotspot.get_conductance(_conductance);
+	hotspot.get_A(_A);
+	hotspot.get_B(_B);
+	hotspot.get_G(_G);
+	hotspot.get_G_amb(_G_amb);
 
-	cross_matlab(_conductance, node_count, node_count);
+	cross_matlab(_B, node_count, node_count);
+	cross_matlab(_G, node_count, node_count);
 
-	plhs[0] = capacitance;
-	plhs[1] = conductance;
+	plhs[0] = A;
+	plhs[1] = B;
+	plhs[2] = G;
+	plhs[3] = G_amb;
 }

@@ -24,13 +24,20 @@ class HotSpot
 		const std::string &config_line);
 	virtual ~HotSpot();
 
+	inline size_t get_processor_count() const
+	{
+		return floorplan->n_units;
+	}
+
 	inline size_t get_node_count() const
 	{
 		return model->block->n_nodes;
 	}
 
-	void get_capacitance(double *capacitance) const;
-	void get_conductance(double *conductance) const;
+	void get_A(double *A) const;
+	void get_B(double *B) const;
+	void get_G(double *G) const;
+	void get_G_amb(double *G_amb) const;
 };
 
 #endif
