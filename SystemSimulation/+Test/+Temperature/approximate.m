@@ -6,7 +6,7 @@ function approximate
 
   fine = Temperature.Analytical.DynamicSteadyState(options);
   coarse = Temperature.Analytical.DynamicSteadyState(options, ...
-    'coarseCircuit', false, 'modelReduction', 0.6);
+    'coarseCircuit', false, 'reductionThreshold', 0.99, 'reductionLimit', 0.6);
 
   Tfine = Utils.toCelsius(fine.compute(options.dynamicPower, options));
   Tcoarse = Utils.toCelsius(coarse.compute(options.dynamicPower, options));

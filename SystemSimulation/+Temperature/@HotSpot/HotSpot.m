@@ -99,33 +99,21 @@ classdef HotSpot < handle
     function circuit = constructCircuit(this, options)
       processorCount = options.processorCount;
 
-      if options.has('die')
-        floorplan = options.die.filename;
-      else
-        floorplan = options.floorplan;
-      end
-
-      if ~File.exist(floorplan)
+      if ~File.exist(options.floorplan)
         error('The floorplan file does not exist.');
       end
 
-      config = options.hotspotConfiguration;
-
-      if ~File.exist(config)
+      if ~File.exist(options.hotspotConfig)
         error('The configuration file does not exist.');
       end
 
-      line = options.get('hotspotLine', '');
-
-      %
-      % NOTE: HotSpot v5.01 (and some earlier versions) is implied.
-      %
       circuit = struct;
       circuit.processorCount = processorCount;
       circuit.nodeCount = 4 * processorCount + 12;
 
       [ circuit.A, circuit.B, circuit.G, Gamb ] = ...
-        Utils.constructHotSpot(floorplan, config, line);
+        Utils.constructHotSpot(options.floorplan, options.hotspotConfig, ...
+          options.get('hotspotLine', ''));
 
       circuit.Gamb = [ zeros(3 * processorCount, 1); Gamb ];
 

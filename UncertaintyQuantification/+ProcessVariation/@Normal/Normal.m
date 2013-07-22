@@ -20,7 +20,7 @@ classdef Normal < ProcessVariation.Base
         'distributions', distributions, 'correlation', correlation);
 
       transformation = ProbabilityTransformation.Normal( ...
-        'variables', variables, 'threshold', options.threshold);
+        'variables', variables, 'threshold', options.reductionThreshold);
     end
   end
 end

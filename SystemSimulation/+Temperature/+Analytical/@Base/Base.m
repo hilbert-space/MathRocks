@@ -60,17 +60,17 @@ classdef Base < Temperature.HotSpot
       B = Cm12 * M;
       BT = B';
 
-      preserveCount = floor(options.get('modelReduction', 1) * nodeCount);
-      if preserveCount < nodeCount
+      if options.get('reductionThreshold', 1) < 1
         s = ss(A, B, BT, 0);
 
-        [ ~, baldata ] = hsvd(s);
-        r = balred(s, preserveCount, 'Balancing', baldata);
+        [ L, baldata ] = hsvd(s);
 
-        % [ ~, gain ] = balreal(s);
-        % count = max(processorCount, ...
-        %   Utils.chooseSignificant(gain, options.modelReduction));
-        % r = modred(s, (count + 1):nodeCount);
+        preserveCount = Utils.chooseSignificant( ...
+          L, options.reductionThreshold);
+        preserveCount = max(preserveCount, ...
+          floor(nodeCount * options.get('reductionLimit', 0)));
+
+        r = balred(s, preserveCount, 'Balancing', baldata);
 
         A = r.a;
         B = r.b;

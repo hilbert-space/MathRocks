@@ -28,13 +28,14 @@ function options = systemSimulation(varargin)
     options.taskCount = taskCount;
   end
 
-  options.die = Die('floorplan', ...
-    File.choose(paths, sprintf('%03d.flp', processorCount)));
+  options.floorplan = File.choose(paths, ...
+    sprintf('%03d.flp', processorCount));
+  options.die = Die('floorplan', options.floorplan);
 
   %
   % Dynamic power
   %
-  options.samplingInterval = 1e-3;
+  options.getSet('samplingInterval', 1e-3);
   options.power = DynamicPower( ...
     'samplingInterval', options.samplingInterval, 'powerScale', 1);
   options.dynamicPower = options.power.compute(options.schedule);
@@ -68,5 +69,5 @@ function options = systemSimulation(varargin)
   % Temperature
   %
   options.ambientTemperature = Utils.toKelvin(45);
-  options.hotspotConfiguration = File.choose(paths, 'hotspot.config');
+  options.hotspotConfig = File.choose(paths, 'hotspot.config');
 end
