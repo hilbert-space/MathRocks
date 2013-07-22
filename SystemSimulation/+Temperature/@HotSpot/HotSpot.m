@@ -137,44 +137,23 @@ classdef HotSpot < handle
       %
       % Outter peripheral nodes of the heat sink
       %
-      circuit = this.mergeParallel(circuit, ...
+      circuit = this.merge(circuit, ...
         (4 * processorCount + 4 + 4 + 1):(4 * processorCount + 4 + 4 + 4));
 
       %
       % Inner peripheral nodes of the heat sink
       %
-      circuit = this.mergeParallel(circuit, ...
+      circuit = this.merge(circuit, ...
         (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 4));
-
-      %
-      % All peripheral nodes of the heat sink
-      %
-      circuit = this.mergeSequential(circuit, ...
-        (4 * processorCount + 4 + 1):(4 * processorCount + 4 + 2));
 
       %
       % Peripheral nodes of the heat spreader
       %
-      circuit = this.mergeParallel(circuit, ...
+      circuit = this.merge(circuit, ...
         (4 * processorCount + 1):(4 * processorCount + 4));
     end
 
-    function circuit = mergeSequential(this, circuit, I)
-      circuit.A(end + 1) = 1 / sum(1 ./ circuit.A(I));
-      circuit.A(I) = [];
-
-      J = setdiff(1:circuit.nodeCount, I);
-      circuit.G = [ circuit.G(J, J), 1./ sum(1 ./ circuit.G(J, I), 2);
-        1 ./ sum(1 ./ circuit.G(I, J), 1), 0 ];
-
-      circuit.Gamb(end + 1) = 1 ./ sum(1 ./ circuit.Gamb(I));
-      circuit.Gamb(I) = [];
-
-      circuit.B = this.constructB(circuit.G, circuit.Gamb);
-      circuit.nodeCount = length(circuit.A);
-    end
-
-    function circuit = mergeParallel(this, circuit, I)
+    function circuit = merge(this, circuit, I)
       circuit.A(end + 1) = sum(circuit.A(I));
       circuit.A(I) = [];
 
