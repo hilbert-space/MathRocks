@@ -65,18 +65,17 @@ classdef Base < Temperature.HotSpot
 
         [ L, baldata ] = hsvd(s);
 
-        preserveCount = Utils.chooseSignificant( ...
-          L, options.reductionThreshold);
-        preserveCount = max(preserveCount, ...
+        nodeCount = max( ...
+          Utils.chooseSignificant(L, options.reductionThreshold), ...
           floor(nodeCount * options.get('reductionLimit', 0)));
 
-        r = balred(s, preserveCount, 'Balancing', baldata);
+        r = balred(s, nodeCount, 'Balancing', baldata);
 
         A = r.a;
         B = r.b;
         BT = r.c;
 
-        this.nodeCount = size(A, 1);
+        this.nodeCount = nodeCount;
       end
 
       [ U, L ] = eig(A);
