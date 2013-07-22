@@ -1,4 +1,7 @@
-function analyze(method, analysis, iterationCount, varargin)
+function compute(method, analysis, varargin)
+  if nargin < 2, analysis = 'DynamicSteadyState'; end
+  if nargin < 1, method = 'Analytical'; end
+
   setup;
 
   options = Configure.systemSimulation(varargin{:});
@@ -6,21 +9,19 @@ function analyze(method, analysis, iterationCount, varargin)
 
   temperature = Temperature.(method).(analysis)(options);
 
-  fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
-  for i = 1:iterationCount
-    [ T, output ] = temperature.compute(Pdyn, options);
-  end
-  time = toc(time) / iterationCount;
-  fprintf('Average computational time: %.4f s\n', time);
+  [ T, output ] = temperature.compute(Pdyn, options);
+  time = toc(time);
 
-  Plot.powerTemperature(Pdyn, output.P - Pdyn, ...
-    T, temperature.samplingInterval);
+  Plot.powerTemperature(options.timeLine, Pdyn, output.P - Pdyn, T);
 
   Ptot  = mean(output.P(:));
   Pdyn  = mean(Pdyn(:));
   Pleak = mean(output.P(:) - Pdyn(:));
 
+  fprintf('Method:                     %s\n', method);
+  fprintf('Analysis:                   %s\n', analysis);
+  fprintf('Computational time:         %.2f s\n', time);
   fprintf('Average total power:        %.2f W\n', Ptot);
   fprintf('Average dynamic power:      %.2f W\n', Pdyn);
   fprintf('Average leakage power:      %.2f W\n', Pleak);

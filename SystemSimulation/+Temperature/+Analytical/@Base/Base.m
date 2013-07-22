@@ -13,11 +13,6 @@ classdef Base < Temperature.HotSpot
     %
 
     %
-    % C^(-1/2)
-    %
-    Cm12
-
-    %
     % A = C^(-1/2) * (-G) * C^(-1/2)
     %
     A
@@ -49,34 +44,55 @@ classdef Base < Temperature.HotSpot
 
   methods
     function this = Base(varargin)
-      this = this@Temperature.HotSpot(varargin{:});
+      options = Options(varargin{:});
+      this = this@Temperature.HotSpot(options);
 
-      nodeCount = this.nodeCount;
       processorCount = this.processorCount;
-      dt = this.samplingInterval;
+      nodeCount = this.nodeCount;
 
-      this.Cm12 = diag(sqrt(1 ./ this.circuit.A));
+      Cm12 = diag(sqrt(1 ./ this.circuit.A));
+
+      A = Cm12 * (-this.circuit.B) * Cm12;
+      A = triu(A) + transpose(triu(A, 1)); % ensure symmetry
 
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
+      B = Cm12 * M;
+      BT = B';
 
-      %
-      % Make sure that the matrix A is symmetric.
-      %
-      A = this.Cm12 * (-this.circuit.B) * this.Cm12;
-      this.A = triu(A) + transpose(triu(A, 1));
+      preserveCount = floor(options.get('modelReduction', 1) * nodeCount);
+      if preserveCount < nodeCount
+        s = ss(A, B, BT, 0);
 
-      B = this.Cm12 * M;
-      this.BT = B';
+        [ ~, baldata ] = hsvd(s);
+        r = balred(s, preserveCount, 'Balancing', baldata);
 
-      [ U, L ] = eig(this.A);
+        % [ ~, gain ] = balreal(s);
+        % count = max(processorCount, ...
+        %   Utils.chooseSignificant(gain, options.modelReduction));
+        % r = modred(s, (count + 1):nodeCount);
 
-      this.L = diag(L);
-      this.U = U;
-      this.UT = U';
+        A = r.a;
+        B = r.b;
+        BT = r.c;
 
-      this.E = this.U * diag(exp(dt * this.L)) * this.UT;
-      this.D = this.U * diag((exp(dt * this.L) - 1) ./ this.L) * this.UT * B;
+        this.nodeCount = size(A, 1);
+      end
+
+      [ U, L ] = eig(A);
+      L = diag(L);
+      UT = U';
+
+      E = U * diag(exp(this.samplingInterval * L)) * UT;
+      D = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * UT * B;
+
+      this.A  = A;
+      this.BT = BT;
+      this.L  = L;
+      this.U  = U;
+      this.UT = UT;
+      this.E  = E;
+      this.D  = D;
     end
   end
 end

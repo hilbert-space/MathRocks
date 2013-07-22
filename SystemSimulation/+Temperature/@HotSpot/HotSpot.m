@@ -18,11 +18,6 @@ classdef HotSpot < handle
     processorCount
 
     %
-    % The number of thermal nodes
-    %
-    nodeCount
-
-    %
     % The sampling interval
     %
     samplingInterval
@@ -38,13 +33,20 @@ classdef HotSpot < handle
     leakage
   end
 
+  properties (SetAccess = 'protected')
+    %
+    % The number of thermal nodes
+    %
+    nodeCount
+  end
+
   methods
     function this = HotSpot(varargin)
       options = Options(varargin{:});
 
       circuit = this.constructCircuit(options);
 
-      if options.get('coarseHotSpot', false)
+      if options.get('coarseCircuit', false)
         circuit = this.coarsen(circuit);
       end
 

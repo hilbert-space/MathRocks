@@ -1,26 +1,26 @@
-function coarse
+function approximate
   close all;
   setup;
 
-  options = Configure.systemSimulation('processorCount', 1);
+  options = Configure.systemSimulation('processorCount', 32);
 
-  fine = Temperature.Analytical.DynamicSteadyState(options, ...
-    'coarseHotSpot', false);
+  fine = Temperature.Analytical.DynamicSteadyState(options);
   coarse = Temperature.Analytical.DynamicSteadyState(options, ...
-    'coarseHotSpot', true);
+    'coarseCircuit', false, 'modelReduction', 0.6);
 
   Tfine = Utils.toCelsius(fine.compute(options.dynamicPower, options));
   Tcoarse = Utils.toCelsius(coarse.compute(options.dynamicPower, options));
 
   time = options.timeLine;
 
-  Plot.title('Fine (%d nodes) vs. Coarse (%d nodes)', ...
-    fine.nodeCount, coarse.nodeCount);
-  Plot.label('Time, s', 'Temperature, C');
   for i = 1:options.processorCount
     color = Color.pick(i);
     line(time, Tfine(i, :), 'Color', color);
     line(time, Tcoarse(i, :), 'Color', color, 'LineStyle', '--');
   end
+
+  Plot.title('Fine (%d nodes) vs. Coarse (%d nodes): RMSE %.4f C', ...
+    fine.nodeCount, coarse.nodeCount, Error.computeRMSE(Tfine, Tcoarse));
+  Plot.label('Time, s', 'Temperature, C');
   Plot.limit(time);
 end

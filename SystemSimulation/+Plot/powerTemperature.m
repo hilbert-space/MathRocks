@@ -1,10 +1,7 @@
-function powerTemperature(Pdyn, Pleak, T, samplingInterval)
-  if nargin < 4, samplingInterval = 1; end
-
-  [ processorCount, stepCount ] = size(Pdyn);
+function powerTemperature(time, Pdyn, Pleak, T)
+  processorCount = size(Pdyn);
 
   T = Utils.toCelsius(T);
-  time = samplingInterval * (1:stepCount);
 
   figure;
 
