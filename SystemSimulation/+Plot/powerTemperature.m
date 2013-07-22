@@ -1,5 +1,18 @@
-function powerTemperature(time, Pdyn, Pleak, T)
-  processorCount = size(Pdyn);
+function powerTemperature(Pdyn, Pleak, T, varargin)
+  options = Options(varargin{:});
+
+  [ processorCount, stepCount ] = size(Pdyn);
+
+  if options.has('time')
+    time = options.time;
+    timeLabel = 'Time, s';
+  elseif options.has('samplingInterval')
+    time = (0:(stepCount - 1)) * options.samplingInterval;
+    timeLabel = 'Time, s';
+  else
+    time = 0:(stepCount - 1);
+    timeLabel = 'Time, #';
+  end
 
   T = Utils.toCelsius(T);
 
@@ -8,7 +21,7 @@ function powerTemperature(time, Pdyn, Pleak, T)
   if ~isempty(T), subplot(2, 1, 1); end
 
   Plot.title('Power profile');
-  Plot.label('Time, s', 'Power, W');
+  Plot.label(timeLabel, 'Power, W');
   Plot.limit(time);
   for i = 1:processorCount
     color = Color.pick(i);

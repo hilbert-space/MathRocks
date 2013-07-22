@@ -13,7 +13,8 @@ function compute(method, analysis, varargin)
   [ T, output ] = temperature.compute(Pdyn, options);
   time = toc(time);
 
-  Plot.powerTemperature(options.timeLine, Pdyn, output.P - Pdyn, T);
+  Plot.powerTemperature(Pdyn, output.P - Pdyn, T, ...
+    'time', options.timeLine);
 
   Ptot  = mean(output.P(:));
   Pdyn  = mean(Pdyn(:));
