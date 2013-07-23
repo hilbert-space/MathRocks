@@ -1,28 +1,32 @@
 classdef Cache < handle
   properties (SetAccess = 'protected')
     map
-    hitCount
-    missCount
   end
 
   methods
     function this = Cache()
       this.map = containers.Map('KeyType', 'char', 'ValueType', 'any');
-      this.hitCount = 0;
-      this.missCount = 0;
     end
 
-    function value = fetch(this, key, compute)
+    function result = hasKey(this, key)
+      result = this.map.isKey(Utils.computeMD5(key));
+    end
+
+    function set(this, key, value)
+      this.map(Utils.computeMD5(key)) = value;
+    end
+
+    function value = get(this, key, compute)
       hash = Utils.computeMD5(key);
 
-      if ~this.map.isKey(hash)
-        this.map(hash) = compute(key);
-        this.missCount = this.missCount + 1;
+      if this.map.isKey(hash)
+        value = this.map(hash);
+      elseif nargin > 2
+        value = compute(key);
+        this.map(hash) = value;
       else
-        this.hitCount = this.hitCount + 1;
+        value = [];
       end
-
-      value = this.map(hash);
     end
   end
 end
