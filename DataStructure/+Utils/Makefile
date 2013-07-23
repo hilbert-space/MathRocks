@@ -1,6 +1,6 @@
 
 MEX ?= mex
-MEX_FLAGS = CXXFLAGS="$$CXXFLAGS -Wno-incompatible-pointer-types -Wno-deprecated-declarations" -lcrypto
+MEX_FLAGS = CXXFLAGS="$$CXXFLAGS -Wno-incompatible-pointer-types -Wno-deprecated-declarations -fPIC" -lcrypto
 
 all: computeMD5
 
