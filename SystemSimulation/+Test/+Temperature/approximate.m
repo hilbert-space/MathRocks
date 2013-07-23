@@ -13,13 +13,15 @@ function approximate(varargin)
   minimalError = 0.1;
   reductionLimit = 0.4:0.05:1;
 
-  fprintf('%15s%15s\n', 'Reduction', errorMetric);
+  fprintf('%15s%15s%15s\n', 'Reduction', 'Nodes', errorMetric);
   for limit = reductionLimit
     coarse = Temperature.Analytical.(analysis)(options, ...
       'reductionThreshold', 0, 'reductionLimit', limit);
     Tcoarse = Utils.toCelsius(coarse.compute(options.dynamicPower, options));
+
     error = Error.compute(errorMetric, Tfine, Tcoarse);
-    fprintf('%15.2f%15.4f\n', limit, error);
+    fprintf('%15.2f%15s%15.4f\n', limit, ...
+      sprintf('%3d /%3d', coarse.nodeCount, fine.nodeCount), error);
 
     if error < minimalError, break; end
   end
