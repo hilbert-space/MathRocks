@@ -60,16 +60,19 @@ classdef Base < Temperature.HotSpot
       B = Cm12 * M;
       BT = B';
 
-      if options.get('reductionThreshold', 1) < 1
+      reductionThreshold = options.get('reductionThreshold', 1);
+      reductionLimit = options.get('reductionLimit', 0);
+      if reductionThreshold < 1 && reductionLimit < 1
         s = ss(A, B, BT, 0);
 
         [ L, baldata ] = hsvd(s);
 
         nodeCount = max( ...
-          Utils.chooseSignificant(L, options.reductionThreshold), ...
-          floor(nodeCount * options.get('reductionLimit', 0)));
+          Utils.chooseSignificant(L, reductionThreshold), ...
+          floor(nodeCount * reductionLimit));
 
-        r = balred(s, nodeCount, 'Balancing', baldata);
+        r = balred(s, nodeCount, ...
+          'Elimination', 'Truncate', 'Balancing', baldata);
 
         A = r.a;
         B = r.b;

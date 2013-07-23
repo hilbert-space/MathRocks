@@ -1,10 +1,12 @@
-function compute(method, analysis, varargin)
-  if nargin < 2, analysis = 'DynamicSteadyState'; end
-  if nargin < 1, method = 'Analytical'; end
-
+function compute(varargin)
+  close all;
   setup;
 
   options = Configure.systemSimulation(varargin{:});
+
+  method = options.get('method', 'Analytical');
+  analysis = options.get('analysis', 'DynamicSteadyState');
+
   Pdyn = options.dynamicPower;
 
   temperature = Temperature.(method).(analysis)(options);
