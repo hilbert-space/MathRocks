@@ -1,20 +1,12 @@
 function [ output, arguments, body ] = construct( ...
   this, Lgrid, Tgrid, Igrid, options)
 
-  order = options.order;
-  assert(numel(order) == 2);
+  terms = options.terms;
+  [ termCount, variableCount ] = size(terms);
+  assert(variableCount == 2);
 
-  [ fitobject, expectation, deviation ] = ...
-    performPolynomialFit(Lgrid(:), Tgrid(:), Igrid(:), order);
-
-  values = coeffvalues(fitobject);
-  names = coeffnames(fitobject);
-
-  output.Lorder = order(1);
-  output.Torder = order(2);
-  output.expectation = expectation;
-  output.deviation = deviation;
-  output.coefficients = zeros(order(1) + 1, order(2) + 1);
+  [ coefficients, expectation, deviation ] = ...
+    perform(Lgrid, Tgrid, Igrid, terms);
 
   Lsym = sympoly('L');
   Tsym = sympoly('T');
@@ -23,16 +15,8 @@ function [ output, arguments, body ] = construct( ...
   Tnorm = (Tsym - expectation(2)) / deviation(2);
 
   I = sympoly(0);
-
-  for i = 1:numel(names)
-    attributes = regexp(names{i}, '^p(\d)(\d)$', 'tokens');
-
-    Lorder = str2num(attributes{1}{1});
-    Torder = str2num(attributes{1}{2});
-
-    output.coefficients(Lorder + 1, Torder + 1) = values(i);
-
-    I = I + values(i) * Lnorm^Lorder * Tnorm^Torder;
+  for i = 1:termCount
+    I = I + coefficients(i) * Lnorm^terms(i, 1) * Tnorm^terms(i, 2);
   end
 
   [ arguments, body ] = Utils.toFunctionString(I, Lsym, Tsym);
@@ -41,18 +25,24 @@ function [ output, arguments, body ] = construct( ...
   output.evaluate = str2func(string);
 end
 
-function [ fitobject, expectation, deviation ] = ...
-  performPolynomialFit(X, Y, Z, order)
+function [ coefficients, expectation, deviation ] = perform(X, Y, Z, terms)
+  X = X(:);
+  Y = Y(:);
+  Z = Z(:);
 
-  type = fittype(sprintf('poly%d%d', order(1), order(2)));
+  expectation = [ mean(X), mean(Y) ];
+  deviation   = [  std(X),  std(Y) ];
 
-  count = order(1) * order(2) + 1;
+  X = (X - expectation(1)) / deviation(1);
+  Y = (Y - expectation(2)) / deviation(2);
 
-  options = fitoptions(type);
-  options.Normalize = 'off';
-  options.Lower = -Inf(1, count);
-  options.Upper =  Inf(1, count);
+  dataCount = length(X);
+  termCount = size(terms, 1);
 
-  [ XY, expectation, deviation ] = curvefit.normalize([ X, Y ]);
-  fitobject = fit(XY, Z, type, options);
+  T = zeros(dataCount, termCount);
+  for i = 1:termCount
+    T(:, i) = X.^terms(i, 1) .* Y.^terms(i, 2);
+  end
+
+  coefficients = (T' * T) \ (T' * Z);
 end
