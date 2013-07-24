@@ -1,6 +1,6 @@
-classdef CustomExpression < LeakagePower.Base
+classdef CustomRegression < LeakagePower.Base
   methods
-    function this = CustomExpression(varargin)
+    function this = CustomRegression(varargin)
       this = this@LeakagePower.Base(varargin{:});
     end
   end
