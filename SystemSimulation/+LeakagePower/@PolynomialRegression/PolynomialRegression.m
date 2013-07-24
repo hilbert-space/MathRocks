@@ -3,13 +3,13 @@ classdef PolynomialRegression < LeakagePower.Base
     function this = PolynomialRegression(varargin)
       this = this@LeakagePower.Base(varargin{:});
     end
-
-    function P = evaluate(this, L, T)
-      P = this.output.evaluate(L, T);
-    end
   end
 
   methods (Access = 'protected')
-    output = construct(this, Ldata, Tdata, Idata, options)
+    [ output, arguments, body ] = construct(this, Ldata, Tdata, Idata, options)
+
+    function I = evaluate(this, output, L, T)
+      I = output.evaluate(L, T);
+    end
   end
 end

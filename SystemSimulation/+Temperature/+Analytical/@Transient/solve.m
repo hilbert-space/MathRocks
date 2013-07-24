@@ -47,7 +47,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   T = zeros(processorCount, stepCount, sampleCount);
   P = zeros(processorCount, stepCount, sampleCount);
 
-  P_ = bsxfun(@plus, Pdyn(:, 1), leakage.evaluate(L, Tamb * ones(size(L))));
+  P_ = bsxfun(@plus, Pdyn(:, 1), leakage.compute(L, Tamb * ones(size(L))));
   X_ = D * P_;
   T_ = BT * X_ + Tamb;
 
@@ -55,7 +55,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   P(:, 1, :) = P_;
 
   for i = 2:stepCount
-    P_ = bsxfun(@plus, Pdyn(:, i), leakage.evaluate(L, T_));
+    P_ = bsxfun(@plus, Pdyn(:, i), leakage.compute(L, T_));
     X_ = E * X_ + D * P_;
     T_ = BT * X_ + Tamb;
 

@@ -53,13 +53,13 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
     for j = 1:stepCount
       [ ~, T0 ] = ode45(@(t, Tt) ...
         At * (Tt - Tamb) + ...
-        Bt * (Pdyn(:, j) + leakage.evaluate(L, Tt(1:processorCount))), ...
+        Bt * (Pdyn(:, j) + leakage.compute(L, Tt(1:processorCount))), ...
         [ 0, dt ], T0);
 
       T0 = T0(end, :);
 
       T(:, j, i) = T0(1:processorCount);
-      P(:, j, i) = Pdyn(:, j) + leakage.evaluate(L, T(:, j, i));
+      P(:, j, i) = Pdyn(:, j) + leakage.compute(L, T(:, j, i));
     end
   end
 

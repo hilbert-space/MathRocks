@@ -15,16 +15,31 @@ classdef Base < handle
   end
 
   properties (SetAccess = 'protected')
-    options
+    toString
+
     output
     LRange
     TRange
+    powerScale
   end
 
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
-      this.options = options;
+
+      %
+      % Prevent the dynamic power profile from affecting
+      % the caching mechanism.
+      %
+      if options.has('dynamicPower')
+        Pdyn = options.dynamicPower;
+        options.dynamicPower = [];
+      else
+        Pdyn = [];
+      end
+
+      this.toString = sprintf('%s(%s)', ...
+        class(this), Utils.toString(options));
 
       filename = File.temporal([ 'LeakagePower_', ...
         DataHash({ class(this), Utils.toString(options) }), '.mat' ]);
@@ -44,19 +59,22 @@ classdef Base < handle
       this.output = output;
       this.LRange = LRange;
       this.TRange = TRange;
+      this.powerScale = 1;
+
+      if isempty(Pdyn), return; end
+
+      Pmean = this.PleakPdyn * mean(Pdyn(:));
+      P0 = this.evaluate(output, this.Lnom, this.Tref);
+      this.powerScale = Pmean / P0;
     end
 
-    function string = toString(this)
-      string = sprintf('%s(%s)', class(this), ...
-        Utils.toString(this.options));
+    function P = compute(this, L, T)
+      P = this.powerScale * this.evaluate(this.output, L, T);
     end
-  end
-
-  methods (Abstract)
-    P = evaluate(this, L, T)
   end
 
   methods (Abstract, Access = 'protected')
     output = construct(this, Ldata, Tdata, Idata, options)
+    I = evaluate(this, output, L, T)
   end
 end

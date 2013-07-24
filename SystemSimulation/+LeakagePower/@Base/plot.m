@@ -1,22 +1,18 @@
 function plot(this)
-  [ Lgrid, Tgrid, Igrid ] = Utils.loadLeakageData(this.options);
-  Ipred = this.evaluate(Lgrid, Tgrid);
+  [ L, T ] = meshgrid( ...
+    linspace(this.LRange(1), this.LRange(2), 50), ...
+    linspace(this.TRange(1), this.TRange(2), 50));
 
-  error = Error.computeNRMSE(Igrid, Ipred);
+  I = this.evaluate(this.output, L, T);
 
   figure;
-  h = subplot(1, 1, 1);
-
-  mesh(Lgrid, Utils.toCelsius(Tgrid), Igrid);
-
-  line(Lgrid, Utils.toCelsius(Tgrid), Ipred, ...
+  line(L, Utils.toCelsius(T), I, ...
     'LineStyle', 'None', ...
     'Marker', 'o', ...
     'MarkerEdgeColor', 'w', ...
-    'MarkerFaceColor', 'b', ...
-    'Parent', h);
+    'MarkerFaceColor', 'b');
 
-  Plot.title('Leakage current (NRMSE %.2f%%)', error * 100);
+  Plot.title('Leakage current');
   Plot.label('Channel length, m', 'Temperature, C', ...
     'Leakage current, A');
 

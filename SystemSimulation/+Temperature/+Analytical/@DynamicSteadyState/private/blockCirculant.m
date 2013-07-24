@@ -63,7 +63,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       Tlast = Tamb;
 
       for j = 1:iterationLimit
-        P(:, :, i) = Pdyn + leakage.evaluate(l, T(:, :, i));
+        P(:, :, i) = Pdyn + leakage.compute(l, T(:, :, i));
 
         B = fft(-D * P(:, :, i), stepCount, 2);
 
@@ -109,7 +109,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
 
     for i = 1:iterationLimit
       P(:, :, I) = Pdyn(:, :, I) + ...
-        leakage.evaluate(L(:, :, I), T(:, :, I));
+        leakage.compute(L(:, :, I), T(:, :, I));
 
       for j = I
         Y(:, :, j) = -D * P(:, :, j);
