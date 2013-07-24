@@ -45,6 +45,10 @@ view(10, 10);
 
 %% Speed
 %
+[ Lgrid, Tgrid ] = meshgrid( ...
+  linspace(leakage.LRange(1), leakage.LRange(2), 1000), ...
+  linspace(leakage.TRange(1), leakage.TRange(2), 1000));
+
 time = tic;
 for k = 1:iterationCount
   leakage.compute(Lgrid, Tgrid);
