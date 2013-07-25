@@ -64,7 +64,7 @@ classdef Base < Temperature.HotSpot
       reductionThreshold = options.get('reductionThreshold', 1);
       reductionLimit = options.get('reductionLimit', 0);
       if reductionThreshold < 1 && reductionLimit < 1
-        [ A, B, C ] = this.approximate(A, B, C, 0, ...
+        [ A, B, C ] = Utils.reduceSystem(A, B, C, 0, ...
           reductionThreshold, reductionLimit);
         nodeCount = size(A, 1);
         this.nodeCount = nodeCount;
@@ -82,28 +82,6 @@ classdef Base < Temperature.HotSpot
       this.U = U;
       this.E = E;
       this.F = F;
-    end
-  end
-
-  methods (Access = 'protected')
-    function [ A, B, C, D ] = approximate(this, A, B, C, D, ...
-      reductionThreshold, reductionLimit)
-
-      s = ss(A, B, C, D);
-
-      [ L, baldata ] = hsvd(s);
-
-      nodeCount = size(A, 1);
-      nodeCount = max(Utils.chooseSignificant( ...
-        L, reductionThreshold), floor(nodeCount * reductionLimit));
-
-      r = balred(s, nodeCount, 'Elimination', 'Truncate', ...
-        'Balancing', baldata);
-
-      A = r.a;
-      B = r.b;
-      C = r.c;
-      D = r.d;
     end
   end
 end
