@@ -3,8 +3,7 @@ classdef Base < Temperature.HotSpot
     %
     % Original
     %
-    %   Cth * dZ/dt + Gth * Z = M * P
-    %   T = M^T * Z + Tamb
+    %   Cth * dT/dt + Gth * (T - Tamb) = M * P
     %
     % Transformed
     %
@@ -59,16 +58,9 @@ classdef Base < Temperature.HotSpot
       C = B';
 
       %
-      % Model order reduction
+      % Preprocessing
       %
-      reductionThreshold = options.get('reductionThreshold', 1);
-      reductionLimit = options.get('reductionLimit', 0);
-      if reductionThreshold < 1 && reductionLimit < 1
-        [ A, B, C ] = Utils.reduceSystem(A, B, C, 0, ...
-          reductionThreshold, reductionLimit);
-        nodeCount = size(A, 1);
-        this.nodeCount = nodeCount;
-      end
+      [ A, B, C ] = this.processSystem(A, B, C, options);
 
       [ U, L ] = eig(A);
       L = diag(L);
@@ -76,12 +68,25 @@ classdef Base < Temperature.HotSpot
       E = U * diag( exp(this.samplingInterval * L)          ) * U';
       F = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * U' * B;
 
+      this.nodeCount = length(L);
+
       this.A = A;
       this.C = C;
       this.L = L;
       this.U = U;
       this.E = E;
       this.F = F;
+    end
+  end
+
+  methods (Access = 'protected')
+    function [ A, B, C ] = processSystem(this, A, B, C, options)
+      %
+      % Model order reduction
+      %
+      [ A, B, C ] = Utils.reduceSystem(A, B, C, 0, ...
+        options.get('reductionThreshold', 1), ...
+        options.get('reductionLimit', 0));
     end
   end
 end

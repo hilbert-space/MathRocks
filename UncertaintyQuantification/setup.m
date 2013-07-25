@@ -1,5 +1,6 @@
 function setup
   use('Approximation');
+  use('Interaction');
   use('LinearAlgebra');
   use('ProbabilityTheory');
   use('SystemSimulation');

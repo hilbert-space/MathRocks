@@ -29,7 +29,7 @@ function MonteCarloTransient(varargin)
   %
   % Comparison of expectations, variances, and PDFs.
   %
-  if Terminal.question('Compare expectations, variances, and PDFs? ')
+  if Console.question('Compare expectations, variances, and PDFs? ')
     tic;
     pcOutput.Tdata = pc.sample(pcOutput, chaosSampleCount);
     fprintf('Polynomial chaos: sampling time %.2f s (%d samples).\n', ...
@@ -62,8 +62,8 @@ function MonteCarloTransient(varargin)
   end
 
   index = uint8(1);
-  while Terminal.question('Sweep random variables? ')
-    index = Terminal.request( ...
+  while Console.question('Sweep random variables? ')
+    index = Console.request( ...
      'prompt', sprintf('Which random variables? [%s] ', Utils.toString(index)), ...
      'type', 'uint8', 'default', index);
 

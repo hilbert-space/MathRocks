@@ -1,4 +1,6 @@
 function [ A, B, C, D ] = reduceSystem(A, B, C, D, threshold, limit)
+  if threshold >= 1 || limit >= 1, return; end
+
   s = ss(A, B, C, D);
 
   [ L, baldata ] = hsvd(s);
