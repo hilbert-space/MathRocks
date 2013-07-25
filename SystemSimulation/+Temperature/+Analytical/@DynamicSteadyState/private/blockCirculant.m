@@ -14,7 +14,7 @@ function T = computeWithoutLeakage(this, Pdyn)
   A = cat(3, this.E, -eye(nodeCount));
   A = conj(fft(A, stepCount, 3));
 
-  B = fft(-this.D * Pdyn, stepCount, 2);
+  B = fft(-this.F * Pdyn, stepCount, 2);
 
   X = zeros(nodeCount, stepCount);
 
@@ -22,7 +22,7 @@ function T = computeWithoutLeakage(this, Pdyn)
     X(:, i) = A(:, :, i) \ B(:, i);
   end
 
-  T = this.BT * ifft(X, stepCount, 2) + this.ambientTemperature;
+  T = this.C * ifft(X, stepCount, 2) + this.ambientTemperature;
 end
 
 function [ T, output ] = computeWithLeakage(this, Pdyn, options)
@@ -33,8 +33,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
 
-  D = this.D;
-  BT = this.BT;
+  C = this.C;
+  F = this.F;
   Tamb = this.ambientTemperature;
 
   leakage = this.leakage;
@@ -65,13 +65,13 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       for j = 1:iterationLimit
         P(:, :, i) = Pdyn + leakage.compute(l, T(:, :, i));
 
-        B = fft(-D * P(:, :, i), stepCount, 2);
+        B = fft(-F * P(:, :, i), stepCount, 2);
 
         for k = 1:stepCount
           X(:, k) = invA{k} * B(:, k);
         end
 
-        Tcurrent = BT * ifft(X, stepCount, 2) + Tamb;
+        Tcurrent = C * ifft(X, stepCount, 2) + Tamb;
         T(:, :, i) = Tcurrent;
 
         if max(max(Tcurrent)) > temperatureLimit
@@ -112,7 +112,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
         leakage.compute(L(:, :, I), T(:, :, I));
 
       for j = I
-        Y(:, :, j) = -D * P(:, :, j);
+        Y(:, :, j) = -F * P(:, :, j);
       end
 
       B = fft(Y(:, :, I), stepCount, 2);
@@ -124,7 +124,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       Y(:, :, I) = ifft(X(:, :, I), stepCount, 2);
 
       for j = I
-        T(:, :, j) = BT * Y(:, :, j) + Tamb;
+        T(:, :, j) = C * Y(:, :, j) + Tamb;
       end
 
       Tcurrent = T(:, :, I);

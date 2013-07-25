@@ -12,9 +12,9 @@ function T = computeWithoutLeakage(this, Pdyn)
   stepCount = size(Pdyn, 2);
 
   E = this.E;
-  D = this.D;
+  F = this.F;
 
-  Q = D * Pdyn;
+  Q = F * Pdyn;
   W = Q(:, 1);
 
   for i = 2:stepCount
@@ -23,13 +23,13 @@ function T = computeWithoutLeakage(this, Pdyn)
 
   X = zeros(nodeCount, stepCount);
   X(:, 1) = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
-    stepCount * this.L))) * this.UT * W;
+    stepCount * this.L))) * this.U' * W;
 
   for i = 2:stepCount
     X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
   end
 
-  T = this.BT * X + this.ambientTemperature;
+  T = this.C * X + this.ambientTemperature;
 end
 
 function [ T, output ] = computeWithLeakage(this, Pdyn, options)
@@ -40,12 +40,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
 
+  C = this.C;
   E = this.E;
-  D = this.D;
-  BT = this.BT;
+  F = this.F;
 
   Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
-    stepCount * this.L))) * this.UT;
+    stepCount * this.L))) * this.U';
 
   Tamb = this.ambientTemperature;
 
@@ -71,7 +71,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       for j = 1:iterationLimit
         P(:, :, i) = Pdyn + leakage.compute(l, T(:, :, i));
 
-        Q = D * P(:, :, i);
+        Q = F * P(:, :, i);
         W = Q(:, 1);
         for k = 2:stepCount
           W = E * W + Q(:, k);
@@ -82,7 +82,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
           X(:, k) = E * X(:, k - 1) + Q(:, k - 1);
         end
 
-        Tcurrent = BT * X + Tamb;
+        Tcurrent = C * X + Tamb;
         T(:, :, i) = Tcurrent;
 
         if max(max(Tcurrent)) > temperatureLimit
@@ -121,18 +121,18 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       P(:, I, :) = Pdyn(:, I, :) + ...
         leakage.compute(L(:, I, :), T(:, I, :));
 
-      Q(:, I, 1) = D * P(:, I, 1);
+      Q(:, I, 1) = F * P(:, I, 1);
       W = Q(:, I, 1);
       for j = 2:stepCount
-        Q(:, I, j) = D * P(:, I, j);
+        Q(:, I, j) = F * P(:, I, j);
         W = E * W + Q(:, I, j);
       end
 
       X = Z * W;
-      T(:, I, 1) = BT * X + Tamb;
+      T(:, I, 1) = C * X + Tamb;
       for j = 2:stepCount
         X = E * X + Q(:, I, j - 1);
-        T(:, I, j) = BT * X + Tamb;
+        T(:, I, j) = C * X + Tamb;
       end
 
       Tcurrent = T(:, I, :);

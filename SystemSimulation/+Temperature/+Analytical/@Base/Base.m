@@ -1,45 +1,43 @@
 classdef Base < Temperature.HotSpot
   properties (Access = 'protected')
     %
-    % Original system:
+    % Original
     %
-    %   C * dZ/dt + G * Z = M * P
+    %   Cth * dZ/dt + Gth * Z = M * P
     %   T = M^T * Z + Tamb
     %
-    % Transformed system:
+    % Transformed
     %
     %   dX/dt = A * X + B * P
-    %   T = B^T * X + Tamb
+    %   T = C * X + D = B^T * X + Tamb
     %
 
     %
-    % A = C^(-1/2) * (-G) * C^(-1/2)
+    % A = Cth^(-1/2) * (-Gth) * Cth^(-1/2)
     %
     A
 
     %
-    % B^T = (C^(-1/2) * M)^T
+    % C = B^T = (Cth^(-1/2) * M)^T
     %
-    BT
+    C
 
     %
-    % Eigenvalue decomposition of Gt
     % A = U * L * U^T
     %
     L
     U
-    UT
 
     %
-    % E = exp(A * t) = U * diag(exp(li * dt)) * U^T
+    % E = exp(A * dt) = U * diag(exp(li * dt)) * U^T
     %
     E
 
     %
-    % D = A^(-1) * (exp(A * t) - I) * B
-    %   = U * diag((exp(li * t) - 1) / li) * U^T * B
+    % F = A^(-1) * (exp(A * dt) - I) * B
+    %   = U * diag((exp(li * dt) - 1) / li) * U^T * B
     %
-    D
+    F
   end
 
   methods
@@ -58,43 +56,54 @@ classdef Base < Temperature.HotSpot
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
       B = Cm12 * M;
-      BT = B';
+      C = B';
 
+      %
+      % Model order reduction
+      %
       reductionThreshold = options.get('reductionThreshold', 1);
       reductionLimit = options.get('reductionLimit', 0);
       if reductionThreshold < 1 && reductionLimit < 1
-        s = ss(A, B, BT, 0);
-
-        [ L, baldata ] = hsvd(s);
-
-        nodeCount = max( ...
-          Utils.chooseSignificant(L, reductionThreshold), ...
-          floor(nodeCount * reductionLimit));
-
-        r = balred(s, nodeCount, ...
-          'Elimination', 'Truncate', 'Balancing', baldata);
-
-        A = r.a;
-        B = r.b;
-        BT = r.c;
-
+        [ A, B, C ] = this.approximate(A, B, C, 0, ...
+          reductionThreshold, reductionLimit);
+        nodeCount = size(A, 1);
         this.nodeCount = nodeCount;
       end
 
       [ U, L ] = eig(A);
       L = diag(L);
-      UT = U';
 
-      E = U * diag(exp(this.samplingInterval * L)) * UT;
-      D = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * UT * B;
+      E = U * diag( exp(this.samplingInterval * L)          ) * U';
+      F = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * U' * B;
 
-      this.A  = A;
-      this.BT = BT;
-      this.L  = L;
-      this.U  = U;
-      this.UT = UT;
-      this.E  = E;
-      this.D  = D;
+      this.A = A;
+      this.C = C;
+      this.L = L;
+      this.U = U;
+      this.E = E;
+      this.F = F;
+    end
+  end
+
+  methods (Access = 'protected')
+    function [ A, B, C, D ] = approximate(this, A, B, C, D, ...
+      reductionThreshold, reductionLimit)
+
+      s = ss(A, B, C, D);
+
+      [ L, baldata ] = hsvd(s);
+
+      nodeCount = size(A, 1);
+      nodeCount = max(Utils.chooseSignificant( ...
+        L, reductionThreshold), floor(nodeCount * reductionLimit));
+
+      r = balred(s, nodeCount, 'Elimination', 'Truncate', ...
+        'Balancing', baldata);
+
+      A = r.a;
+      B = r.b;
+      C = r.c;
+      D = r.d;
     end
   end
 end
