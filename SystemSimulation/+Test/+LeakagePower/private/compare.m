@@ -6,7 +6,8 @@ function compare(approximationMethod, varargin)
 
   options = Options('filename', ...
     File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_08.leak'), ...
-    'LCount', 50, 'TCount', 50, 'TLimit', Utils.toKelvin([ 0, 400 ]), varargin{:});
+    'LCount', 50, 'TCount', 50, 'TLimit', Utils.toKelvin([ 40, 400 ]), ...
+    varargin{:});
 
   leakage = LeakagePower.(approximationMethod)(options);
   [ Lgrid, Tgrid, Igrid ] = Utils.loadLeakageData(options);

@@ -16,49 +16,30 @@ function output = construct(this, Lgrid, Tgrid, Igrid, options)
 
   coefficientCount = length(Cs);
 
-  Gs = gradient(Fs, Cs);
-  Hs = hessian(Fs, Cs);
-
   Ff = Utils.toFunction(Fs, [ Ls, Ts ], 'columns', Cs);
-  Gf = cell(coefficientCount, 1);
-  Hf = cell(coefficientCount, coefficientCount);
+  Js = jacobian(Fs, Cs);
+  Jf = cell(1, coefficientCount);
   for i = 1:coefficientCount
-    Gf{i} = Utils.toFunction(Gs(i), [ Ls, Ts ], 'columns', Cs);
-    for j = i:coefficientCount
-      Hf{i, j} = Utils.toFunction(Hs(i, j), [ Ls, Ts ], 'columns', Cs);
-      Hf{j, i} = Hf{i, j};
-    end
+    Jf{i} = Utils.toFunction(Js(i), [ Ls, Ts ], 'columns', Cs);
   end
 
   dataCount = length(I);
 
-  function [ f, g, h ] = target(C)
-    r = Ff(LT, C) - I;
-
+  function [ f, J ] = target(C)
+    f = Ff(LT, C) - I;
     J = zeros(dataCount, coefficientCount);
-    Q = zeros(coefficientCount, coefficientCount);
-
     for i = 1:coefficientCount
-      J(:, i) = Gf{i}(LT, C);
-      for j = i:coefficientCount
-        hij = Hf{i, j}(LT, C);
-        if isscalar(hij), hij = hij * ones(dataCount, 1); end
-        Q(i, j) = hij' * r;
-        Q(j, i) = Q(i, j);
-      end
+      J(:, i) = Jf{i}(LT, C);
     end
-
-    f = sum(r.^2) / 2;
-    g = J' * r;
-    h = J' * J + Q;
   end
 
-  options = optimoptions('fminunc');
-  options.GradObj = 'on';
-  options.Hessian = 'on';
-  options.Display = 'off';
+  options = optimoptions('lsqnonlin');
+  options.Algorithm = 'levenberg-marquardt';
+  options.TolFun    = 1e-8;
+  options.Jacobian  = 'on';
+  options.Display   = 'off';
 
-  C = fminunc(@target, zeros(1, coefficientCount), options);
+  C = lsqnonlin(@target, zeros(1, coefficientCount), [], [], options);
 
   Fs = subs(Fs, Cs, C);
   Fs = subs(Fs, Ls, (Ls - E(1)) / D(1));
