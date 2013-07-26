@@ -6,42 +6,46 @@ function [ T, output ] = condensedEquationWithLinearLeakage(this, Pdyn, options)
   E = this.E;
   F = this.F;
 
-  Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
-    stepCount * this.L))) * this.U';
-
-  Tamb = this.Tamb;
-
-  leakage = this.leakage;
-  V = options.get('V', leakage.Vnom * ones(processorCount, 1));
+  V = options.get('V', ...
+    this.leakage.Vnom * ones(processorCount, 1));
+  Padd = this.leakage.compute(V, 0);
 
   sampleCount = size(V, 2);
 
-  V = repmat(V, [ 1, 1, stepCount ]);
-  Pdyn = permute(repmat(Pdyn, [ 1, 1, sampleCount ]), [ 1 3 2 ]);
+  X = zeros(nodeCount, stepCount);
+  K = zeros(nodeCount, nodeCount, stepCount + 1);
 
-  T = Tamb * ones(processorCount, sampleCount, stepCount);
-  P = zeros(processorCount, sampleCount, stepCount);
+  Q = F * Pdyn;
+  W = Q(:, 1);
 
-  Q = zeros(nodeCount, sampleCount, stepCount);
+  K(:, :, 2) = eye(nodeCount);
 
-  P = Pdyn + leakage.compute(V, T);
-
-  Q(:, :, 1) = F * P(:, :, 1);
-  W = Q(:, :, 1);
-  for j = 2:stepCount
-    Q(:, :, j) = F * P(:, :, j);
-    W = E * W + Q(:, :, j);
+  for i = 2:stepCount
+    W = E * W + Q(:, i);
+    K(:, :, i + 1) = E * K(:, :, i);
   end
 
-  X = Z * W;
-  T(:, :, 1) = C * X + Tamb;
-  for j = 2:stepCount
-    X = E * X + Q(:, :, j - 1);
-    T(:, :, j) = C * X + Tamb;
+  Z = this.U * diag(1 ./ (1 - exp(stepCount * ...
+    this.samplingInterval * this.L))) * this.U';
+  X(:, 1) = Z * W;
+
+  K = cumsum(K, 3);
+  W = Z * K(:, :, end);
+  K(:, 1:processorCount, 1) = W * F;
+
+  for i = 2:stepCount
+    X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
+    W = E * W;
+    K(:, 1:processorCount, i) = (W + K(:, :, i)) * F;
   end
 
-  T = permute(T, [ 1, 3, 2 ]);
-  P = permute(P, [ 1, 3, 2 ]);
+  T = zeros(processorCount, stepCount, sampleCount);
+  for i = 1:sampleCount
+    T(:, :, i) = C * bsxfun(@plus, X, ...
+      K(:, 1:processorCount, i) * Padd(:, i));
+  end
 
-  output.P = P;
+  T = T + this.Tamb;
+
+  output = struct;
 end
