@@ -99,16 +99,5 @@ classdef Base < Temperature.HotSpot
       this.E = E;
       this.F = F;
     end
-
-    function [ T, output ] = compute(this, Pdyn, varargin)
-      if isa(this.leakage, 'struct')
-        [ T, output ] = computeWithLeakage(this, Pdyn, ...
-          Options(varargin{:}, 'iterationLimit', 1));
-        output.P = 0; % to be fixed is needed
-      else
-        [ T, output ] = compute@Temperature.HotSpot(this, Pdyn, ...
-          varargin{:});
-      end
-    end
   end
 end
