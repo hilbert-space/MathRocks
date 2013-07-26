@@ -1,11 +1,10 @@
 function linearizeLeakage(varargin)
-  close all;
   setup;
 
-  options = Configure.systemSimulation(varargin{:});
+  options = Configure.systemSimulation('processorCount', 2, varargin{:});
   options.leakageOptions.TRange = Utils.toKelvin([ 40, 400 ]);
 
-  errorMetric = 'RMSE';
+  errorMetric = 'NRMSE';
   analysis = options.get('analysis', 'DynamicSteadyState');
 
   one = Temperature.Analytical.(analysis)(options);
@@ -15,7 +14,9 @@ function linearizeLeakage(varargin)
     options.dynamicPower, options));
 
   two = Temperature.Analytical.(analysis)(options, ...
-    'linearizeLeakage', Options('TRange', Utils.toKelvin([ 40, 400 ])));
+    'linearizeLeakage', Options( ...
+      'VRange', 45e-9 + 0.05 * 45e-9 * [ -1, 1 ], ...
+      'TRange', Utils.toKelvin([ 60, 90 ])));
   Ttwo = Utils.toCelsius(two.compute(options.dynamicPower, options));
 
   error = Error.compute(errorMetric, Tone, Ttwo);
@@ -28,7 +29,7 @@ function linearizeLeakage(varargin)
   Plot.figure(1200, 400);
   for i = 1:options.processorCount
     color = Color.pick(i);
-    line(time, Tzero(i, :), 'Color', 0.8 * [ 1, 1, 1]);
+    line(time, Tzero(i, :), 'Color', 0.8 * [ 1, 1, 1 ]);
     line(time, Tone(i, :), 'Color', color);
     line(time, Ttwo(i, :), 'Color', color, 'LineStyle', '--');
   end
