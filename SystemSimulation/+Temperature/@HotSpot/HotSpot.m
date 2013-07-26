@@ -60,12 +60,12 @@ classdef HotSpot < handle
     end
 
     function [ T, output ] = compute(this, Pdyn, varargin)
-      if isempty(this.leakage)
+      options = Options(varargin{:});
+      if options.get('disableLeakage', false) || isempty(this.leakage)
         T = computeWithoutLeakage(this, Pdyn);
         output = struct;
       else
-        [ T, output ] = computeWithLeakage(this, Pdyn, ...
-          Options(varargin{:}));
+        [ T, output ] = computeWithLeakage(this, Pdyn, options);
       end
     end
 

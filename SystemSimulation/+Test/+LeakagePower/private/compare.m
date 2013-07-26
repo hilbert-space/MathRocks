@@ -18,7 +18,7 @@ function compare(approximationMethod, varargin)
   %
   % Accuracy
   %
-  figure('Position', [ 100, 800, 1200, 400 ]);
+  Plot.figure(1200, 400);
 
   names = { 'Model', 'Linearized model' };
 
