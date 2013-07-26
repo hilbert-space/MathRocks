@@ -10,7 +10,7 @@ function [ compute, alpha, beta ] = linearizeLeakage(leakage, varargin)
     linspace(TRange(1), TRange(2), pointCount));
 
   VT = [ V(:), T(:) ];
-  I = leakage.compute(VT(:, 1), VT(:, 2));
+  P = leakage.compute(VT(:, 1), VT(:, 2));
 
   Vs = sym('V');
   Ts = sym('T');
@@ -24,8 +24,17 @@ function [ compute, alpha, beta ] = linearizeLeakage(leakage, varargin)
   beta = Cs(2) * exp(Cs(3) + Cs(4) * Vs);
   Fs = alpha * Ts + beta;
 
-  [ compute, C ] = Utils.constructCustomFit(VT, I, Fs, [ Vs Ts ], Cs);
+  [ compute, C, E, S ] = Utils.constructCustomFit(VT, P, Fs, [ Vs Ts ], Cs);
 
-  alpha = C(1);
-  beta = Utils.toFunction(subs(beta, Cs, C), Vs);
+  %
+  % The coefficients in C are for normalized V and T. So,
+  % actual expression is
+  %
+  % P = C(1) * (T - E(2)) / S(2) + C(2) * exp(C(3) + C(4) * (V - E(1)) / S(1)).
+  %
+  alpha = C(1) / S(2);
+  beta = subs(beta, Cs, C);
+  beta = subs(beta, Vs, (Vs - E(1)) / S(1));
+  beta = beta - C(1) * E(2) / S(2);
+  beta = Utils.toFunction(beta, Vs);
 end

@@ -50,6 +50,9 @@ classdef Base < Temperature.HotSpot
       Cth = this.circuit.A;
       Gth = this.circuit.B;
 
+      M = [ diag(ones(1, processorCount)); ...
+        zeros(nodeCount - processorCount, processorCount) ];
+
       %
       % Leakage linearization
       %
@@ -62,7 +65,7 @@ classdef Base < Temperature.HotSpot
         leakage.compute = @(V, T) this.Tamb * alpha + beta(V);
         this.leakage = leakage;
 
-        Gth = Gth - alpha;
+        Gth = Gth - M * alpha * eye(processorCount) * M';
       end
 
       T = diag(sqrt(1 ./ Cth));
@@ -70,8 +73,6 @@ classdef Base < Temperature.HotSpot
       A = T * (-Gth) * T;
       A = triu(A) + transpose(triu(A, 1)); % ensure symmetry
 
-      M = [ diag(ones(1, processorCount)); ...
-        zeros(nodeCount - processorCount, processorCount) ];
       B = T * M;
       C = B';
 
@@ -103,6 +104,7 @@ classdef Base < Temperature.HotSpot
       if isa(this.leakage, 'struct')
         [ T, output ] = computeWithLeakage(this, Pdyn, ...
           Options(varargin{:}, 'iterationLimit', 1));
+        output.P = 0; % to be fixed is needed
       else
         [ T, output ] = compute@Temperature.HotSpot(this, Pdyn, ...
           varargin{:});

@@ -31,8 +31,7 @@ function compare(approximationMethod, varargin)
   errors(1) = Error.compute(errorMetric, I, Ipred{1});
   errors(2) = Error.compute(errorMetric, I, Ipred{2});
 
-  fprintf('%s of the model           : %.4f\n', errorMetric, errors(1));
-  fprintf('%s of the model linearized: %.4f\n', errorMetric, errors(2));
+  fprintf('%s of the model (linearized): %.4f (%.4f)\n', errorMetric, errors(1), errors(2));
 
   for i = 1:2
     subplot(1, 2, i);
@@ -49,8 +48,6 @@ function compare(approximationMethod, varargin)
   end
 
   Plot.name(approximationMethod);
-
-  return;
 
   %
   % Speed

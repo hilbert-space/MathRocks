@@ -1,4 +1,4 @@
-function [ compute, C ] = constructCustomFit(X, Y, Fs, Xs, Cs)
+function [ compute, C, E, S ] = constructCustomFit(X, Y, Fs, Xs, Cs)
   E = mean(X, 1);
   S = std(X, [], 1);
 

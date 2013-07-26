@@ -3,6 +3,7 @@ function linearizeLeakage(varargin)
   setup;
 
   options = Configure.systemSimulation(varargin{:});
+  options.leakageOptions.TRange = Utils.toKelvin([ 40, 300 ]);
 
   errorMetric = 'RMSE';
   analysis = options.get('analysis', 'DynamicSteadyState');
@@ -11,7 +12,7 @@ function linearizeLeakage(varargin)
   Tone = Utils.toCelsius(one.compute(options.dynamicPower, options));
 
   two = Temperature.Analytical.(analysis)(options, ...
-    'linearizeLeakage', Options('TRange', Utils.toKelvin([ 45, 120 ])));
+    'linearizeLeakage', Options('TRange', Utils.toKelvin([ 40, 300 ])));
   Ttwo = Utils.toCelsius(two.compute(options.dynamicPower, options));
 
   error = Error.compute(errorMetric, Tone, Ttwo);
