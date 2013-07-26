@@ -33,8 +33,8 @@ classdef Base < handle
 
       function result = target(rvs)
         rvs = delta + (1 - 2 * delta) * rvs;
-        L = transpose(process.evaluate(distribution.icdf(rvs)));
-        T = this.solve(Pdyn, Options(varargin{:}, 'L', L));
+        V = transpose(process.evaluate(distribution.icdf(rvs)));
+        T = this.computeWithLeakage(Pdyn, Options(varargin{:}, 'V', V));
         result = transpose(reshape(T, processorCount * stepCount, []));
       end
 

@@ -1,9 +1,12 @@
-function analyze(method, analysis, varargin)
+function compute(varargin)
   close all;
   setup;
 
   options = Configure.systemSimulation(varargin{:});
   options = Configure.processVariation(options);
+
+  method = options.get('method', 'Chaos');
+  analysis = options.get('analysis', 'Transient');
 
   switch method
   case 'Chaos'

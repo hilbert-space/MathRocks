@@ -1,12 +1,7 @@
 function options = processVariation(varargin)
   options = Options(varargin{:});
 
-  if options.has('nominal')
-    expectation = options.nominal;
-  else
-    expectation = LeakagePower.Base.Lnom;
-  end
-
+  expectation = options.get('expectation', 45e-9);
   deviation = options.get('deviation', 0.05 * expectation);
 
   %

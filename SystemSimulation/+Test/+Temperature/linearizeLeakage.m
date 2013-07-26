@@ -1,4 +1,5 @@
 function linearizeLeakage(varargin)
+  close all;
   setup;
 
   options = Configure.systemSimulation('processorCount', 2, varargin{:});
@@ -15,8 +16,8 @@ function linearizeLeakage(varargin)
 
   two = Temperature.Analytical.(analysis)(options, ...
     'linearizeLeakage', Options( ...
-      'VRange', 45e-9 + 0.05 * 45e-9 * [ -1, 1 ], ...
-      'TRange', Utils.toKelvin([ 60, 90 ])));
+      'VRange', 45e-9 + 0.05 * 45e-9 * [ -3, 3 ], ...
+      'TRange', Utils.toKelvin([ 50, 100 ])));
   Ttwo = Utils.toCelsius(two.compute(options.dynamicPower, options));
 
   error = Error.compute(errorMetric, Tone, Ttwo);

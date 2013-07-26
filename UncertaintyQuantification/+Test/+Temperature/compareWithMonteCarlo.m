@@ -1,4 +1,4 @@
-function MonteCarloTransient(varargin)
+function compareWithMonteCarlo(varargin)
   close all;
   setup;
 

@@ -7,7 +7,7 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
       this.process = ProcessVariation.(options.processModel)( ...
-        options.processOptions, 'threshold', 1);
+        options.processOptions, 'reductionThreshold', 1);
     end
 
     function [ Texp, output ] = estimate(this, Pdyn, varargin)
@@ -17,12 +17,12 @@ classdef Base < handle
       sampleCount = options.get('sampleCount', 1e3);
 
       %
-      % NOTE: We always generate samples of L, even though the futher
+      % NOTE: We always generate samples of V, even though the futher
       % MC simulations might be cached. The reason is to advance the RNG
       % of MATLAB and have the same bahavior of the computations outside
       % this method.
       %
-      L = transpose(this.process.sample(sampleCount));
+      V = transpose(this.process.sample(sampleCount));
 
       filename = options.get('filename', []);
       if isempty(filename)
@@ -42,7 +42,7 @@ classdef Base < handle
 
         time = tic;
 
-        Tdata = this.solve(Pdyn, Options(options, 'L', L));
+        Tdata = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
 
         Texp = mean(Tdata, 3);
         Tvar = var(Tdata, [], 3);
@@ -66,8 +66,8 @@ classdef Base < handle
     function Tdata = evaluate(this, Pdyn, rvs, varargin)
       options = Options(varargin{:});
 
-      L = transpose(this.process.evaluate(rvs));
-      Tdata = this.solve(Pdyn, Options(options, 'L', L));
+      V = transpose(this.process.evaluate(rvs));
+      Tdata = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
       Tdata = permute(Tdata, [ 3 1 2 ]);
     end
 

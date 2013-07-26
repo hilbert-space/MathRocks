@@ -48,8 +48,8 @@ classdef Base < handle
       options = Options(varargin{:});
 
       function T = target(rvs)
-        L = this.preprocess(rvs, options);
-        [ T, solveOutput ] = this.solve(Pdyn, Options(options, 'L', L));
+        V = this.preprocess(rvs, options);
+        [ T, solveOutput ] = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
         T = this.postprocess(T, solveOutput, options);
       end
 
@@ -75,19 +75,19 @@ classdef Base < handle
   end
 
   methods (Access = 'protected')
-    function L = preprocess(this, rvs, options)
-      L = transpose(this.process.evaluate(rvs));
+      function V = preprocess(this, rvs, options)
+      V = transpose(this.process.evaluate(rvs));
 
       if ~options.get('verbose', false), return; end
 
-      LMin = sum(L(:) < this.leakage.LRange(1));
-      LMax = sum(L(:) > this.leakage.LRange(2));
+      VMin = sum(V(:) < this.leakage.VRange(1));
+      VMax = sum(V(:) > this.leakage.VRange(2));
 
-      if LMin == 0 && LMax == 0, return; end
+      if VMin == 0 && VMax == 0, return; end
 
       warning([ 'Detected %d and %d values below the minimal one', ...
         ' and above the maximal one, respectively, out of %d.' ], ...
-        LMin, LMax, prod(size(L)));
+        VMin, VMax, prod(size(V)));
     end
 
     function T = postprocess(this, T, output, options)
