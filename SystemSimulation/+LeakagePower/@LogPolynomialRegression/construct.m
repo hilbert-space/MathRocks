@@ -1,6 +1,6 @@
-function output = construct(this, Lgrid, Tgrid, Igrid, options)
-  [ output, arguments, body ] = construct@LeakagePower.PolynomialRegression( ...
-    this, Lgrid, Tgrid, log(Igrid), options);
+function output = construct(this, V, T, I, options)
+  [ output, arguments, body ] = ...
+    construct@LeakagePower.PolynomialRegression(this, V, T, log(I), options);
 
   string = sprintf('@(%s)exp(%s)', arguments, body);
   output.evaluate = str2func(string);

@@ -1,8 +1,8 @@
-function evaluate = constructCustomFit(X, Y, Fs, Xs, Cs)
+function [ compute, C ] = constructCustomFit(X, Y, Fs, Xs, Cs)
   E = mean(X, 1);
-  D = std(X, [], 1);
+  S = std(X, [], 1);
 
-  X = bsxfun(@rdivide, bsxfun(@minus, X, E), D);
+  X = bsxfun(@rdivide, bsxfun(@minus, X, E), S);
 
   variableCount = length(Xs);
   coefficientCount = length(Cs);
@@ -34,9 +34,9 @@ function evaluate = constructCustomFit(X, Y, Fs, Xs, Cs)
 
   Fs = subs(Fs, Cs, C);
   for i = 1:variableCount
-    Fs = subs(Fs, Xs(i), (Xs(i) - E(i)) / D(i));
+    Fs = subs(Fs, Xs(i), (Xs(i) - E(i)) / S(i));
   end
 
-  Xs = mat2cell(Xs, 1, ones(1, variableCount));
-  evaluate = Utils.toFunction(Fs, Xs{:});
+  Xs = num2cell(Xs);
+  compute = Utils.toFunction(Fs, Xs{:});
 end

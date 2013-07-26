@@ -1,59 +1,59 @@
-function [ Lgrid, Tgrid, Igrid ] = loadLeakageData(varargin)
+function [ V, T, I ] = loadLeakageData(varargin)
   options = Options(varargin{:});
 
   data = dlmread(options.filename, '\t', 1, 0);
 
-  Ldata = data(:, 1);
-  Tdata = Utils.toKelvin(data(:, 2)); % Comes in Celsius
-  Idata = data(:, 3);
+  V = data(:, 1);
+  T = Utils.toKelvin(data(:, 2)); % Comes in Celsius
+  I = data(:, 3);
 
   %
   % Remove those points that are out of the desirable range.
   %
-  I = [];
+  J = [];
 
-  if options.has('LLimit')
-    I = [ I; find(Ldata < options.LLimit(1)); ...
-      find(Ldata > options.LLimit(2)) ];
+  if options.has('VRange')
+    J = [ J; find(V < options.VRange(1)); ...
+      find(V > options.VRange(2)) ];
   end
 
-  if options.has('TLimit')
-    I = [ I; find(Tdata < options.TLimit(1)); ...
-      find(Tdata > options.TLimit(2)) ];
+  if options.has('TRange')
+    J = [ J; find(T < options.TRange(1)); ...
+      find(T > options.TRange(2)) ];
   end
 
-  I = unique(I);
+  J = unique(J);
 
-  Ldata(I) = [];
-  Tdata(I) = [];
-  Idata(I) = [];
+  V(J) = [];
+  T(J) = [];
+  I(J) = [];
 
   %
   % Compute the dimensionality of the restricted grid.
   %
-  readLCount = length(unique(Ldata));
-  readTCount = length(unique(Tdata));
+  readVCount = length(unique(V));
+  readTCount = length(unique(T));
 
   %
   % Ensure that the maximal number of points is not violated.
   %
-  LCount = options.get('LCount', readLCount);
+  VCount = options.get('VCount', readVCount);
   TCount = options.get('TCount', readTCount);
 
-  LDivision = round(readLCount / LCount);
+  VDivision = round(readVCount / VCount);
   TDivision = round(readTCount / TCount);
 
-  LIndex = 1:LDivision:readLCount;
+  VIndex = 1:VDivision:readVCount;
   TIndex = 1:TDivision:readTCount;
 
-  Lgrid = reshape(Ldata, readTCount, readLCount);
-  Tgrid = reshape(Tdata, readTCount, readLCount);
-  Igrid = reshape(Idata, readTCount, readLCount);
+  V = reshape(V, readTCount, readVCount);
+  T = reshape(T, readTCount, readVCount);
+  I = reshape(I, readTCount, readVCount);
 
-  assert(size(unique(Lgrid, 'rows'), 1) == 1);
-  assert(size(unique(Tgrid', 'rows'), 1) == 1);
+  assert(size(unique(V, 'rows'), 1) == 1);
+  assert(size(unique(T', 'rows'), 1) == 1);
 
-  Lgrid = Lgrid(TIndex, LIndex);
-  Tgrid = Tgrid(TIndex, LIndex);
-  Igrid = Igrid(TIndex, LIndex);
+  V = V(TIndex, VIndex);
+  T = T(TIndex, VIndex);
+  I = I(TIndex, VIndex);
 end

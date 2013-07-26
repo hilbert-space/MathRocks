@@ -6,10 +6,10 @@ classdef LinearInterpolation < LeakagePower.Base
   end
 
   methods (Access = 'protected')
-    output = construct(this, Ldata, Tdata, Idata, options)
+    output = construct(this, V, T, I, options)
 
-    function I = evaluate(this, output, L, T)
-      I = reshape(output.F(L(:), T(:)), size(L));
+    function I = evaluate(this, output, V, T)
+      I = reshape(output.F(V(:), T(:)), size(V));
     end
   end
 end

@@ -1,14 +1,16 @@
 classdef Base < handle
   properties (Constant)
     %
-    % The nominal value of the channel length.
+    % The nominal values of the leakage parameters. Right now
+    % it is only the effective channel length.
     %
-    Lnom = 45e-9;
+    Vnom = 45e-9;
 
     %
     % The following constants are used to construct an instance
-    % of the leakage model that produces `PleakPdyn' portion
-    % of the given dynamic power at temperature `Tref'.
+    % of the leakage model that, at the reference temperature,
+    % produces the specified amount of the leakage power relative
+    % to a given dynamic power profile.
     %
     PleakPdyn = 2 / 3;
     Tref = Utils.toKelvin(120);
@@ -18,7 +20,7 @@ classdef Base < handle
     toString
 
     output
-    LRange
+    VRange
     TRange
     powerScale
   end
@@ -47,34 +49,33 @@ classdef Base < handle
       if File.exist(filename);
         load(filename);
       else
-        [ Lgrid, Tgrid, Igrid ] = Utils.loadLeakageData(options);
-        output = this.construct(Lgrid, Tgrid, Igrid, options);
+        [ V, T, I ] = Utils.loadLeakageData(options);
+        output = this.construct(V, T, I, options);
 
-        LRange = [ min(Lgrid(:)), max(Lgrid(:)) ];
-        TRange = [ min(Tgrid(:)), max(Tgrid(:)) ];
+        VRange = [ min(V(:)), max(V(:)) ];
+        TRange = [ min(T(:)), max(T(:)) ];
 
-        save(filename, 'output', 'LRange', 'TRange', '-v7.3');
+        save(filename, 'output', 'VRange', 'TRange', '-v7.3');
       end
 
       this.output = output;
-      this.LRange = LRange;
+      this.VRange = VRange;
       this.TRange = TRange;
       this.powerScale = 1;
 
       if isempty(Pdyn), return; end
 
-      Pmean = this.PleakPdyn * mean(Pdyn(:));
-      P0 = this.evaluate(output, this.Lnom, this.Tref);
-      this.powerScale = Pmean / P0;
+      this.powerScale = this.PleakPdyn * mean(Pdyn(:)) / ...
+        this.evaluate(output, this.Vnom, this.Tref);
     end
 
-    function P = compute(this, L, T)
-      P = this.powerScale * this.evaluate(this.output, L, T);
+    function P = compute(this, V, T)
+      P = this.powerScale * this.evaluate(this.output, V, T);
     end
   end
 
   methods (Abstract, Access = 'protected')
-    output = construct(this, Ldata, Tdata, Idata, options)
-    I = evaluate(this, output, L, T)
+    output = construct(this, V, T, I, options)
+    I = evaluate(this, output, V, T)
   end
 end

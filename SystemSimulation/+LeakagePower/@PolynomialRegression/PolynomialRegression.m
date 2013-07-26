@@ -6,10 +6,10 @@ classdef PolynomialRegression < LeakagePower.Base
   end
 
   methods (Access = 'protected')
-    [ output, arguments, body ] = construct(this, Ldata, Tdata, Idata, options)
+    [ output, arguments, body ] = construct(this, V, T, I, options)
 
-    function I = evaluate(this, output, L, T)
-      I = output.evaluate(L, T);
+    function I = evaluate(this, output, V, T)
+      I = output.evaluate(V, T);
     end
   end
 end

@@ -1,6 +1,6 @@
-function output = construct(this, Lgrid, Tgrid, Igrid, options)
+function output = construct(this, V, T, I, options)
   expression = options.expression;
   output.evaluate = Utils.constructCustomFit( ...
-    [ Lgrid(:), Tgrid(:) ], Igrid(:), expression.F, ...
-    [ expression.L, expression.T ], expression.C);
+    [ V(:), T(:) ], I(:), expression.F, ...
+    [ expression.V, expression.T ], expression.C);
 end

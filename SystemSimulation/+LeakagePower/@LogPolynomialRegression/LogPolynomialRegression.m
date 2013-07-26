@@ -6,6 +6,6 @@ classdef LogPolynomialRegression < LeakagePower.PolynomialRegression
   end
 
   methods (Access = 'protected')
-    output = construct(this, Ldata, Tdata, Idata, options)
+    output = construct(this, V, T, I, options)
   end
 end
