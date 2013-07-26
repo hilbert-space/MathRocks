@@ -1,4 +1,8 @@
-function [ A, B, C, D ] = reduceSystem(A, B, C, D, threshold, limit)
+function [ A, B, C, D ] = reduceModelOrder(A, B, C, D, varargin)
+  options = Options(varargin{:});
+  threshold = options.threshold;
+  limit = options.get('limit', 0);
+
   if threshold >= 1 || limit >= 1, return; end
 
   s = ss(A, B, C, D);

@@ -12,28 +12,45 @@ function compare(approximationMethod, varargin)
   leakage = LeakagePower.(approximationMethod)(options);
   [ V, T, I ] = Utils.loadLeakageData(options);
 
+  computeLinearized = Utils.linearizeLeakage(leakage, ...
+    'TRange', Utils.toKelvin([ 40, 120 ]));
+
   %
   % Accuracy
   %
-  Ipred = leakage.compute(V, T);
-  error = Error.compute(errorMetric, I, Ipred);
+  figure('Position', [ 100, 800, 1200, 400 ]);
 
-  fprintf('%s: %.4f\n', errorMetric, error);
+  names = { 'Model', 'Linearized model' };
 
-  figure;
+  Ipred = cell(1, 2);
+  errors = zeros(1, 2);
 
-  mesh(V, Utils.toCelsius(T), I);
-  line(V, Utils.toCelsius(T), Ipred, ...
-    'LineStyle', 'None', ...
-    'Marker', 'o', ...
-    'MarkerEdgeColor', 'w', ...
-    'MarkerFaceColor', 'b');
+  Ipred{1} = leakage.compute(V, T);
+  Ipred{2} = computeLinearized(V, T);
 
-  Plot.title('%s: %s %.4f', approximationMethod, errorMetric, error);
-  Plot.label('Variable', 'Temperature, C', 'Leakage current, A');
+  errors(1) = Error.compute(errorMetric, I, Ipred{1});
+  errors(2) = Error.compute(errorMetric, I, Ipred{2});
 
-  grid on;
-  view(10, 10);
+  fprintf('%s of the model           : %.4f\n', errorMetric, errors(1));
+  fprintf('%s of the model linearized: %.4f\n', errorMetric, errors(2));
+
+  for i = 1:2
+    subplot(1, 2, i);
+    mesh(V, Utils.toCelsius(T), I);
+    line(V, Utils.toCelsius(T), Ipred{i}, ...
+      'LineStyle', 'None', 'Marker', 'o', ...
+      'MarkerEdgeColor', 'w', 'MarkerFaceColor', 'b');
+
+    Plot.title('%s: %s %.4f', names{i}, errorMetric, errors(i));
+    Plot.label('Variable', 'Temperature, C', 'Leakage current, A');
+
+    grid on;
+    view(10, 10);
+  end
+
+  Plot.name(approximationMethod);
+
+  return;
 
   %
   % Speed

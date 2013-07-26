@@ -25,12 +25,7 @@ classdef HotSpot < handle
     %
     % The ambient temperature
     %
-    ambientTemperature
-
-    %
-    % The leakage model
-    %
-    leakage
+    Tamb
   end
 
   properties (SetAccess = 'protected')
@@ -38,6 +33,11 @@ classdef HotSpot < handle
     % The number of thermal nodes
     %
     nodeCount
+
+    %
+    % The leakage model
+    %
+    leakage
   end
 
   methods
@@ -45,8 +45,7 @@ classdef HotSpot < handle
       options = Options(varargin{:});
 
       this.samplingInterval = options.samplingInterval;
-      this.ambientTemperature = ...
-        options.get('ambientTemperature', Utils.toKelvin(45));
+      this.Tamb = options.get('Tamb', Utils.toKelvin(45));
 
       if options.has('leakage')
         this.leakage = options.leakage;
@@ -61,7 +60,13 @@ classdef HotSpot < handle
     end
 
     function [ T, output ] = compute(this, Pdyn, varargin)
-      [ T, output ] = this.solve(Pdyn, Options(varargin{:}));
+      if isempty(this.leakage)
+        T = computeWithoutLeakage(this, Pdyn);
+        output = struct;
+      else
+        [ T, output ] = computeWithLeakage(this, Pdyn, ...
+          Options(varargin{:}));
+      end
     end
 
     function display(this)
@@ -69,8 +74,7 @@ classdef HotSpot < handle
       fprintf('  Processing elements: %d\n', this.processorCount);
       fprintf('  Thermal nodes:       %d\n', this.nodeCount);
       fprintf('  Sampling interval:   %.2e s\n', this.samplingInterval);
-      fprintf('  Ambient temperature: %.2f C\n', ...
-        Utils.toCelsius(this.ambientTemperature));
+      fprintf('  Ambient temperature: %.2f C\n', Utils.toCelsius(this.Tamb));
 
       if isempty(this.leakage), return; end
 
@@ -80,13 +84,13 @@ classdef HotSpot < handle
     function string = toString(this)
       string = sprintf('%s(%d, %d, %.2e, %.2f, %s)', ...
         class(this), this.processorCount, this.nodeCount, ...
-        this.samplingInterval, this.ambientTemperature, ...
-        Utils.toString(this.leakage));
+        this.samplingInterval, this.Tamb, Utils.toString(this.leakage));
     end
   end
 
   methods (Abstract)
-    [ T, output ] = solve(this, Pdyn, options)
+    T = computeWithoutLeakage(this, Pdyn)
+    [ T, output ] = computeWithLeakage(this, Pdyn, options)
   end
 
   methods (Access = 'protected')

@@ -68,6 +68,6 @@ function options = systemSimulation(varargin)
   %
   % Temperature
   %
-  options.ambientTemperature = Utils.toKelvin(45);
+  options.Tamb = Utils.toKelvin(45);
   options.hotspotConfig = File.choose(paths, 'hotspot.config');
 end

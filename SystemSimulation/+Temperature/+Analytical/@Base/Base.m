@@ -47,20 +47,41 @@ classdef Base < Temperature.HotSpot
       processorCount = this.processorCount;
       nodeCount = this.nodeCount;
 
-      Cm12 = diag(sqrt(1 ./ this.circuit.A));
+      Cth = this.circuit.A;
+      Gth = this.circuit.B;
 
-      A = Cm12 * (-this.circuit.B) * Cm12;
+      %
+      % Leakage linearization
+      %
+      if options.has('linearizeLeakage')
+        [ ~, alpha, beta ] = Utils.linearizeLeakage(this.leakage, ...
+          'TRange', [ this.Tamb, this.leakage.Tref ], options.linearizeLeakage);
+
+        leakage = struct;
+        leakage.Vnom = this.leakage.Vnom;
+        leakage.compute = @(V, T) this.Tamb * alpha + beta(V);
+        this.leakage = leakage;
+
+        Gth = Gth - alpha;
+      end
+
+      T = diag(sqrt(1 ./ Cth));
+
+      A = T * (-Gth) * T;
       A = triu(A) + transpose(triu(A, 1)); % ensure symmetry
 
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
-      B = Cm12 * M;
+      B = T * M;
       C = B';
 
       %
-      % Preprocessing
+      % Model order reduction
       %
-      [ A, B, C ] = this.processSystem(A, B, C, options);
+      if options.has('reduceModelOrder')
+        [ A, B, C ] = Utils.reduceModelOrder(A, B, C, 0, ...
+          options.reduceModelOrder);
+      end
 
       [ U, L ] = eig(A);
       L = diag(L);
@@ -77,16 +98,15 @@ classdef Base < Temperature.HotSpot
       this.E = E;
       this.F = F;
     end
-  end
 
-  methods (Access = 'protected')
-    function [ A, B, C ] = processSystem(this, A, B, C, options)
-      %
-      % Model order reduction
-      %
-      [ A, B, C ] = Utils.reduceSystem(A, B, C, 0, ...
-        options.get('reductionThreshold', 1), ...
-        options.get('reductionLimit', 0));
+    function [ T, output ] = compute(this, Pdyn, varargin)
+      if isa(this.leakage, 'struct')
+        [ T, output ] = computeWithLeakage(this, Pdyn, ...
+          Options(varargin{:}, 'iterationLimit', 1));
+      else
+        [ T, output ] = compute@Temperature.HotSpot(this, Pdyn, ...
+          varargin{:});
+      end
     end
   end
 end
