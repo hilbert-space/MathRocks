@@ -1,4 +1,4 @@
-function T = computeWithoutLeakage(this, Pdyn)
+function T = computeWithoutLeakage(this, Pdyn, options)
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
 
