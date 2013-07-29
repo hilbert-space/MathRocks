@@ -93,7 +93,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
         legend{end - 0} = [ options.names{2}, ' ', legend{end - 0} ];
       end
     case { 'tiles', 'separate' }
-      Plot.title('Dimension %d: %s %.4f', i, ...
+      Plot.title('Distribution %d: %s %.4f', i, ...
         options.distanceMetric, localError(i));
       Plot.legend(options.names{:});
     end
@@ -101,7 +101,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
   switch options.layout
   case 'one'
-    Plot.title('All dimensions');
+    Plot.title('Distribution');
     Plot.legend(legend{:});
   end
 

@@ -61,6 +61,7 @@ classdef Base < Temperature.HotSpot
           'TRange', [ this.Tamb, this.leakage.Tref ], options.linearizeLeakage);
 
         leakage = struct;
+        leakage.options = options.linearizeLeakage;
         leakage.Vnom = this.leakage.Vnom;
         leakage.compute = @(V, T) this.Tamb * alpha + beta(V);
         this.leakage = leakage;

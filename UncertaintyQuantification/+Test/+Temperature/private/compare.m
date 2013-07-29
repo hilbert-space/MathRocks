@@ -6,26 +6,29 @@ function compare(options, varargin)
   options = Configure.processVariation(options);
   options = Configure.polynomialChaos(options);
 
-  oneMethod = options.get('method', 'Chaos');
-  twoMethod = 'MonteCarlo';
+  oneMethod = 'MonteCarlo';
+  twoMethod = options.get('method', 'Chaos');
 
   analysis = options.get('analysis', 'Transient');
 
   oneSampleCount = 1e4;
   twoSampleCount = 1e4;
 
-  one = Temperature.(oneMethod).(analysis)(options, varargin{:});
-  two = Temperature.(twoMethod).(analysis)(options);
+  timeSlice = options.stepCount * options.samplingInterval / 2;
+  k = floor(timeSlice / options.samplingInterval);
+
+  one = Temperature.(oneMethod).(analysis)(options);
+  two = Temperature.(twoMethod).(analysis)(options, varargin{:});
 
   [ oneTexp, oneOutput ] = one.compute(options.dynamicPower, ...
     'sampleCount', oneSampleCount, 'verbose', true);
 
-  if ~isfield(oneOutput, 'Tdata')
-    oneOutput.Tdata = one.sample(oneOutput, oneSampleCount);
-  end
-
   [ twoTexp, twoOutput ] = two.compute(options.dynamicPower, ...
     'sampleCount', twoSampleCount, 'verbose', true);
+
+  if ~isfield(twoOutput, 'Tdata')
+    twoOutput.Tdata = two.sample(twoOutput, twoSampleCount);
+  end
 
   %
   % Comparison of expectations, variances, and PDFs
@@ -34,6 +37,12 @@ function compare(options, varargin)
     Plot.temperatureVariation({ oneTexp, twoTexp }, ...
        { oneOutput.Tvar, twoOutput.Tvar }, ...
       'time', options.timeLine, 'names', { oneMethod, twoMethod });
+
+    Data.compare(Utils.toCelsius(oneOutput.Tdata(:, :, k)), ...
+      Utils.toCelsius(twoOutput.Tdata(:, :, k)), ...
+      'method', 'smooth', 'range', 'unbounded', ...
+      'layout', 'one', 'draw', true, ...
+      'names', { oneMethod, twoMethod });
 
     Data.compare( ...
       Utils.toCelsius(oneOutput.Tdata), ...
@@ -68,9 +77,6 @@ function compare(options, varargin)
 
     oneTdata = one.evaluate(oneOutput, RVs);
     twoTdata = two.evaluate(twoOutput, RVs);
-
-    timeSlice = options.stepCount * options.samplingInterval / 2;
-    k = floor(timeSlice / options.samplingInterval);
 
     oneTdata = Utils.toCelsius(oneTdata(:, :, k));
     twoTdata = Utils.toCelsius(twoTdata(:, :, k));
