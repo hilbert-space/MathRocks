@@ -17,22 +17,20 @@ function compareWithMonteCarlo(varargin)
   one = Temperature.(oneMethod).(analysis)(options);
   two = Temperature.(twoMethod).(analysis)(options);
 
-  tic;
-  [ oneTexp, oneOutput ] = one.compute(options.dynamicPower);
-  fprintf('%s computational time: %.2f s\n', oneMethod, toc);
+  [ oneTexp, oneOutput ] = one.compute(options.dynamicPower, ...
+    'sampleCount', oneSampleCount, 'verbose', true);
+
+  if ~isfield(oneOutput, 'Tdata')
+    oneOutput.Tdata = one.sample(oneOutput, oneSampleCount);
+  end
+
+  [ twoTexp, twoOutput ] = two.compute(options.dynamicPower, ...
+    'sampleCount', twoSampleCount, 'verbose', true);
 
   %
   % Comparison of expectations, variances, and PDFs
   %
   if Console.question('Compare expectations, variances, and PDFs? ')
-    tic;
-    oneOutput.Tdata = one.sample(oneOutput, oneSampleCount);
-    fprintf('%s sampling time: %.2f s (%d samples)\n', ...
-      oneMethod, toc, oneSampleCount);
-
-    [ twoTexp, twoOutput ] = two.compute(options.dynamicPower, ...
-      'sampleCount', twoSampleCount, 'verbose', true);
-
     Plot.temperatureVariation({ oneTexp, twoTexp }, ...
        { oneOutput.Tvar, twoOutput.Tvar }, ...
       'time', options.timeLine, 'names', { oneMethod, twoMethod });

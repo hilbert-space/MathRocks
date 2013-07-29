@@ -40,9 +40,9 @@ function [ T, output ] = condensedEquationWithLinearLeakage(this, Pdyn, options)
   end
 
   T = zeros(processorCount, stepCount, sampleCount);
-  for i = 1:sampleCount
-    T(:, :, i) = C * bsxfun(@plus, X, ...
-      K(:, 1:processorCount, i) * Padd(:, i));
+  for i = 1:stepCount
+    T(:, i, :) = C * bsxfun(@plus, X(:, i), ...
+      K(:, 1:processorCount, i) * Padd);
   end
 
   T = T + this.Tamb;
