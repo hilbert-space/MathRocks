@@ -19,6 +19,8 @@ function compute(varargin)
 
   iterationCount = options.get('iterationCount', 10);
 
+  fprintf('Method: %s\n', method);
+  fprintf('Analysis: %s\n', analysis);
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount

@@ -11,6 +11,10 @@ function compare(options, varargin)
 
   analysis = options.get('analysis', 'Transient');
 
+  fprintf('Method 1: %s\n', oneMethod);
+  fprintf('Method 2: %s\n', twoMethod);
+  fprintf('Analysis: %s\n', analysis);
+
   oneSampleCount = 1e4;
   twoSampleCount = 1e4;
 
