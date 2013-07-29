@@ -6,7 +6,7 @@ function compute(varargin)
   options = Configure.processVariation(options);
 
   method = options.get('method', 'Chaos');
-  analysis = options.get('analysis', 'Transient');
+  analysis = options.get('analysis', 'DynamicSteadyState');
 
   switch method
   case 'Chaos'

@@ -1,4 +1,4 @@
-function compare(options, varargin)
+function compare(options, secondOptions)
   close all;
   setup;
 
@@ -13,9 +13,9 @@ function compare(options, varargin)
   Tone = Utils.toCelsius(one.compute( ...
     options.dynamicPower, options));
 
-  two = Temperature.Analytical.(analysis)(options, varargin{:});
+  two = Temperature.Analytical.(analysis)(options, secondOptions);
   Ttwo = Utils.toCelsius(two.compute( ...
-    options.dynamicPower, options, varargin{:}));
+    options.dynamicPower, options, secondOptions));
 
   error = Error.compute(errorMetric, Tone, Ttwo);
 
