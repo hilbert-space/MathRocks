@@ -1,8 +1,8 @@
-function compareWithMonteCarlo(varargin)
+function compare(options, varargin)
   close all;
   setup;
 
-  options = Configure.systemSimulation(varargin{:});
+  options = Configure.systemSimulation(options);
   options = Configure.processVariation(options);
   options = Configure.polynomialChaos(options);
 
@@ -14,7 +14,7 @@ function compareWithMonteCarlo(varargin)
   oneSampleCount = 1e4;
   twoSampleCount = 1e4;
 
-  one = Temperature.(oneMethod).(analysis)(options);
+  one = Temperature.(oneMethod).(analysis)(options, varargin{:});
   two = Temperature.(twoMethod).(analysis)(options);
 
   [ oneTexp, oneOutput ] = one.compute(options.dynamicPower, ...
