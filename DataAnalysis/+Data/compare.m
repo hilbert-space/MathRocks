@@ -139,7 +139,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   if ~draw, return; end
 
-  figure;
+  Plot.figure(1200, 400);
 
   oneExp = squeeze(mean(oneData, 1));
   twoExp = squeeze(mean(twoData, 1));
@@ -149,20 +149,27 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   twoVar = squeeze(var(twoData, [], 1));
   varianceError = abs(oneVar - twoVar);
 
+  time = 0:(codimensionCount - 1);
+
   subplot(1, 3, 1);
   Plot.title('Expectation (%s %.4f)', options.errorMetric, ...
     Error.compute(options.errorMetric, oneExp, twoExp));
   Plot.label('', 'Absolute error');
+  Plot.limit(time);
+
   subplot(1, 3, 2);
   Plot.title('Variance (%s %.4f)', options.errorMetric, ...
     Error.compute(options.errorMetric, oneVar, twoVar));
   Plot.label('', 'Absolute error');
+  Plot.limit(time);
+
   subplot(1, 3, 3);
   Plot.title('Distribution (mean %.4f)', globalError);
   Plot.label('', options.distanceMetric);
+  Plot.limit(time);
+
   Plot.name('Errors of empirical expectation, variance, and distribution');
 
-  time = 0:(codimensionCount - 1);
   for i = 1:dimensionCount
     color = Color.pick(i);
     subplot(1, 3, 1);
