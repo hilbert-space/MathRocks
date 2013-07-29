@@ -1,7 +1,7 @@
 function [ T, output ] = blockCirculantWithLeakage(this, Pdyn, options)
-  iterationLimit   = options.get('iterationLimit', 20);
-  temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
-  tolerance        = options.get('tolerance', 0.5);
+  iterationLimit   = options.get('iterationLimit',   this.iterationLimit);
+  temperatureLimit = options.get('temperatureLimit', this.temperatureLimit);
+  tolerance        = options.get('tolerance',        this.tolerance);
 
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
