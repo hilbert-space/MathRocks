@@ -58,16 +58,16 @@ classdef Base < handle
           time, sampleCount);
       end
 
+      output.Pdyn = Pdyn;
       output.Tvar = Tvar;
       output.Tdata = Tdata;
       output.time = time;
     end
 
-    function Tdata = evaluate(this, Pdyn, rvs, varargin)
-      options = Options(varargin{:});
-
+    function Tdata = evaluate(this, output, rvs, varargin)
       V = transpose(this.process.evaluate(rvs));
-      Tdata = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
+      Tdata = this.computeWithLeakage( ...
+        output.Pdyn, Options(varargin{:}, 'V', V));
       Tdata = permute(Tdata, [ 3 1 2 ]);
     end
 
