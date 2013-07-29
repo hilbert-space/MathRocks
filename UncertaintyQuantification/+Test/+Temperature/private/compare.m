@@ -25,10 +25,10 @@ function compare(options, varargin)
   two = Temperature.(twoMethod).(analysis)(options, varargin{:});
 
   [ oneTexp, oneOutput ] = one.compute(options.dynamicPower, ...
-    'sampleCount', oneSampleCount, 'verbose', true);
+    'sampleCount', oneSampleCount, 'verbose', true, options);
 
   [ twoTexp, twoOutput ] = two.compute(options.dynamicPower, ...
-    'sampleCount', twoSampleCount, 'verbose', true);
+    'sampleCount', twoSampleCount, 'verbose', true, varargin{:});
 
   if ~isfield(twoOutput, 'Tdata')
     twoOutput.Tdata = two.sample(twoOutput, twoSampleCount);

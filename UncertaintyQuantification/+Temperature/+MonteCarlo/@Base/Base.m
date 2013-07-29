@@ -27,7 +27,7 @@ classdef Base < handle
       filename = options.get('filename', []);
       if isempty(filename)
         filename = sprintf('MonteCarlo_%s.mat', ...
-          DataHash({ Pdyn, this.toString, sampleCount }));
+          DataHash({ Pdyn, this.toString, sampleCount, options.toString }));
       end
 
       if File.exist(filename)

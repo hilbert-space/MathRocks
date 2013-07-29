@@ -1,9 +1,8 @@
-function linearizeLeakage(varargin)
+function compare(options, varargin)
   close all;
   setup;
 
-  options = Configure.systemSimulation('processorCount', 2, varargin{:});
-  options.leakageOptions.TRange = Utils.toKelvin([ 40, 400 ]);
+  options = Configure.systemSimulation(options);
 
   errorMetric = 'NRMSE';
   analysis = options.get('analysis', 'DynamicSteadyState');
@@ -14,11 +13,9 @@ function linearizeLeakage(varargin)
   Tone = Utils.toCelsius(one.compute( ...
     options.dynamicPower, options));
 
-  two = Temperature.Analytical.(analysis)(options, ...
-    'linearizeLeakage', Options( ...
-      'VRange', 45e-9 + 0.05 * 45e-9 * [ -3, 3 ], ...
-      'TRange', Utils.toKelvin([ 50, 100 ])));
-  Ttwo = Utils.toCelsius(two.compute(options.dynamicPower, options));
+  two = Temperature.Analytical.(analysis)(options, varargin{:});
+  Ttwo = Utils.toCelsius(two.compute( ...
+    options.dynamicPower, options, varargin{:}));
 
   error = Error.compute(errorMetric, Tone, Ttwo);
 
@@ -35,7 +32,7 @@ function linearizeLeakage(varargin)
     line(time, Ttwo(i, :), 'Color', color, 'LineStyle', '--');
   end
 
-  Plot.title('Non-linear vs. Linear: %s %.4f', errorMetric, error);
+  Plot.title('%s %.4f', errorMetric, error);
   Plot.label('Time, s', 'Temperature, C');
   Plot.limit(time);
 end
