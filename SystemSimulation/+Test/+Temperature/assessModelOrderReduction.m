@@ -36,7 +36,7 @@ function assessModelOrderReduction(varargin)
     line(time, Ttwo(i, :), 'Color', color, 'LineStyle', '--');
   end
 
-  Plot.title('Fine (%d nodes) vs. Coarse (%d nodes): %s %.4f', ...
+  Plot.title('Reduction from %d to %d nodes: %s %.4f', ...
     one.nodeCount, two.nodeCount, errorMetric, error);
   Plot.label('Time, s', 'Temperature, C');
   Plot.limit(time);

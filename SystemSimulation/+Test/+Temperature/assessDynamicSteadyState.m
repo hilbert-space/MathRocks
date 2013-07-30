@@ -1,5 +1,5 @@
-function assessPassiveLeakage(varargin)
+function assessDynamicSteadyState(varargin)
   compare( ...
     Options(varargin{:}, 'analysis', 'DynamicSteadyState'), ...
-    Options('passiveLeakage', true));
+    Options('version', 3));
 end

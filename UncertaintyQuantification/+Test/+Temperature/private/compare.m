@@ -7,12 +7,10 @@ function compare(options, secondOptions)
   options = Configure.polynomialChaos(options);
 
   oneMethod = 'MonteCarlo';
-  twoMethod = options.get('method', 'Chaos');
+  twoMethod = 'Chaos';
 
   analysis = options.get('analysis', 'Transient');
 
-  fprintf('Method 1: %s\n', oneMethod);
-  fprintf('Method 2: %s\n', twoMethod);
   fprintf('Analysis: %s\n', analysis);
 
   oneSampleCount = 1e4;
@@ -55,6 +53,8 @@ function compare(options, secondOptions)
       'layout', 'separate', 'draw', true, ...
       'names', { oneMethod, twoMethod });
   end
+
+  if one.process.dimensionCount ~= two.process.dimensionCount, return; end
 
   %
   % Sweeping the random variables

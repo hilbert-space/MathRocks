@@ -8,7 +8,7 @@ function [ T, output ] = condensedEquationWithLinearLeakage(this, Pdyn, options)
 
   V = options.get('V', ...
     this.leakage.Vnom * ones(processorCount, 1));
-  Padd = this.leakage.compute(V, 0);
+  Pleak = this.leakage.compute(V, 0);
 
   sampleCount = size(V, 2);
 
@@ -42,10 +42,11 @@ function [ T, output ] = condensedEquationWithLinearLeakage(this, Pdyn, options)
   T = zeros(processorCount, stepCount, sampleCount);
   for i = 1:stepCount
     T(:, i, :) = C * bsxfun(@plus, X(:, i), ...
-      K(:, 1:processorCount, i) * Padd);
+      K(:, 1:processorCount, i) * Pleak);
   end
 
   T = T + this.Tamb;
 
   output = struct;
+  output.iterationCount = ones(1, sampleCount);
 end

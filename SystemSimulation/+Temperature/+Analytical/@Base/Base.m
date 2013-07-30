@@ -63,7 +63,10 @@ classdef Base < Temperature.HotSpot
         leakage = struct;
         leakage.options = options.linearizeLeakage;
         leakage.Vnom = this.leakage.Vnom;
+        leakage.VRange = this.leakage.VRange;
+        leakage.TRange = this.leakage.TRange;
         leakage.compute = @(V, T) this.Tamb * alpha + beta(V);
+
         this.leakage = leakage;
 
         Gth = Gth - M * alpha * eye(processorCount) * M';
@@ -100,5 +103,30 @@ classdef Base < Temperature.HotSpot
       this.E = E;
       this.F = F;
     end
+
+    function [ T, output ] = compute(this, Pdyn, varargin)
+      options = Options(varargin{:});
+      if isa(this.leakage, 'struct')
+        %
+        % NOTE: When the leakage model is linearized in the constructor,
+        % there is no way back.
+        %
+        assert(~options.has('leakage'));
+      end
+      [ T, output ] = compute@Temperature.HotSpot(this, Pdyn, options);
+    end
+
+    function [ T, output ] = computeWithLeakage(this, Pdyn, options)
+      if isa(this.leakage, 'struct')
+        [ T, output ] = computeWithLinearLeakage(this, Pdyn, options);
+      else
+        [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options);
+      end
+    end
+  end
+
+  methods (Abstract)
+    [ T, output ] = computeWithLinearLeakage(this, Pdyn, options)
+    [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
   end
 end
