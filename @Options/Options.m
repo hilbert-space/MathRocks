@@ -14,7 +14,7 @@ classdef Options < dynamicprops
 
     function set(this, name, value)
       if ~isprop(this, name), this.addprop(name); end
-      if isa(this.(name), 'Options')
+      if isa(this.(name), 'Options') && isa(value, 'Optinos')
         this.(name).update(value);
       else
         this.(name) = value;

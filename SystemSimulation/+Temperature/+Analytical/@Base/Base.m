@@ -56,7 +56,7 @@ classdef Base < Temperature.HotSpot
       %
       % Leakage linearization
       %
-      if options.has('linearizeLeakage')
+      if ~isempty(options.get('linearizeLeakage', []))
         [ ~, alpha, beta ] = Utils.linearizeLeakage(this.leakage, ...
           'TRange', [ this.Tamb, this.leakage.Tref ], options.linearizeLeakage);
 
@@ -80,7 +80,7 @@ classdef Base < Temperature.HotSpot
       %
       % Model order reduction
       %
-      if options.has('reduceModelOrder')
+      if ~isempty(options.get('reduceModelOrder', []))
         [ A, B, C ] = Utils.reduceModelOrder(A, B, C, 0, ...
           options.reduceModelOrder);
       end
