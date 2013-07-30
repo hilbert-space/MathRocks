@@ -5,7 +5,7 @@ function compare(options, secondOptions)
   options = Configure.systemSimulation(options);
 
   errorMetric = 'NRMSE';
-  analysis = options.get('analysis', 'DynamicSteadyState');
+  analysis = options.get('analysis', 'Transient');
 
   one = Temperature.Analytical.(analysis)(options);
   Tzero = Utils.toCelsius(one.compute( ...

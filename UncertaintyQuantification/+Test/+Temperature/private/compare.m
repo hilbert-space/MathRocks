@@ -9,7 +9,7 @@ function compare(options, secondOptions)
   oneMethod = 'MonteCarlo';
   twoMethod = options.get('method', 'Chaos');
 
-  analysis = options.get('analysis', 'DynamicSteadyState');
+  analysis = options.get('analysis', 'Transient');
 
   fprintf('Method 1: %s\n', oneMethod);
   fprintf('Method 2: %s\n', twoMethod);

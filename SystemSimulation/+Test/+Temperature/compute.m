@@ -5,15 +5,22 @@ function compute(varargin)
   options = Configure.systemSimulation(varargin{:});
 
   method = options.get('method', 'Analytical');
-  analysis = options.get('analysis', 'DynamicSteadyState');
+  analysis = options.get('analysis', 'Transient');
 
   Pdyn = options.dynamicPower;
 
   temperature = Temperature.(method).(analysis)(options);
 
+  iterationCount = options.get('iterationCount', 10);
+
+  fprintf('Method: %s\n', method);
+  fprintf('Analysis: %s\n', analysis);
+  fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
-  [ T, output ] = temperature.compute(Pdyn, options);
-  time = toc(time);
+  for i = 1:iterationCount
+    [ T, output ] = temperature.compute(Pdyn, options);
+  end
+  fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
   if isfield(output, 'P')
     P = output.P;
@@ -28,11 +35,8 @@ function compute(varargin)
   Pdyn  = mean(Pdyn(:));
   Pleak = mean(P(:) - Pdyn(:));
 
-  fprintf('Method:                     %s\n', method);
-  fprintf('Analysis:                   %s\n', analysis);
-  fprintf('Computational time:         %.2f s\n', time);
-  fprintf('Average total power:        %.2f W\n', Ptot);
-  fprintf('Average dynamic power:      %.2f W\n', Pdyn);
-  fprintf('Average leakage power:      %.2f W\n', Pleak);
-  fprintf('Leakage to dynamic ratio:   %.2f\n', Pleak / Pdyn);
+  fprintf('Total power: %.2f W\n', Ptot);
+  fprintf('Dynamic power: %.2f W\n', Pdyn);
+  fprintf('Leakage power: %.2f W\n', Pleak);
+  fprintf('Leakage to dynamic ratio: %.2f\n', Pleak / Pdyn);
 end

@@ -4,22 +4,14 @@ function compute(varargin)
 
   options = Configure.systemSimulation(varargin{:});
   options = Configure.processVariation(options);
+  options = Configure.polynomialChaos(options);
 
-  method = options.get('method', 'Chaos');
-  analysis = options.get('analysis', 'DynamicSteadyState');
+  analysis = options.get('analysis', 'Transient');
 
-  switch method
-  case 'Chaos'
-    options = Configure.polynomialChaos(options);
-  case 'ASGC'
-    options = Configure.ASGC(options);
-  end
-
-  surrogate = Temperature.(method).(analysis)(options);
+  surrogate = Temperature.Chaos.(analysis)(options);
 
   iterationCount = options.get('iterationCount', 10);
 
-  fprintf('Method: %s\n', method);
   fprintf('Analysis: %s\n', analysis);
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;

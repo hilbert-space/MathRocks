@@ -5,7 +5,9 @@ function assessModelOrderReduction(varargin)
   options = Configure.systemSimulation(varargin{:});
 
   errorMetric = 'RMSE';
-  analysis = options.get('analysis', 'DynamicSteadyState');
+  analysis = options.get('analysis', 'Transient');
+
+  fprintf('Analysis: %s\n', analysis);
 
   one = Temperature.Analytical.(analysis)(options);
   Tone = Utils.toCelsius(one.compute(options.dynamicPower, options));
