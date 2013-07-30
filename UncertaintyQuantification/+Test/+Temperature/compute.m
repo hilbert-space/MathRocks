@@ -6,7 +6,7 @@ function compute(varargin)
   options = Configure.processVariation(options);
 
   method = options.get('method', 'Chaos');
-  analysis = options.get('analysis', 'Transient');
+  analysis = options.get('analysis', 'DynamicSteadyState');
 
   switch method
   case 'Chaos'
@@ -24,7 +24,7 @@ function compute(varargin)
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount
-    [ Texp, output ] = surrogate.compute(options.dynamicPower);
+    [ Texp, output ] = surrogate.compute(options.dynamicPower, options);
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 

@@ -1,4 +1,10 @@
 classdef DynamicSteadyState < Temperature.Analytical.Base
+  properties (Constant)
+    iterationLimit = 20;
+    temperatureLimit = Utils.toKelvin(1e3);
+    tolerance = 0.5;
+  end
+
   methods
     function this = DynamicSteadyState(varargin)
       this = this@Temperature.Analytical.Base(varargin{:});
@@ -11,11 +17,16 @@ classdef DynamicSteadyState < Temperature.Analytical.Base
 
     function [ T, output ] = computeWithLeakage(this, Pdyn, options)
       algorithm = options.get('algorithm', 'condensedEquation');
-      if ~isa(this.leakage, 'struct')
-        [ T, output ] = feval([ algorithm, 'WithLeakage' ], this, Pdyn, options);
+
+      if isa(this.leakage, 'struct')
+        suffix = 'WithLinearLeakage';
+      elseif options.get('passiveLeakage', false)
+        suffix = 'WithPassiveLeakage';
       else
-        [ T, output ] = feval([ algorithm, 'WithLinearLeakage' ], this, Pdyn, options);
+        suffix = 'WithLeakage';
       end
+
+      [ T, output ] = feval([ algorithm, suffix ], this, Pdyn, options);
     end
   end
 end

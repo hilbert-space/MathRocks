@@ -1,4 +1,4 @@
-function compare(options, varargin)
+function compare(options, secondOptions)
   close all;
   setup;
 
@@ -9,7 +9,7 @@ function compare(options, varargin)
   oneMethod = 'MonteCarlo';
   twoMethod = options.get('method', 'Chaos');
 
-  analysis = options.get('analysis', 'Transient');
+  analysis = options.get('analysis', 'DynamicSteadyState');
 
   fprintf('Method 1: %s\n', oneMethod);
   fprintf('Method 2: %s\n', twoMethod);
@@ -22,13 +22,13 @@ function compare(options, varargin)
   k = floor(timeSlice / options.samplingInterval);
 
   one = Temperature.(oneMethod).(analysis)(options);
-  two = Temperature.(twoMethod).(analysis)(options, varargin{:});
+  two = Temperature.(twoMethod).(analysis)(options, secondOptions);
 
   [ oneTexp, oneOutput ] = one.compute(options.dynamicPower, ...
-    'sampleCount', oneSampleCount, 'verbose', true);
+    'sampleCount', oneSampleCount, 'verbose', true, options);
 
   [ twoTexp, twoOutput ] = two.compute(options.dynamicPower, ...
-    'sampleCount', twoSampleCount, 'verbose', true);
+    'sampleCount', twoSampleCount, 'verbose', true, secondOptions);
 
   if ~isfield(twoOutput, 'Tdata')
     twoOutput.Tdata = two.sample(twoOutput, twoSampleCount);
