@@ -6,12 +6,16 @@ classdef Base < handle
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
+
+      if options.processOptions.reductionThreshold < 1
+        warning('Monte Carlo: turning off the process dimension reduction.');
+      end
+
       this.process = ProcessVariation.(options.processModel)( ...
         options.processOptions, 'reductionThreshold', 1);
     end
 
-    function [ Texp, output ] = estimate(this, Pdyn, varargin)
-      options = Options(varargin{:});
+    function [ Texp, output ] = estimate(this, Pdyn, options)
       verbose = options.get('verbose', false);
 
       sampleCount = options.get('sampleCount', 1e3);

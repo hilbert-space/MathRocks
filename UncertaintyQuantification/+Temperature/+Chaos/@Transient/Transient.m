@@ -9,8 +9,9 @@ classdef Transient < ...
       this = this@Temperature.Chaos.Base(options);
     end
 
-    function [ Texp, output ] = compute(this, varargin)
-      [ Texp, output ] = this.expand(varargin{:});
+    function [ Texp, output ] = compute(this, Pdyn, varargin)
+      options = Options(varargin{:});
+      [ Texp, output ] = this.expand(Pdyn, options);
     end
   end
 end

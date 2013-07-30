@@ -44,9 +44,7 @@ classdef Base < handle
       end
     end
 
-    function [ Texp, output ] = expand(this, Pdyn, varargin)
-      options = Options(varargin{:});
-
+    function [ Texp, output ] = expand(this, Pdyn, options)
       function T = target(rvs)
         V = this.preprocess(rvs, options);
         [ T, solveOutput ] = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
