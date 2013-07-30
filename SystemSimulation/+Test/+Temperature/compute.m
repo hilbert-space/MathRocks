@@ -15,12 +15,18 @@ function compute(varargin)
   [ T, output ] = temperature.compute(Pdyn, options);
   time = toc(time);
 
-  Plot.powerTemperature(Pdyn, output.P - Pdyn, T, ...
+  if isfield(output, 'P')
+    P = output.P;
+  else
+    P = Pdyn;
+  end
+
+  Plot.powerTemperature(Pdyn, P - Pdyn, T, ...
     'time', options.timeLine);
 
-  Ptot  = mean(output.P(:));
+  Ptot  = mean(P(:));
   Pdyn  = mean(Pdyn(:));
-  Pleak = mean(output.P(:) - Pdyn(:));
+  Pleak = mean(P(:) - Pdyn(:));
 
   fprintf('Method:                     %s\n', method);
   fprintf('Analysis:                   %s\n', analysis);

@@ -47,44 +47,38 @@ function [ T, output ] = condensedEquationWithPassiveLeakage(this, Pdyn, options
     G(1:processorCount, 1:processorCount, i) = C * (W + G(:, :, i)) * F;
   end
 
-  X = C * X;
   G = G(1:processorCount, 1:processorCount, :);
 
-  V = repmat(V, [ 1, 1, stepCount ]);
-  T = Tamb * ones(processorCount, sampleCount, stepCount);
+  Tdyn = permute(repmat(C * X + Tamb, [ 1, 1, sampleCount ]), [ 1, 3, 2 ]);
 
-  Tlast = Tamb;
+  T = Tdyn;
+
   I = 1:sampleCount;
 
   for i = 1:iterationLimit
-    Pleak = leakage.compute(V(:, I, :), T(:, I, :));
+    Tlast = T(:, I, :);
 
     for j = 1:stepCount
-      T(:, I, j) = bsxfun(@plus, X(:, j), ...
-        G(:, :, j) * Pleak(:, :, j)) + Tamb;
+      T(:, I, j) = Tdyn(:, I, j) + ...
+        G(:, :, j) * leakage.compute(V(:, I), T(:, I, j));
     end
-
-    Tcurrent = T(:, I, :);
 
     %
     % Thermal runaway
     %
-    J = max(max(Tcurrent, [], 1), [], 3) > temperatureLimit;
+    J = max(max(T(:, I, :), [], 1), [], 3) > temperatureLimit;
     iterationCount(I(J)) = NaN;
 
     %
     % Successful convergence
     %
-    K = max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < tolerance;
+    K = max(max(abs(T(:, I, :) - Tlast), [], 1), [], 3) < tolerance;
     iterationCount(I(K)) = i;
 
     M = J | K;
     I(M) = [];
 
     if isempty(I), break; end
-
-    Tlast = Tcurrent;
-    Tlast(:, M, :) = [];
   end
 
   T = permute(T, [ 1, 3, 2 ]);

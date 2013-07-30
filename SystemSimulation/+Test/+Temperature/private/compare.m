@@ -9,7 +9,7 @@ function compare(options, secondOptions)
 
   one = Temperature.Analytical.(analysis)(options);
   Tzero = Utils.toCelsius(one.compute( ...
-    options.dynamicPower, options, 'disableLeakage', true));
+    options.dynamicPower, options, 'leakage', []));
   Tone = Utils.toCelsius(one.compute( ...
     options.dynamicPower, options));
 
