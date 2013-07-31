@@ -226,22 +226,31 @@ classdef Lifetime < handle
 
     function Atc = calculateAtc(this)
       %
-      % Let us assume to have the mean time to failure equal to ten years
-      % with the average temperature of 60 C, the total application period
-      % of one second, and ten equal cycles of 10 C.
+      % Let us assume that a system running an application
+      % having a period of...
       %
-
-      mttf = 10 * 365 * 24 * 60 * 30; % s, 20 years
-      Tavg = Utils.toKelvin(60); % K
       totalTime = 1; % s
-      m = 10; % Number of cycles
-      dT = 10; % K
+      %
+      % and producing...
+      %
+      cycleCount = 10;
+      %
+      % equal thermal cycles with the average temperature of...
+      %
+      Tavg = Utils.toKelvin(80); % K
+      %
+      % and the temperature difference of...
+      %
+      dT = 20; % K
+      %
+      % has the mean time to failure of...
+      %
+      MTTF = 20 * 365 * 24 * 60 * 60; % s
+
       Tmax = Tavg + dT / 2;
-
-      factor = m * (dT - this.dT0)^this.q * ...
+      factor = cycleCount * (dT - this.dT0)^this.q * ...
         exp(-this.Eatc / (this.k * Tmax));
-
-      Atc = mttf * factor / totalTime;
+      Atc = MTTF * factor / totalTime;
     end
   end
 end
