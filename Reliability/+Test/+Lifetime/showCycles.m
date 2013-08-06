@@ -9,7 +9,7 @@ function showCycles
   [ T, output ] = temperature.compute(Pdyn);
 
   Plot.powerTemperature(Pdyn, output.P - Pdyn, ...
-    T, temperature.samplingInterval);
+    T, 'time', options.timeLine);
 
   lifetime = Lifetime('samplingInterval', options.samplingInterval);
 

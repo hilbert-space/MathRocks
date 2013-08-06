@@ -196,19 +196,11 @@ classdef Lifetime < handle
       [ ~, I ] = sort(peaks(:, 1));
       peaks = peaks(I, :);
 
-      rain = rainflow(peaks(:, 2));
+      [ I, cycles ] = Utils.detectCycles(peaks(:, 2));
+      pairs = reshape(peaks(I(:), 2), 2, []);
 
-      %
-      % NOTE: The encoding is the following:
-      %
-      % rain(1, :) - amplitudes,
-      % rain(2, :) - mean values, and
-      % rain(3, :) - half or complete (0.5 or 1.0).
-      %
-
-      dT     = 2 * rain(1, :);
-      Tmax   = rain(2, :) + rain(1, :);
-      cycles = rain(3, :);
+      dT = abs(pairs(1, :) - pairs(2, :));
+      Tmax = max(pairs, [], 1);
 
       %
       % Number of cycles to failure for each stress level [2]
