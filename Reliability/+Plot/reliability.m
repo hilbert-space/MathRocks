@@ -5,7 +5,7 @@ function reliability(T, output)
 
   Z = gamma(1 + 1 / output.beta);
 
-  figure;
+  Plot.figure;
   Plot.label('Time, s', 'Probability');
 
   division = 100;

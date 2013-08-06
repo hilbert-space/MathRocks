@@ -15,7 +15,7 @@ function observe2D(data, options)
 
   switch options.get('layout', 'tiles')
   case 'one'
-    if options.get('figure', true), figure; end
+    if options.get('figure', true), Plot.figure; end
 
     for i = 1:dimensionCount
       one = data(:, i);
@@ -27,7 +27,7 @@ function observe2D(data, options)
     end
   case 'separate'
     for i = 1:dimensionCount
-      figure;
+      Plot.figure;
 
       one = data(:, i);
 
@@ -37,7 +37,7 @@ function observe2D(data, options)
       Data.draw(x, one, options);
     end
   case 'tiles'
-    if options.get('figure', true), figure; end
+    if options.get('figure', true), Plot.figure; end
 
     for i = 1:dimensionCount
       subplot(1, dimensionCount, i);

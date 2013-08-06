@@ -10,7 +10,7 @@ function thermalCycles(T, output)
       sum(output.cycles{i}), output.MTTF(i));
   end
 
-  figure;
+  Plot.figure;
 
   % Draw full curves
   subplot(2, 1, 1);

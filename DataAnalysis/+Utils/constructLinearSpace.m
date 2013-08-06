@@ -4,7 +4,7 @@ function x = constructLinearSpace(varargin)
   if left == right
     x = [ left ];
   else
-    points = options.get('points', max((right - left) / 0.1, 100));
+    points = options.get('points', min(max((right - left) / 0.1, 1e2), 1e3));
     x = linspace(left, right, points);
   end
 end

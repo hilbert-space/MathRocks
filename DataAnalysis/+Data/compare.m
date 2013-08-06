@@ -39,10 +39,10 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
   if options.draw
     switch options.layout
     case 'one'
-      figure;
+      Plot.figure;
       legend = {};
     case 'tiles'
-      figure;
+      Plot.figure;
     case 'separate'
     otherwise
       error('The layout is unknown.');
@@ -75,7 +75,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
         { 'Color', Color.pick(1) }, ...
         { 'Color', Color.pick(2) }};
     case 'separate'
-      figure;
+      Plot.figure;
       styles = { ...
         { 'Color', Color.pick(1) }, ...
         { 'Color', Color.pick(2) }};
@@ -139,7 +139,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   if ~draw, return; end
 
-  Plot.figure(1200, 400);
+  Plot.figure;
 
   oneExp = squeeze(mean(oneData, 1));
   twoExp = squeeze(mean(twoData, 1));

@@ -1,5 +1,5 @@
 function h = figure(width, height)
-  if nargin < 2, height = 600; end
+  if nargin < 2, height = 400; end
   if nargin < 1, width  = 600; end
 
   screen = get(0, 'ScreenSize');

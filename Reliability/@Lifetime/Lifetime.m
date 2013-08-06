@@ -144,7 +144,7 @@ classdef Lifetime < handle
 
       period = stepCount * this.samplingInterval;
 
-      if nargin > 3
+      if nargin > 2
         peakIndex  = output.peakIndex;
         cycleIndex = output.cycleIndex;
         cycles     = output.cycles;
@@ -158,12 +158,12 @@ classdef Lifetime < handle
 
       factor = zeros(1, profileCount);
       for i = 1:processorCount
-        if nargin < 3
-          [ N, peakIndex{i}, cycleIndex{i}, cycles{i} ] = ...
-            this.calculateCyclesToFailure(T(:, :, i));
-        else
+        if nargin > 2
           N = this.calculateCyclesToFailure(T(:, :, i), ...
             peakIndex{i}, cycleIndex{i});
+        else
+          [ N, peakIndex{i}, cycleIndex{i}, cycles{i} ] = ...
+            this.calculateCyclesToFailure(T(:, :, i));
         end
 
         %
