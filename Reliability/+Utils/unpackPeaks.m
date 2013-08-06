@@ -3,7 +3,7 @@ function T = unpackPeaks(P, output)
   T = zeros(output.processorCount, output.stepCount, profileCount);
   j = 0;
   for i = 1:output.processorCount
-    k = size(output.peakIndex{i}, 1);
+    k = length(output.peakIndex{i});
     T(i, output.peakIndex{i}, :) = P(:, (j + 1):(j + k)).';
     j = j + k;
   end

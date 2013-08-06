@@ -1,6 +1,6 @@
 function [ index, cycles ] = detectCycles(extrema)
   if isempty(extrema)
-    index = [];
+    index = zeros(2, 0, 'uint16');
     cycles = [];
     return;
   end

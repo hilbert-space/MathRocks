@@ -139,7 +139,7 @@ classdef Lifetime < handle
       % Theta  = tau / (sum_i (sum_j (1 / N_ij))^beta)^(1 / beta).
       %
 
-      [ processorCount, stepCount, sampleCount ] = size(T);
+      [ processorCount, stepCount, profileCount ] = size(T);
       T = permute(T, [ 3, 2, 1 ]);
 
       period = stepCount * this.samplingInterval;
@@ -154,9 +154,9 @@ classdef Lifetime < handle
         cycles     = cell(processorCount, 1);
       end
 
-      damage = zeros(processorCount, sampleCount);
+      damage = zeros(processorCount, profileCount);
 
-      factor = zeros(1, sampleCount);
+      factor = zeros(1, profileCount);
       for i = 1:processorCount
         if nargin < 3
           [ N, peakIndex{i}, cycleIndex{i}, cycles{i} ] = ...
@@ -170,7 +170,7 @@ classdef Lifetime < handle
         % NOTE: The enumerator is not standard; here
         % we are trying to account for full and half cycles.
         %
-        damage(i, :) = sum(repmat(cycles{i}, sampleCount, 1) ./ N, 2);
+        damage(i, :) = sum(repmat(cycles{i}, profileCount, 1) ./ N, 2);
 
         factor = factor + damage(i, :).^this.beta;
       end
