@@ -1,9 +1,15 @@
 function [ index, cycles ] = detectCycles(extrema)
+  if isempty(extrema)
+    index = [];
+    cycles = [];
+    return;
+  end
+
   extremumCount = length(extrema);
   cycleCount = 0;
 
-  stack  = zeros(1, extremumCount, 'uint32');
-  index  = zeros(2, extremumCount, 'uint32');
+  stack  = zeros(1, extremumCount, 'uint16');
+  index  = zeros(2, extremumCount, 'uint16');
   cycles = zeros(1, extremumCount);
 
   function result = delta(i1, i2)

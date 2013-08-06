@@ -76,7 +76,7 @@ classdef Lifetime < handle
       this.Atc = this.calculateAtc;
     end
 
-    function [ totalMTTF, output ] = predict(this, T)
+    function [ totalMTTF, output ] = predict(this, T, output)
       %
       % How it works?
       %
@@ -139,36 +139,52 @@ classdef Lifetime < handle
       % Theta  = tau / (sum_i (sum_j (1 / N_ij))^beta)^(1 / beta).
       %
 
-      [ processorCount, stepCount ] = size(T);
+      [ processorCount, stepCount, sampleCount ] = size(T);
+      T = permute(T, [ 3, 2, 1 ]);
 
       period = stepCount * this.samplingInterval;
 
-      damage = zeros(processorCount, 1);
-      peakIndex = cell(processorCount, 1);
-      cycles = cell(processorCount, 1);
+      if nargin > 3
+        peakIndex  = output.peakIndex;
+        cycleIndex = output.cycleIndex;
+        cycles     = output.cycles;
+      else
+        peakIndex  = cell(processorCount, 1);
+        cycleIndex = cell(processorCount, 1);
+        cycles     = cell(processorCount, 1);
+      end
 
-      factor = 0;
+      damage = zeros(processorCount, sampleCount);
+
+      factor = zeros(1, sampleCount);
       for i = 1:processorCount
-        [ N, peaks, cycles{i} ] = this.calculateCyclesToFailure(T(i, :));
-        peakIndex{i} = peaks(:, 1);
+        if nargin < 3
+          [ N, peakIndex{i}, cycleIndex{i}, cycles{i} ] = ...
+            this.calculateCyclesToFailure(T(:, :, i));
+        else
+          N = this.calculateCyclesToFailure(T(:, :, i), ...
+            peakIndex{i}, cycleIndex{i});
+        end
 
         %
         % NOTE: The enumerator is not standard; here
         % we are trying to account for full and half cycles.
         %
-        damage(i) = sum(cycles{i} ./ N);
+        damage(i, :) = sum(repmat(cycles{i}, sampleCount, 1) ./ N, 2);
 
-        factor = factor + damage(i)^this.beta;
+        factor = factor + damage(i, :).^this.beta;
       end
 
-      totalDamage = factor^(1 / this.beta);
-      totalMTTF = period / totalDamage;
+      totalDamage = factor.^(1 / this.beta);
+      totalMTTF = period ./ totalDamage;
 
       if nargout < 2, return; end
 
-      output.damage = damage;
       output.peakIndex = peakIndex;
+      output.cycleIndex = cycleIndex;
       output.cycles = cycles;
+
+      output.damage = damage;
       output.MTTF = period ./ damage;
 
       output.totalDamage = totalDamage;
@@ -183,30 +199,31 @@ classdef Lifetime < handle
   end
 
   methods (Access = 'private')
-    function [ N, peaks, cycles ] = calculateCyclesToFailure(this, T)
-      peaks = Utils.detectPeaks(T, this.peakThreshold);
+    function [ N, peakIndex, cycleIndex, cycles ] = ...
+      calculateCyclesToFailure(this, T, peakIndex, cycleIndex)
 
-      if size(peaks, 1) == 0
-        N = [];
-        peaks = zeros(0, 2);
-        cycles = [];
+      if nargin < 4
+        [ peakIndex, extrema ] = Utils.detectPeaks(T(1, :), this.peakThreshold);
+        [ cycleIndex, cycles ] = Utils.detectCycles(extrema);
+      end
+
+      if isempty(cycleIndex)
+        N = zeros(size(T, 1), 0);
         return;
       end
 
-      [ ~, I ] = sort(peaks(:, 1));
-      peaks = peaks(I, :);
+      T = T(:, peakIndex);
+      T = cat(3, T(:, cycleIndex(1, :)), T(:, cycleIndex(2, :)));
 
-      [ I, cycles ] = Utils.detectCycles(peaks(:, 2));
-      pairs = reshape(peaks(I(:), 2), 2, []);
+      dT = abs(T(:, :, 1) - T(:, :, 2)) - this.dT0;
+      dT(dT < 0) = 0;
 
-      dT = abs(pairs(1, :) - pairs(2, :));
-      Tmax = max(pairs, [], 1);
+      Tmax = max(T, [], 3);
 
       %
       % Number of cycles to failure for each stress level [2]
       %
-      N = this.Atc .* max(0, dT - this.dT0).^(-this.q) .* ...
-        exp(this.Eatc ./ (this.k * Tmax));
+      N = this.Atc .* dT.^(-this.q) .* exp(this.Eatc ./ (this.k * Tmax));
 
       %
       % NOTE: If the temperature difference is zero, there is no damage.

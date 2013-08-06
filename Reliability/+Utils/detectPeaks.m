@@ -1,99 +1,124 @@
-function peaks = detectPeaks(v, delta)
-  peaks = zeros(0, 2);
+function [ index, peaks ] = detectPeaks(data, delta)
+  dataCount = length(data);
+  peakCount = 0;
 
-  mn = Inf;
-  mx = -Inf;
-  mnpos = 0;
-  mxpos = 0;
-  first_pos = 0;
+  index = zeros(1, dataCount, 'uint16');
+  peaks = zeros(1, dataCount);
 
-  UNDEFINED = 0;
-  MIN = 1;
-  MAX = 2;
+  function append(j, peak)
+    peakCount = peakCount + 1;
+    index(peakCount) = j;
+    peaks(peakCount) = peak;
+  end
 
-  look_for = UNDEFINED;
-  first_is = UNDEFINED;
+  function prepend(j, peak)
+    index(2:(peakCount + 1)) = index(1:peakCount);
+    peaks(2:(peakCount + 1)) = peaks(1:peakCount);
+    peakCount = peakCount + 1;
+    index(1) = j;
+    peaks(1) = peak;
+  end
 
-  count = length(v);
+  function replace(j, k, peak)
+    index(j) = k;
+    peaks(j) = peak;
+  end
 
-  for i = 1:count
-    this = v(i);
+  minValue = Inf;
+  maxValue = -Inf;
+  minPosition = 0;
+  maxPosition = 0;
+  firstPosition = 0;
 
-    if this >= mx, mx = this; mxpos = i; end
-    if this <= mn, mn = this; mnpos = i; end
+  UNDEFINED = 0; MIN = 1; MAX = 2;
 
-    if look_for == MAX
-      if this < (mx - delta)
-        peaks(end + 1, :) = [ mxpos mx ];
-        mn = this;
-        mnpos = i;
-        look_for = MIN;
+  nextType = UNDEFINED;
+  firstType = UNDEFINED;
+
+  for i = 1:dataCount
+    this = data(i);
+
+    if this >= maxValue, maxValue = this; maxPosition = i; end
+    if this <= minValue, minValue = this; minPosition = i; end
+
+    if nextType == MAX
+      if this < (maxValue - delta)
+        append(maxPosition, maxValue);
+        minValue = this;
+        minPosition = i;
+        nextType = MIN;
       end
-    elseif look_for == MIN
-      if this > (mn + delta)
-        peaks(end + 1, :) = [ mnpos mn ];
-        mx = this;
-        mxpos = i;
-        look_for = MAX;
+    elseif nextType == MIN
+      if this > (minValue + delta)
+        append(minPosition, minValue);
+        maxValue = this;
+        maxPosition = i;
+        nextType = MAX;
       end
     else
-      if this < (mx - delta)
-        peaks(end + 1, :) = [ mxpos mx ];
-        mn = this;
-        mnpos = i;
-        look_for = MIN;
-        first_is = MAX;
-        first_pos = i;
-      elseif this > (mn + delta)
-        peaks(end + 1, :) = [ mnpos mn ];
-        mx = this;
-        mxpos = i;
-        look_for = MAX;
-        first_is = MIN;
-        first_pos = i;
+      if this < (maxValue - delta)
+        append(maxPosition, maxValue);
+        minValue = this;
+        minPosition = i;
+        nextType = MIN;
+        firstType = MAX;
+        firstPosition = i;
+      elseif this > (minValue + delta)
+        append(minPosition, minValue);
+        maxValue = this;
+        maxPosition = i;
+        nextType = MAX;
+        firstType = MIN;
+        firstPosition = i;
       end
     end
   end
 
-  if look_for == MAX
+  if nextType == MAX
     % Ensure that we start from the very beginning
-    if first_pos > 1
-      if first_is == MIN
-        if peaks(1, 2) > mx
-          % ... if the first minima is larger than the last maxima, replace!
-          peaks(1, :) = [ 1 mx ];
+    if firstPosition > 1
+      if firstType == MIN
+        if peaks(1) > maxValue
+          % ... if the first minimum is larger than the last maximum, replace!
+          replace(1, 1, maxValue);
         else
           % ... if not, add a point
-          peaks = [ 1 mx; peaks ];
+          prepend(1, maxValue);
         end
       else
         % ... or replace the first one
-        mx = max([ mx, peaks(1, 2) ]);
-        peaks(1, :) = [ 1 mx ];
+        maxValue = max(maxValue, peaks(1));
+        replace(1, 1, maxValue);
       end
     end
 
-    % Ensure that we end in the end
-    if peaks(end, 1) ~= count
-      % If not, add a point
-      peaks(end + 1, :) = [ count mx ];
+    % Ensure that we end at the end
+    if index(peakCount) ~= dataCount
+      % ... if not, add a point
+      append(dataCount, maxValue);
     end
-  elseif look_for == MIN
-    if first_pos > 1
-      if first_is == MAX
-        if peaks(1, 2) < mn
-          peaks(1, :) = [ 1 mn ];
+  elseif nextType == MIN
+    if firstPosition > 1
+      if firstType == MAX
+        if peaks(1) < minValue
+          replace(1, 1, minValue);
         else
-          peaks = [ 1 mn; peaks ];
+          prepend(1, minValue);
         end
       else
-        mn = min([ mn, peaks(1, 2) ]);
-        peaks(1, :) = [ 1 mn ];
+        minValue = min(minValue, peaks(1));
+        replace(1, 1, minValue);
       end
     end
 
-    if peaks(end, 1) ~= count
-      peaks(end + 1, :) = [ count mn ];
+    if index(peakCount) ~= dataCount
+      append(dataCount, minValue);
     end
   end
+
+  index = index(1:peakCount);
+  peaks = peaks(1:peakCount);
+
+  [ index, I ] = sort(index);
+  peaks = peaks(I);
 end

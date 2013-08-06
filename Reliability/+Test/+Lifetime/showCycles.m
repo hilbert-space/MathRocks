@@ -1,8 +1,8 @@
-function showCycles
+function showCycles(varargin)
   close all;
   setup;
 
-  options = Configure.systemSimulation('processorCount', 2);
+  options = Configure.systemSimulation(varargin{:});
   Pdyn = options.dynamicPower;
 
   temperature = Temperature.Analytical.DynamicSteadyState(options);
