@@ -1,34 +1,33 @@
 function reliability(T, output)
   [ processorCount, stepCount ] = size(T);
 
+  division = 100;
   period = stepCount * output.samplingInterval;
-
   Z = gamma(1 + 1 / output.beta);
 
-  Plot.figure;
-  Plot.label('Time, s', 'Probability');
-  Plot.title('Time without failures');
+  function drawOne(damage, MTTF, varargin)
+    eta = period / (Z * damage);
+    time = 3 * (0:(division - 1)) * MTTF / division;
+    R = exp(-(time ./ eta).^output.beta);
+    line(Utils.toYears(time), R, varargin{:});
+    Plot.vline(Utils.toYears(eta), 'LineStyle', '--', varargin{:});
+  end
 
-  division = 100;
+  Plot.figure;
+  Plot.label('Time, years', 'Probability');
+  Plot.title('Survival time');
+
   title = {};
 
   for i = 1:processorCount
-    color = Color.pick(i);
-
-    eta = period / (Z * output.damage(i));
-    time = (0:(division - 1)) * output.MTTF(i) / division;
-    R = exp(-(time ./ eta).^output.beta);
-
-    line(time, R, 'Color', color);
-    title{end + 1} = [ 'Processor ', num2str(i) ];
+    drawOne(output.damage(i), output.MTTF(i), 'Color', Color.pick(i));
+    title{end + 1} = [ 'Processor ', num2str(i), ': Density' ];
+    title{end + 1} = [ 'Processor ', num2str(i), ': MTTF' ];
   end
 
-  eta = period / (Z * output.totalDamage);
-  time = (0:(division - 1)) * output.totalMTTF / division;
-  R = exp(-(time ./ eta).^output.beta);
+  drawOne(output.totalDamage, output.totalMTTF, 'Color', 'k');
+  title{end + 1} = 'Joint: Density';
+  title{end + 1} = 'Joint: MTTF';
 
-  line(time, R, 'Color', 'k', 'Line', '--');
-  title{end + 1} = 'Total';
-
-  legend(title{:});
+  Plot.legend(title{:});
 end

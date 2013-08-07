@@ -8,5 +8,4 @@ function Title(varargin)
 
   text = sprintf(varargin{:});
   title(get(h, 'CurrentAxes'), text, 'FontSize', 16);
-  set(h, 'name', text);
 end

@@ -80,16 +80,23 @@ classdef Lifetime < handle
       %
       % How it works?
       %
-      % Everything is under the assumption that the failure rate
-      % follows a Weibull distribution.
+      % Everything is under the assumption that the time to failure
+      % follows a Weibull distribution:
+      %
+      % t ~ Weibull(eta, beta).
+      %
+      % Denote the corresponding CDF by F(t | eta, beta). Then the
+      % reliability function is
+      %
+      % R(t | eta, beta) = 1 - F(t | eta, beta) = exp{ -(t / eta)^beta }.
       %
       % Let n be the number of processing elements (PEs).
       % Assume the failure rates of the PEs are independent and
-      % any failure causes the whole system to fail. Thus,
+      % any failure causes the failure of the whole system. Thus,
       %
-      % R(t) = prod_i R_i(t)
+      % R(t) = prod_i R_i(t).
       %
-      % Now,
+      % Each PE undergoes a number of stress levels. It can be shown that
       %
       % R_i(t) = exp{ -[ (t / tau) * sum_j (dt_ij / eta_ij) ]^beta }
       %        = exp{ -(t / eta_i)^beta }
@@ -100,7 +107,8 @@ classdef Lifetime < handle
       %
       % tau is the period of the application, and the summation
       % under the exponentiation is over all the periods dt_ij
-      % wherein the eta parameter stays constant (eta_ij).
+      % wherein the eta parameter (i.e., eta_ij) stays constant
+      % (corresponds to one stress level).
       %
       % Consequently,
       %
@@ -113,7 +121,7 @@ classdef Lifetime < handle
       % Eta  = 1 / (sum_i (1 / eta_i)^beta)^(1 / beta)
       %
       % Next, let theta_ij be the expectation of the Weibull
-      % distribution of the (ij)th time interval. Hence,
+      % distribution corresponding to the (ij)th time interval. Hence,
       %
       % eta_ij = theta_ij / gamma(1 + 1 / beta),
       % eta_i  = tau / gamma(1 + 1 / beta) / sum_j (dt_ij / theta_ij), and
@@ -124,7 +132,7 @@ classdef Lifetime < handle
       % Theta  = Eta * gamma(1 + 1 / beta)
       %        = tau / (sum_i (sum_j (dt_ij / theta_ij))^beta)^(1 / beta).
       %
-      % Assuming a particular failure mechanism, namely, thermal cycling
+      % Assuming a particular failure mechanism, namely, the thermal cycling
       % fatigue, we compute the MTTF theta_ij (as if this particular cycle
       % was the only one damaging the system) as follows:
       %
