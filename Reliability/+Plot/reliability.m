@@ -7,6 +7,7 @@ function reliability(T, output)
 
   Plot.figure;
   Plot.label('Time, s', 'Probability');
+  Plot.title('Time without failures');
 
   division = 100;
   title = {};
