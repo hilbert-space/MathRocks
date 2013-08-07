@@ -25,7 +25,7 @@ function reliability(T, output)
     title{end + 1} = [ 'Processor ', num2str(i), ': MTTF' ];
   end
 
-  drawOne(output.totalDamage, output.totalMTTF, 'Color', 'k');
+  drawOne(output.totalDamage, output.totalMTTF, 'Color', Color.pick(i + 1));
   title{end + 1} = 'Joint: Density';
   title{end + 1} = 'Joint: MTTF';
 
