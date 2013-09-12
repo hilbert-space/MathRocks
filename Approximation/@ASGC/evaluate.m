@@ -1,15 +1,15 @@
-function values = evaluate(this, newNodes)
+function values = evaluate(this, output, newNodes)
   zeros = @uninit;
 
   planeNewNodes = newNodes(:);
   assert(all(planeNewNodes >= 0) && all(planeNewNodes <= 1));
 
-  inputCount = this.inputCount;
-  outputCount = this.outputCount;
+  inputCount = output.inputCount;
+  outputCount = output.outputCount;
 
-  nodes = this.nodes;
-  levelIndex = this.levelIndex;
-  surpluses = this.surpluses;
+  nodes = output.nodes;
+  levelIndex = output.levelIndex;
+  surpluses = output.surpluses;
 
   nodeCount = size(nodes, 1);
 

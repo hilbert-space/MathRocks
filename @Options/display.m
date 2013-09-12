@@ -3,7 +3,19 @@ function display(this, title, level)
     fprintf('%s:\n', title);
   end
 
-  nameWidth = 20;
+  names = properties(this);
+  nameCount = length(names);
+
+  nameWidth = -Inf;
+
+  for i = 1:nameCount
+    name = names{i};
+    name = regexprep(name, '([A-Z])',' ${lower($1)}');
+    name = regexprep(name, '(^\s*[a-z])','${upper($1)}');
+    names{i} = name;
+    nameWidth = max(nameWidth, length(name));
+  end
+
   namePrefix = '  ';
 
   if nargin > 2
@@ -15,9 +27,7 @@ function display(this, title, level)
     level = 1;
   end
 
-  names = properties(this);
-
-  for i = 1:length(names)
+  for i = 1:nameCount
     name = names{i};
     value = this.(name);
 

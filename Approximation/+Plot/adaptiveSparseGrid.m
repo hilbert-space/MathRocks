@@ -1,14 +1,14 @@
-function plot(this)
+function adaptiveSparseGrid(output)
   figure;
 
-  nodes = this.nodes;
-  nodeCount = this.nodeCount;
-  levelNodeCount = this.levelNodeCount;
+  nodes = output.nodes;
+  nodeCount = output.nodeCount;
+  levelNodeCount = output.levelNodeCount;
 
-  switch this.inputCount
+  switch output.inputCount
   case 1
     k = 1;
-    for level = 1:this.level
+    for level = 1:output.level
       x = nodes(k:(k + levelNodeCount(level) - 1));
       k = k + levelNodeCount(level);
       line(x, level * ones(size(x)), ...
@@ -16,7 +16,7 @@ function plot(this)
         'Color', [ 1 1 1 ] / 6, 'LineStyle', 'None');
     end
 
-    ylim([ 0, this.level ]);
+    ylim([ 0, output.level ]);
 
     Plot.title('Adaptive sparse grid');
     Plot.label('Random variable', 'Approximation level');

@@ -1,5 +1,7 @@
-function construct(this, f, options)
+function output = construct(this, f, varargin)
   zeros = @uninit;
+
+  options = Options(varargin{:});
 
   inputCount = options.inputCount;
   outputCount = options.get('outputCount', 1);
@@ -318,21 +320,23 @@ function construct(this, f, options)
   %
   range = 1:nodeCount;
 
-  this.inputCount = inputCount;
-  this.outputCount = outputCount;
+  output = struct;
 
-  this.level = level;
-  this.nodeCount = nodeCount;
-  this.levelNodeCount = levelNodeCount(1:level);
+  output.inputCount = inputCount;
+  output.outputCount = outputCount;
 
-  this.nodes = nodes(range, :);
-  this.levelIndex = levelIndex(range, :);
+  output.level = level;
+  output.nodeCount = nodeCount;
+  output.levelNodeCount = levelNodeCount(1:level);
 
-  this.surpluses = surpluses(range, :);
+  output.nodes = nodes(range, :);
+  output.levelIndex = levelIndex(range, :);
 
-  this.expectation = expectation;
-  this.variance = secondRawMoment - expectation.^2;
-  this.secondRawMoment = secondRawMoment;
+  output.surpluses = surpluses(range, :);
+
+  output.expectation = expectation;
+  output.variance = secondRawMoment - expectation.^2;
+  output.secondRawMoment = secondRawMoment;
 end
 
 function [ orderIndex, nodes ] = computeNeighbors(level, order)

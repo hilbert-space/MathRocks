@@ -1,4 +1,5 @@
 function interpolant = multidimensional
+  close all;
   setup;
 
   sampleCount = 1e2;
@@ -21,103 +22,75 @@ function interpolant = multidimensional
     'AbsTol', 1e-6, ...
     'RelTol', 1e-3);
 
-  acOptions = Options( ...
+  asgcOptions = Options( ...
     'inputCount', inputCount, ...
     'outputCount', outputCount, ...
     'control', 'InfNormSurpluses2', ...
     'tolerance', 1e-2, ...
-    'maximalLevel', 20, ...
-    'verbose', true);
+    'maximalLevel', 20);
 
+  %
+  % Brute-force exploration
+  %
   z = transpose(linspace(-1, 1, sampleCount));
 
-  %
-  % Monte Carlo simulation.
-  %
-  filename = File.temporal(sprintf('ASGC_multidimensional_%s.mat', ...
-    DataHash({ inputCount, outputCount, sampleCount })));
+  Y = zeros(stepCount, 3, sampleCount);
 
-  if exist(filename, 'file')
-    load(filename);
-  else
-    mcData = zeros(stepCount, 3, sampleCount);
-
-    tic;
-    for i = 1:sampleCount
-      mcData(:, :, i) = solve([ 1.0, 0.1 * z(i), 0 ], ...
-        timeSpan, innerTimeStep, outerTimeStep);
-    end
-    mcTime = toc;
-
-    save(filename, 'mcData', 'mcTime', '-v7.3');
+  tic;
+  for i = 1:sampleCount
+    Y(:, :, i) = solve([ 1.0, 0.1 * z(i), 0 ], ...
+      timeSpan, innerTimeStep, outerTimeStep);
   end
-
-  fprintf('Monte Carlo:\n');
-  fprintf('  Samples: %d\n', sampleCount);
-  fprintf('  Time:    %.2f s\n', mcTime);
+  fprintf('Computation time of %d samples: %.2f s\n', ...
+    sampleCount, toc);
 
   %
-  % Adaptive sparse grid collocation.
+  % Adaptive sparse grid collocation
   %
-  tic;
-  interpolant = ASGC( ...
-    @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
-      timeSpan, innerTimeStep, outerTimeStep, outputCount), acOptions);
-  fprintf('Adaptive sparse grid collocation:\n');
-  fprintf('  Construction time: %.2f s\n', toc);
+  target = @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
+    timeSpan, innerTimeStep, outerTimeStep, outputCount);
 
-  tic;
-  scData = interpolant.evaluate((z + 1) / 2);
-  fprintf('  Evaluation time:   %.2f s\n', toc);
-
-  display(interpolant);
-  plot(interpolant);
+  [ asgc, output ] = assess(target, asgcOptions, ...
+    'sampleCount', sampleCount);
 
   %
-  % The expected value.
+  % The expected value
   %
   figure;
-
-  mcExpectation = mean(mcData, 3);
-  scExpectation = reshape(interpolant.expectation, [ stepCount, 3 ]);
 
   Plot.title('Expectation');
   Plot.label('Time');
-  plotTransient(time, mcExpectation);
-  plotTransient(time, scExpectation, 'LineStyle', '--');
+  plotTransient(time, mean(Y, 3));
+  plotTransient(time, reshape(output.expectation, ...
+    [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
-  % The variance.
+  % The variance
   %
   figure;
-
-  mcVariance = var(mcData, [], 3);
-  scVariance = reshape(interpolant.variance, [ stepCount, 3 ]);
 
   Plot.title('Expectation');
   Plot.label('Time');
-  plotTransient(time, mcVariance);
-  plotTransient(time, scVariance, 'LineStyle', '--');
+  plotTransient(time, var(Y, [], 3));
+  plotTransient(time, reshape(output.variance, ...
+    [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
-  % A solution slice.
+  % A solution slice
   %
   figure;
 
-  mcData = transpose(squeeze(mcData(end, :, :)));
-  scData = scData(:, [ ...
+  Y = transpose(squeeze(Y(end, :, :)));
+  y = asgc.evaluate(output, (z + 1) / 2);
+  y = y(:, [ ...
     outputCount - 2 * stepCount, ...
     outputCount - 1 * stepCount, ...
     outputCount - 0 * stepCount ]);
 
   Plot.title('Solution');
   Plot.label('Uncertain parameter');
-  plotTransient(z, mcData);
-  plotTransient(z, scData, 'LineStyle', '--');
-
-  fprintf('Infinity norm:   %e\n', norm(mcData - scData, Inf));
-  fprintf('Normalized RMSE: %e\n', Error.computeNRMSE(mcData, scData));
-  fprintf('Normalized L2:   %e\n', Error.computeNL2(mcData, scData));
+  plotTransient(z, Y);
+  plotTransient(z, y, 'LineStyle', '--');
 end
 
 function y = solve(y0, timeSpan, innerTimeStep, outerTimeStep)

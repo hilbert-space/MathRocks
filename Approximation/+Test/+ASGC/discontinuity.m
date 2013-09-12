@@ -1,5 +1,5 @@
 function discontinuity
-  clear all;
+  close all;
   setup;
 
   odeOptions = odeset( ...
@@ -7,85 +7,55 @@ function discontinuity
     'AbsTol', 1e-6, ...
     'RelTol', 1e-3);
 
-  acOptions = Options( ...
+  asgcOptions = Options( ...
     'inputCount', 1, ...
     'control', 'InfNormSurpluses2', ...
     'tolerance', 1e-4, ...
     'minimalLevel', 4, ...
-    'maximalLevel', 20, ...
-    'verbose', true);
+    'maximalLevel', 20);
 
   f = 2;
   x0 = 0.05;
   dx = 0.2;
-
-  %
-  % A small test before anything else.
-  %
-  t = 25;
-  u = 0.375;
-  y = solve([ 0 t ], [ x0 + dx * (2 * u - 1), 0 ], odeOptions, f);
-  fprintf('Fixed point function value: %.e\n', y(end, 1));
-
   t = 0:0.001:25;
-  steps = length(t);
+  stepCount = length(t);
 
   %
-  % Enumeration of `all' possible scenarious.
+  % Brute-force exploration
   %
   z = -1:0.1:1;
-  samples = length(z);
+  sampleCount = length(z);
 
-  filename = File.temporal(sprintf('ASGC_discontinuity_%s.mat', ...
-    DataHash({ steps, samples })));
+  Y = zeros(stepCount, sampleCount);
 
-  if exist(filename, 'file')
-    load(filename);
-  else
-    Y = zeros(steps, samples);
-
-    tic;
-    for i = 1:samples
-      Y(:, i) = solve(t, [ x0 + dx * z(i), 0 ], odeOptions, f);
-    end
-    time = toc;
-
-    save(filename, 'Y', 'time', '-v7.3');
+  time = tic;
+  for i = 1:sampleCount
+    Y(:, i) = solve(t, [ x0 + dx * z(i), 0 ], odeOptions, f);
   end
-
-  fprintf('Simulation time for %d samples: %.2f s\n', samples, time);
+  fprintf('Computation time of %d samples: %.2f s\n', ...
+    sampleCount, toc(time));
 
   [ T, Z ] = meshgrid(t, z);
   plotTransient(T, Z, Y);
 
   %
-  % Adaptive sparse grid collocation.
+  % Adaptive sparse grid collocation
   %
-
-  k = steps;
+  k = stepCount;
   t = t(k);
 
-  tic;
-  interpolant = ASGC( ...
-    @(u) solvePointwise([ 0, t ], ...
-      [ x0 + dx * (2 * u - 1), zeros(size(u)) ], odeOptions, f), acOptions);
-  fprintf('Interpolant construction: %.2f s\n', toc);
+  target = @(u) solvePointwise([ 0, t ], ...
+    [ x0 + dx * (2 * u - 1), zeros(size(u)) ], odeOptions, f);
 
-  display(interpolant);
+  [ asgc, output ] = assess(target, asgcOptions, ...
+    'sampleCount', sampleCount, ...
+    'exactExpectation', sqrt(15 / 35) / 4, ...
+    'exactVariance', 45 / 112);
 
-  fprintf('Expectation error: %10.6f\n', interpolant.expectation - sqrt(15 / 35) / 4);
-  fprintf('Variance error:    %10.6f\n', interpolant.variance - 45 / 112);
-
-  plot(interpolant);
-
-  tic;
-  y = interpolant.evaluate(transpose((z + 1) / 2));
-  fprintf('Interpolant evaluation at %d points: %.2f s\n', samples, toc);
-
+  y = asgc.evaluate(output, transpose((z + 1) / 2));
   plotSlice(t, z, y, Y(k, :));
 
-  data = interpolant.evaluate(rand(10^3, 1));
-  Data.observe(data, 'draw', true, 'method', 'histogram');
+  Data.observe(output.data, 'draw', true, 'method', 'histogram');
 end
 
 function y = solve(t, y0, options, f)

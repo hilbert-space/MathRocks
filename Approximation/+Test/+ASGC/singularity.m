@@ -1,52 +1,13 @@
 function singularity
+  close all;
   setup;
 
-  use('DataAnalysis');
-
-  f = @problem3;
-
-  tic;
-  interpolant = ASGC(f, ...
+  assess(@problem3, ...
     'inputCount', 2, ...
     'control', 'InfNormSurpluses', ...
     'minimalLevel', 2, ...
     'maximalLevel', 20, ...
-    'tolerance', 1e-4, ...
-    'verbose', true);
-  fprintf('Interpolant construction: %.2f s\n', toc);
-
-  display(interpolant);
-  plot(interpolant);
-  Plot.title('Sparse grid at level %d', interpolant.level);
-
-  [ X, Y ] = meshgrid(linspace(0, 1), linspace(0, 1));
-  [ M, N ] = size(X);
-
-  XY = [ X(:), Y(:) ];
-
-  Z0 = reshape(f(XY), M, N);
-
-  tic;
-  Z1 = interpolant.evaluate(XY);
-  fprintf('Interpolant evaluation at %d points: %.2f s\n', size(XY, 1), toc);
-
-  Z1 = reshape(Z1, M, N);
-
-  fprintf('Infinity norm:   %e\n', norm(Z0 - Z1, Inf));
-  fprintf('Normalized RMSE: %e\n', Error.computeNRMSE(Z0, Z1));
-  fprintf('Normalized L2:   %e\n', Error.computeNL2(Z0, Z1));
-
-  figure;
-
-  subplot(1, 2, 1);
-  meshc(X, Y, Z0);
-
-  Plot.title('Original');
-
-  subplot(1, 2, 2);
-  meshc(X, Y, Z1);
-
-  Plot.title('Interpolant at level %d', interpolant.level);
+    'tolerance', 1e-4);
 end
 
 function y = problem1(x)

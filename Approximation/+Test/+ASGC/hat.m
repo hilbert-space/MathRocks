@@ -1,16 +1,16 @@
 function hat
-  approximation = ASGC( ...
+  close all;
+  setup;
+
+  [ asgc, output ] = assess( ...
     @(x) problem(5 * x - 1), ...
     'inputCount', 1, ...
     'outputCount', 1);
 
-  display(approximation);
-  plot(approximation);
-
   x = linspace(-1, 4).';
 
   y1 = problem(x);
-  y2 = approximation.evaluate((x + 1) / 5);
+  y2 = asgc.evaluate(output, (x + 1) / 5);
 
   figure;
 
