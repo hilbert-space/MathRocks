@@ -57,13 +57,13 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
     for j = 1:setCount
       switch layout
       case 'separate'
-        color = Color.pick(j);
+        number = j;
       otherwise
-        color = Color.pick(i);
+        number = i;
       end
 
-      line(time(I), Utils.toCelsius(expectationSet{j}(i, I)), ...
-        'Color', color, 'LineWidth', 1);
+      Plot.line(time(I), Utils.toCelsius(expectationSet{j}(i, I)), ...
+        options, 'number', number);
 
       legend{end + 1} = names{j};
       if isempty(varianceSet{j}), continue; end
@@ -73,9 +73,9 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
       end
       legend{end} = [ legend{end}, 'Expectation' ];
 
-      line(time(I), Utils.toCelsius( ...
+      Plot.line(time(I), Utils.toCelsius( ...
         expectationSet{j}(i, I) + sqrt(varianceSet{j}(i, I))), ...
-        'Color', color, 'LineStyle', '--');
+        options, 'number', number, 'auxiliary', true);
 
       legend{end + 1} = names{j};
       if ~isempty(legend{end})

@@ -20,6 +20,10 @@ function compute(varargin)
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
-  Plot.temperatureVariation(Texp, output.Tvar, ...
-    'time', options.timeLine, 'layout', 'one');
+  Plot.figure(800, 400);
+  subplot(2, 1, 1);
+  plot(options.power, options.dynamicPower, 'figure', false, 'markEach', 18);
+  subplot(2, 1, 2);
+  Plot.temperatureVariation(Texp, output.Tvar, 'time', options.timeLine, ...
+    'figure', false, 'markEach', 18, 'layout', 'one');
 end
