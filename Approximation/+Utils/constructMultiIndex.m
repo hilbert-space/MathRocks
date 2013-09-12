@@ -1,4 +1,4 @@
-function index = computeMultiIndex(dimension, maxOrder, weights, method)
+function index = constructMultiIndex(dimension, maxOrder, weights, method)
   if nargin < 3 || isempty(weights), weights = ones(1, dimension); end
   if nargin < 4, method = 'totalOrder'; end
 
