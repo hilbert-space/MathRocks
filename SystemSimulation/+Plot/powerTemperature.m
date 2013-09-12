@@ -16,7 +16,7 @@ function powerTemperature(Pdyn, Pleak, T, varargin)
 
   T = Utils.toCelsius(T);
 
-  figure;
+  if options.get('figure', true), figure; end
 
   if ~isempty(T), subplot(2, 1, 1); end
 
@@ -24,10 +24,9 @@ function powerTemperature(Pdyn, Pleak, T, varargin)
   Plot.label(timeLabel, 'Power, W');
   Plot.limit(time);
   for i = 1:processorCount
-    color = Color.pick(i);
-    line(time, Pdyn(i, :), 'Color', color);
+    Plot.line(time, Pdyn(i, :), options, 'number', i);
     if isempty(Pleak), continue; end
-    line(time, Pleak(i, :), 'Color', color, 'LineStyle', '--');
+    Plot.line(time, Pleak(i, :), options, 'auxiliary', true);
   end
 
   if isempty(T), return; end
@@ -38,6 +37,6 @@ function powerTemperature(Pdyn, Pleak, T, varargin)
   Plot.label('Time, s', 'Temperature, C');
   Plot.limit(time);
   for i = 1:processorCount
-    line(time, T(i, :), 'Color', Color.pick(i));
+    Plot.line(time, T(i, :), options, 'number', i);
   end
 end
