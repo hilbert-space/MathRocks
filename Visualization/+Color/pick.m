@@ -1,5 +1,5 @@
 function color = pick(i)
-  if nargin == 0, i = randi(10); end
+  if nargin == 0, i = randi(100); end
 
   palette = { ...
     [  87, 181, 232 ] / 255, ...

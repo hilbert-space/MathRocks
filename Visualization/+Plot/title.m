@@ -6,6 +6,9 @@ function Title(varargin)
     h = gcf;
   end
 
+  h = get(h, 'CurrentAxes');
+  if isempty(h), h = gca; end
+
   text = sprintf(varargin{:});
-  title(get(h, 'CurrentAxes'), text, 'FontSize', 16);
+  title(h, text, 'FontSize', 16);
 end
