@@ -21,9 +21,9 @@ function fitBetaToNormal
   f1 = Normal.pdf(x);
   f2 = Beta.pdf(x);
 
-  figure;
-  line(x, f1, 'Color', Color.pick(1));
-  line(x, f2, 'Color', Color.pick(2));
+  Plot.figure;
+  Plot.line(x, f1, 'numer', 1, 'markEach', 2);
+  Plot.line(x, f2, 'number', 2, 'markEach', 2);
 
   Plot.legend( ...
     sprintf('Normal (%s, %s^2)', num2str(mu), num2str(sigma)), ...
