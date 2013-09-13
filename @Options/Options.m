@@ -14,7 +14,9 @@ classdef Options < dynamicprops
 
     function set(this, name, value)
       if ~isprop(this, name), this.addprop(name); end
-      if isa(this.(name), 'Options') && isa(value, 'Options')
+      if isa(this.(name), 'Options') && ...
+         (isa(value, 'Options') || isa(value, 'struct'))
+
         this.(name).update(value);
       else
         this.(name) = value;
@@ -48,6 +50,12 @@ classdef Options < dynamicprops
 
         if isa(item, 'Options')
           names = properties(item);
+          for j = 1:length(names)
+            this.set(names{j}, item.(names{j}));
+          end
+          i = i + 1;
+        elseif isa(item, 'struct')
+          names = fieldnames(item);
           for j = 1:length(names)
             this.set(names{j}, item.(names{j}));
           end

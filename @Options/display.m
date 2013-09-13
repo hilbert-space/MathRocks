@@ -5,16 +5,17 @@ function display(this, title, level)
 
   names = properties(this);
   nameCount = length(names);
+  displayNames = names;
 
   nameWidth = -Inf;
-
   for i = 1:nameCount
-    name = names{i};
-    name = regexprep(name, '([A-Z])',' ${lower($1)}');
-    name = regexprep(name, '(^\s*[a-z])','${upper($1)}');
-    names{i} = name;
-    nameWidth = max(nameWidth, length(name));
+    displayNames{i} = regexprep(displayNames{i}, ...
+      '([A-Z])',' ${lower($1)}');
+    displayNames{i} = regexprep(displayNames{i}, ...
+      '(^\s*[a-z])','${upper($1)}');
+    nameWidth = max(nameWidth, length(displayNames{i}));
   end
+  nameWidth = nameWidth + 1;
 
   namePrefix = '  ';
 
@@ -28,10 +29,10 @@ function display(this, title, level)
   end
 
   for i = 1:nameCount
-    name = names{i};
-    value = this.(name);
+    value = this.(names{i});
 
-    fprintf([ namePrefix, '%-', num2str(nameWidth), 's: ' ], name);
+    fprintf([ namePrefix, '%-', num2str(nameWidth), 's: ' ], ...
+      displayNames{i});
 
     if isa(value, 'Options')
       fprintf('\n');
