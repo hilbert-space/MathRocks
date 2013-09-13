@@ -22,7 +22,7 @@ function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
   asgcOutput = asgc.construct(f, options);
   fprintf('Construction time: %.2f s\n', toc(time));
 
-  display(asgcOutput);
+  display(Options(asgcOutput), 'Adaptive sparse grid');
 
   switch inputCount
   case 1
@@ -58,33 +58,36 @@ function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
   asgcOutput.data = asgc.evaluate(asgcOutput, u);
   fprintf('ASGC evaluation time: %.2f s\n', toc(time));
 
+  names = { ...
+    'Empirical MC', ...
+    'Empirical ASGC', ...
+    'Analytical ASGC' };
+
+  expectation = { ...
+    mcOutput.expectation, ...
+    mean(asgcOutput.data, 1), ...
+    asgcOutput.expectation };
+
+  variance = { ...
+    mcOutput.variance, ...
+    var(asgcOutput.data, [], 1), ...
+    asgcOutput.variance };
+
   if hasExact
-    printMoments('Exact', ...
-      options.exactExpectation, options.exactVariance);
+    names = [ 'Exact', names ];
+    expectation = [ options.exactExpectation, expectation ];
+    variance = [ options.exactVariance, variance ];
   end
 
-  printMoments('MC empirical', ...
-    mcOutput.expectation, mcOutput.variance, options);
+  fprintf('Expectation:\n');
+  printMoments(names, expectation);
+  fprintf('\n');
 
-  printMoments('ASGC empirical', ...
-    mean(asgcOutput.data), var(asgcOutput.data), options);
+  fprintf('Variance:\n');
+  printMoments(names, variance);
+  fprintf('\n');
 
-  printMoments('ASGC analytical', ...
-    asgcOutput.expectation, asgcOutput.variance, options);
-
-  fprintf('MC empirical vs. ASGC empirical:\n');
-  fprintf('  Expectation: %12.8f\n', ...
-    mean(mcOutput.expectation - mean(asgcOutput.data)));
-  fprintf('  Variance:    %12.8f\n', ...
-    mean(mcOutput.variance - var(asgcOutput.data)));
-
-  fprintf('MC empirical vs. ASGC analytical:\n');
-  fprintf('  Expectation: %12.8f\n', ...
-    mean(mcOutput.expectation - asgcOutput.expectation));
-  fprintf('  Variance:    %12.8f\n', ...
-    mean(mcOutput.variance - asgcOutput.variance));
-
-  fprintf('MC vs. ASGC pointwise:\n');
+  fprintf('Pointwise:\n');
   fprintf('  Normalized L2:   %e\n', ...
     Error.computeNL2(mcOutput.data, asgcOutput.data));
   fprintf('  Normalized RMSE: %e\n', ...
@@ -93,20 +96,37 @@ function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
     norm(mcOutput.data - asgcOutput.data, Inf));
 end
 
-function printMoments(name, expectation, variance, options)
-  fprintf('%s:\n', name);
+function printMoments(names, values)
+  nameCount = length(names);
 
-  if nargin > 3 && options.has('exactExpectation')
-    fprintf('  Expectation: %12.8f (%12.8f)\n', ...
-      mean(expectation), mean(options.exactExpectation - expectation));
-  else
-    fprintf('  Expectation: %12.8f\n', mean(expectation));
+  nameWidth = -Inf;
+  for i = 1:nameCount
+    nameWidth = max(nameWidth, length(names{i}));
   end
+  nameWidth = nameWidth + 2;
 
-  if nargin > 3 && options.has('exactVariance')
-    fprintf('  Variance:    %12.8f (%12.8f)\n', ...
-      mean(variance), mean(options.exactVariance - variance));
-  else
-    fprintf('  Variance:    %12.8f\n', mean(variance));
+  nameFormat = [ '%', num2str(nameWidth), 's' ];
+  valueFormat = [ '%', num2str(nameWidth), '.8f' ];
+
+  fprintf(nameFormat, '');
+  fprintf(nameFormat, 'Value');
+  fprintf(' | ');
+  for i = 1:nameCount
+    fprintf(nameFormat, names{i});
+  end
+  fprintf('\n');
+
+  for i = 1:nameCount
+    fprintf(nameFormat, names{i});
+    fprintf(valueFormat, mean(values{i}));
+    fprintf(' | ');
+    for j = 1:nameCount
+      if i == j
+        fprintf(nameFormat, '-');
+      else
+        fprintf(valueFormat, mean(values{i} - values{j}));
+      end
+    end
+    fprintf('\n');
   end
 end

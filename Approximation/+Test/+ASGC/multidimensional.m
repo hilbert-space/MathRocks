@@ -69,7 +69,7 @@ function interpolant = multidimensional
   %
   figure;
 
-  Plot.title('Expectation');
+  Plot.title('Variance');
   Plot.label('Time');
   plotTransient(time, var(Y, [], 3));
   plotTransient(time, reshape(output.variance, ...
