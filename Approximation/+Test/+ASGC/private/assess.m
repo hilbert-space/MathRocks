@@ -1,4 +1,4 @@
-function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
+function [ asgcOutput, mcOutput ] = assess(f, varargin)
   options = Options( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
@@ -16,10 +16,8 @@ function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
 
   u = rand(sampleCount, inputCount);
 
-  asgc = ASGC();
-
   time = tic;
-  asgcOutput = asgc.construct(f, options);
+  asgcOutput = ASGC.construct(f, options);
   fprintf('Construction time: %.2f s\n', toc(time));
 
   display(Options(asgcOutput), 'Adaptive sparse grid');
@@ -42,7 +40,7 @@ function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
     mesh(X, Y, Z);
     Plot.title('Exact');
 
-    Z(:) = asgc.evaluate(asgcOutput, [ X(:) Y(:) ]);
+    Z(:) = ASGC.evaluate(asgcOutput, [ X(:) Y(:) ]);
     subplot(1, 2, 2);
     mesh(X, Y, Z);
     Plot.title('Approximation');
@@ -55,7 +53,7 @@ function [ asgc, asgcOutput, mcOutput ] = assess(f, varargin)
   mcOutput.variance = var(mcOutput.data);
 
   time = tic;
-  asgcOutput.data = asgc.evaluate(asgcOutput, u);
+  asgcOutput.data = ASGC.evaluate(asgcOutput, u);
   fprintf('ASGC evaluation time: %.2f s\n', toc(time));
 
   names = { ...

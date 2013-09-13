@@ -1,4 +1,4 @@
-function values = evaluate(this, output, newNodes)
+function values = evaluate(output, newNodes)
   zeros = @uninit;
 
   planeNewNodes = newNodes(:);

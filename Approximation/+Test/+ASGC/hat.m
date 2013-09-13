@@ -2,7 +2,7 @@ function hat
   close all;
   setup;
 
-  [ asgc, output ] = assess( ...
+  output = assess( ...
     @(x) problem(5 * x - 1), ...
     'inputCount', 1, ...
     'outputCount', 1);
@@ -10,7 +10,7 @@ function hat
   x = linspace(-1, 4).';
 
   y1 = problem(x);
-  y2 = asgc.evaluate(output, (x + 1) / 5);
+  y2 = ASGC.evaluate(output, (x + 1) / 5);
 
   figure;
 

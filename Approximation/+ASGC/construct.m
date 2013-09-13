@@ -1,4 +1,4 @@
-function output = construct(this, f, varargin)
+function output = construct(f, varargin)
   zeros = @uninit;
 
   options = Options(varargin{:});
