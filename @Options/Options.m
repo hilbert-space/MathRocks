@@ -7,8 +7,10 @@ classdef Options < dynamicprops
     function value = get(this, name, default)
       if isprop(this, name)
         value = this.(name);
-      else
+      elseif nargin > 2
         value = default;
+      else
+        error('The field %s does not exist.', name);
       end
     end
 
