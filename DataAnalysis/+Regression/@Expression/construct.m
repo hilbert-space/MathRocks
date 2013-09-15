@@ -1,0 +1,6 @@
+function output = construct(this, V, T, I, options)
+  expression = options.expression;
+  output.evaluate = Utils.constructCustomFit( ...
+    [ V(:), T(:) ], I(:), expression.F, ...
+    [ expression.V, expression.T ], expression.C);
+end
