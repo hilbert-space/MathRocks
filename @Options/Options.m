@@ -73,6 +73,13 @@ classdef Options < dynamicprops
       result = isprop(this, name);
     end
 
+    function result = isfield(this, name)
+      %
+      % To make it behave like a struct.
+      %
+      result = isprop(this, name);
+    end
+
     function this = subsasgn(this, s, v)
       if strcmp(s(1).type, '.')
         if length(s) == 1
