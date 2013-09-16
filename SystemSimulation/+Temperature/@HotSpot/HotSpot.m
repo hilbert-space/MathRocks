@@ -50,8 +50,7 @@ classdef HotSpot < handle
       if options.has('leakage')
         this.leakage = options.leakage;
       else
-        this.leakage = LeakagePower.(options.leakageModel)( ...
-          options.leakageOptions);
+        this.leakage = LeakagePower(options.leakageOptions);
       end
 
       this.circuit = this.constructCircuit(options);
