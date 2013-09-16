@@ -3,11 +3,11 @@ function assess(fittingMethod, varargin)
 
   options = Options( ...
     'fittingMethod', fittingMethod, ...
-    'filename', File.join('+Test', 'Assets', 'inverter_08.leak'), ...
+    'filename', File.join('+Test', 'Assets', 'inverter_45nm_L5_T1000_07.leak'), ...
     'countConstraints', struct( ...
-      'name', { 'T', 'Leff' }, 'count', { 51, 51 }), ...
+      'parameter', { 'T', 'Leff' }, 'count', { 51, 51 }), ...
     'rangeConstraints', struct( ...
-      'name', { 'T' }, 'range', { Utils.toKelvin([ 0, 500 ]) }), ...
+      'parameter', { 'T' }, 'range', { Utils.toKelvin([ 0, 500 ]) }), ...
     varargin{:});
 
   leakage = LeakagePower(options);
@@ -18,19 +18,22 @@ function assess(fittingMethod, varargin)
   pointCount = 1e3;
   iterationCount = 1e2;
 
-  dimensionCount = leakage.fit.dimensionCount;
-  sweeps = leakage.fit.sweeps;
+  parameterCount = leakage.parameterCount;
+  parameterSweeps = leakage.fit.parameterSweeps;
 
-  for i = 1:dimensionCount
-    sweeps{i} = linspace(min(sweeps{i}), max(sweeps{i}), pointCount);
+  for i = 1:parameterCount
+    parameterSweeps{i} = linspace( ...
+      min(parameterSweeps{i}), ...
+      max(parameterSweeps{i}), ...
+      pointCount);
   end
 
-  grids = cell(1, dimensionCount);
-  [ grids{:} ] = ndgrid(sweeps{:});
+  grids = cell(1, parameterCount);
+  [ grids{:} ] = ndgrid(parameterSweeps{:});
 
   time = tic;
   for k = 1:iterationCount
-    leakage.compute(grids);
+    leakage.compute(grids{:});
   end
   fprintf('Computational time: %.4f s\n', toc(time) / iterationCount);
 end

@@ -7,12 +7,18 @@ classdef LeakagePower < handle
     % to a given dynamic power profile.
     %
     PleakPdyn = 2 / 3;
-    Tref = Utils.toKelvin(120);
   end
 
   properties (SetAccess = 'private')
     toString
 
+    parameterNames
+    parameterCount
+
+    reference
+  end
+
+  properties (Access = 'private')
     fit
     powerScale
   end
@@ -46,39 +52,49 @@ classdef LeakagePower < handle
         save(filename, 'fit', '-v7.3');
       end
 
+      this.parameterNames = fit.parameterNames;
+      this.parameterCount = fit.parameterCount;
+
       this.fit = fit;
       this.powerScale = 1;
 
+      %
+      % Compute the reference values of the parameters.
+      %
+      this.reference = struct;
+      for i = 1:this.parameterCount
+        this.reference.(this.parameterNames{i}) = ...
+          this.identify(this.parameterNames{i});
+      end
+
       if isempty(Pdyn), return; end
 
-      reference = struct;
-      reference.T = this.Tref;
-      this.powerScale = this.PleakPdyn * Pdyn / fit.compute(reference);
+      this.powerScale = this.PleakPdyn * Pdyn / ...
+        fit.compute(this.reference);
     end
 
-    function P = compute(this, parameters)
-      P = this.powerScale * this.fit.compute(parameters);
+    function P = compute(this, varargin)
+      P = this.powerScale * this.fit.compute(varargin{:});
     end
 
     function plot(this)
       plot(this.fit);
     end
+
+    function varargout = assign(this, varargin)
+      varargout = cell(1, nargout);
+      [ varargout{:} ] = this.fit.assign( ...
+        varargin{:}, 'reference', this.reference);
+    end
   end
 
   methods (Access = 'private')
-    function description = recognize(this, name)
-      description = struct;
-      switch names{i}
+    function reference = identify(this, parameter)
+      switch parameter
       case 'T'
-        description.notation = 'T';
-        description.name = 'Temperature';
-        description.units = 'K';
-        description.nominal = Utils.toKelvin(45);
+        reference = Utils.toKelvin(120);
       case 'Leff'
-        description.notation = 'Leff';
-        description.name = 'The effective channel length';
-        description.units = 'm';
-        description.nominal = 45e-9;
+        reference = 45e-9;
       otherwise
         assert(false);
       end
