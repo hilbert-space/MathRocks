@@ -12,7 +12,6 @@ classdef Linear < Fitting
     end
 
     function target = evaluate(this, output, varargin)
-      assert(length(varargin) == this.parameterCount);
       dimensions = size(varargin{1});
       for i = 1:this.parameterCount
         varargin{i} = varargin{i}(:);
