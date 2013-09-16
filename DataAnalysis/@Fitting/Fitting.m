@@ -45,33 +45,26 @@ classdef Fitting < handle
       end
     end
 
-    function [ parameters, dimensions ] = assign(this, varargin)
+    function [ parameters, dimensions, index ] = assign(this, varargin)
       options = Options(varargin{:});
 
       reference = options.reference;
-      parameters = options.get('parameters', []);
+      assignments = options.get('assignments', struct);
       dimensions = options.get('dimensions', 1);
 
-      %
-      % Unify the input parameters.
-      %
-      if isa(parameters, 'cell')
-        newParameters = struct;
-        for i = 1:this.parameterCount
-          name = this.parameterNames{i};
-          newParameters.(name) = parameters{i};
-        end
-        parameters = newParameters;
-      end
+      parameters = cell(1, this.parameterCount);
 
       %
-      % Fill in gaps with reference scalars.
+      % Fill in with either the specified values or
+      % the reference ones.
       %
       for i = 1:this.parameterCount
         name = this.parameterNames{i};
-        if isfield(parameters, name) && ...
-          ~isempty(parameters.(name)), continue; end
-        parameters.(name) = reference.(name);
+        if isfield(assignments, name)
+          parameters{i} = assignments.(name);
+        else
+          parameters{i} = reference.(name);
+        end
       end
 
       %
@@ -80,9 +73,8 @@ classdef Fitting < handle
       for i = 1:length(dimensions)
         if ~isnan(dimensions(i)), continue; end
         for j = 1:this.parameterCount
-          name = this.parameterNames{i};
-          if ndims(parameters.(name)) < i, continue; end
-          dimensions(i) = size(parameters.(name), i);
+          if ndims(parameters{j}) < i, continue; end
+          dimensions(i) = size(parameters{j}, i);
           break;
         end
       end
@@ -92,14 +84,17 @@ classdef Fitting < handle
       % Enforce the desired dimensionality except for those
       % elements that are equal to NaN.
       %
+      index = [];
       for i = 1:this.parameterCount
-        name = this.parameterNames{i};
-        if isnan(parameters.(name)), continue; end
-        dims = size(parameters.(name));
+        if isnan(parameters{i})
+          index = [ index, i ];
+          continue;
+        end
+        dims = size(parameters{i});
         pattern = dimensions;
         pattern(1:length(dims)) = pattern(1:length(dims)) ./ dims;
         if all(pattern == 1), continue; end
-        parameters.(name) = repmat(parameters.(name), pattern);
+        parameters{i} = repmat(parameters{i}, pattern);
       end
     end
   end
