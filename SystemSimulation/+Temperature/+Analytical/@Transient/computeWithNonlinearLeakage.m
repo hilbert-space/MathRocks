@@ -9,15 +9,20 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
 
   leakage = this.leakage;
 
-  V = options.get('V', leakage.Vnom * ones(processorCount, 1));
-  assert(size(V, 1) == processorCount);
+  parameters = options.get('parameters', struct);
+  parameters.T = NaN;
 
-  sampleCount = size(V, 2);
+  [ parameters, dimensions, Tindex ] = leakage.assign( ...
+    'assignments', parameters, 'dimensions', [ processorCount, NaN ]);
+  assert(isscalar(Tindex));
+
+  sampleCount = dimensions(2);
 
   T = zeros(processorCount, stepCount, sampleCount);
   P = zeros(processorCount, stepCount, sampleCount);
 
-  P_ = bsxfun(@plus, Pdyn(:, 1), leakage.compute(V, Tamb * ones(size(V))));
+  parameters{Tindex} = Tamb * ones(processorCount, sampleCount);
+  P_ = bsxfun(@plus, Pdyn(:, 1), leakage.compute(parameters{:}));
   X_ = F * P_;
   T_ = C * X_ + Tamb;
 
@@ -25,7 +30,8 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
   P(:, 1, :) = P_;
 
   for i = 2:stepCount
-    P_ = bsxfun(@plus, Pdyn(:, i), leakage.compute(V, T_));
+    parameters{Tindex} = T_;
+    P_ = bsxfun(@plus, Pdyn(:, i), leakage.compute(parameters{:}));
     X_ = E * X_ + F * P_;
     T_ = C * X_ + Tamb;
 

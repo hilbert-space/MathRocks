@@ -22,7 +22,7 @@ function compute(varargin)
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
-  if isfield(output, 'P')
+  if isfield(output, 'P') && ~isempty(output.P)
     P = output.P;
   else
     P = Pdyn;

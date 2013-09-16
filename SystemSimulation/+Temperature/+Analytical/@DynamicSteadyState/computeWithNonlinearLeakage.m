@@ -16,9 +16,18 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
   Tamb = this.Tamb;
 
   leakage = this.leakage;
-  V = options.get('V', leakage.Vnom * ones(processorCount, 1));
 
-  sampleCount = size(V, 2);
+  parameters = options.get('parameters', struct);
+  parameters.T = NaN;
+
+  [ parameters, dimensions, Tindex ] = leakage.assign( ...
+    'assignments', parameters, 'dimensions', [ processorCount, NaN ]);
+  assert(isscalar(Tindex));
+
+  param = cell(1, leakage.parameterCount);
+  Pindex = setdiff(1:leakage.parameterCount, Tindex);
+
+  sampleCount = dimensions(2);
 
   iterationCount = zeros(1, sampleCount);
 
@@ -30,12 +39,17 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
     X = zeros(nodeCount, stepCount);
 
     for i = 1:sampleCount
-      v = repmat(V(:, i), [ 1, stepCount ]);
+      for j = Pindex
+        param{j} = repmat( ...
+          parameters{j}(:, i), [ 1, stepCount ]);
+      end
 
       Tlast = Tamb;
 
       for j = 1:iterationLimit
-        P(:, :, i) = Pdyn + leakage.compute(v, T(:, :, i));
+        param{Tindex} = T(:, :, i);
+
+        P(:, :, i) = Pdyn + leakage.compute(param{:});
 
         Q = F * P(:, :, i);
         W = Q(:, 1);
@@ -72,7 +86,11 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
       iterationCount(i) = j;
     end
   case 2 % Faster but less memory efficient
-    V = repmat(V, [ 1, 1, stepCount ]);
+    for i = Pindex
+      parameters{i} = repmat( ...
+        parameters{i}, [ 1, 1, stepCount ]);
+    end
+
     Pdyn = permute(repmat(Pdyn, [ 1, 1, sampleCount ]), [ 1 3 2 ]);
 
     T = Tamb * ones(processorCount, sampleCount, stepCount);
@@ -84,8 +102,12 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
     I = 1:sampleCount;
 
     for i = 1:iterationLimit
-      P(:, I, :) = Pdyn(:, I, :) + ...
-        leakage.compute(V(:, I, :), T(:, I, :));
+      for j = Pindex
+        param{j} = parameters{j}(:, I, :);
+      end
+      param{Tindex} = T(:, I, :);
+
+      P(:, I, :) = Pdyn(:, I, :) + leakage.compute(param{:});
 
       Q(:, I, 1) = F * P(:, I, 1);
       W = Q(:, I, 1);
@@ -161,11 +183,16 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
     I = 1:sampleCount;
 
     for i = 1:iterationLimit
+      for j = Pindex
+        param{j} = parameters{j}(:, I);
+      end
+
       Tlast = T(:, I, :);
 
       for j = 1:stepCount
+        param{Tindex} = T(:, I, j);
         T(:, I, j) = Tdyn(:, I, j) + ...
-          G(:, :, j) * leakage.compute(V(:, I), T(:, I, j));
+          G(:, :, j) * leakage.compute(param{:});
       end
 
       %

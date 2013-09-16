@@ -20,6 +20,7 @@ classdef LeakagePower < handle
 
   properties (Access = 'private')
     fit
+    linearization
     powerScale
   end
 
@@ -74,17 +75,25 @@ classdef LeakagePower < handle
     end
 
     function P = compute(this, varargin)
-      P = this.powerScale * this.fit.compute(varargin{:});
-    end
-
-    function plot(this)
-      plot(this.fit);
+      if isempty(this.linearization)
+        P = this.powerScale * this.fit.compute(varargin{:});
+      else
+        P = this.powerScale * this.linearization(varargin{:});
+      end
     end
 
     function varargout = assign(this, varargin)
       varargout = cell(1, nargout);
       [ varargout{:} ] = this.fit.assign( ...
         varargin{:}, 'reference', this.reference);
+    end
+
+    function result = isLinearized(this)
+      result = ~isempty(this.linearization);
+    end
+
+    function plot(this)
+      plot(this.fit);
     end
   end
 

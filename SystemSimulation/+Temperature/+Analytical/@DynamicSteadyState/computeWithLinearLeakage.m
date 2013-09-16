@@ -1,4 +1,4 @@
-function [ T, output ] = condensedEquationWithLinearLeakage(this, Pdyn, options)
+function [ T, output ] = computeWithLinearLeakage(this, Pdyn, options)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
 
@@ -6,11 +6,19 @@ function [ T, output ] = condensedEquationWithLinearLeakage(this, Pdyn, options)
   E = this.E;
   F = this.F;
 
-  V = options.get('V', ...
-    this.leakage.Vnom * ones(processorCount, 1));
-  Pleak = this.leakage.compute(V, 0);
+  leakage = this.leakage;
 
-  sampleCount = size(V, 2);
+  parameters = options.get('parameters', struct);
+  parameters.T = NaN;
+
+  [ parameters, dimensions, Tindex ] = leakage.assign( ...
+    'assignments', parameters, 'dimensions', [ processorCount, NaN ]);
+  assert(isscalar(Tindex));
+
+  sampleCount = dimensions(2);
+
+  parameters{Tindex} = 0;
+  Pleak = leakage.compute(parameters{:});
 
   X = zeros(nodeCount, stepCount);
   K = zeros(nodeCount, nodeCount, stepCount + 1);

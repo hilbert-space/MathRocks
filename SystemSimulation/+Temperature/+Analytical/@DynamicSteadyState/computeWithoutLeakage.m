@@ -1,4 +1,4 @@
-function T = condensedEquationWithoutLeakage(this, Pdyn, options)
+function T = computeWithoutLeakage(this, Pdyn, options)
   nodeCount = this.nodeCount;
   stepCount = size(Pdyn, 2);
 
