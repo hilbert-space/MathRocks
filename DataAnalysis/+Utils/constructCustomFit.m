@@ -1,13 +1,16 @@
-function [ compute, C, E, S ] = constructCustomFit(X, Y, Fs, Xs, Cs)
-  E = mean(X, 1);
-  S = std(X, [], 1);
+function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
+  Ey = mean(Y);
+  Sy = std(Y);
+  Y = (Y - Ey) ./ Sy;
 
-  X = bsxfun(@rdivide, bsxfun(@minus, X, E), S);
+  Ex = mean(X, 1);
+  Sx = std(X, [], 1);
+  X = bsxfun(@rdivide, bsxfun(@minus, X, Ex), Sx);
 
-  variableCount = length(Xs);
+  parameterCount = length(Xs);
   coefficientCount = length(Cs);
 
-  Ff = Utils.toFunction(Fs, Xs, 'columns', Cs);
+  Ff = Utils.toFunction((Fs - Ey) / Sy, Xs, 'columns', Cs);
   Js = jacobian(Fs, Cs);
   Jf = cell(1, coefficientCount);
   for i = 1:coefficientCount
@@ -32,11 +35,18 @@ function [ compute, C, E, S ] = constructCustomFit(X, Y, Fs, Xs, Cs)
 
   C = lsqnonlin(@target, zeros(1, coefficientCount), [], [], options);
 
-  Fs = subs(Fs, Cs, C);
-  for i = 1:variableCount
-    Fs = subs(Fs, Xs(i), (Xs(i) - E(i)) / S(i));
-  end
+  varargin = [ { Fs }, varargin ];
+  varargout = cell(1, length(varargin));
 
   Xs = num2cell(Xs);
-  compute = Utils.toFunction(Fs, Xs{:});
+  for i = 1:length(varargin)
+    Fs = varargin{i};
+    Fs = subs(Fs, Cs, C);
+    for j = 1:parameterCount
+      Fs = subs(Fs, Xs{j}, (Xs{j} - Ex(j)) / Sx(j));
+    end
+    varargout{i} = Fs;
+  end
+
+  varargout{1} = Utils.toFunction(varargout{1}, Xs{:});
 end

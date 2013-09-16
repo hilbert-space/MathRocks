@@ -19,7 +19,7 @@ classdef Expression < Fitting
         X(:, i) = parameterData{i}(:);
       end
 
-      output.evaluate = Utils.constructCustomFit(X, Y, ...
+      output.evaluate = Utils.constructCustomFit(Y, X, ...
         expression.formula, expression.parameters, expression.coefficients);
     end
 
