@@ -6,10 +6,11 @@ classdef Polynomial < Fitting
   end
 
   methods (Access = 'protected')
-    [ output, arguments, body ] = construct(this, target, parameters, options)
+    [ output, arguments, body ] = construct( ...
+      this, targetData, parameterData, options)
 
-    function target = evaluate(this, output, parameters)
-      target = output.evaluate(parameters{:});
+    function target = evaluate(this, output, varargin)
+      target = output.evaluate(varargin{:});
     end
   end
 end

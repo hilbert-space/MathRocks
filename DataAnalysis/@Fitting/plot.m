@@ -1,8 +1,8 @@
 function plot(this)
-  assert(this.dimensionCount == 2);
+  assert(this.parameterCount == 2);
 
-  [ parameter1, parameter2 ] = meshgrid(this.sweeps{:});
-  target = this.evaluate(this.output, { parameter1, parameter2 });
+  [ parameter1, parameter2 ] = meshgrid(this.parameterSweeps{:});
+  target = this.evaluate(this.output, parameter1, parameter2);
 
   Plot.figure(800, 600);
   surfc(parameter1, parameter2, target);

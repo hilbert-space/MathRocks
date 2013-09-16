@@ -1,9 +1,8 @@
 classdef Table < dynamicprops
   properties (SetAccess = 'protected')
-    names
-    parameters
-
-    dimensionCount
+    parameterNames
+    parameterCount
+    parameterData
   end
 
   properties (Access = 'protected')
@@ -21,28 +20,28 @@ classdef Table < dynamicprops
       assert(ischar(line));
       assert(~isempty(line));
 
-      this.names = regexp(line, '\t', 'split');
+      this.parameterNames = regexp(line, '\t', 'split');
 
-      this.dimensionCount = length(this.names);
-      assert(this.dimensionCount > 0);
+      this.parameterCount = length(this.parameterNames);
+      assert(this.parameterCount > 0);
 
-      this.parameters = cell(1, this.dimensionCount);
+      this.parameterData = cell(1, this.parameterCount);
       this.mapping = containers.Map('KeyType', 'char', 'ValueType', 'uint8');
 
       %
       % Fill in the mapping.
       %
-      for i = 1:this.dimensionCount
-        assert(isnan(str2double(this.names{i})));
-        this.mapping(this.names{i}) = i;
+      for i = 1:this.parameterCount
+        assert(isnan(str2double(this.parameterNames{i})));
+        this.mapping(this.parameterNames{i}) = i;
       end
 
       %
       % Read the data.
       %
       data = dlmread(options.filename, '\t', 1, 0);
-      for i = 1:this.dimensionCount
-        this.parameters{i} = data(:, i);
+      for i = 1:this.parameterCount
+        this.parameterData{i} = data(:, i);
       end
 
       %
@@ -55,17 +54,17 @@ classdef Table < dynamicprops
   end
 
   methods (Access = 'protected')
-    function remove(this, name)
-      j = this.mapping(name);
+    function remove(this, parameter)
+      j = this.mapping(parameter);
 
-      for i = (j + 1):this.dimensionCount
-        this.mapping(this.names{i}) = i - 1;
+      for i = (j + 1):this.parameterCount
+        this.mapping(this.parameterNames{i}) = i - 1;
       end
 
-      this.mapping.remove(name);
-      this.names(j) = [];
-      this.parameters(j) = [];
-      this.dimensionCount = this.dimensionCount - 1;
+      this.mapping.remove(parameter);
+      this.parameterNames(j) = [];
+      this.parameterData(j) = [];
+      this.parameterCount = this.parameterCount - 1;
     end
   end
 
@@ -74,21 +73,21 @@ classdef Table < dynamicprops
       I = [];
 
       for i = 1:length(constraints)
-        name = constraints(i).name;
-        j = this.mapping(name);
+        parameter = constraints(i).parameter;
+        j = this.mapping(parameter);
         mn = min(constraints(i).range);
         mx = max(constraints(i).range);
         I = [ I; ...
-          find(this.parameters{j} < mn); ...
-          find(this.parameters{j} > mx) ];
+          find(this.parameterData{j} < mn); ...
+          find(this.parameterData{j} > mx) ];
       end
 
       I = unique(I);
 
-      for i = 1:this.dimensionCount
-        data = this.parameters{i};
+      for i = 1:this.parameterCount
+        data = this.parameterData{i};
         data(I) = [];
-        this.parameters{i} = data;
+        this.parameterData{i} = data;
       end
     end
   end

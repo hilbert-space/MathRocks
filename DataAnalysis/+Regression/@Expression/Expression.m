@@ -6,25 +6,25 @@ classdef Expression < Fitting
   end
 
   methods (Access = 'protected')
-    function output = construct(this, target, parameters, options)
+    function output = construct(this, targetData, parameterData, options)
       expression = options.expression;
 
-      Y = target(:);
+      Y = targetData(:);
 
       pointCount = length(Y);
-      dimensionCount = length(parameters);
+      dimensionCount = length(parameterData);
 
       X = zeros(pointCount, dimensionCount);
       for i = 1:dimensionCount
-        X(:, i) = parameters{i}(:);
+        X(:, i) = parameterData{i}(:);
       end
 
       output.evaluate = Utils.constructCustomFit(X, Y, ...
         expression.formula, expression.parameters, expression.coefficients);
     end
 
-    function target = evaluate(this, output, parameters)
-      target = output.evaluate(parameters{:});
+    function target = evaluate(this, output, varargin)
+      target = output.evaluate(varargin{:});
     end
   end
 end
