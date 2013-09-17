@@ -92,8 +92,12 @@ classdef LeakagePower < handle
       result = ~isempty(this.linearization);
     end
 
-    function plot(this)
-      plot(this.fit);
+    function plot(this, varargin)
+      plot(this.fit, varargin{:});
+    end
+
+    function result = parameterSweeps(this)
+      result = this.fit.parameterSweeps;
     end
   end
 
@@ -104,6 +108,8 @@ classdef LeakagePower < handle
         reference = Utils.toKelvin(120);
       case 'Leff'
         reference = 45e-9;
+      case 'Tox'
+        reference = 1.25e-9;
       otherwise
         assert(false);
       end

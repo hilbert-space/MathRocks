@@ -1,5 +1,6 @@
 classdef Fitting < handle
   properties (SetAccess = 'private')
+    targetName
     parameterNames
     parameterCount
     parameterSweeps
@@ -13,6 +14,7 @@ classdef Fitting < handle
     function this = Fitting(varargin)
       options = Options(varargin{:});
       grid = Grid(options);
+      this.targetName = grid.targetName;
       this.parameterNames = grid.parameterNames;
       this.parameterCount = grid.parameterCount;
       this.parameterSweeps = grid.parameterSweeps;

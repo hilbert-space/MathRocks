@@ -1,14 +1,14 @@
 function plotExpressionRegression(varargin)
-  X = sym('X');
-  Y = sym('Y');
+  T = sym('T');
+  Leff = sym('Leff');
+
   C = sym(zeros(1, 4));
   for i = 1:4
     C(i) = sym(sprintf('C%d', i));
   end
-  F = C(1) * X + C(2) * exp(C(3) + C(4) * Y);
 
-  expression.formula = F;
-  expression.parameters = [ X, Y ];
+  expression.formula = C(1) * T + C(2) * exp(C(3) + C(4) * Leff);
+  expression.parameters = [ T, Leff ];
   expression.coefficients = C;
 
   assess('Regression.Expression', 'expression', expression, varargin{:});
