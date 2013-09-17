@@ -6,9 +6,9 @@ classdef Linear < Fitting
   end
 
   methods (Access = 'protected')
-    function output = construct(this, targetData, parameterData, options)
+    function output = construct(this, grid, options)
       output.F = griddedInterpolant( ...
-        parameterData{:}, targetData, 'linear', 'none');
+        grid.parameterData{:}, grid.targetData, 'linear', 'none');
     end
 
     function target = evaluate(this, output, varargin)

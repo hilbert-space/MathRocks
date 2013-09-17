@@ -6,9 +6,9 @@ classdef LogPolynomial < Regression.Polynomial
   end
 
   methods (Access = 'protected')
-    function output = construct(this, targetData, parameterData, options)
-      [ output, arguments, body ] = construct@Regression.Polynomial( ...
-        this, log(targetData), parameterData, options);
+    function output = construct(this, grid, options)
+      [ output, arguments, body ] = this.regress( ...
+        log(grid.targetData), grid.parameterData, options);
 
       string = sprintf('@(%s)exp(%s)', arguments, body);
       output.evaluate = str2func(string);

@@ -6,21 +6,33 @@ classdef Expression < Fitting
   end
 
   methods (Access = 'protected')
-    function output = construct(this, targetData, parameterData, options)
-      expression = options.expression;
+    function output = construct(this, grid, options)
+      Fs = options.expression.formula;
+      Xs = options.expression.parameters;
+      Cs = options.expression.coefficients;
 
-      Y = targetData(:);
+      assert(length(Xs) == grid.parameterCount);
 
+      Y = grid.targetData(:);
       pointCount = length(Y);
-      dimensionCount = length(parameterData);
 
-      X = zeros(pointCount, dimensionCount);
-      for i = 1:dimensionCount
-        X(:, i) = parameterData{i}(:);
+      X = zeros(pointCount, grid.parameterCount);
+      for i = 1:grid.parameterCount
+        parameter = char(Xs(i));
+
+        k = NaN;
+        for j = 1:grid.parameterCount
+          if strcmp(grid.parameterNames{i}, parameter)
+            k = j;
+            break;
+          end
+        end
+        assert(~isnan(k));
+
+        X(:, i) = grid.parameterData{k}(:);
       end
 
-      output.evaluate = Utils.constructCustomFit(Y, X, ...
-        expression.formula, expression.parameters, expression.coefficients);
+      output.evaluate = Utils.constructCustomFit(Y, X, Fs, Xs, Cs);
     end
 
     function target = evaluate(this, output, varargin)

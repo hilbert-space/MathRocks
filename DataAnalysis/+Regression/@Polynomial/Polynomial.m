@@ -6,8 +6,11 @@ classdef Polynomial < Fitting
   end
 
   methods (Access = 'protected')
-    [ output, arguments, body ] = construct( ...
-      this, targetData, parameterData, options)
+    [ output, arguments, body ] = regress(this, Z, XY, options)
+
+    function output = construct(this, grid, options)
+      output = this.regress(grid.targetData, grid.parameterData, options);
+    end
 
     function target = evaluate(this, output, varargin)
       target = output.evaluate(varargin{:});

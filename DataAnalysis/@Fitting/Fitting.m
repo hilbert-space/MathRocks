@@ -16,8 +16,7 @@ classdef Fitting < handle
       this.parameterNames = grid.parameterNames;
       this.parameterCount = grid.parameterCount;
       this.parameterSweeps = grid.parameterSweeps;
-      this.output = this.construct( ...
-        grid.targetData, grid.parameterData, options);
+      this.output = this.construct(grid, options);
     end
 
     function target = compute(this, varargin)
@@ -95,7 +94,7 @@ classdef Fitting < handle
   end
 
   methods (Abstract, Access = 'protected')
-    output = construct(this, targetData, parameterData, options)
+    output = construct(this, grid, options)
     target = evaluate(this, output, varargin)
   end
 end
