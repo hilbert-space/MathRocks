@@ -4,38 +4,36 @@ classdef Options < dynamicprops
       this.update(varargin{:});
     end
 
-    function value = get(this, name, default)
-      if isprop(this, name)
-        value = this.(name);
-      elseif nargin > 2
-        value = default;
-      else
-        error('The field %s does not exist.', name);
-      end
-    end
-
-    function set(this, name, value)
-      if ~isprop(this, name), this.addprop(name); end
+    function value = assign(this, name, value)
       if isa(this.(name), 'Options') && ...
-         (isa(value, 'Options') || isa(value, 'struct'))
-
+        (isa(value, 'Options') || isa(value, 'struct'))
         this.(name).update(value);
       else
         this.(name) = value;
       end
     end
 
-    function value = getSet(this, name, default)
+    function value = get(this, name, value)
+      if isprop(this, name), value = this.(name); end
+    end
+
+    function value = set(this, name, value)
+      if ~isprop(this, name), this.addprop(name); end
+      value = this.assign(name, value);
+    end
+
+    function value = fetch(this, name, value)
+      if isprop(this, name)
+        value = this.(name);
+        delete(findprop(this, name));
+      end
+    end
+
+    function value = ensure(this, name, value)
       if isprop(this, name)
         value = this.(name);
       else
-        this.addprop(name);
-        if isa(default, 'function_handle')
-          value = default();
-        else
-          value = default;
-        end
-        this.(name) = value;
+        value = this.assign(name, value);
       end
     end
 
@@ -50,13 +48,7 @@ classdef Options < dynamicprops
           continue;
         end
 
-        if isa(item, 'Options')
-          names = properties(item);
-          for j = 1:length(names)
-            this.set(names{j}, item.(names{j}));
-          end
-          i = i + 1;
-        elseif isa(item, 'struct')
+        if isa(item, 'Options') || isa(item, 'struct')
           names = fieldnames(item);
           for j = 1:length(names)
             this.set(names{j}, item.(names{j}));
@@ -74,10 +66,11 @@ classdef Options < dynamicprops
     end
 
     function result = isfield(this, name)
-      %
-      % To make it behave like a struct.
-      %
       result = isprop(this, name);
+    end
+
+    function result = fieldnames(this)
+      result = properties(this);
     end
 
     function this = subsasgn(this, s, v)
