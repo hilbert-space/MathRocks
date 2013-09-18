@@ -7,8 +7,12 @@ function assess(fittingMethod, varargin)
       'inverter_09_T(0,500)_Leff(-5,5)_Tox(-5,5).leak'), ...
     varargin{:});
 
+  assessSpeed = options.fetch('assessSpeed', false);
+
   leakage = LeakagePower(options);
   plot(leakage, 'parameters', struct('Tox', 1.25e-9));
+
+  if ~assessSpeed, return; end
 
   pointCount = 1e2;
   iterationCount = 1e2;

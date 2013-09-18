@@ -9,8 +9,8 @@ function options = systemSimulation(varargin)
   %
   % Platform and application
   %
-  processorCount = options.getSet('processorCount', 4);
-  taskCount = options.getSet('taskCount', 20 * processorCount);
+  processorCount = options.ensure('processorCount', 4);
+  taskCount = options.ensure('taskCount', 20 * processorCount);
 
   [ options.platform, options.application ] = Utils.parseTGFF( ...
     File.choose(paths, sprintf('%03d_%03d.tgff', processorCount, taskCount)));
@@ -35,7 +35,7 @@ function options = systemSimulation(varargin)
   %
   % Dynamic power
   %
-  options.getSet('samplingInterval', 1e-3);
+  options.ensure('samplingInterval', 1e-3);
   options.power = DynamicPower( ...
     'samplingInterval', options.samplingInterval, 'powerScale', 1);
   options.dynamicPower = options.power.compute(options.schedule);
@@ -61,8 +61,9 @@ function options = systemSimulation(varargin)
   %
   options.leakageOptions = Options( ...
     'fittingMethod', 'Interpolation.Linear', ...
+    'filename', File.choose(paths, ...
+      'inverter_07_T(0,500)_Leff(-5,5).leak'), ...
     'dynamicPower', options.dynamicPower, ...
-    'filename', File.choose(paths, 'inverter_45nm_L5_T1000_07.leak'), ...
     options.get('leakageOptions', Options()));
 
   %
