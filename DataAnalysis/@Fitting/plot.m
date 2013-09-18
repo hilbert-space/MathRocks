@@ -15,27 +15,40 @@ function plot(this, varargin)
   index(index == 0) = [];
 
   switch length(index)
+  case 1
+    parameters{index} = this.parameterSweeps{index};
   case 2
     [ parameters{index} ] = meshgrid(this.parameterSweeps{index});
-    for i = setdiff(1:this.parameterCount, index)
+  otherwise
+    assert(false);
+  end
+
+  title = '';
+  for i = 1:this.parameterCount
+    if ~isempty(title), title = [ title, ', ' ]; end
+    title = [ title, this.parameterNames{i} ];
+    if ~any(index == i)
+      title = [ title, ' = ', Utils.toString(parameters{i}) ];
       parameters{i} = parameters{i} * ones(size(parameters{index(1)}));
     end
+  end
+  target = this.evaluate(this.output, parameters{:});
 
-    target = this.evaluate(this.output, parameters{:});
-
-    Plot.figure(800, 600);
-
+  Plot.figure(800, 600);
+  switch length(index)
+  case 1
+    Plot.line(parameters(index), target);
+    Plot.line(parameters(index), target, 'discrete', true);
+  case 2
     surfc(parameters{index}, target);
-    line(parameters{index(1)}(:), parameters{index(2)}(:), target(:), ...
-      'LineStyle', 'None', 'Marker', 'o', ...
-      'MarkerEdgeColor', 'w', 'MarkerFaceColor', 'b');
-
-    Plot.title('Curve fitting');
-    Plot.label(this.parameterNames{index}, this.targetName);
-
-    grid on;
+    Plot.line(parameters(index), target, 'discrete', true);
     view(-180, 0);
   otherwise
     assert(false);
   end
+
+  grid on;
+
+  Plot.title([ this.targetName, '(', title, ')' ]);
+  Plot.label(this.parameterNames{index}, this.targetName);
 end
