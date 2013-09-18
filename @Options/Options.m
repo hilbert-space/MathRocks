@@ -33,6 +33,7 @@ classdef Options < dynamicprops
       if isprop(this, name)
         value = this.(name);
       else
+        addprop(this, name);
         value = this.assign(name, value);
       end
     end
