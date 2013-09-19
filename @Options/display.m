@@ -1,9 +1,8 @@
-function display(this, title, level)
-  if nargin > 1 && ~isempty(title)
-    fprintf('%s:\n', title);
-  end
+function display(this, title, offset)
+  if nargin > 1 && ~isempty(title), fprintf('%s:\n', title); end
+  if nargin < 3, offset = 2; end
 
-  names = properties(this);
+  names = this.names;
   nameCount = length(names);
   displayNames = names;
 
@@ -12,31 +11,22 @@ function display(this, title, level)
     displayNames{i} = regexprep(displayNames{i}, ...
       '([A-Z])',' ${lower($1)}');
     displayNames{i} = regexprep(displayNames{i}, ...
-      '(^\s*[a-z])','${upper($1)}');
+      '^\s*([a-z])', '${upper($1)}');
     nameWidth = max(nameWidth, length(displayNames{i}));
   end
   nameWidth = nameWidth + 1;
 
-  namePrefix = '  ';
-
-  if nargin > 2
-    for i = 2:level
-      nameWidth = max(10, nameWidth - 2);
-      namePrefix = [ namePrefix, '  ' ];
-    end
-  else
-    level = 1;
-  end
+  nameOffset = sprintf([ '%', num2str(offset), 's' ], '');
 
   for i = 1:nameCount
-    value = this.(names{i});
+    value = this.values(names{i});
 
-    fprintf([ namePrefix, '%-', num2str(nameWidth), 's: ' ], ...
+    fprintf([ nameOffset, '%-', num2str(nameWidth), 's: ' ], ...
       displayNames{i});
 
     if isa(value, 'Options')
       fprintf('\n');
-      display(value, [], level + 1);
+      display(value, [], offset + 2);
     else
       fprintf('%s\n', Utils.toString(value));
     end
