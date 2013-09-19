@@ -15,8 +15,8 @@ classdef Questionnaire < handle
       end
 
       this.databaseFilename = databaseFilename;
-      this.dataMap = Map('char');
-      this.optionMap = Map('char');
+      this.dataMap = containers.Map('keyType', 'char', 'valueType', 'any');
+      this.optionMap = containers.Map('keyType', 'char', 'valueType', 'any');
 
       this.load();
     end

@@ -5,7 +5,7 @@ classdef Cache < handle
 
   methods
     function this = Cache()
-      this.map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+      this.map = containers.Map('keyType', 'char', 'valueType', 'any');
     end
 
     function result = hasKey(this, key)

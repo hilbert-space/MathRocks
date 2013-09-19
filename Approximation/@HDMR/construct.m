@@ -18,12 +18,12 @@ function construct(this, f, options)
     verbose = @(varargin) fprintf(varargin{:});
   end
 
-  interpolants = Map('char');
+  interpolants = containers.Map('keyType', 'char', 'valueType', 'any');
 
   %
   % Adaptivity control.
   %
-  refine = Map('char', 'logical');
+  refine = containers.Map('keyType', 'char', 'valueType', 'logical');
 
   %
   % The zeroth order.

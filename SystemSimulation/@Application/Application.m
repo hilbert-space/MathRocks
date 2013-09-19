@@ -16,7 +16,7 @@ classdef Application < handle
     function this = Application()
       this.tasks = {};
 
-      this.names = Map('char');
+      this.names = containers.Map('keyType', 'char', 'valueType', 'any');
 
       this.roots = [];
       this.leaves = [];

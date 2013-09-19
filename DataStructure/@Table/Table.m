@@ -1,4 +1,4 @@
-classdef Table < dynamicprops
+classdef Table < handle
   properties (SetAccess = 'protected')
     parameterNames
     parameterCount
@@ -26,7 +26,7 @@ classdef Table < dynamicprops
       assert(this.parameterCount > 0);
 
       this.parameterData = cell(1, this.parameterCount);
-      this.mapping = containers.Map('KeyType', 'char', 'ValueType', 'uint8');
+      this.mapping = containers.Map('keyType', 'char', 'valueType', 'uint8');
 
       %
       % Fill in the mapping.

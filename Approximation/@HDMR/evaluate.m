@@ -20,7 +20,7 @@ function values = evaluate(this, nodes)
   %
   % Precompute all the interpolants in the given nodes.
   %
-  valueCache = Map('char');
+  valueCache = containers.Map('keyType', 'char', 'valueType', 'any');
   for i = 1:interpolantCount
     index{i} = uint16(keys{i});
     order(i) = length(index{i});
