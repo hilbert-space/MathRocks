@@ -1,3 +1,4 @@
 function plotLinearInterpolation(varargin)
-  assess('Interpolation.Linear', varargin{:});
+  assess('leakageOptions', ...
+    Options('fittingMethod', 'Interpolation.Linear'), varargin{:});
 end

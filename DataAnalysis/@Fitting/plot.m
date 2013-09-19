@@ -18,7 +18,7 @@ function plot(this, varargin)
   case 1
     parameters{index} = this.parameterSweeps{index};
   case 2
-    [ parameters{index} ] = meshgrid(this.parameterSweeps{index});
+    [ parameters{index} ] = ndgrid(this.parameterSweeps{index});
   otherwise
     assert(false);
   end

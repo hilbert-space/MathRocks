@@ -11,5 +11,6 @@ function plotExpressionRegression(varargin)
   expression.parameters = [ T, Leff ];
   expression.coefficients = C;
 
-  assess('Regression.Expression', 'expression', expression, varargin{:});
+  assess('leakageOptions', Options('fittingMethod', ...
+    'Regression.Expression', 'expression', expression), varargin{:});
 end

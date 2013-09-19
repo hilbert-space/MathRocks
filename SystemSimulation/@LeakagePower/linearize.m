@@ -76,8 +76,12 @@ function [ alpha, beta ] = linearize(this, varargin)
 
   Xs = num2cell(Xs);
 
-  this.linearization = Utils.toFunction( ...
-    options.compose(alpha, beta), Xs{:});
+  %
+  % Replace the evaluation function.
+  %
+  this.compute = Utils.toFunction( ...
+    this.powerScale * options.compose(alpha, beta), Xs{:});
+  this.isLinearized = true;
 
   alpha = double(alpha);
 

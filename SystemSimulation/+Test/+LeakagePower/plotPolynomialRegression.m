@@ -8,5 +8,6 @@ function plotPolynomialRegression(varargin)
     2, 1; ...
   ];
 
-  assess('Regression.LogPolynomial', 'terms', terms, varargin{:});
+  assess('leakageOptions', Options('fittingMethod', ...
+    'Regression.LogPolynomial', 'terms', terms), varargin{:});
 end

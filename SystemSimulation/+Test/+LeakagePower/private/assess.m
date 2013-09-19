@@ -1,15 +1,10 @@
-function assess(fittingMethod, varargin)
+function assess(varargin)
   setup;
 
-  options = Options( ...
-    'fittingMethod', fittingMethod, ...
-    'filename', File.join('+Test', 'Assets', ...
-      'inverter_09_T(0,500)_Leff(-5,5)_Tox(-5,5).leak'), ...
-    varargin{:});
-
+  options = Configure.systemSimulation(varargin{:});
   assessSpeed = options.fetch('assessSpeed', false);
 
-  leakage = LeakagePower(options);
+  leakage = LeakagePower(options.leakageOptions);
   plot(leakage, 'parameters', struct('Tox', 1.25e-9));
 
   if ~assessSpeed, return; end

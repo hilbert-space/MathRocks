@@ -8,6 +8,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
   Tamb = this.Tamb;
 
   leakage = this.leakage;
+  leak = leakage.compute;
 
   parameters = options.get('parameters', struct);
   parameters.T = NaN;
@@ -22,7 +23,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
   P = zeros(processorCount, stepCount, sampleCount);
 
   parameters{Tindex} = Tamb * ones(processorCount, sampleCount);
-  P_ = bsxfun(@plus, Pdyn(:, 1), leakage.compute(parameters{:}));
+  P_ = bsxfun(@plus, Pdyn(:, 1), leak(parameters{:}));
   X_ = F * P_;
   T_ = C * X_ + Tamb;
 
@@ -31,7 +32,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
 
   for i = 2:stepCount
     parameters{Tindex} = T_;
-    P_ = bsxfun(@plus, Pdyn(:, i), leakage.compute(parameters{:}));
+    P_ = bsxfun(@plus, Pdyn(:, i), leak(parameters{:}));
     X_ = E * X_ + F * P_;
     T_ = C * X_ + Tamb;
 

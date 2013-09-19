@@ -7,6 +7,7 @@ function [ T, output ] = computeWithLinearLeakage(this, Pdyn, options)
   F = this.F;
 
   leakage = this.leakage;
+  leak = leakage.compute;
 
   parameters = options.get('parameters', struct);
   parameters.T = NaN;
@@ -18,7 +19,7 @@ function [ T, output ] = computeWithLinearLeakage(this, Pdyn, options)
   sampleCount = dimensions(2);
 
   parameters{Tindex} = 0;
-  Pleak = leakage.compute(parameters{:});
+  Pleak = leak(parameters{:});
 
   X = zeros(nodeCount, stepCount);
   K = zeros(nodeCount, nodeCount, stepCount + 1);

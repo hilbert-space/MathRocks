@@ -16,6 +16,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
   Tamb = this.Tamb;
 
   leakage = this.leakage;
+  leak = leakage.compute;
 
   parameters = options.get('parameters', struct);
   parameters.T = NaN;
@@ -49,7 +50,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
       for j = 1:iterationLimit
         param{Tindex} = T(:, :, i);
 
-        P(:, :, i) = Pdyn + leakage.compute(param{:});
+        P(:, :, i) = Pdyn + leak(param{:});
 
         Q = F * P(:, :, i);
         W = Q(:, 1);
@@ -107,7 +108,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
       end
       param{Tindex} = T(:, I, :);
 
-      P(:, I, :) = Pdyn(:, I, :) + leakage.compute(param{:});
+      P(:, I, :) = Pdyn(:, I, :) + leak(param{:});
 
       Q(:, I, 1) = F * P(:, I, 1);
       W = Q(:, I, 1);
@@ -192,7 +193,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
       for j = 1:stepCount
         param{Tindex} = T(:, I, j);
         T(:, I, j) = Tdyn(:, I, j) + ...
-          G(:, :, j) * leakage.compute(param{:});
+          G(:, :, j) * leak(param{:});
       end
 
       %
