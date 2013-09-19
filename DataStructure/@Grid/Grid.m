@@ -11,7 +11,7 @@ classdef Grid < Table
 
       this = this@Table(options);
 
-      this.targetName = options.target;
+      this.targetName = options.targetName;
       this.targetData = ...
         this.parameterData{this.mapping(this.targetName)};
       this.remove(this.targetName);
