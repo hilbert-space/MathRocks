@@ -30,6 +30,9 @@ function line(x, y, varargin)
   x = cellfun(@(z) z(1:options.markEach:end), x, 'UniformOutput', false);
   y = y(1:options.markEach:end);
 
-  line(x{:}, y, style{:}, 'LineStyle', 'None', ...
+  h = line(x{:}, y, style{:}, 'LineStyle', 'None', ...
     'Marker', Marker.pick(number), 'MarkerSize', 16);
+
+  set(get(get(h, 'Annotation'), 'LegendInformation'), ...
+    'IconDisplayStyle', 'off');
 end
