@@ -59,7 +59,7 @@ classdef Fitting < handle
         if isfield(assignments, name)
           parameters{i} = assignments.(name);
         else
-          parameters{i} = reference.(name);
+          parameters{i} = reference{i};
         end
       end
 

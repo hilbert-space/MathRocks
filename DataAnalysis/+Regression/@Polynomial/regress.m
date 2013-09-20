@@ -1,4 +1,4 @@
-function [ output, arguments, body ] = regress(this, Z, XY, options)
+function [ output, arguments, body ] = regress(~, Z, XY, options)
   terms = options.terms;
 
   [ termCount, parameterCount ] = size(terms);

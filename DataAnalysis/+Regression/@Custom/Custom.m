@@ -1,12 +1,12 @@
-classdef Expression < Fitting
+classdef Custom < Fitting
   methods
-    function this = Expression(varargin)
+    function this = Custom(varargin)
       this = this@Fitting(varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function output = construct(this, grid, options)
+    function output = construct(~, grid, options)
       Fs = options.expression.formula;
       Xs = options.expression.parameters;
       Cs = options.expression.coefficients;
@@ -35,7 +35,7 @@ classdef Expression < Fitting
       output.evaluate = Utils.constructCustomFit(Y, X, Fs, Xs, Cs);
     end
 
-    function target = evaluate(this, output, varargin)
+    function target = evaluate(~, output, varargin)
       target = output.evaluate(varargin{:});
     end
   end

@@ -12,7 +12,7 @@ classdef Polynomial < Fitting
       output = this.regress(grid.targetData, grid.parameterData, options);
     end
 
-    function target = evaluate(this, output, varargin)
+    function target = evaluate(~, output, varargin)
       target = output.evaluate(varargin{:});
     end
   end
