@@ -2,7 +2,7 @@ classdef LeakagePower < handle
   properties (SetAccess = 'private')
     toString
 
-    parameters
+    parameterNames
     parameterCount
 
     reference
@@ -36,19 +36,20 @@ classdef LeakagePower < handle
         save(filename, 'fit', '-v7.3');
       end
 
-      this.parameters = options.parameters;
-      this.parameterCount = length(this.parameters);
-
-      assert(this.parameterCount == fit.parameterCount);
+      this.parameterNames = fit.parameterNames;
+      this.parameterCount = fit.parameterCount;
 
       this.fit = fit;
 
       %
       % Compute the reference values of the parameters.
       %
+      parameters = options.parameters;
+      assert(length(parameters) == this.parameterCount);
+
       reference = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
-        reference{i} = options.parameters.(fit.parameterNames{i}).reference;
+        reference{i} = parameters.(this.parameterNames{i}).reference;
       end
       this.reference = reference;
 

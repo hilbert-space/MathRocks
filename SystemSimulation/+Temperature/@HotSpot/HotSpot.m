@@ -94,7 +94,7 @@ classdef HotSpot < handle
   end
 
   methods (Access = 'protected')
-    function circuit = constructCircuit(this, options)
+    function circuit = constructCircuit(~, options)
       processorCount = options.processorCount;
 
       if ~File.exist(options.floorplan)

@@ -1,4 +1,4 @@
-function plotExpressionRegression(varargin)
+function plotCustomRegression(varargin)
   T = sym('T');
   Leff = sym('Leff');
 
@@ -12,5 +12,5 @@ function plotExpressionRegression(varargin)
   expression.coefficients = C;
 
   assess('leakageOptions', Options('fittingMethod', ...
-    'Regression.Expression', 'expression', expression), varargin{:});
+    'Regression.Custom', 'expression', expression), varargin{:});
 end
