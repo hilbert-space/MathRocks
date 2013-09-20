@@ -1,4 +1,4 @@
-classdef Custom < ProbabilityTransformation.Normal
+classdef Custom < ProbabilityTransformation.Gaussian
   properties (SetAccess = 'protected')
     customDistribution
   end
@@ -6,7 +6,7 @@ classdef Custom < ProbabilityTransformation.Normal
   methods
     function this = Custom(varargin)
       options = Options(varargin{:});
-      this = this@ProbabilityTransformation.Normal(options);
+      this = this@ProbabilityTransformation.Gaussian(options);
       this.customDistribution = options.distribution;
     end
 
@@ -36,7 +36,7 @@ classdef Custom < ProbabilityTransformation.Normal
       %
       % Dependent RVs with the desired distributions.
       %
-      data = evaluate@ProbabilityTransformation.Normal(this, data);
+      data = evaluate@ProbabilityTransformation.Gaussian(this, data);
     end
   end
 end

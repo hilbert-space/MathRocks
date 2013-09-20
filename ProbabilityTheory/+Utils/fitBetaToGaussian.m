@@ -1,11 +1,11 @@
-function param = fitBetaToNormal(varargin)
+function param = fitBetaToGaussian(varargin)
   options = Options(varargin{:});
 
   sigma = options.sigma;
   fitRange = options.get('fitRange', [ -4 * sigma, 4 * sigma ]);
   paramRange = options.get('paramRange', [ 1, 20 ]);
 
-  Normal = ProbabilityDistribution.Normal( ...
+  Normal = ProbabilityDistribution.Gaussian( ...
     'mu', 0, 'sigma', sigma);
 
   x = linspace(fitRange(1), fitRange(2), 50);

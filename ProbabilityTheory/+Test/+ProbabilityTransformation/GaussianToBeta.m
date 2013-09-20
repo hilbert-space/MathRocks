@@ -9,7 +9,7 @@ C0 = Utils.generateCorrelation(dimensionCount);
 
 %% Define the marginal distributions.
 %
-distribution = ProbabilityDistribution.Normal();
+distribution = ProbabilityDistribution.Gaussian();
 
 %% Construct a vector of correlated RVs.
 %
@@ -31,7 +31,8 @@ C1 = corr(data1);
 %% Transformation with reduction.
 %
 transformation = ProbabilityTransformation.Custom( ...
-  'variables', rvsDependent, 'distribution', customDistribution, 'threshold', 0.99);
+  'variables', rvsDependent, 'distribution', customDistribution, ...
+  'reductionThreshold', 0.99);
 data2 = transformation.sample(sampleCount);
 C2 = corr(data2);
 
@@ -48,7 +49,7 @@ fprintf('Infinity norm with empirical:    %e\n', norm(C0 - C3, Inf));
 
 %% Draw the result.
 %
-Data.compare(data1, data3, 'method', 'histogram', ...
-  'draw', true, 'names', { 'Without reduction', 'Empirical' });
-Data.compare(data2, data3, 'method', 'histogram', ...
-  'draw', true, 'names', { 'With reduction', 'Empirical' });
+Statistic.compare(data1, data3, 'method', 'histogram', 'draw', true);
+Plot.name('Without reduction vs. Empirical');
+Statistic.compare(data2, data3, 'method', 'histogram', 'draw', true);
+Plot.name('With reduction vs. Empirical');

@@ -4,7 +4,7 @@ function correlation = computeCorrelation(this, options)
   %
   % Eliminate unnecessary work if the RVs are Gaussian.
   %
-  if rvs.isFamily('Normal')
+  if rvs.isFamily('Gaussian')
     correlation = rvs.correlation;
     return;
   end

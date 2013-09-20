@@ -9,7 +9,7 @@ C0 = Utils.generateCorrelation(dimensionCount);
 
 %% Define the marginal distributions.
 %
-distribution = ProbabilityDistribution.Normal();
+distribution = ProbabilityDistribution.Gaussian();
 
 %% Construct a vector of correlated RVs.
 %
@@ -18,15 +18,15 @@ rvsDependent = RandomVariables.Homogeneous( ...
 
 %% Transformation without reduction.
 %
-transformation = ProbabilityTransformation.Normal( ...
+transformation = ProbabilityTransformation.Gaussian( ...
   'variables', rvsDependent);
 data = transformation.sample(sampleCount);
 C1 = corr(data);
 
 %% Transformation with reduction.
 %
-transformation = ProbabilityTransformation.Normal( ...
-  'variables', rvsDependent, 'threshold', 0.99);
+transformation = ProbabilityTransformation.Gaussian( ...
+  'variables', rvsDependent, 'reductionThreshold', 0.99);
 data = transformation.sample(sampleCount);
 C2 = corr(data);
 

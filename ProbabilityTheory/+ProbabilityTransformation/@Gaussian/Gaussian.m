@@ -1,4 +1,4 @@
-classdef Normal < ProbabilityTransformation.Base
+classdef Gaussian < ProbabilityTransformation.Base
   properties (SetAccess = 'private')
     distribution
 
@@ -17,7 +17,7 @@ classdef Normal < ProbabilityTransformation.Base
   end
 
   methods
-    function this = Normal(varargin)
+    function this = Gaussian(varargin)
       this = this@ProbabilityTransformation.Base(varargin{:});
     end
 
@@ -61,7 +61,7 @@ classdef Normal < ProbabilityTransformation.Base
     function initialize(this, options)
       initialize@ProbabilityTransformation.Base(this, options);
 
-      this.distribution = ProbabilityDistribution.Normal();
+      this.distribution = ProbabilityDistribution.Gaussian();
       this.correlation = this.computeCorrelation(options);
       this.multiplier = this.computeMultiplier(this.correlation, options);
 

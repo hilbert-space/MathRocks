@@ -1,11 +1,11 @@
-classdef Normal < ProbabilityDistribution.Base
+classdef Gaussian < ProbabilityDistribution.Base
   properties (SetAccess = 'private')
     mu
     sigma
   end
 
   methods
-    function this = Normal(varargin)
+    function this = Gaussian(varargin)
       this = this@ProbabilityDistribution.Base();
 
       options = Options('mu', 0, 'sigma', 1, varargin{:});

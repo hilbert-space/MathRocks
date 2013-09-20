@@ -1,26 +1,28 @@
 setup;
 
 sampleCount = 1e6;
-dimensionCount = 2;
 
 %% Generate a correlation matrix.
 %
-correlation = Utils.generateCorrelation(dimensionCount);
+correlation = [ 1 -0.7; -0.7 1 ];
 fprintf('Desired correlation matrix:\n');
 correlation
 
 %% Define the marginal distributions.
 %
-distribution = ProbabilityDistribution.Exponential();
+distributions = { ...
+  ProbabilityDistribution.Gamma('a', 2, 'b', 3), ...
+  ProbabilityDistribution.Gamma('a', 2, 'b', 3), ...
+};
 
 %% Construct a vector of correlated RVs.
 %
-rvsDependent = RandomVariables.Homogeneous( ...
-  'distribution', distribution, 'correlation', correlation);
+rvsDependent = RandomVariables.Heterogeneous( ...
+  'distributions', distributions, 'correlation', correlation);
 
 %% Transform the dependent RVs into independent ones.
 %
-transformation = ProbabilityTransformation.Normal( ...
+transformation = ProbabilityTransformation.Gaussian( ...
   'variables', rvsDependent);
 
 fprintf('Transformed correlation matrix:\n');
@@ -35,4 +37,4 @@ corr(data)
 
 %% Draw the result.
 %
-Data.observe(data, 'method', 'histogram', 'draw', true);
+Statistic.observe(data, 'method', 'histogram', 'draw', true);
