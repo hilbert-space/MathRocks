@@ -1,4 +1,4 @@
-function [ functions, values ] = construct(this, options)
+function [ functions, values ] = construct(~, options)
   kernel = options.kernel;
   boundary = options.domainBoundary;
   dimension = options.get('dimensionCount', NaN);

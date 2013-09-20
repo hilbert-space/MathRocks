@@ -1,4 +1,4 @@
-function [ functions, values ] = construct(this, options)
+function [ functions, values ] = construct(~, options)
   %
   % Source:
   %

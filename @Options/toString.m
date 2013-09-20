@@ -1,9 +1,9 @@
 function line = toString(this)
   line = '';
-  names = sort(this.names);
+  names = sort(fieldnames(this));
   for i = 1:length(names)
     chunk = sprintf('%s:%s', names{i}, ...
-      Utils.toString(this.values(names{i})));
+      Utils.toString(this.(names{i})));
     if i == 1
       line = chunk;
     else

@@ -2,7 +2,7 @@ function display(this, title, offset)
   if nargin > 1 && ~isempty(title), fprintf('%s:\n', title); end
   if nargin < 3, offset = 2; end
 
-  names = this.names;
+  names = sort(fieldnames(this));
   nameCount = length(names);
   displayNames = names;
 

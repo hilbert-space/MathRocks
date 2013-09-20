@@ -18,7 +18,7 @@ function construct(this, f, options)
     verbose = @(varargin) fprintf(varargin{:});
   end
 
-  interpolants = containers.Map('keyType', 'char', 'valueType', 'any');
+  interpolants = containers.Map;
 
   %
   % Adaptivity control.

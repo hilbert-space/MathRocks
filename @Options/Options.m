@@ -1,43 +1,30 @@
-classdef Options < handle
-  properties (SetAccess = 'protected')
-    names
-    values
-  end
-
+classdef Options < dynamicprops
   methods
     function this = Options(varargin)
-      this.names = {};
-      this.values = containers.Map('keyType', 'char', 'valueType', 'any');
       this.update(varargin{:});
     end
 
     function this = add(this, name, value)
-      this.names{end + 1} = name;
-      this.values(name) = value;
+      addprop(this, name);
+      this.(name) = value;
     end
 
     function this = remove(this, name)
-      this.values(name) = [];
-      for i = 1:length(this.names)
-        if strcmp(this.names{i}, name)
-          this.names(i) = [];
-          return;
-        end
-      end
+      delete(findprop(this, name));
     end
 
     function value = get(this, name, value)
-      if this.values.isKey(name)
-        value = this.values(name);
+      if isprop(this, name)
+        value = this.(name);
       end
     end
 
     function this = set(this, name, value)
-      if this.values.isKey(name)
-        if isa(this.values(name), 'Options') && isa(value, 'struct')
-          this.values(name).update(value);
+      if isprop(this, name)
+        if isa(this.(name), 'Options') && isa(value, 'struct')
+          this.(name).update(value);
         else
-          this.values(name) = value;
+          this.(name) = value;
         end
       else
         this.add(name, value);
@@ -45,15 +32,15 @@ classdef Options < handle
     end
 
     function value = fetch(this, name, value)
-      if this.values.isKey(name)
-        value = this.values(name);
-        this.remove(name);
+      if isprop(this, name)
+        value = this.(name);
+        delete(findprop(this, name));
       end
     end
 
     function value = ensure(this, name, value)
-      if this.values.isKey(name)
-        value = this.values(name);
+      if isprop(this, name)
+        value = this.(name);
       else
         this.add(name, value);
       end
@@ -70,18 +57,7 @@ classdef Options < handle
           continue;
         end
 
-        if isa(item, 'Options')
-          %
-          % NOTE: Need a separate treatment of Options here
-          % since this code can be called from the constructor,
-          % and subsref and subsasgn do not work from there.
-          %
-          names = fieldnames(item);
-          for j = 1:length(names)
-            this.set(names{j}, item.get(names{j}));
-          end
-          i = i + 1;
-        elseif isa(item, 'struct')
+        if isa(item, 'struct')
           names = fieldnames(item);
           for j = 1:length(names)
             this.set(names{j}, item.(names{j}));
@@ -95,48 +71,18 @@ classdef Options < handle
     end
 
     function result = has(this, name)
-      result = this.values.isKey(name);
+      result = isprop(this, name);
     end
 
     function result = length(this)
-      result = length(this.names);
-    end
-
-    function varargout = subsref(this, s)
-      name = s(1).subs;
-      if isprop(this, name) || ismethod(this, name)
-        if nargout > 0
-          varargout = cell(1, nargout);
-          [ varargout{:} ] = builtin('subsref', this, s);
-        else
-          builtin('subsref', this, s);
-        end
-      else
-        if isnumeric(name)
-          s(1).subs = this.names{name};
-        end
-        s(1).type = '()';
-        if nargout > 0
-          varargout = cell(1, nargout);
-          [ varargout{:} ] = subsref(this.values, s);
-        else
-          subsref(this.values, s);
-        end
-      end
+      result = length(properties(this));
     end
 
     function this = subsasgn(this, s, value)
       name = s(1).subs;
-      if isprop(this, name) || ismethod(this, name)
-        builtin('subsasgn', this, s, value);
-      elseif length(s) > 1
-        if isnumeric(name)
-          s(1).subs = this.names{name};
-        end
-        s(1).type = '()';
-        subsasgn(this.values, s, value);
+      if isprop(this, name)
+        [ ~ ] = builtin('subsasgn', this, s, value);
       else
-        if isnumeric(name), name = this.names{name}; end
         this.set(name, value);
       end
     end
@@ -146,11 +92,11 @@ classdef Options < handle
     %
 
     function result = isfield(this, name)
-      result = this.values.isKey(name);
+      result = isprop(this, name);
     end
 
     function result = fieldnames(this)
-      result = this.names;
+      result = properties(this);
     end
 
     function result = isa(this, class)
