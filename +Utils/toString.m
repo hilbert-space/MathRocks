@@ -16,7 +16,7 @@ function string = toString(object, varargin)
   case 'function_handle'
     string = func2str(object);
   case 'struct'
-    string = structToString(object, varargin{:});
+    string = Utils.toString(Options(object), varargin{:});
   case 'sym'
     string = char(object);
   otherwise
@@ -92,15 +92,4 @@ function string = cellToString(object, varargin)
       Utils.toString(object{i}, varargin{:}));
   end
   string = [ '{ ', string, ' }' ];
-end
-
-function string = structToString(object, varargin)
-  names = fieldnames(object);
-  string = '';
-  for i = 1:length(names)
-    if ~isempty(string), string = [ string, ';' ]; end
-    string = [ string, sprintf('%s:%s', names{i}, ...
-      Utils.toString(getfield(object, names{i}))) ];
-  end
-  string = [ 'struct(', string, ')' ];
 end
