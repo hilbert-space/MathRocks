@@ -1,17 +1,17 @@
-function data = process(x, data, options)
+function data = compute(x, data, options)
   options = Options('method', 'smooth', 'quantity', 'pdf', options);
 
   switch options.method
   case 'smooth'
-    data = processKernelDensity(x, data, options);
+    data = computeKernelDensity(x, data, options);
   case { 'histogram', 'piecewise' }
-    data = processHistogram(x, data, options);
+    data = computeHistogram(x, data, options);
   otherwise
     error('The method is unknown.');
   end
 end
 
-function data = processHistogram(x, data, options)
+function data = computeHistogram(x, data, options)
   if length(x) == 1
     data = 1;
     return;
@@ -40,6 +40,6 @@ function data = processHistogram(x, data, options)
   end
 end
 
-function data = processKernelDensity(x, data, options)
+function data = computeKernelDensity(x, data, options)
   data = ksdensity(data, x, 'function', options.quantity);
 end

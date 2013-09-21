@@ -57,8 +57,8 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
 
     x = Utils.constructLinearSpace(one, two, options);
 
-    one = Data.process(x, one, options);
-    two = Data.process(x, two, options);
+    one = Statistic.compute(x, one, options);
+    two = Statistic.compute(x, two, options);
 
     localError(i) = Error.compute(options.distanceMetric, one, two);
 
@@ -81,7 +81,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
         { 'Color', Color.pick(2) }};
     end
 
-    Data.draw(x, one, two, options, 'styles', styles);
+    Statistic.draw(x, one, two, options, 'styles', styles);
 
     switch options.layout
     case 'one'

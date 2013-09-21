@@ -21,9 +21,9 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      one = Data.process(x, one, options);
+      one = Statistic.compute(x, one, options);
 
-      Data.draw(x, one, options, 'color', Color.pick(i));
+      Statistic.draw(x, one, options, 'color', Color.pick(i));
     end
   case 'separate'
     for i = 1:dimensionCount
@@ -32,9 +32,9 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      one = Data.process(x, one, options);
+      one = Statistic.compute(x, one, options);
 
-      Data.draw(x, one, options);
+      Statistic.draw(x, one, options);
     end
   case 'tiles'
     if options.get('figure', true), Plot.figure; end
@@ -45,9 +45,9 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      one = Data.process(x, one, options);
+      one = Statistic.compute(x, one, options);
 
-      Data.draw(x, one, options);
+      Statistic.draw(x, one, options);
     end
   end
 end
