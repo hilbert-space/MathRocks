@@ -1,19 +1,16 @@
 classdef Options < dynamicprops
+  properties (Access = 'private')
+    names__
+  end
+
   methods
     function this = Options(varargin)
+      this.names__ = {};
       this.update(varargin{:});
     end
 
-    function this = add(this, name, value)
-      addprop(this, name);
-      this.(name) = value;
-    end
-
-    function this = remove(this, name)
-      delete(findprop(this, name));
-    end
-
     function value = get(this, name, value)
+      if isnumeric(name), name = this.names__{name}; end
       if isprop(this, name)
         value = this.(name);
       end
@@ -34,7 +31,7 @@ classdef Options < dynamicprops
     function value = fetch(this, name, value)
       if isprop(this, name)
         value = this.(name);
-        delete(findprop(this, name));
+        this.remove(name);
       end
     end
 
@@ -75,7 +72,7 @@ classdef Options < dynamicprops
     end
 
     function result = length(this)
-      result = length(properties(this));
+      result = length(this.names__);
     end
 
     function this = subsasgn(this, s, value)
@@ -96,7 +93,7 @@ classdef Options < dynamicprops
     end
 
     function result = fieldnames(this)
-      result = properties(this);
+      result = this.names__;
     end
 
     function result = isa(this, class)
@@ -105,6 +102,23 @@ classdef Options < dynamicprops
       else
         result = builtin('isa', this, class);
       end
+    end
+  end
+
+  methods (Access = 'private')
+    function this = add(this, name, value)
+      this.names__{end + 1} = name;
+      addprop(this, name);
+      this.(name) = value;
+    end
+
+    function this = remove(this, name)
+      for i = 1:length(this.names__)
+        if strcmp(this.names__{i}, name)
+          this.names__(i) = [];
+        end
+      end
+      delete(findprop(this, name));
     end
   end
 
