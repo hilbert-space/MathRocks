@@ -1,20 +1,19 @@
 classdef Custom < ProbabilityTransformation.Gaussian
-  properties (SetAccess = 'protected')
+  properties (SetAccess = 'private')
     customDistribution
   end
 
   methods
     function this = Custom(varargin)
-      options = Options(varargin{:});
-      this = this@ProbabilityTransformation.Gaussian(options);
-      this.customDistribution = options.distribution;
+      this = this@ProbabilityTransformation.Gaussian(varargin{:});
     end
 
     function data = sample(this, sampleCount)
       %
       % Independent RVs of the specified custom distribution.
       %
-      data = this.customDistribution.sample(sampleCount, this.dimensionCount);
+      data = this.customDistribution.sample( ...
+        sampleCount, this.dimensionCount);
 
       %
       % Dependent RVs with the desired distributions.
@@ -29,14 +28,24 @@ classdef Custom < ProbabilityTransformation.Gaussian
       data = this.customDistribution.cdf(data);
 
       %
-      % Independent standard normal RVs.
+      % Independent standard Gaussian RVs.
       %
-      data = this.distribution.icdf(data);
+      data = this.gaussianDistribution.icdf(data);
 
       %
       % Dependent RVs with the desired distributions.
       %
       data = evaluate@ProbabilityTransformation.Gaussian(this, data);
+    end
+  end
+
+  methods (Access = 'protected')
+    function [ distribution, dimensionCount ] = configure(this, options)
+      [ ~, dimensionCount ] = ...
+        configure@ProbabilityTransformation.Gaussian(this, options);
+
+      this.customDistribution = options.distribution;
+      distribution = this.customDistribution;
     end
   end
 end

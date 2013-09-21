@@ -23,14 +23,11 @@ rvsDependent = RandomVariables.Homogeneous( ...
 transformation = ProbabilityTransformation.Gaussian( ...
   'variables', rvsDependent);
 
-fprintf('Transformed correlation matrix:\n');
-transformation.correlation
-
 %% Sample the transformed RVs.
 %
 data = transformation.sample(sampleCount);
 
-fprintf('Obtained correlation matrix:\n');
+fprintf('Empirical correlation matrix:\n');
 corr(data)
 
 %% Draw the result.

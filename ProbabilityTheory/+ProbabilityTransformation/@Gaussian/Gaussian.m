@@ -1,18 +1,6 @@
 classdef Gaussian < ProbabilityTransformation.Base
   properties (SetAccess = 'private')
-    distribution
-
-    %
-    % The correlation matrix as produced by the pure probability
-    % transformation.
-    %
-    correlation
-
-    %
-    % The corresponding multiplier produced by some decomposition
-    % procedure used to construct RVs with the obtained or approximated
-    % correlation matrix.
-    %
+    gaussianDistribution
     multiplier
   end
 
@@ -23,9 +11,10 @@ classdef Gaussian < ProbabilityTransformation.Base
 
     function data = sample(this, sampleCount)
       %
-      % Independent normal RVs.
+      % Independent Gaussian RVs.
       %
-      data = this.distribution.sample(sampleCount, this.dimensionCount);
+      data = this.gaussianDistribution.sample( ...
+        sampleCount, this.dimensionCount);
 
       %
       % Dependent RVs with the desired distributions.
@@ -35,14 +24,14 @@ classdef Gaussian < ProbabilityTransformation.Base
 
     function data = evaluate(this, data)
       %
-      % Dependent normal RVs.
+      % Dependent Gaussian RVs.
       %
       data = data * this.multiplier;
 
       %
       % Dependent uniform RVs.
       %
-      data = this.distribution.cdf(data);
+      data = this.gaussianDistribution.cdf(data);
 
       %
       % Dependent RVs with the desired distributions.
@@ -52,20 +41,30 @@ classdef Gaussian < ProbabilityTransformation.Base
   end
 
   methods (Access = 'private')
-    correlation = computeCorrelation(this, options)
+    correlation = correlate(this, variables, options)
   end
 
   methods (Access = 'protected')
-    multiplier = computeMultiplier(this, correlation, options)
+    function [ distribution, dimensionCount ] = configure(this, options)
+      this.gaussianDistribution = ProbabilityDistribution.Gaussian();
+      this.multiplier = 1;
 
-    function initialize(this, options)
-      initialize@ProbabilityTransformation.Base(this, options);
+      distribution = this.gaussianDistribution;
+      dimensionCount = this.variables.dimensionCount;
 
-      this.distribution = ProbabilityDistribution.Gaussian();
-      this.correlation = this.computeCorrelation(options);
-      this.multiplier = this.computeMultiplier(this.correlation, options);
+      if this.variables.isIndependent, return; end
 
-      this.dimensionCount = size(this.multiplier, 1);
+      if this.variables.isFamily('Gaussian');
+        correlation = this.variables.correlation;
+      else
+        correlation = this.correlate(this.variables, options);
+      end
+
+      assert(all(diag(correlation) == 1));
+
+      this.multiplier = transpose(Utils.decomposeCorrelation( ...
+        correlation, options.get('reductionThreshold', 1)));
+      dimensionCount = size(this.multiplier, 1);
     end
   end
 end

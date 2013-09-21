@@ -1,10 +1,10 @@
-function mapping = decomposeCorrelation(C, threshold)
+function multiplier = decomposeCorrelation(C, threshold)
   [ V, L ] = pcacov(C);
 
-  if nargin > 1
+  if nargin > 1 && threshold < 1
     [ ~, L, I ] = Utils.chooseSignificant(L, threshold);
     V = V(:, I);
   end
 
-  mapping = V * diag(sqrt(L));
+  multiplier = V * diag(sqrt(L));
 end

@@ -1,18 +1,24 @@
 classdef Base < handle
-  properties (SetAccess = 'protected')
-    dimensionCount
+  properties (SetAccess = 'private')
     variables
+    distribution
+    dimensionCount
   end
 
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
-      this.initialize(options);
+      this.variables = options.variables;
+      [ this.distribution, this.dimensionCount ] = ...
+        this.configure(options);
     end
 
     function string = toString(this)
       string = sprintf('%s(%s)', class(this), ...
-        Utils.toString(struct('variable', variables)));
+        Utils.toString(struct( ...
+          'variables', this.variables, ...
+          'distribution', this.distribution, ...
+          'dimensionCount', this.dimensionCount)));
     end
   end
 
@@ -21,10 +27,7 @@ classdef Base < handle
     data = evaluate(this, data)
   end
 
-  methods (Access = 'protected')
-    function initialize(this, options)
-      this.dimensionCount = options.variables.dimensionCount;
-      this.variables = options.variables;
-    end
+  methods (Abstract, Access = 'protected')
+    [ distribution, dimensionCount ] = configure(this, options)
   end
 end
