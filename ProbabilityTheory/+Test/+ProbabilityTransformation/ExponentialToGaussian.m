@@ -11,12 +11,13 @@ correlation
 
 %% Define the marginal distributions.
 %
-distribution = ProbabilityDistribution.Exponential();
+distributions = repmat( ...
+  { ProbabilityDistribution.Exponential }, 1, dimensionCount);
 
 %% Construct a vector of correlated RVs.
 %
-rvsDependent = RandomVariables.Homogeneous( ...
-  'distributions', distribution, 'correlation', correlation);
+rvsDependent = RandomVariables( ...
+  'distributions', distributions, 'correlation', correlation);
 
 %% Transform the dependent RVs into independent ones.
 %

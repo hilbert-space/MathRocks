@@ -9,12 +9,13 @@ C0 = Utils.generateCorrelation(dimensionCount);
 
 %% Define the marginal distributions.
 %
-distribution = ProbabilityDistribution.Gaussian();
+distribution = repmat( ...
+  { ProbabilityDistribution.Gaussian }, 1, dimensionCount);
 
 %% Construct a vector of correlated RVs.
 %
-rvsDependent = RandomVariables.Homogeneous( ...
-  'distributions', distribution, 'correlation', C0);
+rvsDependent = RandomVariables( ...
+  'distributions', distributions, 'correlation', C0);
 
 %% Transformation without reduction.
 %
