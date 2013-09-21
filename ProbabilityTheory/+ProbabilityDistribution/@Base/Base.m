@@ -15,10 +15,12 @@ classdef Base < handle
       Data.observe(data, 'draw', true, options);
     end
 
-    function display(this)
-      fprintf('Probability distribution:\n');
-      fprintf('  Expectation: %.2f\n', this.expectation);
-      fprintf('  Variance:    %.2f\n', this.variance);
+    function string = toString(this)
+      string = sprintf('%s(%s)', class(this), ...
+        Utils.toString(struct( ...
+          'expectation', this.expectation, ...
+          'variance', this.variance, ...
+          'support', this.support)));
     end
   end
 

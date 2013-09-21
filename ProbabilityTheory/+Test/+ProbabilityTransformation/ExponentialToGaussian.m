@@ -16,7 +16,7 @@ distribution = ProbabilityDistribution.Exponential();
 %% Construct a vector of correlated RVs.
 %
 rvsDependent = RandomVariables.Homogeneous( ...
-  'distribution', distribution, 'correlation', correlation);
+  'distributions', distribution, 'correlation', correlation);
 
 %% Transform the dependent RVs into independent ones.
 %

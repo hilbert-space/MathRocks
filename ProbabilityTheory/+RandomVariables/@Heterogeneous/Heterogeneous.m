@@ -1,21 +1,7 @@
 classdef Heterogeneous < RandomVariables.Base
-  properties (SetAccess = 'protected')
-    distributions
-    correlation
-  end
-
   methods
     function this = Heterogeneous(varargin)
-      options = Options(varargin{:});
-
-      this = this@RandomVariables.Base( ...
-        'dimensionCount', size(options.correlation, 1));
-
-      assert(all(this.dimensionCount == length(options.distributions)), ...
-        'The number of distributions is invalid.');
-
-      this.distributions = options.distributions;
-      this.correlation = options.correlation;
+      this = this@RandomVariables.Base(varargin{:});
     end
 
     function data = icdf(this, data)
@@ -24,25 +10,22 @@ classdef Heterogeneous < RandomVariables.Base
       end
     end
 
-    function result = isIndependent(this)
-      result = Utils.isIndependent(this.correlation);
-    end
-
     function result = isFamily(this, name)
-      result = true;
+      name = [ 'ProbabilityDistribution.', name ];
       for i = 1:this.dimensionCount
-        if ~isa(this.distributions{i}, [ 'ProbabilityDistribution.', name ])
+        if ~isa(this.distributions{i}, name)
           result = false;
-          break;
+          return;
         end
       end
+      result = true;
     end
 
-    function value = subsref(this, S)
-      if length(S) == 1 && strcmp('{}', S.type)
-        value = builtin('subsref', this.distributions, S);
+    function value = subsref(this, s)
+      if length(s) == 1 && strcmp('{}', s.type)
+        value = builtin('subsref', this.distributions, s);
       else
-        value = builtin('subsref', this, S);
+        value = builtin('subsref', this, s);
       end
     end
   end

@@ -9,6 +9,11 @@ classdef Base < handle
       options = Options(varargin{:});
       this.initialize(options);
     end
+
+    function string = toString(this)
+      string = sprintf('%s(%s)', class(this), ...
+        Utils.toString(struct('variable', variables)));
+    end
   end
 
   methods (Abstract)

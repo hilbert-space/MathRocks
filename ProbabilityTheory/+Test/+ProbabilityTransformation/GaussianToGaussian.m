@@ -14,7 +14,7 @@ distribution = ProbabilityDistribution.Gaussian();
 %% Construct a vector of correlated RVs.
 %
 rvsDependent = RandomVariables.Homogeneous( ...
-  'distribution', distribution, 'correlation', C0);
+  'distributions', distribution, 'correlation', C0);
 
 %% Transformation without reduction.
 %
