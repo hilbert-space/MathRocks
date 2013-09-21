@@ -1,4 +1,4 @@
-function [ correlation, merging ] = correlate(~, parameter, options)
+function [ correlation, contribution, merging ] = correlate(~, parameter, options)
   die = options.die;
   D = die.floorplan;
 
@@ -21,30 +21,28 @@ function [ correlation, merging ] = correlate(~, parameter, options)
     %
     % Global variation
     %
-    V = 1;
-    C = 1;
+    correlation = 1;
+    contribution = 1;
   else
     %
     % Local variations
     %
-    V = (1 - globalContribution) * ones(processorCount, 1);
-
     I = Utils.constructPairIndex(processorCount);
-    C = feval(parameter.correlation{:}, ...
+    correlation = feval(parameter.correlation{:}, ...
       [ X(I(:, 1)).'; Y(I(:, 1)).' ], ...
       [ X(I(:, 2)).'; Y(I(:, 2)).' ]);
-    C = Utils.symmetrizePairIndex(C, I);
+    correlation = Utils.symmetrizePairIndex(correlation, I);
+
+    contribution = (1 - globalContribution) * ones(processorCount, 1);
 
     if globalContribution > 0
       %
       % Global variation
       %
-      V(end + 1) = globalContribution;
-      C(end + 1, end + 1) = 1;
+      correlation(end + 1, end + 1) = 1;
+      contribution(end + 1) = globalContribution;
 
       merging = true;
     end
   end
-
-  correlation = diag(sqrt(V)) * C * diag(sqrt(V));
 end

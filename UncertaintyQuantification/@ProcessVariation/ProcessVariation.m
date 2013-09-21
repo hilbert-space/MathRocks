@@ -1,12 +1,11 @@
 classdef ProcessVariation < handle
   properties (SetAccess = 'private')
+    transformations
     parameterCount
     dimensionCount
   end
 
   properties (Access = 'private')
-    transformations
-    expectations
     merging
   end
 
@@ -18,17 +17,17 @@ classdef ProcessVariation < handle
       this.parameterCount = length(parameters);
 
       this.transformations = cell(1, this.parameterCount);
-      this.expectations = zeros(1, this.parameterCount);
       this.merging = false(1, this.parameterCount);
 
       this.dimensionCount = 0;
       for i = 1:this.parameterCount
         parameter = parameters.get(i);
-        [ correlation, this.merging(i) ] = ...
+
+        [ correlation, contribution, this.merging(i) ] = ...
           this.correlate(parameter, options);
         this.transformations{i} = this.transform( ...
-          parameter, correlation, options);
-        this.expectations(i) = parameter.expectation;
+          parameter, correlation, contribution, options);
+
         this.dimensionCount = this.dimensionCount + ...
           this.transformations{i}.dimensionCount;
       end
@@ -41,7 +40,7 @@ classdef ProcessVariation < handle
         if this.merging(i)
           data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
         end
-        varargout{i} = this.expectations(i) + data;
+        varargout{i} = data;
       end
     end
 
@@ -52,7 +51,7 @@ classdef ProcessVariation < handle
         if this.merging(i)
           data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
         end
-        varargout{i} = this.expectations(i) + data;
+        varargout{i} = data;
       end
     end
 
@@ -66,7 +65,7 @@ classdef ProcessVariation < handle
   end
 
   methods (Access = 'protected')
-    transformation = transform(this, variance, correlation, options)
-    [ correlation, merging ] = correlate(this, parameter, options)
+    transformation = transform(this, parameter, correlation, contribution, options)
+    [ correlation, contribution, merging ] = correlate(this, parameter, options)
   end
 end

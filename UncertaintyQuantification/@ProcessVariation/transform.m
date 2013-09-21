@@ -1,30 +1,25 @@
-function transformation = transform(~, parameter, correlation, options)
-  deviation = sqrt(parameter.variance);
+function transformation = transform(~, ...
+  parameter, correlation, contribution, ~)
 
-  switch parameter.distribution
+  [ contribution, ~, I ] = unique(contribution);
+
+  distributions = cell(1, length(contribution));
+  for i = 1:length(contribution)
+    distributions{i} = distribute(parameter.model, ...
+      contribution(i) * parameter.expectation, ...
+      sqrt(contribution(i) * parameter.variance));
+  end
+  distributions = distributions(I);
+
+  variables = RandomVariables( ...
+    'distributions', distributions, 'correlation', correlation);
+
+  switch parameter.model
   case 'Gaussian'
-    distribution = ProbabilityDistribution.Gaussian( ...
-      'mu', 0, 'sigma', deviation);
-
-    variables = RandomVariables.Homogeneous( ...
-      'distributions', distribution, 'correlation', correlation);
-
     transformation = ProbabilityTransformation.Gaussian( ...
       'variables', variables, ...
       'reductionThreshold', parameter.reductionThreshold);
   case 'Beta'
-    a = -4 * deviation;
-    b =  4 * deviation;
-
-    param = Utils.fitBetaToNormal('sigma', deviation, ...
-      'fitRange', [ a, b ], 'paramRange', [ 1, 20 ]);
-
-    distribution = ProbabilityDistribution.Beta( ...
-      'alpha', param, 'beta', param, 'a', a, 'b', b);
-
-    variables = RandomVariables.Homogeneous( ...
-      'distributions', distribution, 'correlation', correlation);
-
     customDistribution = ProbabilityDistribution.Beta( ...
       'alpha', 2, 'beta', 2, 'a', -1, 'b', 1);
 
@@ -32,6 +27,28 @@ function transformation = transform(~, parameter, correlation, options)
       'variables', variables, ...
       'reductionThreshold', parameter.reductionThreshold, ...
       'distribution', customDistribution);
+  otherwise
+    assert(false);
+  end
+end
+
+function distribution = distribute(model, expectation, standardDeviation)
+  switch model
+  case 'Gaussian'
+    distribution = ProbabilityDistribution.Gaussian( ...
+      'mu', expectation, 'sigma', standardDeviation);
+  case 'Beta'
+    a = -4 * standardDeviation;
+    b =  4 * standardDeviation;
+
+    param = Utils.fitBetaToNormal('sigma', standardDeviation, ...
+      'fitRange', [ a, b ], 'paramRange', [ 1, 20 ]);
+
+    a = a + expectation;
+    b = b + expectation;
+
+    distribution = ProbabilityDistribution.Beta( ...
+      'alpha', param, 'beta', param, 'a', a, 'b', b);
   otherwise
     assert(false);
   end
