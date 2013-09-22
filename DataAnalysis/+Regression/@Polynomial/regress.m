@@ -1,9 +1,8 @@
-function [ output, arguments, body ] = regress(~, Z, XY, options)
-  terms = options.terms;
+function [ output, arguments, body ] = regress(~, Z, XY, termPowers)
+  assert(length(XY) == 2 && length(termPowers) == 2);
 
-  [ termCount, parameterCount ] = size(terms);
-
-  assert(length(XY) == 2 && parameterCount == 2);
+  termCount = length(termPowers{1});
+  assert(length(termPowers{2}) == termCount);
 
   X = XY{1}(:);
   Y = XY{2}(:);
@@ -25,7 +24,7 @@ function [ output, arguments, body ] = regress(~, Z, XY, options)
   %
   T = zeros(dataCount, termCount);
   for i = 1:termCount
-    T(:, i) = X.^terms(i, 1) .* Y.^terms(i, 2);
+    T(:, i) = X.^termPowers{1}(i) .* Y.^termPowers{2}(i);
   end
 
   C = (T' * T) \ (T' * Z);
@@ -41,7 +40,7 @@ function [ output, arguments, body ] = regress(~, Z, XY, options)
 
   Zs = sympoly(0);
   for i = 1:termCount
-    Zs = Zs + C(i) * Xn^terms(i, 1) * Yn^terms(i, 2);
+    Zs = Zs + C(i) * Xn^termPowers{1}(i) * Yn^termPowers{2}(i);
   end
 
   [ arguments, body ] = Utils.toFunctionString(Zs, Xs, Ys);

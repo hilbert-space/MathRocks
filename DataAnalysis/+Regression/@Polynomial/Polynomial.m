@@ -9,7 +9,14 @@ classdef Polynomial < Fitting
     [ output, arguments, body ] = regress(this, Z, XY, options)
 
     function output = construct(this, grid, options)
-      output = this.regress(grid.targetData, grid.parameterData, options);
+      termPowers = cell(1, grid.parameterCount);
+      names = this.parameterNames;
+      for i = 1:grid.parameterCount
+        termPowers{i} = options.termPowers.(names{i});
+      end
+
+      output = this.regress( ...
+        grid.targetData, grid.parameterData, termPowers);
     end
 
     function target = evaluate(~, output, varargin)

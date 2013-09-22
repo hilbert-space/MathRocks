@@ -7,8 +7,14 @@ classdef LogPolynomial < Regression.Polynomial
 
   methods (Access = 'protected')
     function output = construct(this, grid, options)
+      termPowers = cell(1, grid.parameterCount);
+      names = this.parameterNames;
+      for i = 1:grid.parameterCount
+        termPowers{i} = options.termPowers.(names{i});
+      end
+
       [ output, arguments, body ] = this.regress( ...
-        log(grid.targetData), grid.parameterData, options);
+        log(grid.targetData), grid.parameterData, termPowers);
 
       string = sprintf('@(%s)exp(%s)', arguments, body);
       output.evaluate = str2func(string);
