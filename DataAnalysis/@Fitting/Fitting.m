@@ -69,7 +69,8 @@ classdef Fitting < handle
       for i = 1:length(dimensions)
         if ~isnan(dimensions(i)), continue; end
         for j = 1:this.parameterCount
-          if ndims(parameters{j}) < i, continue; end
+          if isscalar(parameters{j}) || ...
+            ndims(parameters{j}) < i, continue; end
           dimensions(i) = size(parameters{j}, i);
           break;
         end

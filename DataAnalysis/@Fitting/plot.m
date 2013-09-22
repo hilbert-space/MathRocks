@@ -34,7 +34,7 @@ function plot(this, varargin)
   end
   target = this.evaluate(this.output, parameters{:});
 
-  Plot.figure(800, 600);
+  if options.get('figure', true), Plot.figure(800, 600); end
   switch length(index)
   case 1
     Plot.line(parameters(index), target);
