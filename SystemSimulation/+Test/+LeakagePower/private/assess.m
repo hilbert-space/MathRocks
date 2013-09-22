@@ -43,7 +43,7 @@ function assess(varargin)
     Plot.title('Interpolation.Linear');
 
     subplot(1, 2, 2);
-    plotLeakage(leakage, 'figure', false);
+    plotLeakage(leakage, 'figure', false, 'grid', grid);
     Plot.title(approximation);
   end
 

@@ -22,7 +22,7 @@ classdef Custom < Fitting
 
         k = NaN;
         for j = 1:grid.parameterCount
-          if strcmp(grid.parameterNames{i}, parameter)
+          if strcmp(grid.parameterNames{j}, parameter)
             k = j;
             break;
           end

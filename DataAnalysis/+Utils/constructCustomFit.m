@@ -1,16 +1,12 @@
 function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
-  Ey = mean(Y);
-  Sy = std(Y);
-  Y = (Y - Ey) ./ Sy;
-
-  Ex = mean(X, 1);
-  Sx = std(X, [], 1);
-  X = bsxfun(@rdivide, bsxfun(@minus, X, Ex), Sx);
+  E = mean(X, 1);
+  S = std(X, [], 1);
+  X = bsxfun(@rdivide, bsxfun(@minus, X, E), S);
 
   parameterCount = length(Xs);
   coefficientCount = length(Cs);
 
-  Ff = Utils.toFunction((Fs - Ey) / Sy, Xs, 'columns', Cs);
+  Ff = Utils.toFunction(Fs, Xs, 'columns', Cs);
   Js = jacobian(Fs, Cs);
   Jf = cell(1, coefficientCount);
   for i = 1:coefficientCount
@@ -21,6 +17,7 @@ function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
 
   function [ f, J ] = target(C)
     f = Ff(X, C) - Y;
+    if nargout < 2, return; end
     J = zeros(dataCount, coefficientCount);
     for i = 1:coefficientCount
       J(:, i) = Jf{i}(X, C);
@@ -43,7 +40,7 @@ function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
     Fs = varargin{i};
     Fs = subs(Fs, Cs, C);
     for j = 1:parameterCount
-      Fs = subs(Fs, Xs{j}, (Xs{j} - Ex(j)) / Sx(j));
+      Fs = subs(Fs, Xs{j}, (Xs{j} - E(j)) / S(j));
     end
     varargout{i} = Fs;
   end
