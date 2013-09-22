@@ -15,6 +15,21 @@ classdef Base < handle
       Data.observe(data, 'draw', true, options);
     end
 
+    function result = eq(this, another)
+      result = false;
+
+      if ~strcmp(class(this), class(another)), return; end
+
+      names = properties(this);
+      for i = 1:length(names)
+        if ~all(this.(names{i}) == another.(names{i}))
+          return;
+        end
+      end
+
+      result = true;
+    end
+
     function string = toString(this)
       string = sprintf('%s(%s)', class(this), ...
         Utils.toString(struct( ...
