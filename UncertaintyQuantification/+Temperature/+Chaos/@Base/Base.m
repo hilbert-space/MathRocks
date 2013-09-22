@@ -8,23 +8,25 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      if options.has('process')
-        this.process = options.process;
-      else
-        this.process = ProcessVariation.(options.processModel)( ...
-          options.processOptions);
+      this.process = ProcessVariation(options.processOptions);
+
+      %
+      % NOTE: For now, we do not attempt to combine different
+      % polynomial bases.
+      %
+      distributions = this.process.distributions;
+      distribution = distributions{1};
+      for i = 2:this.process.parameterCount
+        assert(distribution == distributions{i});
       end
 
-      switch options.processModel
-      case 'Normal'
+      switch class(distribution)
+      case 'ProbabilityDistribution.Gaussian'
         this.chaos = PolynomialChaos.Hermite( ...
-          'inputCount', this.process.dimensionCount, ...
-          'quadratureOptions', Options( ...
-            'ruleName', 'GaussHermiteHW'), ...
+          'inputCount', sum(this.process.dimensions), ...
+          'quadratureOptions', Options('ruleName', 'GaussHermiteHW'), ...
           options.surrogateOptions);
-      case 'Beta'
-        distribution = this.process.transformation.customDistribution;
-
+      case 'ProbabilityDistribution.Beta'
         alpha = distribution.alpha;
         beta = distribution.beta;
         a = distribution.a;
@@ -35,7 +37,7 @@ classdef Base < handle
         % differs from the one used in the Gauss-Jacobi quadrature rule.
         %
         this.chaos = PolynomialChaos.Jacobi( ...
-          'inputCount', this.process.dimensionCount, ...
+          'inputCount', sum(this.process.dimensions), ...
           'alpha', alpha - 1, 'beta', beta - 1, 'a', a, 'b', b, ...
           'quadratureOptions', Options('ruleName', 'GaussJacobi'), ...
           options.surrogateOptions);
@@ -46,9 +48,10 @@ classdef Base < handle
 
     function [ Texp, output ] = expand(this, Pdyn, options)
       function T = target(rvs)
-        V = this.preprocess(rvs, options);
-        [ T, solveOutput ] = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
-        T = this.postprocess(T, solveOutput, options);
+        parameters = this.preprocess(rvs);
+        T = this.computeWithLeakage(Pdyn, ...
+          Options(options, 'parameters', parameters));
+        T = this.postprocess(T);
       end
 
       chaosOutput = this.chaos.expand(@target);
@@ -73,33 +76,16 @@ classdef Base < handle
   end
 
   methods (Access = 'protected')
-      function V = preprocess(this, rvs, options)
-      V = transpose(this.process.evaluate(rvs));
-
-      if ~options.get('verbose', false), return; end
-
-      VMin = sum(V(:) < this.leakage.VRange(1));
-      VMax = sum(V(:) > this.leakage.VRange(2));
-
-      if VMin == 0 && VMax == 0, return; end
-
-      warning([ 'Detected %d and %d values below the minimal one', ...
-        ' and above the maximal one, respectively, out of %d.' ], ...
-        VMin, VMax, prod(size(V)));
+    function parameters = preprocess(this, rvs)
+      parameters = this.process.partition(rvs);
+      [ parameters{:} ] = this.process.evaluate(parameters{:});
+      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
+      parameters = this.process.assign(parameters);
     end
 
-    function T = postprocess(this, T, output, options)
+    function T = postprocess(~, T)
       sampleCount = size(T, 3);
       T = transpose(reshape(T, [], sampleCount));
-
-      if ~options.get('verbose', false), return; end
-
-      runawayCount = sum(isnan(output.iterationCount));
-
-      if runawayCount == 0, return; end
-
-      warning('Detected %d thermal runaways out of %d samples.', ...
-        runawayCount, sampleCount);
     end
   end
 end

@@ -14,7 +14,7 @@ function assessVariations
     process = ProcessVariation(options.processOptions);
 
     fprintf('Processors: %d, variables: %d\n', ...
-      processorCount, process.dimensionCount);
+      processorCount, sum(process.dimensions));
     fprintf('%10s', 'Processor');
     for i = 1:parameterCount
       fprintf('%20s', parameterNames{i});

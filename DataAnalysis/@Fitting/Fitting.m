@@ -22,23 +22,7 @@ classdef Fitting < handle
     end
 
     function target = compute(this, varargin)
-      if length(varargin) == 1 && ...
-        (isa(varargin{1}, 'struct') || isa(varargin{1}, 'Options'))
-
-        %
-        % The parameters are packed into a structured object.
-        %
-        parameters = cell(1, this.parameterCount);
-        for i = 1:this.parameterCount
-          parameters{i} = varargin{1}.(this.parameterNames{i});
-        end
-        target = this.evaluate(this.output, parameters{:});
-      else
-        %
-        % The parameters are given one by one.
-        %
-        target = this.evaluate(this.output, varargin{:});
-      end
+      target = this.evaluate(this.output, varargin{:});
     end
 
     function [ parameters, dimensions, index ] = assign(this, varargin)

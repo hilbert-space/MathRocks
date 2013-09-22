@@ -1,8 +1,9 @@
 classdef ProcessVariation < handle
   properties (SetAccess = 'private')
-    transformations
+    parameters
     parameterCount
-    dimensionCount
+    transformations
+    dimensions
   end
 
   properties (Access = 'private')
@@ -13,23 +14,39 @@ classdef ProcessVariation < handle
     function this = ProcessVariation(varargin)
       options = Options(varargin{:});
 
-      parameters = options.parameters;
-      this.parameterCount = length(parameters);
+      this.parameters = options.parameters;
+      this.parameterCount = length(this.parameters);
 
       this.transformations = cell(1, this.parameterCount);
       this.merging = false(1, this.parameterCount);
 
-      this.dimensionCount = 0;
+      this.dimensions = zeros(1, this.parameterCount);
       for i = 1:this.parameterCount
-        parameter = parameters.get(i);
+        parameter = this.parameters.get(i);
 
         [ correlation, contribution, this.merging(i) ] = ...
           this.correlate(parameter, options);
         this.transformations{i} = this.transform( ...
           parameter, correlation, contribution, options);
 
-        this.dimensionCount = this.dimensionCount + ...
-          this.transformations{i}.dimensionCount;
+        this.dimensions(i) = this.transformations{i}.dimensionCount;
+      end
+    end
+
+    function assignments = assign(this, parameters)
+      assignments = struct;
+      names = fieldnames(this.parameters);
+      for i = 1:this.parameterCount
+        assignments.(names{i}) = parameters{i};
+      end
+    end
+
+    function parameters = partition(this, data)
+      parameters = cell(1, this.parameterCount);
+      k = 0;
+      for i = 1:this.parameterCount
+        parameters{i} = data(:, (k + 1):(k + this.dimensions(i)));
+        k = k + this.dimensions(i);
       end
     end
 
@@ -55,12 +72,19 @@ classdef ProcessVariation < handle
       end
     end
 
+    function distributions = distributions(this)
+      distributions = cell(1, this.parameterCount);
+      for i = 1:this.parameterCount
+        distributions{i} = this.transformations{i}.distribution;
+      end
+    end
+
     function string = toString(this)
       string = sprintf('%s(%s)', class(this), ...
         Utils.toString(struct( ...
           'transformations', this.transformations, ...
           'parameterCount', this.parameterCount, ...
-          'dimensionCount', this.dimensionCount)));
+          'dimensions', this.dimensions)));
     end
   end
 

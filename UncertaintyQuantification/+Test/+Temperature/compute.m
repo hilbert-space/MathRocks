@@ -6,11 +6,10 @@ function compute(varargin)
   options = Configure.processVariation(options);
   options = Configure.polynomialChaos(options);
 
-  analysis = options.get('analysis', 'Transient');
+  analysis = options.fetch('analysis', 'Transient');
+  iterationCount = options.fetch('iterationCount', 10);
 
   surrogate = Temperature.Chaos.(analysis)(options);
-
-  iterationCount = options.get('iterationCount', 10);
 
   fprintf('Analysis: %s\n', analysis);
   fprintf('Running %d iterations...\n', iterationCount);
@@ -22,8 +21,8 @@ function compute(varargin)
 
   Plot.figure(800, 400);
   subplot(2, 1, 1);
-  plot(options.power, options.dynamicPower, 'figure', false, 'markEach', 18);
+  plot(options.power, options.dynamicPower, 'figure', false);
   subplot(2, 1, 2);
   Plot.temperatureVariation(Texp, output.Tvar, 'time', options.timeLine, ...
-    'figure', false, 'markEach', 18, 'layout', 'one');
+    'figure', false, 'layout', 'one');
 end

@@ -6,17 +6,13 @@ classdef Linear < Fitting
   end
 
   methods (Access = 'protected')
-    function output = construct(this, grid, options)
+    function output = construct(~, grid, ~)
       output.F = griddedInterpolant( ...
         grid.parameterData{:}, grid.targetData, 'linear', 'none');
     end
 
-    function target = evaluate(this, output, varargin)
-      dimensions = size(varargin{1});
-      for i = 1:this.parameterCount
-        varargin{i} = varargin{i}(:);
-      end
-      target = reshape(output.F(varargin{:}), dimensions);
+    function target = evaluate(~, output, varargin)
+      target = output.F(varargin{:});
     end
   end
 end

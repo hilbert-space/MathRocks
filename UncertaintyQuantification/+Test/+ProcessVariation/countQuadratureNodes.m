@@ -10,7 +10,7 @@ function countQuadratureNodes
   for i = 1:length(processorCountSet)
     options = configure('processorCount', processorCountSet(i));
     process = ProcessVariation(options.processOptions);
-    dimensionCountSet(i) = process.dimensionCount;
+    dimensionCountSet(i) = sum(process.dimensions);
   end
 
   for k = 1:(2 * length(quadratureRule))
