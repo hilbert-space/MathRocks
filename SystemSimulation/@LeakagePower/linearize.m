@@ -79,8 +79,13 @@ function [ alpha, beta ] = linearize(this, varargin)
   %
   % Replace the evaluation function.
   %
-  this.compute = Utils.toFunction( ...
-    this.powerScale * options.compose(alpha, beta), Xs{:});
+  if options.has('compose')
+    Fs = this.powerScale * options.compose(alpha, beta);
+  else
+    Fs = this.powerScale * (alpha * Ts + beta);
+  end
+
+  this.compute = Utils.toFunction(Fs, Xs{:});
   this.isLinearized = true;
 
   alpha = double(alpha);
