@@ -57,7 +57,13 @@ classdef Options < dynamicprops
         if isa(item, 'struct')
           names = fieldnames(item);
           for j = 1:length(names)
-            this.set(names{j}, item.(names{j}));
+            if numel(item) == 1
+              this.set(names{j}, item.(names{j}));
+            else
+              value = cell(1, numel(item));
+              [ value{:} ] = item.(names{j});
+              this.set(names{j}, value);
+            end
           end
           i = i + 1;
         else
@@ -116,6 +122,7 @@ classdef Options < dynamicprops
       for i = 1:length(this.names__)
         if strcmp(this.names__{i}, name)
           this.names__(i) = [];
+          break;
         end
       end
       delete(findprop(this, name));
