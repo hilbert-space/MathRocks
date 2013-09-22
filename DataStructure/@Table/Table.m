@@ -69,14 +69,14 @@ classdef Table < handle
   end
 
   methods (Access = 'private')
-    function constrainRange(this, constraints)
+    function constrainRange(this, parameters)
       I = [];
 
-      for i = 1:length(constraints)
-        parameter = constraints(i).parameter;
-        j = this.mapping(parameter);
-        mn = min(constraints(i).range);
-        mx = max(constraints(i).range);
+      names = fieldnames(parameters);
+      for i = 1:length(names)
+        j = this.mapping(names{i});
+        mn = min(parameters.(names{i}));
+        mx = max(parameters.(names{i}));
         I = [ I; ...
           find(this.parameterData{j} < mn); ...
           find(this.parameterData{j} > mx) ];

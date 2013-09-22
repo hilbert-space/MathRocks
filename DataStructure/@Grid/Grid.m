@@ -44,16 +44,17 @@ classdef Grid < Table
   end
 
   methods (Access = 'private')
-    function constrainCount(this, constraints)
+    function constrainCount(this, parameters)
       I = cell(1, this.parameterCount);
 
+      names = fieldnames(parameters);
       for i = 1:this.parameterCount
         I{i} = 1:length(this.parameterSweeps{i});
-        for j = 1:length(constraints)
-          if i ~= this.mapping(constraints(j).parameter), continue; end
+        for j = 1:length(names)
+          if i ~= this.mapping(names{j}), continue; end
           count = length(I{i});
-          if constraints(j).count >= count, break; end
-          divide = round(count / constraints(j).count);
+          if parameters.(names{j}) >= count, break; end
+          divide = round(count / parameters.(names{j}));
           I{i} = 1:divide:count;
           break;
         end
