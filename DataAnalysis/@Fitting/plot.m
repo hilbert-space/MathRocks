@@ -1,20 +1,26 @@
 function plot(this, varargin)
   options = Options(varargin{:});
-  assignments = options.get('parameters', struct);
 
   parameterCount = this.parameterCount;
   parameters = cell(1, parameterCount);
   index = zeros(1, parameterCount);
 
+  %
+  % Assignment of the fixed parameters
+  %
+  fixedParameters = options.get('fixedParameters', struct);
   for i = 1:parameterCount
-    if isfield(assignments, this.parameterNames{i})
-      parameters{i} = assignments.(this.parameterNames{i});
+    if isfield(fixedParameters, this.parameterNames{i})
+      parameters{i} = fixedParameters.(this.parameterNames{i});
     else
       index(i) = i;
     end
   end
   index(index == 0) = [];
 
+  %
+  % Construction of the evaluation grids
+  %
   exactTarget = [];
   if options.has('grid');
     grid = options.grid;
@@ -50,6 +56,9 @@ function plot(this, varargin)
     end
   end
 
+  %
+  % Correction of the dimensionality
+  %
   title = '';
   for i = 1:parameterCount
     if ~isempty(title), title = [ title, ', ' ]; end
@@ -61,6 +70,19 @@ function plot(this, varargin)
   end
   target = this.evaluate(this.output, parameters{:});
 
+  %
+  % Normalization
+  %
+  if options.has('normalization')
+    referenceParameters = this.assign('assignments', options.normalization);
+    referenceTarget = this.evaluate(this.output, referenceParameters{:});
+    target = target / referenceTarget;
+    exactTarget = exactTarget / referenceTarget;
+  end
+
+  %
+  % Plotting
+  %
   if options.get('figure', true)
     Plot.figure(800, 600);
   end
@@ -68,25 +90,42 @@ function plot(this, varargin)
   switch length(index)
   case 1
     Plot.line(parameters(index), target);
-    Plot.line(parameters(index), target, 'discrete', true);
     if ~isempty(exactTarget)
       Plot.line(parameters(index), exactTarget, ...
         'discrete', true, 'number', 2);
+    end
+    if options.get('logScale', false)
+      set(gca, 'YScale', 'log');
     end
   case 2
     surfc(parameters{index}, target);
-    Plot.line(parameters(index), target, 'discrete', true);
+    colormap(jet);
     if ~isempty(exactTarget)
       Plot.line(parameters(index), exactTarget, ...
         'discrete', true, 'number', 2);
     end
-    view(-180, 0);
+    if options.get('logScale', false)
+      set(gca, 'ZScale', 'log');
+    end
+    view(-90, 0);
   otherwise
     assert(false);
+  end
+
+  if options.has('normalization')
+    Plot.dot(referenceParameters{:}, 1);
   end
 
   evalin('base', 'grid on');
 
   Plot.title([ this.targetName, '(', title, ')' ]);
-  Plot.label(this.parameterNames{index}, this.targetName);
+
+  targetName = this.targetName;
+  if options.has('normalization')
+    targetName = [ targetName, '/', targetName, '_0' ];
+  end
+  if options.get('logScale', false);
+    targetName = [ 'log(', targetName, ')' ];
+  end
+  Plot.label(this.parameterNames{index}, targetName);
 end

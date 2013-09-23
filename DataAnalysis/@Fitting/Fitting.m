@@ -28,9 +28,9 @@ classdef Fitting < handle
     function [ parameters, dimensions, index ] = assign(this, varargin)
       options = Options(varargin{:});
 
-      reference = options.reference;
+      reference = options.get('reference', {});
       assignments = options.get('assignments', struct);
-      dimensions = options.get('dimensions', 1);
+      dimensions = options.get('dimensions', ones(1, this.parameterCount));
 
       parameters = cell(1, this.parameterCount);
 
