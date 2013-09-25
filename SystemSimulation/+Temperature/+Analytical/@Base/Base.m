@@ -97,9 +97,9 @@ classdef Base < Temperature.HotSpot
 
     function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       if this.leakage.isLinearized
-        [ T, output ] = this.computeWithLinearLeakage(Pdyn, varargin);
+        [ T, output ] = this.computeWithLinearLeakage(Pdyn, varargin{:});
       else
-        [ T, output ] = this.computeWithNonlinearLeakage(Pdyn, varargin);
+        [ T, output ] = this.computeWithNonlinearLeakage(Pdyn, varargin{:});
       end
     end
   end

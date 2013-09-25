@@ -46,15 +46,9 @@ classdef Base < handle
       end
     end
 
-    function [ Texp, output ] = expand(this, Pdyn, options)
-      function T = target(rvs)
-        parameters = this.preprocess(rvs);
-        T = this.computeWithLeakage(Pdyn, ...
-          Options(options, 'parameters', parameters));
-        T = this.postprocess(T);
-      end
-
-      chaosOutput = this.chaos.expand(@target);
+    function [ Texp, output ] = expand(this, Pdyn)
+      chaosOutput = this.chaos.expand(@(rvs) this.postprocess( ...
+        this.computeWithLeakage(Pdyn, this.preprocess(rvs))));
 
       Texp = reshape(chaosOutput.expectation, this.processorCount, []);
 

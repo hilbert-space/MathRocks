@@ -10,8 +10,7 @@ classdef Transient < ...
     end
 
     function [ Texp, output ] = compute(this, Pdyn, varargin)
-      options = Options(varargin{:});
-      [ Texp, output ] = this.expand(Pdyn, options);
+      [ Texp, output ] = this.expand(Pdyn, varargin{:});
     end
   end
 end

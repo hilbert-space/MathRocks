@@ -15,7 +15,7 @@ function compute(varargin)
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount
-    [ Texp, output ] = surrogate.compute(options.dynamicPower, options);
+    [ Texp, output ] = surrogate.compute(options.dynamicPower);
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
