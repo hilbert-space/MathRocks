@@ -50,25 +50,24 @@ classdef ProcessVariation < handle
       end
     end
 
-    function varargout = evaluate(this, varargin)
-      varargout = cell(1, this.parameterCount);
+    function parameters = evaluate(this, parameters)
       for i = 1:this.parameterCount
-        data = this.transformations{i}.evaluate(varargin{i});
+        data = this.transformations{i}.evaluate(parameters{i});
         if this.merging(i)
           data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
         end
-        varargout{i} = data;
+        parameters{i} = data;
       end
     end
 
-    function varargout = sample(this, sampleCount)
-      varargout = cell(1, this.parameterCount);
+    function parameters = sample(this, sampleCount)
+      parameters = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
         data = this.transformations{i}.sample(sampleCount);
         if this.merging(i)
           data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
         end
-        varargout{i} = data;
+        parameters{i} = data;
       end
     end
 
