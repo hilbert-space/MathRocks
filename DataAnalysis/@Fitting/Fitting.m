@@ -25,12 +25,10 @@ classdef Fitting < handle
       target = this.evaluate(this.output, varargin{:});
     end
 
-    function [ parameters, dimensions, index ] = assign(this, varargin)
-      options = Options(varargin{:});
+    function [ parameters, dimensions, index ] = ...
+      assign(this, assignments, dimensions, reference)
 
-      reference = options.get('reference', {});
-      assignments = options.get('assignments', struct);
-      dimensions = options.get('dimensions', ones(1, this.parameterCount));
+      if nargin < 3, dimensions = ones(1, this.parameterCount); end
 
       parameters = cell(1, this.parameterCount);
 

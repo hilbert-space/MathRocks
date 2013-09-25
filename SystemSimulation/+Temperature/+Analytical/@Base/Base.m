@@ -95,29 +95,17 @@ classdef Base < Temperature.HotSpot
       this.F = F;
     end
 
-    function [ T, output ] = compute(this, Pdyn, varargin)
-      options = Options(varargin{:});
+    function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       if this.leakage.isLinearized
-        %
-        % NOTE: When the leakage model is linearized in the constructor,
-        % there is no way back.
-        %
-        assert(~options.has('leakage'));
-      end
-      [ T, output ] = compute@Temperature.HotSpot(this, Pdyn, options);
-    end
-
-    function [ T, output ] = computeWithLeakage(this, Pdyn, options)
-      if this.leakage.isLinearized
-        [ T, output ] = computeWithLinearLeakage(this, Pdyn, options);
+        [ T, output ] = this.computeWithLinearLeakage(Pdyn, varargin);
       else
-        [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options);
+        [ T, output ] = this.computeWithNonlinearLeakage(Pdyn, varargin);
       end
     end
   end
 
   methods (Abstract)
-    [ T, output ] = computeWithLinearLeakage(this, Pdyn, options)
-    [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
+    [ T, output ] = computeWithLinearLeakage(this, Pdyn, varargin)
+    [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, varargin)
   end
 end

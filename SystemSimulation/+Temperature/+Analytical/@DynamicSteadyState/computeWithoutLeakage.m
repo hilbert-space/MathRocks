@@ -1,4 +1,4 @@
-function T = computeWithoutLeakage(this, Pdyn, options)
+function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
   nodeCount = this.nodeCount;
   stepCount = size(Pdyn, 2);
 
@@ -21,4 +21,6 @@ function T = computeWithoutLeakage(this, Pdyn, options)
   end
 
   T = this.C * X + this.Tamb;
+
+  output = struct;
 end

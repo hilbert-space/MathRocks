@@ -8,14 +8,11 @@ function compare(options, secondOptions)
   analysis = options.get('analysis', 'Transient');
 
   one = Temperature.Analytical.(analysis)(options);
-  T0 = Utils.toCelsius(one.compute( ...
-    options.dynamicPower, options, 'leakage', []));
-  T1 = Utils.toCelsius(one.compute( ...
-    options.dynamicPower, options));
+  T0 = Utils.toCelsius(one.computeWithoutLeakage(options.dynamicPower));
+  T1 = Utils.toCelsius(one.compute(options.dynamicPower));
 
   two = Temperature.Analytical.(analysis)(options, secondOptions);
-  T2 = Utils.toCelsius(two.compute( ...
-    options.dynamicPower, options, secondOptions));
+  T2 = Utils.toCelsius(two.compute(options.dynamicPower));
 
   error = Error.compute(errorMetric, T1, T2);
 

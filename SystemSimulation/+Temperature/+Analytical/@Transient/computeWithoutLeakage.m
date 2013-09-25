@@ -1,4 +1,4 @@
-function T = computeWithoutLeakage(this, Pdyn, options)
+function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
 
@@ -17,4 +17,6 @@ function T = computeWithoutLeakage(this, Pdyn, options)
     X = E * X + Q(:, i);
     T(:, i) = C * X + Tamb;
   end
+
+  output = struct;
 end

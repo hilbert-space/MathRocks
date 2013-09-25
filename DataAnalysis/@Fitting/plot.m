@@ -74,7 +74,7 @@ function plot(this, varargin)
   % Normalization
   %
   if options.has('normalization')
-    referenceParameters = this.assign('assignments', options.normalization);
+    referenceParameters = this.assign(options.normalization);
     referenceTarget = this.evaluate(this.output, referenceParameters{:});
     target = target / referenceTarget;
     exactTarget = exactTarget / referenceTarget;
@@ -113,7 +113,7 @@ function plot(this, varargin)
   end
 
   if options.has('normalization')
-    Plot.dot(referenceParameters{:}, 1);
+    Plot.dot(referenceParameters{index}, 1);
   end
 
   evalin('base', 'grid on');

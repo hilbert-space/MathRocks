@@ -1,28 +1,26 @@
-function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
-  iterationLimit   = options.get('iterationLimit', 20);
-  temperatureLimit = options.get('temperatureLimit', Utils.toKelvin(1e3));
-  tolerance        = options.get('tolerance', 0.5);
-
+function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, parameters)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
 
   C = this.C;
   E = this.E;
   F = this.F;
+  Tamb = this.Tamb;
+  iterationLimit = this.iterationLimit;
+  temperatureLimit = this.temperatureLimit;
+  convergenceTolerance = this.convergenceTolerance;
 
   Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
     stepCount * this.L))) * this.U';
 
-  Tamb = this.Tamb;
-
   leakage = this.leakage;
   leak = leakage.compute;
 
-  parameters = options.get('parameters', struct);
+  if nargin < 3, parameters = struct; end;
   parameters.T = NaN;
 
-  [ parameters, dimensions, Tindex ] = leakage.assign( ...
-    'assignments', parameters, 'dimensions', [ processorCount, NaN ]);
+  [ parameters, dimensions, Tindex ] = ...
+    leakage.assign(parameters, [ processorCount, NaN ]);
   assert(isscalar(Tindex));
 
   param = cell(1, leakage.parameterCount);
@@ -32,7 +30,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
 
   iterationCount = zeros(1, sampleCount);
 
-  switch options.get('version', 1)
+  switch this.algorithmVersion
   case 1 % Slower but more memory efficient
     T = Tamb * ones(processorCount, stepCount, sampleCount);
     P = zeros(processorCount, stepCount, sampleCount);
@@ -74,7 +72,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
           break;
        end
 
-        if max(max(abs(Tcurrent - Tlast))) < tolerance
+        if max(max(abs(Tcurrent - Tlast))) < convergenceTolerance
           %
           % Successful convergence
           %
@@ -135,7 +133,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
       %
       % Successful convergence
       %
-      K = max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < tolerance;
+      K = max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < convergenceTolerance;
       iterationCount(I(K)) = i;
 
       M = J | K;
@@ -205,7 +203,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, options)
       %
       % Successful convergence
       %
-      K = max(max(abs(T(:, I, :) - Tlast), [], 1), [], 3) < tolerance;
+      K = max(max(abs(T(:, I, :) - Tlast), [], 1), [], 3) < convergenceTolerance;
       iterationCount(I(K)) = i;
 
       M = J | K;

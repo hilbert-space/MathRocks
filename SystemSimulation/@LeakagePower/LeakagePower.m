@@ -70,10 +70,11 @@ classdef LeakagePower < handle
       this.isLinearized = false;
     end
 
-    function varargout = assign(this, varargin)
-      varargout = cell(1, nargout);
-      [ varargout{:} ] = this.fit.assign( ...
-        varargin{:}, 'reference', this.reference);
+    function [ parameters, dimensions, index ] = ...
+      assign(this, assignments, dimensions)
+
+      [ parameters, dimensions, index ] = ...
+        this.fit.assign(assignments, dimensions, this.reference);
     end
 
     function plot(this, varargin)

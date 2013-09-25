@@ -17,7 +17,7 @@ function compute(varargin)
   fprintf('Running %d iterations...\n', iterationCount);
   time = tic;
   for i = 1:iterationCount
-    [ T, output ] = temperature.compute(Pdyn, options);
+    [ T, output ] = temperature.compute(Pdyn);
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
