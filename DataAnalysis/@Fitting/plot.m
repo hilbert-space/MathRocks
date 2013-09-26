@@ -64,7 +64,7 @@ function plot(this, varargin)
     if ~isempty(title), title = [ title, ', ' ]; end
     title = [ title, this.parameterNames{i} ];
     if ~any(index == i)
-      title = [ title, ' = ', Utils.toString(parameters{i}) ];
+      title = [ title, ' = ', String(parameters{i}) ];
       parameters{i} = parameters{i} * ones(size(parameters{index(1)}));
     end
   end
@@ -100,6 +100,7 @@ function plot(this, varargin)
   case 2
     surfc(parameters{index}, target);
     colormap(jet);
+    set(gcf, 'Renderer', 'painters')
     if ~isempty(exactTarget)
       Plot.line(parameters(index), exactTarget, ...
         'discrete', true, 'number', 2);

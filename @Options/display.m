@@ -28,7 +28,7 @@ function display(this, title, offset)
       fprintf('\n');
       display(value, [], offset + 2);
     else
-      fprintf('%s\n', Utils.toString(value));
+      fprintf('%s\n', String(value));
     end
   end
 end

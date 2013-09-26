@@ -11,7 +11,7 @@ classdef Questionnaire < handle
     function this = Questionnaire(databaseFilename)
       if nargin == 0
         [ ~, ~, functionName ] = File.trace(2);
-        databaseFilename = sprintf('%s_input.mat', functionName);
+        databaseFilename = String.join('_', functionName, 'input.mat');
       end
 
       this.databaseFilename = databaseFilename;
@@ -42,11 +42,11 @@ classdef Questionnaire < handle
       end
       if ~isempty(value)
         if options.has('format')
-          prompt = sprintf([ 'Enter %s [%s]: ' ], options.description, ...
-            Utils.toString(value, options.format));
+          prompt = sprintf('Enter %s [%s]: ', options.description, ...
+            String(value, options.format));
         else
           prompt = sprintf('Enter %s [%s]: ', options.description, ...
-            Utils.toString(value));
+            String(value));
         end
       else
         prompt = sprintf('Enter %s: ', options.description);

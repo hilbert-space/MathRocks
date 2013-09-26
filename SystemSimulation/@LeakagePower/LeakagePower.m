@@ -22,8 +22,7 @@ classdef LeakagePower < handle
 
       referencePower = options.fetch('referencePower', NaN);
 
-      this.toString = sprintf('%s(%s)', ...
-        class(this), Utils.toString(options));
+      this.toString = sprintf('%s(%s)', class(this), String(options));
 
       filename = File.temporal( ...
         [ 'LeakagePower_', DataHash(this.toString), '.mat' ]);

@@ -9,6 +9,22 @@ classdef Options < dynamicprops
       this.update(varargin{:});
     end
 
+    function this = add(this, name, value)
+      this.names__{end + 1} = name;
+      addprop(this, name);
+      this.(name) = value;
+    end
+
+    function this = remove(this, name)
+      for i = 1:length(this.names__)
+        if strcmp(this.names__{i}, name)
+          this.names__(i) = [];
+          break;
+        end
+      end
+      delete(findprop(this, name));
+    end
+
     function value = get(this, name, value)
       if isnumeric(name), name = this.names__{name}; end
       if isprop(this, name)
@@ -108,24 +124,6 @@ classdef Options < dynamicprops
       else
         result = builtin('isa', this, class);
       end
-    end
-  end
-
-  methods (Access = 'private')
-    function this = add(this, name, value)
-      this.names__{end + 1} = name;
-      addprop(this, name);
-      this.(name) = value;
-    end
-
-    function this = remove(this, name)
-      for i = 1:length(this.names__)
-        if strcmp(this.names__{i}, name)
-          this.names__(i) = [];
-          break;
-        end
-      end
-      delete(findprop(this, name));
     end
   end
 

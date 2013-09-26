@@ -22,7 +22,7 @@ function options = systemSimulation(varargin)
   readTaskCount = length(options.application.tasks);
   if readTaskCount ~= taskCount
     %
-    % NOTE: It is a rather common thing for TGFF.
+    % NOTE: It is a rather common issue for TGFF.
     %
     taskCount = readTaskCount;
     options.taskCount = taskCount;

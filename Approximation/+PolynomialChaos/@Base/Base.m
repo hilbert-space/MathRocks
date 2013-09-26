@@ -56,8 +56,8 @@ classdef Base < handle
       this.order = options.order;
       this.inputCount = options.inputCount;
 
-      filename = File.temporal([ class(this), '_', ...
-        DataHash(Utils.toString(options)), '.mat' ]);
+      filename = File.temporal([ String.join('_', ...
+        class(this), DataHash(String(options))), '.mat' ]);
 
       if exist(filename, 'file')
         load(filename);

@@ -41,7 +41,7 @@ function Ebden
     'nodes', x, 'responses', y, ...
     'kernel', kernel, 'verbose', true);
 
-  fprintf('Found parameters: %s.\n', Utils.toString(surrogate.parameters));
+  fprintf('Found parameters: %s.\n', String(surrogate.parameters));
 
   [ ystar, var ] = surrogate.evaluate(xstar);
   std = sqrt(diag(var));

@@ -21,7 +21,10 @@ classdef Wafer < handle
     end
 
     function string = toString(this)
-      string = Utils.toString([ this.dieCount, this.processorCount ]);
+      string = sprintf('%s(%s)', class(this), ...
+        String(struct( ...
+          'dieCount', this.dieCount, ...
+          'processorCount', this.processorCount)));
     end
   end
 

@@ -66,22 +66,14 @@ classdef HotSpot < handle
       end
     end
 
-    function display(this)
-      fprintf('%s:\n', class(this));
-      fprintf('  Processing elements: %d\n', this.processorCount);
-      fprintf('  Thermal nodes:       %d\n', this.nodeCount);
-      fprintf('  Sampling interval:   %.2e s\n', this.samplingInterval);
-      fprintf('  Ambient temperature: %.2f C\n', Utils.toCelsius(this.Tamb));
-
-      if isempty(this.leakage), return; end
-
-      fprintf('  Leakage model:       %s\n', class(this.leakage));
-    end
-
     function string = toString(this)
-      string = sprintf('%s(%d, %d, %.2e, %.2f, %s)', ...
-        class(this), this.processorCount, this.nodeCount, ...
-        this.samplingInterval, this.Tamb, Utils.toString(this.leakage));
+      string = sprintf('%s(%s)', class(this), ...
+        String(struct( ...
+          'processorCount', this.processorCount, ...
+          'nodeCount', this.nodeCount, ...
+          'samplingInterval', this.samplingInterval, ...
+          'Tamb', this.Tamb, ...
+          'leakage', this.leakage)));
     end
   end
 
