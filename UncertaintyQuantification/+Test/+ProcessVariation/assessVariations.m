@@ -1,11 +1,11 @@
-function assessVariations
+function assessVariations(varargin)
   setup;
 
   sampleCount = 1e5;
   processorCountSet = [ 2 4 8 16 32 ];
 
   for processorCount = processorCountSet
-    options = configure('processorCount', processorCount);
+    options = configure(varargin{:}, 'processorCount', processorCount);
 
     parameters = options.processOptions.parameters;
     parameterCount = length(parameters);
@@ -21,8 +21,7 @@ function assessVariations
     end
     fprintf('\n');
 
-    samples = cell(1, parameterCount);
-    [ samples{:} ] = process.sample(sampleCount);
+    samples = process.sample(sampleCount);
 
     expectations = zeros(processorCount, parameterCount);
     variances = zeros(processorCount, parameterCount);

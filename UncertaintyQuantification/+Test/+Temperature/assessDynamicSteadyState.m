@@ -1,5 +1,5 @@
 function assessDynamicSteadyState(varargin)
   compare( ...
     Options(varargin{:}, 'analysis', 'DynamicSteadyState'), ...
-    Options('version', 3));
+    Options('algorithmVersion', 3));
 end

@@ -1,4 +1,4 @@
-function countQuadratureNodes
+function countQuadratureNodes(varargin)
   setup;
 
   quadratureRule = { 'GaussHermite', 'GaussHermiteHW' };
@@ -8,7 +8,7 @@ function countQuadratureNodes
   dimensionCountSet = zeros(length(processorCountSet), 1);
 
   for i = 1:length(processorCountSet)
-    options = configure('processorCount', processorCountSet(i));
+    options = configure(varargin{:}, 'processorCount', processorCountSet(i));
     process = ProcessVariation(options.processOptions);
     dimensionCountSet(i) = sum(process.dimensions);
   end
