@@ -43,12 +43,10 @@ classdef LeakagePower < handle
       %
       % Compute the reference values of the parameters.
       %
-      parameters = options.parameters;
-      assert(length(parameters) == this.parameterCount);
-
       reference = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
-        reference{i} = parameters.(this.parameterNames{i}).reference;
+        reference{i} = ...
+          options.parameters.(this.parameterNames{i}).reference;
       end
       this.reference = reference;
 

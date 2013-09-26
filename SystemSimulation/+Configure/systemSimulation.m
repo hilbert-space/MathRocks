@@ -57,16 +57,31 @@ function options = systemSimulation(varargin)
   end
 
   %
+  % Process parameters
+  %
+  processParameters = options.ensure('processParameters', { 'L' });
+
+  %
   % Leakage power
   %
-  leakageParameters = Options( ...
-    'T', Options('reference', Utils.toKelvin(120)), ...
-    'L', Options('reference', 45e-9));
+  leakageParameters = Options;
+  leakageParameters.add('T', Options('reference', Utils.toKelvin(120)));
+
+  for i = 1:length(processParameters)
+    switch processParameters{i}
+    case 'L'
+      leakageParameters.add('L', Options('reference', 45e-9));
+    case 'Tox'
+      leakageParameters.add('Tox', Options('reference', 1.25e-9));
+    otherwise
+      assert(false);
+    end
+  end
 
   options.leakageOptions = Options( ...
     'approximation', 'Interpolation.Linear', ...
-    'filename', File.choose(paths, ...
-      'inverter_07.leak'), ...
+    'filename', File.choose(paths, [ String.join('_', ...
+      'inverter', fieldnames(leakageParameters)), '.leak' ]), ...
     'parameters', leakageParameters, ...
     'referencePower', 2 / 3 * mean(options.dynamicPower(:)), ...
     options.get('leakageOptions', []));
