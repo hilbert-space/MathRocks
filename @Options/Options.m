@@ -32,9 +32,10 @@ classdef Options < dynamicprops
       end
     end
 
-    function this = set(this, name, value)
+    function this = set(this, name, value, update)
       if isprop(this, name)
-        if isa(this.(name), 'Options') && isa(value, 'struct')
+        if nargin < 4, update = true; end
+        if update && isa(this.(name), 'Options') && isa(value, 'struct')
           this.(name).update(value);
         else
           this.(name) = value;
@@ -56,6 +57,13 @@ classdef Options < dynamicprops
         value = this.(name);
       else
         this.add(name, value);
+      end
+    end
+
+    function options = subset(this, names)
+      options = Options;
+      for i = 1:length(names)
+        options.add(names{i}, this.get(names{i}));
       end
     end
 
@@ -102,7 +110,7 @@ classdef Options < dynamicprops
       if isprop(this, name)
         [ ~ ] = builtin('subsasgn', this, s, value);
       else
-        this.set(name, value);
+        this.set(name, value, false);
       end
     end
 
