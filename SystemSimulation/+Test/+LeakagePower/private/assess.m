@@ -11,17 +11,17 @@ function assess(varargin)
   approximation = options.approximation;
 
   leakage = LeakagePower(options);
+  parameters = options.parameters;
 
   %
   % Accuracy
   %
   switch approximation
   case 'Interpolation.Linear'
-    plotLeakage(leakage);
+    plotLeakage(leakage, parameters);
   otherwise
     referenceLeakage = LeakagePower( ...
-      'filename', options.filename, ...
-      'parameters', options.parameters, ...
+      'filename', options.filename, 'parameters', parameters, ...
       'approximation', 'Interpolation.Linear');
 
     grid = Grid(options, 'targetName', 'I');
@@ -34,11 +34,11 @@ function assess(varargin)
     Plot.name('%s: %s %.4f', approximation, errorMetric, error);
 
     subplot(1, 2, 1);
-    plotLeakage(referenceLeakage, 'figure', false);
+    plotLeakage(referenceLeakage, parameters, 'figure', false);
     Plot.title('Interpolation.Linear');
 
     subplot(1, 2, 2);
-    plotLeakage(leakage, 'figure', false, 'grid', grid);
+    plotLeakage(leakage, parameters, 'figure', false, 'grid', grid);
     Plot.title(approximation);
   end
 
@@ -70,13 +70,20 @@ function assess(varargin)
   fprintf('Computational time: %.4f s\n', toc(time) / iterationCount);
 end
 
-function plotLeakage(leakage, varargin)
-  plot(leakage, ...
-    'logScale', true, ...
-    'normalization', struct( ...
-      'T', Utils.toKelvin(45), 'L', 45e-9, 'Tox', 1.25e-9), ...
-    'fixedParameters', struct( ...
-      'Tox', 1.25e-9), ...
-    varargin{:});
+function plotLeakage(leakage, parameters, varargin)
+  names = fieldnames(parameters);
+
+  normalization = struct;
+  for i = 1:length(names)
+    normalization.(names{i}) = parameters.(names{i}).nominal;
+  end
+
+  fixedParameters = struct;
+  for i = 3:length(names);
+    fixedParameters.(names{i}) = parameters.(names{i}).nomial;
+  end
+
+  plot(leakage, 'logScale', true, 'normalization', normalization, ...
+    'fixedParameters', fixedParameters, varargin{:});
   colormap(flipud(hot));
 end

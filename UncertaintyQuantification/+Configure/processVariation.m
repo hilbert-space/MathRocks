@@ -25,38 +25,36 @@ function options = processVariation(varargin)
   lou = lse;
 
   %
-  % Process parameters
+  % System parameters
   %
-  processParameters = options.ensure('processParameters', { 'L' });
-
-  %
-  % Process variation
-  %
-  processVariationParameters = Options;
-
-  for i = 1:length(processParameters)
-    switch processParameters{i}
+  function parameter = configureParameter(name, parameter)
+    if nargin < 2, parameter = Options; end
+    parameter.model = 'Gaussian';
+    switch name
     case 'L'
-      processVariationParameters.add('L', Options( ...
-        'model', 'Gaussian', ...
-        'expectation', 45e-9, ...
-        'variance', (0.05 * 17.5e-9)^2, ...
-        'correlation', { @correlate, eta, lse, lou }, ...
-        'globalContribution', 0.5, ...
-        'reductionThreshold', 0.96));
+      expectation = parameter.get('nominal', 50e-9);
+      parameter.expectation = expectation;
+      parameter.variance = (0.05 * (expectation - (50e-9 - 22.5e-9)))^2;
     case 'Tox'
-      processVariationParameters.add('Tox', Options( ...
-        'model', 'Gaussian', ...
-        'expectation', 1.25e-9, ...
-        'variance', (0.05 * 1.25e-9)^2, ...
-        'correlation', { @correlate, eta, lse, lou }, ...
-        'globalContribution', 0.5, ...
-        'reductionThreshold', 0.96));
+      expectation = parameter.get('nominal', 1e-9);
+      parameter.expectation = expectation;
+      parameter.variance = (0.05 * expectation)^2;
     otherwise
       assert(false);
     end
+    parameter.correlation = { @correlate, eta, lse, lou };
+    parameter.globalContribution = 0.5;
+    parameter.reductionThreshold = 0.96;
   end
 
-  options.processOptions = Options( ...
-    'die', options.die, 'parameters', processVariationParameters);
+  leakageParameters = options.ensure('leakageParameters', Options);
+  processParameters = options.ensure('processParameters', { 'L' });
+  for i = 1:length(processParameters)
+    name = processParameters{i};
+    leakageParameters.(name) = configureParameter( ...
+      name, leakageParameters.get(name, Options));
+  end
+
+  options.processOptions = Options('die', options.die, ...
+    'parameters', leakageParameters.subset(processParameters));
 end
