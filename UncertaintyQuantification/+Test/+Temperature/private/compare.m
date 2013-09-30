@@ -1,4 +1,6 @@
 function compare(options, secondOptions)
+  if nargin < 2, secondOptions = []; end
+
   close all;
   setup;
 
@@ -9,27 +11,25 @@ function compare(options, secondOptions)
   oneMethod = 'MonteCarlo';
   twoMethod = 'Chaos';
 
-  analysis = options.get('analysis', 'Transient');
+  analysis = options.fetch('analysis', 'Transient');
 
   fprintf('Analysis: %s\n', analysis);
 
-  oneSampleCount = 1e4;
-  twoSampleCount = 1e4;
+  sampleCount = 1e4;
 
   timeSlice = options.stepCount * options.samplingInterval / 2;
   k = floor(timeSlice / options.samplingInterval);
 
-  one = Temperature.(oneMethod).(analysis)(options);
-  two = Temperature.(twoMethod).(analysis)(options, secondOptions);
+  one = Temperature.(oneMethod).(analysis)( ...
+    options, 'sampleCount', sampleCount);
+  two = Temperature.(twoMethod).(analysis)( ...
+    options, secondOptions, 'sampleCount', sampleCount);
 
-  [ oneTexp, oneOutput ] = one.compute(options.dynamicPower, ...
-    'sampleCount', oneSampleCount, 'verbose', true, options);
-
-  [ twoTexp, twoOutput ] = two.compute(options.dynamicPower, ...
-    'sampleCount', twoSampleCount, 'verbose', true, secondOptions);
+  [ oneTexp, oneOutput ] = one.compute(options.dynamicPower);
+  [ twoTexp, twoOutput ] = two.compute(options.dynamicPower);
 
   if ~isfield(twoOutput, 'Tdata')
-    twoOutput.Tdata = two.sample(twoOutput, twoSampleCount);
+    twoOutput.Tdata = two.sample(twoOutput, sampleCount);
   end
 
   %

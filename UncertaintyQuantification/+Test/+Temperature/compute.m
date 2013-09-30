@@ -1,5 +1,4 @@
 function compute(varargin)
-  close all;
   setup;
 
   options = Configure.systemSimulation(varargin{:});
