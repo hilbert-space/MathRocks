@@ -1,5 +1,6 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
+    sampleCount
     process
   end
 
@@ -7,46 +8,52 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      if options.processOptions.reductionThreshold < 1
-        warning('Monte Carlo: turning off the process dimension reduction.');
+      this.sampleCount = options.get('sampleCount', 1e3);
+
+      options = options.processOptions;
+      names = fieldnames(options.parameters);
+      for i = 1:length(names)
+        %
+        % NOTE: Although we modify the options here, they are a copy
+        % of the original ones, which was created in the constructors
+        % of the classes inheriting this base class.
+        %
+        if options.parameters.(names{i}).reductionThreshold < 1
+          warning([ 'Monte Carlo: turning off the process ', ...
+            'dimension reduction for ', names{i}, '.' ]);
+          options.parameters.(names{i}).reductionThreshold = 1;
+        end
       end
 
-      this.process = ProcessVariation.(options.processModel)( ...
-        options.processOptions, 'reductionThreshold', 1);
+      this.process = ProcessVariation(options);
     end
 
-    function [ Texp, output ] = estimate(this, Pdyn, options)
-      verbose = options.get('verbose', false);
-
-      sampleCount = options.get('sampleCount', 1e3);
-
+    function [ Texp, output ] = estimate(this, Pdyn, varargin)
       %
-      % NOTE: We always generate samples of V, even though the futher
+      % NOTE: We always generate samples here, even though the futher
       % MC simulations might be cached. The reason is to advance the RNG
       % of MATLAB and have the same bahavior of the computations outside
       % this method.
       %
-      V = transpose(this.process.sample(sampleCount));
+      parameters = this.process.sample(this.sampleCount);
+      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
+      parameters = this.process.assign(parameters);
 
-      filename = options.get('filename', []);
-      if isempty(filename)
-        filename = sprintf('MonteCarlo_%s.mat', ...
-          DataHash({ Pdyn, this.toString, sampleCount }));
-      end
+      filename = sprintf('MonteCarlo_%s.mat', ...
+        DataHash({ Pdyn, this.toString }));
 
       if File.exist(filename)
-        if verbose
-          fprintf('Monte Carlo: using cached data in "%s"...\n', filename);
-        end
+        fprintf('Monte Carlo: using cached data in "%s"...\n', filename);
         load(filename);
       else
-        if verbose
-          fprintf('Monte Carlo: running %d simulations...\n', sampleCount);
-        end
+        fprintf('Monte Carlo: running %d simulations...\n', ...
+          this.sampleCount);
 
         time = tic;
+        Tdata = this.computeWithLeakage(Pdyn, parameters);
 
-        Tdata = this.computeWithLeakage(Pdyn, Options(options, 'V', V));
+        I = squeeze(any(any(isnan(Tdata), 1), 2));
+        Tdata(:, :, I) = [];
 
         Texp = mean(Tdata, 3);
         Tvar = var(Tdata, [], 3);
@@ -54,12 +61,16 @@ classdef Base < handle
 
         time = toc(time);
 
-        save(filename, 'Texp', 'Tvar', 'Tdata', 'time', '-v7.3');
+        save(filename, 'Texp', 'Tvar', 'Tdata', 'time', 'I', '-v7.3');
       end
 
-      if verbose
-        fprintf('Monte Carlo: simulation time %.2f s (%d samples).\n', ...
-          time, sampleCount);
+      fprintf('Monte Carlo: simulation time %.2f s (%d samples).\n', ...
+        time, this.sampleCount);
+
+      nanCount = sum(I);
+      if nanCount > 0
+        warning('Monte Carlo: %d samples have been rejected due to NaNs.', ...
+          nanCount);
       end
 
       output.Pdyn = Pdyn;
@@ -68,15 +79,20 @@ classdef Base < handle
       output.time = time;
     end
 
-    function Tdata = evaluate(this, output, rvs, varargin)
-      V = transpose(this.process.evaluate(rvs));
-      Tdata = this.computeWithLeakage( ...
-        output.Pdyn, Options(varargin{:}, 'V', V));
-      Tdata = permute(Tdata, [ 3 1 2 ]);
+    function Tdata = evaluate(this, output, rvs)
+      parameters = this.process.partition(rvs);
+      parameters = this.process.evaluate(parameters);
+      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
+      parameters = this.process.assign(parameters);
+      Tdata = permute(this.computeWithLeakage( ...
+        output.Pdyn, parameters), [ 3 1 2 ]);
     end
 
     function string = toString(this)
-      string = Utils.toString(this.process);
+      string = sprintf('%s(%s)', class(this), ...
+        String(struct( ...
+          'sampleCount', this.sampleCount, ...
+          'process', this.process)));
     end
   end
 end

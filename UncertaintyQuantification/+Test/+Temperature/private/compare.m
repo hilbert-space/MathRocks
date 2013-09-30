@@ -54,33 +54,70 @@ function compare(options, secondOptions)
       'names', { oneMethod, twoMethod });
   end
 
-  if one.process.dimensionCount ~= two.process.dimensionCount, return; end
+  if one.process.dimensions ~= two.process.dimensions, return; end
+
+  parameters = options.processOptions.parameters;
+  dimensions = one.process.dimensions;
+  parameterCount = length(dimensions);
+  names = fieldnames(parameters);
+
+  nominals = cell(1, parameterCount);
+  sweeps = cell(1, parameterCount);
+  for i = 1:parameterCount
+    switch parameters.get(i).model
+    case 'Gaussian'
+      sweeps{i} = -7:0.2:7;
+    otherwise
+      assert(false);
+    end
+    nominals{i} = zeros(length(sweeps{i}), dimensions{i});
+  end
 
   %
   % Sweeping the random variables
   %
-  index = uint8(1);
+  Iparam = 1;
+  Irv = uint8(1);
   while Console.question('Sweep random variables? ')
-    switch options.processModel
-    case 'Gaussian'
-      rvs = -7:0.2:7;
-    otherwise
-      assert(false);
+    if length(names) > 1
+      name = Console.request( ...
+       'prompt', sprintf('Which parameter? [%s] ', names{Iparam}), ...
+       'type', 'char', 'default', names{Iparam});
+
+      found = false;
+      for i = 1:length(names)
+        if strcmp(names{i}, name)
+          found = true;
+          break;
+        end
+      end
+
+      if ~found
+        Iparam = 1;
+        continue;
+      end
+
+      Iparam = i;
     end
 
-    index = Console.request( ...
-     'prompt', sprintf('Which random variables? [%s] ', ...
-       String(index)), 'type', 'uint8', 'default', index);
+    Irv = Console.request( ...
+     'prompt', sprintf('Which random variable? [%s] ', ...
+       String(Irv)), 'type', 'uint8', 'default', Irv);
 
-    if any(index > one.process.dimensionCount), continue; end
+    dimensionCount = dimensions(Iparam);
 
-    RVs = zeros(length(rvs), one.process.dimensionCount);
-    for i = index
-      RVs(:, i) = rvs;
+    if any(Irv > dimensionCount)
+      Irv = uint8(1);
+      continue;
     end
 
-    oneTdata = one.evaluate(oneOutput, RVs);
-    twoTdata = two.evaluate(twoOutput, RVs);
+    parameters = nominals;
+    for i = Irv
+      parameters{Iparam}(:, i) = sweeps{Iparam};
+    end
+
+    oneTdata = one.evaluate(oneOutput, parameters);
+    twoTdata = two.evaluate(twoOutput, parameters);
 
     oneTdata = Utils.toCelsius(oneTdata(:, :, k));
     twoTdata = Utils.toCelsius(twoTdata(:, :, k));

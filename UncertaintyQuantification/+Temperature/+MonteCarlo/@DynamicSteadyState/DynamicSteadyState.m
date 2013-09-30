@@ -4,16 +4,21 @@ classdef DynamicSteadyState < ...
 
   methods
     function this = DynamicSteadyState(varargin)
-      options = Options(varargin{:});
+      options = Options(varargin{:}).clone;
 
       if ~isempty(options.get('reduceModelOrder', []))
         warning('Monte Carlo: turning off the model order reduction.');
-        options.reduceModelOrder = [];
+        options.remove('reduceModelOrder');
       end
 
-      if ~isempty(options.get('reduceModelOrder', []))
+      if ~isempty(options.get('linearizeLeakage', []))
         warning('Monte Carlo: turning off the leakage linearization.');
-        options.linearizeLeakage = [];
+        options.remove('linearizeLeakage');
+      end
+
+      if options.get('algorithmVersion', 1) >= 3
+        warning('Monte Carlo: switching the second version of the algorithm.');
+        options.algorithmVersion = 2;
       end
 
       this = this@Temperature.Analytical.DynamicSteadyState(options);
@@ -21,20 +26,13 @@ classdef DynamicSteadyState < ...
     end
 
     function [ Texp, output ] = compute(this, Pdyn, varargin)
-      options = Options(varargin{:});
-
-      if options.get('version', Inf) >= 3
-        warning('Monte Carlo: switching to the second version of the algorithm.');
-        options.version = 2;
-      end
-
-      [ Texp, output ] = this.estimate(Pdyn, options);
+      [ Texp, output ] = this.estimate(Pdyn, varargin{:});
     end
 
     function string = toString(this)
-      string = [ ...
-        toString@Temperature.Analytical.DynamicSteadyState(this), ...
-        toString@Temperature.MonteCarlo.Base(this) ];
+      string = [ '[ ', ...
+        toString@Temperature.Analytical.DynamicSteadyState(this), ', ', ...
+        toString@Temperature.MonteCarlo.Base(this), ' ]' ];
     end
   end
 end
