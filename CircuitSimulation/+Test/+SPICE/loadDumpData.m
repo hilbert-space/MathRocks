@@ -38,8 +38,8 @@ function loadDumpData(varargin)
   % Dumping
   %
   if isempty(outputFilename)
-    outputFilename = regexprep(targetDataFilename, ...
-      [ File.extension(targetDataFilename), '$' ], '.leak');
+    outputFilename = [ String.join('_', 'leakage', parameterNames), '.txt' ];
+    outputFilename = File.join('Circuits', outputFilename);
   end
   fprintf('Output filename: %s\n', outputFilename);
 
