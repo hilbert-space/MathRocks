@@ -80,7 +80,7 @@ function plotLeakage(leakage, parameters, varargin)
 
   fixedParameters = struct;
   for i = 3:length(names);
-    fixedParameters.(names{i}) = parameters.(names{i}).nomial;
+    fixedParameters.(names{i}) = parameters.(names{i}).nominal;
   end
 
   plot(leakage, 'logScale', true, 'normalization', normalization, ...
