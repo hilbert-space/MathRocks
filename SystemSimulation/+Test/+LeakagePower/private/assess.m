@@ -24,7 +24,7 @@ function assess(varargin)
       'filename', options.filename, 'parameters', parameters, ...
       'approximation', 'Interpolation.Linear');
 
-    grid = Grid(options, 'targetName', 'I');
+    grid = Grid(options, 'targetName', 'Ileak');
     Iref = referenceLeakage.compute(grid.parameterData{:});
     Ipred = leakage.compute(grid.parameterData{:});
 
@@ -79,7 +79,7 @@ function plotLeakage(leakage, parameters, varargin)
   end
 
   fixedParameters = struct;
-  for i = 3:length(names);
+  for i = 3:length(names)
     fixedParameters.(names{i}) = parameters.(names{i}).nominal;
   end
 

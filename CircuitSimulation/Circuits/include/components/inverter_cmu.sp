@@ -1,8 +1,9 @@
-.param L = 45n
+.param L = 50n
 
-.param Wp = '1.67 * 8 * 45n'
-.param Wn = '8 * 45n'
-.param Lambda = '0.5 * 45n'
+.param Lnom = 50n
+.param Wp = '1.67 * 8 * Lnom'
+.param Wn = '8 * Lnom'
+.param Lambda = '0.5 * Lnom'
 
 .param Tox = 1n
 
