@@ -1,0 +1,10 @@
+*.ic*
+*.lis
+*.log
+*.mt*
+*.pa*
+*.st*
+*.sw*
+*.tr*
+*.txt
+*.leak

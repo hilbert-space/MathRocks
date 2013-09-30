@@ -2,10 +2,10 @@ function config = configure(L, W, card)
   config.L = L;
   config.W = W;
 
-  nf = 1;
+  NF = 1;
 
   Lnew = L + card.xl;
-  Wnew = W / nf + card.xw;
+  Wnew = W / NF + card.xw;
 
   T0 = Lnew.^card.lln;
   T1 = Wnew.^card.lwn;
@@ -30,5 +30,5 @@ function config = configure(L, W, card)
   WeffCJ = Wnew - 2 * card.dwj;
 
   [ config.Ps, config.Pd, config.As, config.Ad ] = BSIM4.computeGeometry( ...
-    nf, card.geomod, card.min, WeffCJ, card.dmcg, card.dmci, card.dmdg);
+    NF, card.geomod, card.min, WeffCJ, card.dmcg, card.dmci, card.dmdg);
 end
