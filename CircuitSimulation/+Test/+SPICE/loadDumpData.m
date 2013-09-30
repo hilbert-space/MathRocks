@@ -15,11 +15,13 @@ function loadDumpData(varargin)
   parameterNames = fieldnames(parameters);
   dimensionCount = length(parameterNames);
 
+  referenceCircuit = options.referenceCircuit;
+
   %
   % Loading
   %
   if isempty(targetDataFilename)
-    targetDataFilename = 'ring_nangate.sw0';
+    targetDataFilename = [ referenceCircuit, '.sw0' ];
     targetDataFilename = File.join('Circuits', targetDataFilename);
   end
   fprintf('Target data filename: %s\n', targetDataFilename);
@@ -38,7 +40,8 @@ function loadDumpData(varargin)
   % Dumping
   %
   if isempty(outputFilename)
-    outputFilename = [ String.join('_', 'leakage', parameterNames), '.txt' ];
+    outputFilename = [ String.join('_', referenceCircuit, ...
+      parameterNames), '.txt' ];
     outputFilename = File.join('Circuits', outputFilename);
   end
   fprintf('Output filename: %s\n', outputFilename);
