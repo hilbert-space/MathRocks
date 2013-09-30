@@ -12,7 +12,7 @@ Vss ss 0 0
 
 .dc data = dataset
 .data dataset mer
-+ file = 'T_L.txt' temp = 1 L = 2
++ file = 'parameters.txt' temp = 1 L = 2
 .enddata
 
 .ic V(in) = 0

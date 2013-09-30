@@ -1,4 +1,5 @@
 function setup
+  use('CircuitSimulation');
   use('DataAnalysis');
   use('DataStructure');
   use('LinearAlgebra');

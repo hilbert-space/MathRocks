@@ -9,13 +9,11 @@ function generateDumpParameterData(varargin)
   options = Configure.processVariation(options);
 
   parameters = options.leakageParameters;
-  parameterNames = fieldnames(parameters);
 
   if isempty(filename)
-    filename = [ String.join('_', parameterNames), '.txt' ];
-    filename = File.join('Circuits', filename);
+    filename = Name.leakageParameterDataFile(options);
   end
-  fprintf('Parameter data filename: %s\n', filename);
+  fprintf('Parameter data filename: %s\n', File.name(filename));
 
   parameterData = SPICE.generateParameterData(parameters);
   SPICE.dumpParameterData(parameters, parameterData, filename);

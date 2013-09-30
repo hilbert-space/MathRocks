@@ -21,16 +21,14 @@ function loadDumpData(varargin)
   % Loading
   %
   if isempty(targetDataFilename)
-    targetDataFilename = [ referenceCircuit, '.sw0' ];
-    targetDataFilename = File.join('Circuits', targetDataFilename);
+    targetDataFilename = Name.leakageTargetDataFile(options);
   end
-  fprintf('Target data filename: %s\n', targetDataFilename);
+  fprintf('Target data filename: %s\n', File.name(targetDataFilename));
 
   if isempty(parameterDataFilename)
-    parameterDataFilename = [ String.join('_', parameterNames), '.txt' ];
-    parameterDataFilename = File.join('Circuits', parameterDataFilename);
+    parameterDataFilename = Name.leakageParameterDataFile(options);
   end
-  fprintf('Parameter data filename: %s\n', parameterDataFilename);
+  fprintf('Parameter data filename: %s\n', File.name(parameterDataFilename));
 
   targetData = SPICE.loadTargetData(targetName, targetDataFilename);
   parameterData = SPICE.loadParameterData(parameters, parameterDataFilename);
@@ -40,11 +38,9 @@ function loadDumpData(varargin)
   % Dumping
   %
   if isempty(outputFilename)
-    outputFilename = [ String.join('_', referenceCircuit, ...
-      parameterNames), '.txt' ];
-    outputFilename = File.join('Circuits', outputFilename);
+    outputFilename = Name.leakageDataFile(options);
   end
-  fprintf('Output filename: %s\n', outputFilename);
+  fprintf('Output filename: %s\n', File.name(outputFilename));
 
   file = fopen(outputFilename, 'w');
 
