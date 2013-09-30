@@ -72,18 +72,27 @@ end
 
 function plotLeakage(leakage, parameters, varargin)
   names = fieldnames(parameters);
+  dimensionCount = length(names);
 
   normalization = struct;
-  for i = 1:length(names)
+  for i = 1:dimensionCount
     normalization.(names{i}) = parameters.(names{i}).nominal;
   end
 
-  fixedParameters = struct;
-  for i = 3:length(names)
-    fixedParameters.(names{i}) = parameters.(names{i}).nominal;
-  end
+  combinations = [ ...
+    mat2cell(1:dimensionCount, ...
+      1, ones(1, dimensionCount)), ...
+    mat2cell(combnk(1:dimensionCount, 2), ...
+      ones(1, nchoosek(dimensionCount, 2)), 2).' ];
 
-  plot(leakage, 'logScale', true, 'normalization', normalization, ...
-    'fixedParameters', fixedParameters, varargin{:});
-  colormap(flipud(hot));
+  for i = 1:length(combinations)
+    fixedParameters = struct;
+    for j = setdiff(1:dimensionCount, combinations{i})
+      fixedParameters.(names{j}) = parameters.(names{j}).nominal;
+    end
+
+    plot(leakage, 'logScale', true, 'normalization', normalization, ...
+      'fixedParameters', fixedParameters, varargin{:});
+    colormap(flipud(hot));
+  end
 end
