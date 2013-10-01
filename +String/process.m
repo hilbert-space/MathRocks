@@ -26,7 +26,7 @@ end
 
 function string = numberToString(object, varargin)
   if isempty(varargin)
-    string = num2str(object);
+    string = num2str(object, '%g');
   else
     string = sprintf(varargin{:}, object);
   end
