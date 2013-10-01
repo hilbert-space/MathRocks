@@ -1,8 +1,8 @@
-function output = construct(this, f)
+function output = construct(this, f, outputCount)
   zeros = @uninit;
 
   inputCount = this.inputCount;
-  outputCount = this.outputCount;
+  if nargin < 3, outputCount = this.outputCount; end
 
   control = this.control;
   tolerance = this.tolerance;

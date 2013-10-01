@@ -10,15 +10,25 @@ classdef Custom < ProbabilityTransformation.Gaussian
 
     function data = sample(this, sampleCount)
       %
-      % Independent RVs of the specified custom distribution.
+      % Independent Gaussian RVs.
       %
-      data = this.customDistribution.sample( ...
+      data = this.gaussianDistribution.sample( ...
         sampleCount, this.dimensionCount);
+
+      %
+      % Dependent Gaussian RVs.
+      %
+      data = data * this.multiplier;
+
+      %
+      % Dependent uniform RVs.
+      %
+      data = this.gaussianDistribution.cdf(data);
 
       %
       % Dependent RVs with the desired distributions.
       %
-      data = this.evaluate(data);
+      data = this.variables.icdf(data);
     end
 
     function data = evaluate(this, data)
@@ -33,9 +43,19 @@ classdef Custom < ProbabilityTransformation.Gaussian
       data = this.gaussianDistribution.icdf(data);
 
       %
+      % Dependent Gaussian RVs.
+      %
+      data = data * this.multiplier;
+
+      %
+      % Dependent uniform RVs.
+      %
+      data = this.gaussianDistribution.cdf(data);
+
+      %
       % Dependent RVs with the desired distributions.
       %
-      data = evaluate@ProbabilityTransformation.Gaussian(this, data);
+      data = this.variables.icdf(data);
     end
   end
 
