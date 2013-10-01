@@ -1,14 +1,16 @@
-function output = construct(f, varargin)
+function output = construct(this, f)
   zeros = @uninit;
 
-  options = Options(varargin{:});
+  inputCount = this.inputCount;
+  outputCount = this.outputCount;
 
-  inputCount = options.inputCount;
-  outputCount = options.get('outputCount', 1);
-  control = options.get('control', 'NormNormExpectation');
-  tolerance = options.get('tolerance', 1e-3);
-  minimalLevel = options.get('minimalLevel', 2);
-  maximalLevel = options.get('maximalLevel', 10);
+  control = this.control;
+  tolerance = this.tolerance;
+
+  minimalLevel = this.minimalLevel;
+  maximalLevel = this.maximalLevel;
+
+  verbose = this.verbose;
 
   %
   % NOTE: We convert strings to numbers due to a possible speedup later on.
@@ -24,11 +26,6 @@ function output = construct(f, varargin)
     control = uint8(3);
   otherwise
     error('The specified adaptivity control method is unknown.');
-  end
-
-  verbose = @(varargin) [];
-  if options.get('verbose', false)
-    verbose = @(varargin) fprintf(varargin{:});
   end
 
   bufferSize = 200 * inputCount;
@@ -106,8 +103,10 @@ function output = construct(f, varargin)
   % Now, the other levels.
   %
   while true
-    verbose('Level %2d: stable %6d, old %6d, total %6d.\n', ...
-      level, stableNodeCount, oldNodeCount, nodeCount);
+    if verbose
+      fprintf('Level %2d: stable %6d, old %6d, total %6d.\n', ...
+        level, stableNodeCount, oldNodeCount, nodeCount);
+    end
 
     %
     % First, we always compute the surpluses of the old nodes.

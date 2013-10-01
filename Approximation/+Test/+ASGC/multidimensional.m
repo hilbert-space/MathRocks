@@ -1,4 +1,4 @@
-function interpolant = multidimensional
+function multidimensional
   close all;
   setup;
 
@@ -10,17 +10,10 @@ function interpolant = multidimensional
   time = outerTimeStep:outerTimeStep:30;
   timeSpan = [ 0, max(time) ];
 
-  timeDivision = outerTimeStep / innerTimeStep;
-
   stepCount = length(time);
 
   inputCount = 1;
   outputCount = 3 * stepCount;
-
-  odeOptions = odeset( ...
-    'Vectorized', 'on', ...
-    'AbsTol', 1e-6, ...
-    'RelTol', 1e-3);
 
   asgcOptions = Options( ...
     'inputCount', inputCount, ...
@@ -50,7 +43,7 @@ function interpolant = multidimensional
   target = @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
     timeSpan, innerTimeStep, outerTimeStep, outputCount);
 
-  output = assess(target, asgcOptions, ...
+  [ asgcOutput, ~, asgc ] = assess(target, asgcOptions, ...
     'sampleCount', sampleCount);
 
   %
@@ -61,7 +54,7 @@ function interpolant = multidimensional
   Plot.title('Expectation');
   Plot.label('Time');
   plotTransient(time, mean(Y, 3));
-  plotTransient(time, reshape(output.expectation, ...
+  plotTransient(time, reshape(asgcOutput.expectation, ...
     [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
@@ -72,7 +65,7 @@ function interpolant = multidimensional
   Plot.title('Variance');
   Plot.label('Time');
   plotTransient(time, var(Y, [], 3));
-  plotTransient(time, reshape(output.variance, ...
+  plotTransient(time, reshape(asgcOutput.variance, ...
     [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
@@ -81,7 +74,7 @@ function interpolant = multidimensional
   figure;
 
   Y = transpose(squeeze(Y(end, :, :)));
-  y = ASGC.evaluate(output, (z + 1) / 2);
+  y = asgc.evaluate(asgcOutput, (z + 1) / 2);
   y = y(:, [ ...
     outputCount - 2 * stepCount, ...
     outputCount - 1 * stepCount, ...

@@ -47,15 +47,15 @@ function discontinuity
   target = @(u) solvePointwise([ 0, t ], ...
     [ x0 + dx * (2 * u - 1), zeros(size(u)) ], odeOptions, f);
 
-  output = assess(target, asgcOptions, ...
+  [ asgcOutput, ~, asgc ] = assess(target, asgcOptions, ...
     'sampleCount', sampleCount, ...
     'exactExpectation', sqrt(15 / 35) / 4, ...
     'exactVariance', 45 / 112);
 
-  y = ASGC.evaluate(output, transpose((z + 1) / 2));
+  y = asgc.evaluate(asgcOutput, transpose((z + 1) / 2));
   plotSlice(t, z, y, Y(k, :));
 
-  Data.observe(output.data, 'draw', true, 'method', 'histogram');
+  Statistic.observe(asgcOutput.data, 'draw', true, 'method', 'histogram');
 end
 
 function y = solve(t, y0, options, f)
@@ -72,7 +72,7 @@ function values = solvePointwise(t, y0, options, f)
   end
 end
 
-function dy = rightHandSide(t, y, f)
+function dy = rightHandSide(~, y, f)
   dy = [ y(2, :); - f * y(2, :) - (35 / 2) * y(1, :).^3 + (15 / 2) * y(1, :) ];
 end
 
