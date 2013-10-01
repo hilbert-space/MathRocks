@@ -48,7 +48,7 @@ function options = processVariation(varargin)
   end
 
   leakageParameters = options.ensure('leakageParameters', Options);
-  processParameters = options.ensure('processParameters', { 'L' });
+  processParameters = options.ensure('processParameters', { 'L', 'Tox' });
   for i = 1:length(processParameters)
     name = processParameters{i};
     leakageParameters.(name) = configureParameter( ...

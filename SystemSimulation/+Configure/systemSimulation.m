@@ -59,7 +59,7 @@ function options = systemSimulation(varargin)
   %
   % Leakage power
   %
-  referenceCircuit = options.ensure('referenceCircuit', 'ring_cmu');
+  options.ensure('referenceCircuit', 'ring_nangate_VTL_T_L_Tox');
 
   function parameter = configureParameter(name, parameter)
     if nargin < 2, parameter = Options; end
@@ -82,7 +82,7 @@ function options = systemSimulation(varargin)
   leakageParameters = Options;
   leakageParameters.add('T', configureParameter('T'));
 
-  processParameters = options.ensure('processParameters', { 'L' });
+  processParameters = options.ensure('processParameters', { 'L', 'Tox' });
   for i = 1:length(processParameters)
     name = processParameters{i};
     leakageParameters.add(name, configureParameter(name));
