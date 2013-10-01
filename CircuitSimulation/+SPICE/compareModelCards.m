@@ -1,4 +1,4 @@
-function compare(cards)
+function compareModelCards(cards)
   modelNames = fieldnames(cards);
   modelCount = length(modelNames);
 
@@ -25,17 +25,19 @@ function compare(cards)
   fprintf('\n');
 
   for i = 1:parameterCount
-    same = true;
+    highlight = false;
     for j = 2:modelCount
-      if values{i, j - 1} ~= values{i, j}
-        same = false;
+      if isempty(values{i, j - 1}) || isempty(values{i, j}) || ...
+        any(values{i, j - 1} ~= values{i, j})
+
+        highlight = true;
         break;
       end
     end
-    if same
-      fprintf('%10s', parameters{i});
-    else
+    if highlight
       cprintf('red', '%10s', parameters{i});
+    else
+      fprintf('%10s', parameters{i});
     end
     for j = 1:modelCount
       fprintf('%15s', String(values{i, j}));

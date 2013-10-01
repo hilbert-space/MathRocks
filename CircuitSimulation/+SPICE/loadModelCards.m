@@ -1,4 +1,4 @@
-function cards = configure(filename)
+function cards = loadModelCards(filename)
   cards = struct;
   modelName = [];
 
