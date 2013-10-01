@@ -1,33 +1,43 @@
 function compareModels
-  cards = struct;
+  nCards = struct;
+  pCards = struct;
 
   a = SPICE.configure('Circuits/include/models/45nm_HP.pm');
-  cards.NMOS_HP = a.nmos;
-  cards.PMOS_HP = a.pmos;
+  nCards.NMOS_HP = a.nmos;
+  pCards.PMOS_HP = a.pmos;
 
   a = SPICE.configure('Circuits/include/models/45nm_LP.pm');
-  cards.NMOS_LP = a.nmos;
-  cards.PMOS_LP = a.pmos;
+  nCards.NMOS_LP = a.nmos;
+  pCards.PMOS_LP = a.pmos;
 
   a = SPICE.configure('Circuits/include/models/NMOS_THKOX.inc');
-  cards.NMOS_THKOX = a.nmos_thkox;
+  nCards.NMOS_THKOX = a.nmos_thkox;
   a = SPICE.configure('Circuits/include/models/PMOS_THKOX.inc');
-  cards.PMOS_THKOX = a.pmos_thkox;
+  pCards.PMOS_THKOX = a.pmos_thkox;
 
   a = SPICE.configure('Circuits/include/models/NMOS_VTG.inc');
-  cards.NMOS_VTG = a.nmos_vtg;
+  nCards.NMOS_VTG = a.nmos_vtg;
   a = SPICE.configure('Circuits/include/models/PMOS_VTG.inc');
-  cards.PMOS_VTG = a.pmos_vtg;
+  pCards.PMOS_VTG = a.pmos_vtg;
 
   a = SPICE.configure('Circuits/include/models/NMOS_VTH.inc');
-  cards.NMOS_VTH = a.nmos_vth;
+  nCards.NMOS_VTH = a.nmos_vth;
   a = SPICE.configure('Circuits/include/models/PMOS_VTH.inc');
-  cards.NMOS_VTH = a.pmos_vth;
+  pCards.NMOS_VTH = a.pmos_vth;
 
   a = SPICE.configure('Circuits/include/models/NMOS_VTL.inc');
-  cards.NMOS_VTL = a.nmos_vtl;
+  nCards.NMOS_VTL = a.nmos_vtl;
   a = SPICE.configure('Circuits/include/models/PMOS_VTL.inc');
-  cards.NMOS_VTL = a.pmos_vtl;
+  pCards.NMOS_VTL = a.pmos_vtl;
 
-  SPICE.compare(cards);
+  fprintf('NMOS\n');
+  fprintf('%s', repmat('=', 1, 10 + length(fieldnames(nCards)) * 15));
+  fprintf('\n');
+  SPICE.compare(nCards);
+  fprintf('\n');
+
+  fprintf('PMOS\n');
+  fprintf('%s', repmat('=', 1, 10 + length(fieldnames(pCards)) * 15));
+  fprintf('\n');
+  SPICE.compare(pCards);
 end

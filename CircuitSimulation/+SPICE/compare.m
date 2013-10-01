@@ -25,7 +25,18 @@ function compare(cards)
   fprintf('\n');
 
   for i = 1:parameterCount
-    fprintf('%10s', parameters{i});
+    same = true;
+    for j = 2:modelCount
+      if values{i, j - 1} ~= values{i, j}
+        same = false;
+        break;
+      end
+    end
+    if same
+      fprintf('%10s', parameters{i});
+    else
+      cprintf('red', '%10s', parameters{i});
+    end
     for j = 1:modelCount
       fprintf('%15s', String(values{i, j}));
     end
