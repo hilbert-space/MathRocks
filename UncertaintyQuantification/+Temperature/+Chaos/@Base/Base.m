@@ -1,7 +1,7 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
     process
-    chaos
+    surrogate
   end
 
   methods
@@ -22,7 +22,7 @@ classdef Base < handle
 
       switch class(distribution)
       case 'ProbabilityDistribution.Gaussian'
-        this.chaos = PolynomialChaos.Hermite( ...
+        this.surrogate = PolynomialChaos.Hermite( ...
           'inputCount', sum(this.process.dimensions), ...
           'quadratureOptions', Options('ruleName', 'GaussHermiteHW'), ...
           options.surrogateOptions);
@@ -36,7 +36,7 @@ classdef Base < handle
         % NOTE: MATLAB's interpretation of the beta distribution
         % differs from the one used in the Gauss-Jacobi quadrature rule.
         %
-        this.chaos = PolynomialChaos.Jacobi( ...
+        this.surrogate = PolynomialChaos.Jacobi( ...
           'inputCount', sum(this.process.dimensions), ...
           'alpha', alpha - 1, 'beta', beta - 1, 'a', a, 'b', b, ...
           'quadratureOptions', Options('ruleName', 'GaussJacobi'), ...
@@ -47,25 +47,25 @@ classdef Base < handle
     end
 
     function [ Texp, output ] = expand(this, Pdyn)
-      chaosOutput = this.chaos.expand(@(rvs) this.postprocess( ...
+      surrogateOutput = this.surrogate.expand(@(rvs) this.postprocess( ...
         this.computeWithLeakage(Pdyn, this.preprocess(rvs))));
 
-      Texp = reshape(chaosOutput.expectation, this.processorCount, []);
+      Texp = reshape(surrogateOutput.expectation, this.processorCount, []);
 
       if nargout < 2, return; end
 
-      output.Tvar = reshape(chaosOutput.variance, this.processorCount, []);
+      output.Tvar = reshape(surrogateOutput.variance, this.processorCount, []);
 
-      output.coefficients = reshape(chaosOutput.coefficients, ...
-        this.chaos.termCount, this.processorCount, []);
+      output.coefficients = reshape(surrogateOutput.coefficients, ...
+        this.surrogate.termCount, this.processorCount, []);
     end
 
     function Tdata = sample(this, varargin)
-      Tdata = this.chaos.sample(varargin{:});
+      Tdata = this.surrogate.sample(varargin{:});
     end
 
     function Tdata = evaluate(this, varargin)
-      Tdata = this.chaos.evaluate(varargin{:});
+      Tdata = this.surrogate.evaluate(varargin{:});
     end
   end
 
