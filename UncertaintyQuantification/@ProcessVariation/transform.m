@@ -38,14 +38,10 @@ function distribution = distribute(model, expectation, standardDeviation)
     distribution = ProbabilityDistribution.Gaussian( ...
       'mu', expectation, 'sigma', standardDeviation);
   case 'Beta'
-    a = -4 * standardDeviation;
-    b =  4 * standardDeviation;
+    a = -4 * standardDeviation + expectation;
+    b =  4 * standardDeviation + expectation;
 
-    param = Utils.fitBetaToNormal('sigma', standardDeviation, ...
-      'fitRange', [ a, b ], 'paramRange', [ 1, 20 ]);
-
-    a = a + expectation;
-    b = b + expectation;
+    param = (b - a)^2 / 8 / standardDeviation^2 - 1 / 2;
 
     distribution = ProbabilityDistribution.Beta( ...
       'alpha', param, 'beta', param, 'a', a, 'b', b);
