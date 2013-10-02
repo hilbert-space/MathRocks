@@ -17,9 +17,19 @@ classdef Gaussian < ProbabilityTransformation.Base
         sampleCount, this.dimensionCount);
 
       %
+      % Dependent Gaussian RVs.
+      %
+      data = data * this.multiplier;
+
+      %
+      % Dependent uniform RVs.
+      %
+      data = this.gaussianDistribution.cdf(data);
+
+      %
       % Dependent RVs with the desired distributions.
       %
-      data = this.evaluate(data);
+      data = this.variables.icdf(data);
     end
 
     function data = evaluate(this, data)

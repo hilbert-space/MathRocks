@@ -8,29 +8,6 @@ classdef Custom < ProbabilityTransformation.Gaussian
       this = this@ProbabilityTransformation.Gaussian(varargin{:});
     end
 
-    function data = sample(this, sampleCount)
-      %
-      % Independent Gaussian RVs.
-      %
-      data = this.gaussianDistribution.sample( ...
-        sampleCount, this.dimensionCount);
-
-      %
-      % Dependent Gaussian RVs.
-      %
-      data = data * this.multiplier;
-
-      %
-      % Dependent uniform RVs.
-      %
-      data = this.gaussianDistribution.cdf(data);
-
-      %
-      % Dependent RVs with the desired distributions.
-      %
-      data = this.variables.icdf(data);
-    end
-
     function data = evaluate(this, data)
       %
       % Independent uniform RVs.
