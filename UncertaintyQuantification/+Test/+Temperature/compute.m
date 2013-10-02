@@ -3,15 +3,18 @@ function compute(varargin)
 
   options = Configure.systemSimulation(varargin{:});
   options = Configure.processVariation(options);
-  options = Configure.polynomialChaos(options);
+  options = Configure.surrogate(options);
 
+  surrogate = options.fetch('surrogate', 'Chaos');
   analysis = options.fetch('analysis', 'Transient');
   iterationCount = options.fetch('iterationCount', 10);
 
-  surrogate = Temperature.Chaos.(analysis)(options);
-
+  fprintf('Surrogate: %s\n', surrogate);
   fprintf('Analysis: %s\n', analysis);
   fprintf('Running %d iterations...\n', iterationCount);
+
+  surrogate = Temperature.(surrogate).(analysis)(options);
+
   time = tic;
   for i = 1:iterationCount
     [ Texp, output ] = surrogate.compute(options.dynamicPower);

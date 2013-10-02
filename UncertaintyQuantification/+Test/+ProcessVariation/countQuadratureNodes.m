@@ -8,7 +8,9 @@ function countQuadratureNodes(varargin)
   dimensionCountSet = zeros(length(processorCountSet), 1);
 
   for i = 1:length(processorCountSet)
-    options = configure(varargin{:}, 'processorCount', processorCountSet(i));
+    options = Configure.systemSimulation(varargin{:}, ...
+      'processorCount', processorCountSet(i));
+    options = Configure.processVariation(options);
     process = ProcessVariation(options.processOptions);
     dimensionCountSet(i) = sum(process.dimensions);
   end

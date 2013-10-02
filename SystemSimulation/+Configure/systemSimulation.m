@@ -66,17 +66,22 @@ function options = systemSimulation(varargin)
     switch name
     case 'T'
       parameter.reference = Utils.toKelvin(120);
-      parameter.nominal   = Utils.toKelvin(50);
-      parameter.range     = Utils.toKelvin([ 40, 400 ]);
+      parameter.nominal = Utils.toKelvin(50);
+      parameter.range = Utils.toKelvin([ 40, 400 ]);
+      return;
     case 'L'
-      parameter.reference = 50e-9;
-      parameter.nominal   = 50e-9;
+      nominal = 50e-9;
+      sigma = 0.05 * (nominal - (50e-9 - 22.5e-9));
     case 'Tox'
-      parameter.reference = 1e-9;
-      parameter.nominal   = 1e-9;
+      nominal = 1e-9;
+      sigma = 0.05 * nominal;
     otherwise
       assert(false);
     end
+    parameter.reference = nominal;
+    parameter.nominal = nominal;
+    parameter.sigma = sigma;
+    parameter.range = nominal + [ -4, 4 ] * sigma;
   end
 
   leakageParameters = Options;

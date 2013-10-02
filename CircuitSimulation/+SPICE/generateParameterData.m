@@ -7,19 +7,7 @@ function parameterData = generateParameterData(parameters)
   pointCount = 50;
 
   for i = 1:dimensionCount
-    parameter = parameters.(names{i});
-
-    if parameter.has('range')
-      range = parameter.range;
-    elseif parameter.has('nominal') && parameter.has('variance')
-      deviation = sqrt(parameter.variance);
-      range = [ ...
-        parameter.nominal - 5 * deviation, ...
-        parameter.nominal + 5 * deviation ];
-    else
-      assert(false);
-    end
-
+    range = parameters.(names{i}).range;
     sweeps{i} = linspace(min(range), max(range), pointCount);
   end
 

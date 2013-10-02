@@ -22,6 +22,9 @@ classdef Base < handle
 
       switch class(distribution)
       case 'ProbabilityDistribution.Gaussian'
+        assert(distribution.expectation == 0);
+        assert(distribution.variance == 1);
+
         this.surrogate = PolynomialChaos.Hermite( ...
           'inputCount', sum(this.process.dimensions), ...
           'quadratureOptions', Options('ruleName', 'GaussHermiteHW'), ...

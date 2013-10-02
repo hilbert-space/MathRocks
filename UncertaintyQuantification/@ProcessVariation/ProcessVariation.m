@@ -50,9 +50,9 @@ classdef ProcessVariation < handle
       end
     end
 
-    function parameters = evaluate(this, parameters)
+    function parameters = evaluate(this, parameters, varargin)
       for i = 1:this.parameterCount
-        data = this.transformations{i}.evaluate(parameters{i});
+        data = this.transformations{i}.evaluate(parameters{i}, varargin{:});
         if this.merging(i)
           data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
         end

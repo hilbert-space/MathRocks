@@ -5,9 +5,7 @@ function transformation = transform(~, ...
 
   distributions = cell(1, length(contribution));
   for i = 1:length(contribution)
-    distributions{i} = distribute(parameter.model, ...
-      contribution(i) * parameter.expectation, ...
-      sqrt(contribution(i) * parameter.variance));
+    distributions{i} = distribute(parameter, contribution(i));
   end
   distributions = distributions(I);
 
@@ -32,16 +30,17 @@ function transformation = transform(~, ...
   end
 end
 
-function distribution = distribute(model, expectation, standardDeviation)
-  switch model
+function distribution = distribute(parameter, contribution)
+  switch parameter.model
   case 'Gaussian'
     distribution = ProbabilityDistribution.Gaussian( ...
-      'mu', expectation, 'sigma', standardDeviation);
+      'mu', contribution * parameter.expectation, ...
+      'sigma', sqrt(contribution * parameter.variance));
   case 'Beta'
-    a = -4 * standardDeviation + expectation;
-    b =  4 * standardDeviation + expectation;
+    a = contribution * min(parameter.range);
+    b = contribution * max(parameter.range);
 
-    param = (b - a)^2 / 8 / standardDeviation^2 - 1 / 2;
+    param = (b - a)^2 / 8 / (contribution * parameter.variance) - 1 / 2;
 
     distribution = ProbabilityDistribution.Beta( ...
       'alpha', param, 'beta', param, 'a', a, 'b', b);

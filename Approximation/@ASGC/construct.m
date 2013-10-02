@@ -104,7 +104,7 @@ function output = construct(this, f, outputCount)
   %
   while true
     if verbose
-      fprintf('Level %2d: stable %6d, old %6d, total %6d.\n', ...
+      fprintf('Level %2d: stable %6d, old %6d, total %6d\n', ...
         level, stableNodeCount, oldNodeCount, nodeCount);
     end
 
@@ -304,7 +304,7 @@ function output = construct(this, f, outputCount)
     nodes     (range, :) = uniqueNewNodes;
     values    (range, :) = f(uniqueNewNodes);
 
-    oldNodeCount  = nodeCount - stableNodeCount - oldNodeCount;
+    oldNodeCount = nodeCount - stableNodeCount - oldNodeCount;
     stableNodeCount = nodeCount - oldNodeCount;
 
     %

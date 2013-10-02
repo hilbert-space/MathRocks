@@ -5,7 +5,9 @@ function assessVariations(varargin)
   processorCountSet = [ 2 4 8 16 32 ];
 
   for processorCount = processorCountSet
-    options = configure(varargin{:}, 'processorCount', processorCount);
+    options = Configure.systemSimulation(varargin{:}, ...
+      'processorCount', processorCount);
+    options = Configure.processVariation(options);
 
     parameters = options.processOptions.parameters;
     parameterCount = length(parameters);

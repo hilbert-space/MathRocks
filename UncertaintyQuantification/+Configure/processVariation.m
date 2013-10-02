@@ -30,18 +30,8 @@ function options = processVariation(varargin)
   function parameter = configureParameter(name, parameter)
     if nargin < 2, parameter = Options; end
     parameter.model = 'Gaussian';
-    switch name
-    case 'L'
-      expectation = parameter.get('nominal', 50e-9);
-      parameter.expectation = expectation;
-      parameter.variance = (0.05 * (expectation - (50e-9 - 22.5e-9)))^2;
-    case 'Tox'
-      expectation = parameter.get('nominal', 1e-9);
-      parameter.expectation = expectation;
-      parameter.variance = (0.05 * expectation)^2;
-    otherwise
-      assert(false);
-    end
+    parameter.expectation = parameter.nominal;
+    parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };
     parameter.globalContribution = 0.5;
     parameter.reductionThreshold = 0.96;
