@@ -8,7 +8,8 @@ function parameterData = generateParameterData(parameters)
 
   for i = 1:dimensionCount
     range = parameters.(names{i}).range;
-    sweeps{i} = linspace(min(range), max(range), pointCount);
+    sigma = parameters.(names{i}).sigma;
+    sweeps{i} = linspace(min(range) - sigma, max(range) + sigma, pointCount);
   end
 
   parameterData = cell(1, dimensionCount);
