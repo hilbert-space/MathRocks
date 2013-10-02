@@ -24,7 +24,7 @@ classdef Base < handle
 
   methods (Abstract)
     data = sample(this, sampleCount)
-    data = evaluate(this, data)
+    data = evaluate(this, data, isUniform)
   end
 
   methods (Abstract, Access = 'protected')

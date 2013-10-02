@@ -8,11 +8,13 @@ classdef Custom < ProbabilityTransformation.Gaussian
       this = this@ProbabilityTransformation.Gaussian(varargin{:});
     end
 
-    function data = evaluate(this, data)
-      %
-      % Independent uniform RVs.
-      %
-      data = this.customDistribution.cdf(data);
+    function data = evaluate(this, data, isUniform)
+      if nargin < 3 || ~isUniform
+        %
+        % Independent uniform RVs.
+        %
+        data = this.customDistribution.cdf(data);
+      end
 
       %
       % Independent standard Gaussian RVs.

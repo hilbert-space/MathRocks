@@ -32,7 +32,14 @@ classdef Gaussian < ProbabilityTransformation.Base
       data = this.variables.icdf(data);
     end
 
-    function data = evaluate(this, data)
+    function data = evaluate(this, data, isUniform)
+      if nargin > 2 && isUniform
+        %
+        % Independent Gaussian RVs.
+        %
+        data = this.gaussianDistribution.icdf(data);
+      end
+
       %
       % Dependent Gaussian RVs.
       %
