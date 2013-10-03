@@ -5,14 +5,15 @@ function OrnsteinUhlenbeck
 
   kernel = @(s, t) exp(-abs(s - t) / 1);
   domainBoundary = 1;
-  dimensionCount = 6;
 
   kl = KarhunenLoeve( ...
     'kernel', kernel, ...
     'domainBoundary', domainBoundary, ...
-    'dimensionCount', dimensionCount);
+    'reductionThreshold', 0.95);
 
   plot(kl);
+
+  dimensionCount = kl.dimensionCount;
 
   x = linspace(-domainBoundary, domainBoundary, 50);
   z = randn(sampleCount, dimensionCount);
