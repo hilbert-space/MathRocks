@@ -12,42 +12,24 @@ function OrnsteinUhlenbeck
     'domainBoundary', domainBoundary, ...
     'dimensionCount', dimensionCount);
 
-  [ X1, X2 ] = meshgrid(linspace(-domainBoundary, domainBoundary, 50));
+  plot(kl);
 
-  n = ceil(sqrt(dimensionCount));
-  m = ceil(dimensionCount / n);
-
-  Plot.figure(1000, 600);
-  for i = 1:dimensionCount
-    subplot(m, n, i);
-    C = kl.values(i) * kl.functions{i}(X1) .* kl.functions{i}(X2);
-    surfc(X1, X2, C);
-  end
-
-  Plot.figure(1000, 600);
-  Plot.line(1:dimensionCount, kl.values);
-
-  Plot.figure(1000, 600);
-  r = linspace(-domainBoundary, domainBoundary);
-  for i = 1:dimensionCount
-    Plot.line(r, kl.functions{i}(r), 'number', i);
-  end
-
+  x = linspace(-domainBoundary, domainBoundary, 50);
   z = randn(sampleCount, dimensionCount);
-  k = zeros(dimensionCount, length(r));
+  k = zeros(dimensionCount, length(x));
 
   for i = 1:dimensionCount
-    k(i, :) = kl.functions{i}(r);
+    k(i, :) = kl.functions{i}(x);
   end
 
   u = z * diag(sqrt(kl.values)) * k;
 
   Plot.figure(1000, 600);
-  [ R1, R2 ] = meshgrid(r, r);
+  [ X1, X2 ] = meshgrid(x);
   C = cov(u);
-  mesh(R1, R2, C);
+  mesh(X1, X2, C);
   hold on;
 
-  C = kernel(R1, R2);
-  plot3(R1, R2, C, 'k.', 'MarkerSize', 10);
+  C = kernel(X1, X2);
+  plot3(X1, X2, C, 'k.', 'MarkerSize', 10);
 end
