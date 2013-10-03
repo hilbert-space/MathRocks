@@ -1,18 +1,24 @@
-classdef Base < handle
+classdef KarhunenLoeve < handle
   properties (SetAccess = 'private')
     kernel
-
     domainBoundary
-    dimensionCount
 
     functions
     values
+
+    dimensionCount
   end
 
   methods
-    function this = Base(varargin)
+    function this = KarhunenLoeve(varargin)
       options = Options(varargin{:});
-      this.initialize(options);
+
+      this.kernel = options.kernel;
+      this.domainBoundary = options.domainBoundary;
+
+      [ this.functions, this.values ] = this.construct(options);
+
+      this.dimensionCount = length(this.values);
     end
 
     function C = calculate(this, s, t)
@@ -20,9 +26,7 @@ classdef Base < handle
     end
 
     function C = approximate(this, s, t)
-      if ndims(s) == 1
-        m = length(s);
-        n = length(t);
+      if isvector(s)
         [ s, t ] = meshgrid(s, t);
       end
 
@@ -36,16 +40,7 @@ classdef Base < handle
     end
   end
 
-  methods (Abstract, Access = 'protected')
+  methods (Access = 'protected')
     [ functions, values ] = construct(this, options)
-  end
-
-  methods (Access = 'private')
-    function initialize(this, options)
-      this.kernel = options.kernel;
-      this.domainBoundary = options.domainBoundary;
-      [ this.functions, this.values ] = this.construct(options);
-      this.dimensionCount = length(this.values);
-    end
   end
 end
