@@ -33,8 +33,8 @@ pass(5) = abs(Ll(N,d2)*s2.vals - cl) < tol;
 pass(6) = abs(Lr(N,d2)*s2.vals - cr) < tol;
 
 % And with maps.
-m = maps('kte',[-1 0]);
-m(2) = maps('kte',[0 1]);
+m = maps('kte',domain([-1 0]));
+m(2) = maps('kte',domain([0 1]));
 s3 = chebfun({@(x) -cos(x+pi/4)+0.5,@(x) cos(x+pi/4)+.5},[-1 0 1],'N',N,'map',m);
 pass(7) = abs(L(N,m,d2)*s3.vals - c) < tol;
 pass(8) = abs(Ll(N,m,d2)*s3.vals - cl) < tol;

@@ -120,7 +120,7 @@ switch index(1).type
                 return
             else
                 %fcol = define(fcol,domain(fcol),vin);
-                fcol = restrict(vin,fcol.ends([1 end]));
+                fcol = restrict(vin,fcol(1).ends([1 end]));
             end
         else
             error('CHEBFUN:subsasgn:nonnumeric',...

@@ -42,7 +42,7 @@ for k = 1:syssize
         if ~any(Nsysk(j+(0:1))), continue, end % Discretisation of size zero
 
         % Enforce continuity if there's no jump here
-        if ~ismember([bk(j+1) k 0],jumpinfo,'rows')
+        if isempty(jumpinfo) || ~ismember([bk(j+1) k 0],jumpinfo,'rows')
             if Nsysk(j) && Nsysk(j+1)  
                 idx = csN(intnum)+Nsysk(j)+(0:1);
                 Cmat(bcrownum,idx) = [-1 1];
@@ -64,7 +64,7 @@ for k = 1:syssize
         % Derivative conditions
         for l = 1:dok-1   
             % Jump condition is being enforced here, so ignore
-            if ismember([bk(j+1) k l],jumpinfo,'rows'), continue, end
+            if ~isempty(jumpinfo) && ismember([bk(j+1) k l],jumpinfo,'rows'), continue, end
             Dl = []; Dr = [];
             % No jump, enforce continuity
             if ~isempty(indxl)

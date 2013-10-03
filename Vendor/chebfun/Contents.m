@@ -1,5 +1,5 @@
 % Chebfun
-% Version 4.2.2194 30-Mar-2012
+% Version 4.2.2889 30-Mar-2012
 %
 % Chebfun extends familiar powerful methods of numerical computation
 % involving numbers to continuous or piecewise-continuous functions.  It

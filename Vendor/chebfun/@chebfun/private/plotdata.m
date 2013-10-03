@@ -80,9 +80,8 @@ if isempty(f)
     issimple = all([g.nfuns]==1);
     if issimple
         map = g(1).funs(1).map;
-        issimple = ~any(g(1).funs(1).exps);
         for k = 2:numel(g)
-            issimple = strcmp(g(k).funs(1).map.name,map.name) && ~any(g(k).funs(1).exps);
+            issimple = strcmp(g(k).funs(1).map.name,map.name);
             if ~issimple, break, end
         end
     end

@@ -18,7 +18,7 @@ pass(1) = (abs(u(.5)-0.0345) < .1);
 N = chebop(@(u) diff(u,2),'neumann');
 initial = 1-x.^6;
 final = expm(.1*N)*initial;
-pass(2) = (abs(sum(initial-final))<tol);
+pass(2) = (abs(sum(initial-final))<2*tol);
 
 e = eigs(N);
 pass(3) = (abs(e(3)+9.869604)<.1);

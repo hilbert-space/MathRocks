@@ -51,7 +51,8 @@ function Fout = abscol(F)
         % Linear maps can be treated much more efficiently!
         
         % Get the ends with the new breakpoints
-        ends = union( F.ends , r );
+        ends = union( F.ends , r ); 
+        ends = ends(:).';
         m = length(ends)-1;
 
         % Get the sizes of the funs in the intervals of F
@@ -139,6 +140,5 @@ function Fout = abscol_nontrivial(F,r)
         % We simply take the abs of the values
         Fout.funs(k).vals = abs(Fout.funs(k).vals);
     end
-    Fout.imps = abs(Fout.imps);
 
 end

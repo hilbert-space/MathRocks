@@ -737,7 +737,6 @@ end
 function fig_logo_CreateFcn(hObject, eventdata, handles)
 % Hint: place code in OpeningFcn to populate
 f = chebpoly(10);
-axes(hObject)
 plot(f,'interval',[-1,.957],'linew',3), hold on
 
 t = - cos(pi*(2:8)'/10) *0.99;  % cheb extrema (tweaked)

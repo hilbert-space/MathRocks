@@ -25,8 +25,8 @@ V = chebop(@(u) fred(K,u), d);
 % pass(1) = err < tol;
 
 % With maps and breaks
-m = maps('kte',.25,d(1:2));
-m(2) = maps('kte',.25,d(2:3));
+m = maps('kte',.25,domain(d(1:2)));
+m(2) = maps('kte',.25,domain(d(2:3)));
 f = chebfun(@cos,'map',{'kte',.25},d);
 vf = V(f);
 
@@ -60,8 +60,8 @@ err = norm(vf(f.pts) - vNf,inf);
 pass(3) = err < tol;
 
 % % With maps and breaks
-% m = maps('kte',.25,d(1:2));
-% m(2) = maps('kte',.25,d(2:3));
+% m = maps('kte',.25,domain(d(1:2)));
+% m(2) = maps('kte',.25,domain(d(2:3)));
 % f = chebfun(@cos,'map',{'kte',.25},d);
 % vf = V(f);
 % 

@@ -24,4 +24,5 @@ if nargin < 2,
 %     f = restrict(f,d);  % This is now dealt with in domain/diag
 end
 
+f.funreturn = 0;
 A = diag(d,f); % Call domain/diag

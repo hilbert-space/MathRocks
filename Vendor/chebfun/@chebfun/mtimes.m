@@ -86,8 +86,8 @@ if (isa(F1,'chebfun') && isa(F2,'chebfun'))
       
         % Get the set of breakpoints for all funs in F1 and F2
         ends = [];
-        for k=m, ends = union( ends , F1(k,:).ends ); end
-        for k=n, ends = union( ends , F2(:,k).ends ); end
+        for k=m, ends = union( ends , F1(k,:).ends ); ends = ends(:).'; end
+        for k=n, ends = union( ends , F2(:,k).ends ); ends = ends(:).'; end
         %iends = ends(2:end-1)';
         nfuns = length(ends) - 1;
         
@@ -217,7 +217,7 @@ elseif isa(F1,'chebfun')
         
             % Get the set of breakpoints for all funs in F1
             ends = [];
-            for k=1:n, ends = union( ends , F1(:,k).ends ); end
+            for k=1:n, ends = union( ends , F1(:,k).ends ); ends = ends(:).';end
             %iends = ends(2:end-1)';
             m = length(ends)-1;
             

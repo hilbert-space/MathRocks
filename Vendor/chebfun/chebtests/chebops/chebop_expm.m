@@ -2,7 +2,7 @@ function pass = chebop_expm
 % Test the chebop expm method.
 % Asgeir Birkisson, December 2010
 
-tol = 1e-12;
+tol = 1e-11;
 
 %% With linops
 d = domain(-1,1);  x = chebfun('x',d);

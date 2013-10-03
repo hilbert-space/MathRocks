@@ -75,7 +75,12 @@ breaks = sort(breaks);
 if ~isempty(breaks) && (breaks(1) < A.domain(1) || breaks(end) > A.domain(end))
     error('CHEBFUN:linop:breaksdomain','Breaks must be within domain of linop');
 end
-breaks = union(breaks,A.domain.endsandbreaks);
+% breaks = union(breaks,A.domain.endsandbreaks);
+if ( isempty(breaks) )
+    breaks = A.domain.endsandbreaks;
+else
+    breaks = union(breaks,A.domain.endsandbreaks);
+end
 
 % We set trivial maps and breaks to empty
 if numel(breaks) == 2 && ~any(isempty(breaks)), breaks = []; end

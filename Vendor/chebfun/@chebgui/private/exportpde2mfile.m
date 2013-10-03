@@ -164,6 +164,9 @@ fprintf(fid,'%s = %s;\n',tName,tt);
 
 fprintf(fid,'\n%% Make the rhs of the PDE.\n');
 fprintf(fid,'pdefun = %s;\n',deString);
+if ~all(pdeflag)
+    fprintf(fid, ['pdeflag = [',num2str(pdeflag),']; %% Zero when a variable is indep of time.\n']);
+end
 
 % Make assignments for left and right BCs.
 fprintf(fid,'\n%% Assign boundary conditions.\n');
@@ -281,7 +284,7 @@ tolInput = guifile.tol;
 opts = [opts,'''Eps'',',tolInput];
 
 if ~all(pdeflag)
-    opts = [opts,',''PDEflag'',','[',num2str(pdeflag),']'];
+    opts = [opts,',''PDEflag'',','pdeflag'];
 end
 
 % Options for plotting

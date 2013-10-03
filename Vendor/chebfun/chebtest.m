@@ -276,7 +276,7 @@ for j = 1:nr_tests
     fprintf('CRASHED: ')
     msg = ME;
     lf = findstr(sprintf('\n'),msg.message); 
-    if ~isempty(lf), msg.message(1:lf(end))=[]; end
+    %if ~isempty(lf), msg.message(1:lf(end))=[]; end
     fprintf([msg.message '\n'])
    
     % Create an error report entry for a crash
