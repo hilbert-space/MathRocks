@@ -1,5 +1,5 @@
 function adaptiveSparseGrid(output)
-  figure;
+  Plot.figure(600, 600);
 
   nodes = output.nodes;
   nodeCount = output.nodeCount;

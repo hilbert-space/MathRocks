@@ -12,22 +12,6 @@ function output = construct(this, f, outputCount)
 
   verbose = this.verbose;
 
-  %
-  % NOTE: We convert strings to numbers due to a possible speedup later on.
-  %
-  switch control
-  case 'InfNorm'
-    control = uint8(0);
-  case 'InfNormSurpluses'
-    control = uint8(1);
-  case 'InfNormSurpluses2'
-    control = uint8(2);
-  case 'NormNormExpectation'
-    control = uint8(3);
-  otherwise
-    error('The specified adaptivity control method is unknown.');
-  end
-
   bufferSize = 200 * inputCount;
   stepBufferSize = 100 * 2 * inputCount;
 
@@ -211,14 +195,14 @@ function output = construct(this, f, outputCount)
     % Adaptivity control.
     %
     switch control
-    case 0 % Infinity norm of surpluses and surpluses2
+    case 'InfNorm' % Infinity norm of surpluses and surpluses2
       nodeContribution = ...
         max(abs([ surpluses(oldNodeRange, :) surpluses2(oldNodeRange, :) ]), [], 2);
-    case 1 % Infinity norm of surpluses
+    case 'InfNormSurpluses' % Infinity norm of surpluses
       nodeContribution = max(abs(surpluses(oldNodeRange, :)), [], 2);
-    case 2 % Infinity norm of squared surpluses
+    case 'InfNormSurpluses2' % Infinity norm of squared surpluses
       nodeContribution = max(abs(surpluses2(oldNodeRange, :)), [], 2);
-    case 3 % Normalized norm of expectation
+    case 'NormNormExpectation' % Normalized norm of expectation
       nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / expectationNorm;
     otherwise
       assert(false);

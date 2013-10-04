@@ -9,7 +9,6 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
     'verbose', true, varargin{:});
 
   inputCount = options.inputCount;
-  outputCount = options.outputCount;
   sampleCount = options.sampleCount;
 
   hasExact = options.has('exactExpectation') && options.has('exactVariance');
@@ -35,7 +34,7 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
     [ X, Y ] = meshgrid(x, y);
     Z = zeros(size(X));
 
-    figure;
+    Plot.figure(1000, 600);
 
     Z(:) = f([ X(:) Y(:) ]);
     subplot(1, 2, 1);
