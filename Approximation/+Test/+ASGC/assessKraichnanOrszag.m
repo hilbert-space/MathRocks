@@ -1,4 +1,4 @@
-function multidimensional
+function assessKraichnanOrszag
   close all;
   setup;
 

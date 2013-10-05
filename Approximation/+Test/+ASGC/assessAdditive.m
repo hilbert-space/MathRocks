@@ -1,4 +1,4 @@
-function additive
+function assessAdditive
   close all;
   setup;
 

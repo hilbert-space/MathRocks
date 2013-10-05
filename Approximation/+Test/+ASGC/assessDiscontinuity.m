@@ -1,4 +1,4 @@
-function discontinuity
+function assessDiscontinuity
   close all;
   setup;
 

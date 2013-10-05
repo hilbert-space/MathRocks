@@ -1,4 +1,4 @@
-function step
+function assessStep
   close all;
   setup;
 

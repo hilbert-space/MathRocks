@@ -1,4 +1,4 @@
-function hat
+function assessHat
   close all;
   setup;
 

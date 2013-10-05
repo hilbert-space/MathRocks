@@ -29,8 +29,8 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
   case 2
     Plot.adaptiveSparseGrid(asgcOutput);
 
-    x = 0:0.1:1;
-    y = 0:0.1:1;
+    x = 0:0.05:1;
+    y = 0:0.05:1;
     [ X, Y ] = meshgrid(x, y);
     Z = zeros(size(X));
 

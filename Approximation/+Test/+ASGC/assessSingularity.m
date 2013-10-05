@@ -1,4 +1,4 @@
-function singularity
+function assessSingularity
   close all;
   setup;
 

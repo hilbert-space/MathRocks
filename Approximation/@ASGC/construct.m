@@ -336,7 +336,7 @@ function [ orderIndex, nodes ] = computeNeighbors(level, order)
     else
       assert(false);
     end
-  elseif level == 1;
+  elseif level == 1
     assert(order == 1);
     orderIndex = uint32([ 1; 3 ]);
     nodes = [ 0.0; 1.0 ];
