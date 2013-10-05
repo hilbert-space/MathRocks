@@ -1,4 +1,4 @@
-function evaluateBasisMoments(i, j)
+function evaluateMoments(i, j)
   validate(i, j);
 
   E = evaluateExpectation(i, j);

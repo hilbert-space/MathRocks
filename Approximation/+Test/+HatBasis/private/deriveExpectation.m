@@ -11,6 +11,6 @@ function result = deriveExpectation(s)
     delta = 1 / (mi - 1);
     result = ...
       int(1 + (mi - 1) * (s.y - yij), s.y, yij - delta, yij) + ...
-      int(1 - (mi - 1) * (s.y - yij), yij, yij + delta);
+      int(1 - (mi - 1) * (s.y - yij), s.y, yij, yij + delta);
   end
 end
