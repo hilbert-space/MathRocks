@@ -24,9 +24,9 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
   display(Options(asgcOutput), 'Adaptive sparse grid');
 
   switch inputCount
-  case 1
+  case -1
     Plot.adaptiveSparseGrid(asgcOutput);
-  case 2
+  case -2
     Plot.adaptiveSparseGrid(asgcOutput);
 
     x = 0:0.05:1;
