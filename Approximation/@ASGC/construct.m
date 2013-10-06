@@ -6,7 +6,6 @@ function output = construct(this, f, outputCount)
   inputCount = this.inputCount;
   if nargin < 3, outputCount = this.outputCount; end
 
-  control = this.control;
   tolerance = this.tolerance;
 
   minimalLevel = this.minimalLevel;
@@ -14,214 +13,161 @@ function output = construct(this, f, outputCount)
 
   verbose = this.verbose;
 
-  bufferSize = 200 * inputCount;
-  stepBufferSize = 100 * 2 * inputCount;
-
   %
   % Preallocate some memory such that we do not need to reallocate
   % it at low levels. For high levels, we reallocate the memory
   % each time; however, since going from one high level to the
   % next one does not happen too often, we do not lose too much.
   %
-  levels    = zeros(bufferSize, inputCount);
-  nodes     = zeros(bufferSize, inputCount);
+  bufferSize = 200 * inputCount;
+
+  levels = zeros(bufferSize, inputCount);
+  orders = zeros(bufferSize, inputCount);
+  nodes  = zeros(bufferSize, inputCount);
+
   values    = zeros(bufferSize, outputCount);
   surpluses = zeros(bufferSize, outputCount);
 
-  oldOrders = zeros(stepBufferSize, inputCount);
-  newLevels = zeros(stepBufferSize, inputCount);
-  newOrders = zeros(stepBufferSize, inputCount);
-  newNodes  = zeros(stepBufferSize, inputCount);
+  newBufferSize = 100 * 2 * inputCount;
 
-  %
-  % The first two levels.
-  %
-  nodeCount = 1 + 2 * inputCount;
+  newLevels = zeros(newBufferSize, inputCount);
+  newOrders = zeros(newBufferSize, inputCount);
+  newNodes  = zeros(newBufferSize, inputCount);
 
-  levels(1:nodeCount, :) = 1;
-  nodes (1:nodeCount, :) = 0.5;
+  function resizeBuffers(neededCount)
+    addition = neededCount - bufferSize;
 
-  for i = 1:inputCount
-    %
-    % The left and right most nodes.
-    %
-    k = 1 + 2 * (i - 1) + 1;
-    levels(k:(k + 1), i) = 2;
-    nodes (k:(k + 1), i) = [ 0.0; 1.0 ];
+    if addition <= 0, return; end
+
+    levels = [ levels; zeros(addition, inputCount) ];
+    orders = [ orders; zeros(addition, inputCount) ];
+    nodes  = [ nodes;  zeros(addition, inputCount) ];
+
+    values    = [ values;    zeros(addition, outputCount) ];
+    surpluses = [ surpluses; zeros(addition, outputCount) ];
+
+    bufferSize = bufferSize + addition;
   end
 
-  %
-  % Evaluate the function on the first two levels.
-  %
-  values(1:nodeCount, :) = f(nodes(1:nodeCount, :));
-  surpluses(1, :) = values(1, :);
+  function resizeNewBuffers(neededCount)
+    addition = neededCount - newBufferSize;
 
-  %
-  % Summarize what we have done so far.
-  %
-  level = 2;
-  stableNodeCount = 1;
-  oldNodeCount = 2 * inputCount;
+    if addition <= 0, return; end
 
-  oldOrders(1:oldNodeCount, :) = 1;
-  for i = 1:inputCount
-    %
-    % NOTE: The order of the left node is already one;
-    % therefore, we initialize only the right node.
-    %
-    oldOrders(2 * (i - 1) + 2, i) = 3;
+    newLevels = [ newLevels; zeros(addition, inputCount) ];
+    newOrders = [ newOrders; zeros(addition, inputCount) ];
+    newNodes  = [ newNodes;  zeros(addition, inputCount) ];
+
+    newBufferSize = newBufferSize + addition;
   end
 
   levelNodeCount = zeros(maximalLevel, 1);
-  levelNodeCount(1) = 1;
-  levelNodeCount(2) = 2 * inputCount;
 
   %
-  % The first statistics.
+  % Level 1
   %
-  expectation = surpluses(1, :);
+  [ Y, J ] = basis.computeNodes(1);
+  J = tensor(J, inputCount);
+  Y = tensor(Y, inputCount);
 
-  %
-  % Now, the other levels.
-  %
+  nodeCount = size(Y, 1);
+  resizeBuffers(nodeCount);
+
+  levels(1:nodeCount, :) = 1;
+  orders(1:nodeCount, :) = J;
+  nodes (1:nodeCount, :) = Y;
+
+  levelNodeCount(1) = nodeCount;
+  passiveCount = 0;
+  activeCount = nodeCount;
+
+  level = 1;
+
   while true
     if verbose
-      fprintf('Level %2d: stable %6d, old %6d, total %6d\n', ...
-        level, stableNodeCount, oldNodeCount, nodeCount);
+      fprintf('Level %2d: passive %6d, active %6d, total %6d\n', ...
+        level, passiveCount, activeCount, nodeCount);
     end
 
-    %
-    % First, we always compute the surpluses of the old nodes.
-    % These surpluses determine the parent nodes that are to be
-    % refined.
-    %
-    oldNodeRange = (stableNodeCount + 1):(stableNodeCount + oldNodeCount);
+    activeRange = passiveCount + (1:activeCount);
 
-    stableLevels = levels(1:stableNodeCount, :);
-    intervals = 2.^(double(stableLevels) - 1) + 1;
-    inversed = 1 ./ (intervals - 1);
+    %
+    % Evaluate the target function for the active nodes.
+    %
+    values(activeRange, :) = f(nodes(activeRange, :));
 
-    delta = zeros(stableNodeCount, inputCount);
-    for i = oldNodeRange
-      for j = 1:inputCount
-        delta(:, j) = abs(nodes(1:stableNodeCount, j) - nodes(i, j));
+    %
+    % Compute the surpluses of the active nodes.
+    %
+    if passiveCount == 0
+      surpluses(activeRange, :) = values(activeRange, :);
+    else
+      passiveLevels = levels(1:passiveCount, :);
+      intervals = 2.^(passiveLevels - 1) + 1;
+      inversed = 1 ./ (intervals - 1);
+
+      delta = zeros(passiveCount, inputCount);
+      for i = activeRange
+        for j = 1:inputCount
+          delta(:, j) = abs(nodes(1:passiveCount, j) - nodes(i, j));
+        end
+        I = find(all(delta < inversed, 2));
+
+        bases = 1 - (intervals(I, :) - 1) .* delta(I, :);
+        bases(passiveLevels(I, :) == 1) = 1;
+        bases = prod(bases, 2);
+
+        surpluses(i, :) = values(i, :) - ...
+          sum(bsxfun(@times, surpluses(I, :), bases), 1);
       end
-      I = find(all(delta < inversed, 2));
-
-      %
-      % Ensure that all the (one-dimensional) basis functions at
-      % the first level are equal to one.
-      %
-      bases = 1 - (intervals(I, :) - 1) .* delta(I, :);
-      bases(stableLevels(I, :) == 1) = 1;
-      bases = prod(bases, 2);
-
-      surpluses (i, :) = values(i, :) - ...
-        sum(bsxfun(@times, surpluses(I, :), bases), 1);
     end
-
-    %
-    % Now, we shall take care of the expected value, which also surve
-    % error estimates. But, BEFORE doing so, we should compute the norm
-    % of the current expectation for the future error control.
-    %
-    expectationNorm = norm(expectation);
-    % assert(expectationNorm > 0);
-
-    oldLevels = levels(oldNodeRange, :);
-
-    %
-    % Expectation
-    %
-    integrals1 = 2.^(1 - double(oldLevels));
-    % integrals1(oldLevels == 1) = 1;
-    integrals1(oldLevels == 2) = 1 / 4;
-    integrals1 = prod(integrals1, 2);
-
-    oldExpectations = bsxfun(@times, ...
-      surpluses(oldNodeRange, :), integrals1);
-    expectation = expectation + sum(oldExpectations, 1);
 
     %
     % If the current level is the last one, we do not try to add any
     % more nodes; just exit the loop.
     %
-    if ~(level < maximalLevel), break; end
+    if level >= maximalLevel, break; end
 
     %
-    % Since we are allowed to go to the next level, we seek
-    % for new nodes defined as children of the old nodes where
-    % the corresponding surpluses violate the accuracy constraint.
+    % Adaptivity control
+    %
+    if level < minimalLevel
+      nodeContribution = Inf(1, activeCount);
+    else
+      nodeContribution = max(abs(surpluses(activeRange, :)), [], 2);
+    end
+
+    %
+    % Add the neighbors of those nodes that need to be refined.
     %
     newNodeCount = 0;
-    stepBufferLimit = oldNodeCount * 2 * inputCount;
-
-    %
-    % Ensure that we have enough space.
-    %
-    addition = stepBufferLimit - stepBufferSize;
-    if addition > 0
-      %
-      % We need more space.
-      %
-      oldOrders = [ oldOrders; zeros(addition, inputCount) ];
-      newLevels = [ newLevels; zeros(addition, inputCount) ];
-      newOrders = [ newOrders; zeros(addition, inputCount) ];
-      newNodes  = [ newNodes; zeros(addition, inputCount) ];
-
-      stepBufferSize = stepBufferSize + addition;
-    end
-
-    %
-    % Adaptivity control.
-    %
-    switch control
-    case 'InfNormSurpluses' % Infinity norm of surpluses
-      nodeContribution = max(abs(surpluses(oldNodeRange, :)), [], 2);
-    case 'NormNormExpectation' % Normalized norm of expectation
-      nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / expectationNorm;
-    otherwise
-      assert(false);
-    end
-
-    for i = oldNodeRange
-      if level >= minimalLevel && ...
-        nodeContribution(i - stableNodeCount) < tolerance, continue; end
-
-      %
-      % So, the threshold is violated (or the minimal level has not been
-      % reached yet); hence, we need to add all the neighbors.
-      %
-      currentLevels = levels(i, :);
-      currentOrders = oldOrders(i - stableNodeCount, :);
-      currentNode = nodes(i, :);
-
+    for i = activeRange(nodeContribution > tolerance)
       for j = 1:inputCount
         [ childNodes, childOrders ] = basis.computeChildNodes( ...
-          currentLevels(j), currentOrders(j));
+          levels(i, j), orders(i, j));
 
         childCount = length(childOrders);
-        newNodeCount = newNodeCount + childCount;
-
-        assert(newNodeCount <= stepBufferLimit);
+        resizeNewBuffers(newNodeCount + childCount);
 
         for k = 1:childCount
-          l = newNodeCount - childCount + k;
+          l = newNodeCount + k;
 
-          newLevels(l, :) = currentLevels;
-          newLevels(l, j) = currentLevels(j) + 1;
+          newLevels(l, :) = levels(i, :);
+          newLevels(l, j) = levels(i, j) + 1;
 
-          newOrders(l, :) = currentOrders;
+          newOrders(l, :) = orders(i, :);
           newOrders(l, j) = childOrders(k);
 
-          newNodes(l, :) = currentNode;
+          newNodes(l, :) = nodes(i, :);
           newNodes(l, j) = childNodes(k);
         end
+
+        newNodeCount = newNodeCount + childCount;
       end
     end
 
     %
-    % The new nodes have been identify, but they might not be unique.
+    % The new nodes have been identify, but they are not necessary unique.
     % Therefore, we need to filter out all duplicates.
     %
     [ uniqueNewNodes, I ] = unique(newNodes(1:newNodeCount, :), 'rows');
@@ -235,31 +181,17 @@ function output = construct(this, f, outputCount)
     %
     if newNodeCount == 0, break; end
 
-    oldOrders(1:newNodeCount, :) = uniqueNewOrders;
+    range = nodeCount + (1:newNodeCount);
 
     nodeCount = nodeCount + newNodeCount;
+    resizeBuffers(nodeCount);
 
-    addition = nodeCount - bufferSize;
-    if addition > 0
-      %
-      % We need more space.
-      %
-      levels    = [ levels; zeros(addition, inputCount) ];
-      nodes     = [ nodes; zeros(addition, inputCount) ];
-      values    = [ values; zeros(addition, outputCount) ];
-      surpluses = [ surpluses; zeros(addition, outputCount) ];
-
-      bufferSize = bufferSize + addition;
-    end
-
-    range = (nodeCount - newNodeCount + 1):nodeCount;
+    activeCount = newNodeCount;
+    passiveCount = nodeCount - activeCount;
 
     levels(range, :) = uniqueNewLevels;
+    orders(range, :) = uniqueNewOrders;
     nodes (range, :) = uniqueNewNodes;
-    values(range, :) = f(uniqueNewNodes);
-
-    oldNodeCount = nodeCount - stableNodeCount - oldNodeCount;
-    stableNodeCount = nodeCount - oldNodeCount;
 
     %
     % We go to the next level.
@@ -287,6 +219,16 @@ function output = construct(this, f, outputCount)
 
   output.surpluses = surpluses(range, :);
 
-  output.expectation = expectation;
+  output.expectation = zeros(1, outputCount);
   output.variance = zeros(1, outputCount);
+end
+
+function nodesND = tensor(nodes1D, dimensionCount)
+  nodes1D = nodes1D(:);
+  nodesND = nodes1D;
+  a = ones(size(nodes1D, 1), 1);
+  for i = 2:dimensionCount
+    b = ones(size(nodesND, 1), 1);
+    nodesND = [ kron(nodesND, a), kron(b, nodes1D) ];
+  end
 end

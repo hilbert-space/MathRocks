@@ -5,7 +5,6 @@ classdef ASGC < handle
     inputCount
     outputCount
 
-    control
     tolerance
 
     minimalLevel
@@ -23,7 +22,6 @@ classdef ASGC < handle
       this.inputCount = options.inputCount;
       this.outputCount = options.get('outputCount', 1);
 
-      this.control = options.get('control', 'NormNormExpectation');
       this.tolerance = options.get('tolerance', 1e-3);
 
       this.minimalLevel = options.get('minimalLevel', 2);
