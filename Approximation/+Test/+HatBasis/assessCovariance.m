@@ -20,6 +20,16 @@ function deriveCovariance(i1, j1, i2, j2)
     s2.j = j2;
   end
 
-  C = deriveCovariance(s1, s2);
-  fprintf('Covariance: %s\n', char(C));
+  Ca = deriveCovariance(s1, s2);
+
+  fprintf('Covariacne:\n');
+
+  if nargin > 3
+    Cn = computeCovariance(i1, j1, i2, j2);
+    fprintf('  Analytical: %10.8f (%s)\n', double(Ca), char(Ca));
+    fprintf('  Numerical:  %10.8f\n', Cn);
+    fprintf('  Delta:      %g\n', double(Ca) - Cn);
+  else
+    fprintf('  Analytical: %s\n', char(Ca));
+  end
 end
