@@ -12,31 +12,11 @@ classdef Hat < Basis.Base
 
       [ Yij, Mi, Li ] = this.computeNodes(I, J);
 
-      K = abs(Y - Yij) < Li;
-
-      result = zeros(pointCount, 1);
-      if basisCount == 1
-        result(K) = prod(1 - (Mi - 1) * abs(Y(K) - Yij), 2);
-      else
-        assert(basisCount == pointCount);
-        result(K) = prod(1 - (Mi(K) - 1) * abs(Y(K) - Yij(K)), 2);
-      end
-    end
-
-    function result = crossEvaluate(this, Y, I, J)
-      [ basisCount, dimensionCount ] = size(I);
-      pointCount = size(Y, 1);
-
-      [ Yij, Mi, Li ] = this.computeNodes(I, J);
-
       result = zeros(basisCount, pointCount);
-      delta = zeros(basisCount, dimensionCount);
-      for i = 1:pointCount
-        for j = 1:dimensionCount
-          delta(:, j) = abs(Yij(:, j) - Y(i, j));
-        end
-        K = all(delta < Li, 2);
 
+      for i = 1:pointCount
+        delta = abs(bsxfun(@minus, Yij, Y(i, :)));
+        K = all(delta < Li, 2);
         result(K, i) = prod(1 - (Mi(K, :) - 1) .* delta(K, :), 2);
       end
     end

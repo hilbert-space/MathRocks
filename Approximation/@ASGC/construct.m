@@ -23,16 +23,13 @@ function output = construct(this, f, outputCount)
 
   levels = zeros(bufferSize, inputCount);
   orders = zeros(bufferSize, inputCount);
-  nodes  = zeros(bufferSize, inputCount);
 
-  values    = zeros(bufferSize, outputCount);
   surpluses = zeros(bufferSize, outputCount);
 
   newBufferSize = 100 * 2 * inputCount;
 
   newLevels = zeros(newBufferSize, inputCount);
   newOrders = zeros(newBufferSize, inputCount);
-  newNodes  = zeros(newBufferSize, inputCount);
 
   function resizeBuffers(neededCount)
     addition = neededCount - bufferSize;
@@ -41,9 +38,7 @@ function output = construct(this, f, outputCount)
 
     levels = [ levels; zeros(addition, inputCount) ];
     orders = [ orders; zeros(addition, inputCount) ];
-    nodes  = [ nodes;  zeros(addition, inputCount) ];
 
-    values    = [ values;    zeros(addition, outputCount) ];
     surpluses = [ surpluses; zeros(addition, outputCount) ];
 
     bufferSize = bufferSize + addition;
@@ -56,28 +51,24 @@ function output = construct(this, f, outputCount)
 
     newLevels = [ newLevels; zeros(addition, inputCount) ];
     newOrders = [ newOrders; zeros(addition, inputCount) ];
-    newNodes  = [ newNodes;  zeros(addition, inputCount) ];
 
     newBufferSize = newBufferSize + addition;
   end
 
-  levelNodeCount = zeros(maximalLevel, 1);
-
   %
   % Level 1
   %
-  [ Y, J ] = basis.computeNodes(1);
-  J = tensor(J, inputCount);
-  Y = tensor(Y, inputCount);
+  J = tensor(basis.computeLevelOrders(1), inputCount);
 
-  nodeCount = size(Y, 1);
+  nodeCount = size(J, 1);
   resizeBuffers(nodeCount);
+
+  levelNodeCount = zeros(maximalLevel, 1);
+  levelNodeCount(1) = nodeCount;
 
   levels(1:nodeCount, :) = 1;
   orders(1:nodeCount, :) = J;
-  nodes (1:nodeCount, :) = Y;
 
-  levelNodeCount(1) = nodeCount;
   passiveCount = 0;
   activeCount = nodeCount;
 
@@ -94,31 +85,21 @@ function output = construct(this, f, outputCount)
     %
     % Evaluate the target function for the active nodes.
     %
-    values(activeRange, :) = f(nodes(activeRange, :));
+    nodes = basis.computeNodes( ...
+      levels(activeRange, :), orders(activeRange, :));
+    values = f(nodes);
 
     %
     % Compute the surpluses of the active nodes.
     %
     if passiveCount == 0
-      surpluses(activeRange, :) = values(activeRange, :);
+      surpluses(activeRange, :) = values;
     else
-      passiveLevels = levels(1:passiveCount, :);
-      intervals = 2.^(passiveLevels - 1) + 1;
-      inversed = 1 ./ (intervals - 1);
-
-      delta = zeros(passiveCount, inputCount);
-      for i = activeRange
-        for j = 1:inputCount
-          delta(:, j) = abs(nodes(1:passiveCount, j) - nodes(i, j));
-        end
-        I = find(all(delta < inversed, 2));
-
-        bases = 1 - (intervals(I, :) - 1) .* delta(I, :);
-        bases(passiveLevels(I, :) == 1) = 1;
-        bases = prod(bases, 2);
-
-        surpluses(i, :) = values(i, :) - ...
-          sum(bsxfun(@times, surpluses(I, :), bases), 1);
+      I = 1:passiveCount;
+      base = basis.evaluate(nodes, levels(I, :), orders(I, :));
+      for i = 1:activeCount
+        surpluses(activeRange(i), :) = values(i, :) - ...
+          sum(bsxfun(@times, surpluses(I, :), base(:, i)), 1);
       end
     end
 
@@ -143,7 +124,7 @@ function output = construct(this, f, outputCount)
     newNodeCount = 0;
     for i = activeRange(nodeContribution > tolerance)
       for j = 1:inputCount
-        [ childNodes, childOrders ] = basis.computeChildNodes( ...
+        childOrders = basis.computeChildOrders( ...
           levels(i, j), orders(i, j));
 
         childCount = length(childOrders);
@@ -157,9 +138,6 @@ function output = construct(this, f, outputCount)
 
           newOrders(l, :) = orders(i, :);
           newOrders(l, j) = childOrders(k);
-
-          newNodes(l, :) = nodes(i, :);
-          newNodes(l, j) = childNodes(k);
         end
 
         newNodeCount = newNodeCount + childCount;
@@ -170,11 +148,11 @@ function output = construct(this, f, outputCount)
     % The new nodes have been identify, but they are not necessary unique.
     % Therefore, we need to filter out all duplicates.
     %
-    [ uniqueNewNodes, I ] = unique(newNodes(1:newNodeCount, :), 'rows');
-    uniqueNewLevels = newLevels(I, :);
-    uniqueNewOrders = newOrders(I, :);
+    [ ~, I ] = unique([ newLevels(1:newNodeCount, :), ...
+      newOrders(1:newNodeCount, :) ], 'rows');
 
-    newNodeCount = size(uniqueNewNodes, 1);
+    newNodeCount = length(I);
+    levelNodeCount(level) = newNodeCount;
 
     %
     % If there are no more nodes to refine, we stop.
@@ -186,18 +164,13 @@ function output = construct(this, f, outputCount)
     nodeCount = nodeCount + newNodeCount;
     resizeBuffers(nodeCount);
 
+    levels(range, :) = newLevels(I, :);
+    orders(range, :) = newOrders(I, :);
+
     activeCount = newNodeCount;
     passiveCount = nodeCount - activeCount;
 
-    levels(range, :) = uniqueNewLevels;
-    orders(range, :) = uniqueNewOrders;
-    nodes (range, :) = uniqueNewNodes;
-
-    %
-    % We go to the next level.
-    %
     level = level + 1;
-    levelNodeCount(level) = newNodeCount;
   end
 
   %
@@ -214,8 +187,8 @@ function output = construct(this, f, outputCount)
   output.nodeCount = nodeCount;
   output.levelNodeCount = levelNodeCount(1:level);
 
-  output.nodes = nodes(range, :);
   output.levels = levels(range, :);
+  output.orders = orders(range, :);
 
   output.surpluses = surpluses(range, :);
 
