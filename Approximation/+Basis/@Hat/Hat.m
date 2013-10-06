@@ -6,54 +6,53 @@ classdef Hat < Basis.Base
   end
 
   methods
-    function result = evaluate(~, y, i, j)
-      if i == 1
-        mi = 1;
-      else
-        mi = 2^(i - 1) + 1;
-      end
-      if mi == 1
-        yij = 0.5;
-      else
-        yij = (j - 1) / (mi - 1);
-      end
-      result = zeros(size(y));
-      I = abs(y - yij) < 1 / (mi - 1);
-      result(I) = 1 - (mi - 1) * abs(y(I) - yij);
-    end
+    function result = evaluate(this, Y, I, J)
+      basisCount = size(I, 1);
+      pointCount = size(Y, 1);
 
-    function [ Y, J ] = computeNodes(this, i)
-      if i == 1
-        J = 1;
-        Y = 0.5;
+      [ Yij, Mi, Li ] = this.computeNodes(I, J);
+
+      K = abs(Y - Yij) < Li;
+
+      result = zeros(pointCount, 1);
+      if basisCount == 1
+        result(K) = prod(1 - (Mi - 1) * abs(Y(K) - Yij), 2);
       else
-        J = this.constructOrderIndex(i);
-        Y = (J - 1) ./ 2^(i - 1);
+        assert(basisCount == pointCount);
+        result(K) = prod(1 - (Mi(K) - 1) * abs(Y(K) - Yij(K)), 2);
       end
     end
 
-    function [ Y, J ] = computeChildNodes(~, i, j)
-      switch i
-      case 1
-        assert(j == 1);
-        J = [ 1; 3 ];
-        Y = [ 0; 1 ];
-      case 2
-        if j == 1
-          J = 2;
-          Y = 0.25;
-        else
-          assert(j == 3);
-          J = 4;
-          Y = 0.75;
+    function result = crossEvaluate(this, Y, I, J)
+      [ basisCount, dimensionCount ] = size(I);
+      pointCount = size(Y, 1);
+
+      [ Yij, Mi, Li ] = this.computeNodes(I, J);
+
+      result = zeros(basisCount, pointCount);
+      delta = zeros(basisCount, dimensionCount);
+      for i = 1:pointCount
+        for j = 1:dimensionCount
+          delta(:, j) = abs(Yij(:, j) - Y(i, j));
         end
-      otherwise
-        J = [ 2 * j - 2; 2 * j ];
-        Y = (J - 1) / 2^i;
+        K = all(delta < Li, 2);
+
+        result(K, i) = prod(1 - (Mi(K, :) - 1) .* delta(K, :), 2);
       end
     end
 
-    function J = constructOrderIndex(this, i)
+    function [ Yij, Mi, Li ] = computeNodes(~, I, J)
+      Mi = 2.^(I - 1) + 1;
+      Mi(I == 1) = 1;
+
+      Li = 1 ./ (Mi - 1);
+      Li(Mi == 1) = 1;
+
+      Yij = (J - 1) ./ (Mi - 1);
+      Yij(Mi == 1) = 0.5;
+    end
+
+    function J = computeLevelOrders(this, i)
       switch i
       case 1
         J = 1;
@@ -62,8 +61,25 @@ classdef Hat < Basis.Base
       case 3
         J = [ 2; 4 ];
       otherwise
-        J = this.constructOrderIndex(i - 1);
+        J = this.computeLevelOrders(i - 1);
         J = [ 2 * J - 2; 2 * J ];
+      end
+    end
+
+    function J = computeChildOrders(~, i, j)
+      switch i
+      case 1
+        assert(j == 1);
+        J = [ 1; 3 ];
+      case 2
+        if j == 1
+          J = 2;
+        else
+          assert(j == 3);
+          J = 4;
+        end
+      otherwise
+        J = [ 2 * j - 2; 2 * j ];
       end
     end
   end
