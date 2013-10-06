@@ -6,7 +6,7 @@ classdef Hat < Basis.Base
   end
 
   methods
-    function result = evaluate(this, Y, I, J)
+    function result = evaluate(this, I, J, Y)
       basisCount = size(I, 1);
       pointCount = size(Y, 1);
 
@@ -19,6 +19,13 @@ classdef Hat < Basis.Base
         K = all(delta < Li, 2);
         result(K, i) = prod(1 - (Mi(K, :) - 1) .* delta(K, :), 2);
       end
+    end
+
+    function result = integrate(this, I, ~)
+      result = 2.^(1 - I);
+      result(I == 1) = 1;
+      result(I == 2) = 0.25;
+      result = prod(result, 2);
     end
 
     function [ Yij, Mi, Li ] = computeNodes(~, I, J)

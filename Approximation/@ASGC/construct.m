@@ -96,7 +96,7 @@ function output = construct(this, f, outputCount)
       surpluses(activeRange, :) = values;
     else
       I = 1:passiveCount;
-      base = basis.evaluate(nodes, levels(I, :), orders(I, :));
+      base = basis.evaluate(levels(I, :), orders(I, :), nodes);
       for i = 1:activeCount
         surpluses(activeRange(i), :) = values(i, :) - ...
           sum(bsxfun(@times, surpluses(I, :), base(:, i)), 1);
@@ -192,7 +192,9 @@ function output = construct(this, f, outputCount)
 
   output.surpluses = surpluses(range, :);
 
-  output.expectation = zeros(1, outputCount);
+  output.expectation = sum(bsxfun(@times, output.surpluses, ...
+    basis.integrate(output.levels, output.orders)), 1);
+
   output.variance = zeros(1, outputCount);
 end
 

@@ -1,7 +1,7 @@
-function adaptiveSparseGrid(output)
+function plot(this, output)
   Plot.figure(600, 600);
 
-  nodes = output.nodes;
+  nodes = this.basis.computeNodes(output.levels, output.orders);
   nodeCount = output.nodeCount;
   levelNodeCount = output.levelNodeCount;
 

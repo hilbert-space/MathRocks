@@ -1,21 +1,6 @@
 function assessHat
-  close all;
   setup;
-
-  [ asgcOutput, ~, asgc ] = assess( ...
-    @(x) problem(5 * x - 1), ...
-    'inputCount', 1, ...
-    'outputCount', 1);
-
-  x = linspace(-1, 4).';
-
-  y1 = problem(x);
-  y2 = asgc.evaluate(asgcOutput, (x + 1) / 5);
-
-  figure;
-
-  line(x, y1, 'Color', Color.pick(1));
-  line(x, y2, 'Color', Color.pick(2));
+  assess(@(x) problem(5 * x - 1));
 end
 
 function y = problem(x)

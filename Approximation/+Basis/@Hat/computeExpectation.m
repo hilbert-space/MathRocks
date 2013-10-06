@@ -1,3 +1,3 @@
 function result = computeExpectation(this, i, j)
-  result = integral(@(Y) this.evaluate(Y.', i, j), 0, 1);
+  result = integral(@(Y) this.evaluate(i, j, Y.'), 0, 1);
 end

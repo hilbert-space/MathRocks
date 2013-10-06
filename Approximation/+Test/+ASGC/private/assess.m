@@ -3,8 +3,7 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
     'inputCount', 1, ...
     'outputCount', 1, ...
     'sampleCount', 1e3, ...
-    'control', 'InfNorm', ...
-    'tolerance', 1e-2, ...
+    'tolerance', 1e-3, ...
     'maximalLevel', 20, ...
     'verbose', true, varargin{:});
 
@@ -24,10 +23,15 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
   display(Options(asgcOutput), 'Adaptive sparse grid');
 
   switch inputCount
-  case -1
-    Plot.adaptiveSparseGrid(asgcOutput);
-  case -2
-    Plot.adaptiveSparseGrid(asgcOutput);
+  case 1
+    plot(asgc, asgcOutput);
+    x = (0:0.01:1).';
+    Plot.figure(1000, 600);
+    Plot.line(x, f(x), 'number', 1);
+    Plot.line(x, asgc.evaluate(asgcOutput, x), 'number', 2);
+    Plot.legend('Exact', 'Approximation');
+  case 2
+    plot(asgc, asgcOutput);
 
     x = 0:0.05:1;
     y = 0:0.05:1;
