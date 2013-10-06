@@ -1,5 +1,7 @@
 classdef ASGC < handle
   properties (SetAccess = 'private')
+    basis
+
     inputCount
     outputCount
 
@@ -15,6 +17,8 @@ classdef ASGC < handle
   methods
     function this = ASGC(varargin)
       options = Options(varargin{:});
+
+      this.basis = Basis.Hat;
 
       this.inputCount = options.inputCount;
       this.outputCount = options.get('outputCount', 1);

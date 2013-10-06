@@ -1,5 +1,5 @@
 function validate(basis, i, j)
-  J = basis.index(i);
+  J = basis.constructOrderIndex(i);
 
   if any(J == j), return; end
 

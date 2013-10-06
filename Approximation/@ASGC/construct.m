@@ -1,6 +1,8 @@
 function output = construct(this, f, outputCount)
   zeros = @uninit;
 
+  basis = this.basis;
+
   inputCount = this.inputCount;
   if nargin < 3, outputCount = this.outputCount; end
 
@@ -16,46 +18,43 @@ function output = construct(this, f, outputCount)
   stepBufferSize = 100 * 2 * inputCount;
 
   %
-  % Preallocate some memory such that we do need to reallocate
+  % Preallocate some memory such that we do not need to reallocate
   % it at low levels. For high levels, we reallocate the memory
   % each time; however, since going from one high level to the
-  % next one does not happen too often, we do not lose too much
-  % of speed.
+  % next one does not happen too often, we do not lose too much.
   %
-  levelIndex = zeros(bufferSize, inputCount, 'uint8');
-  nodes      = zeros(bufferSize, inputCount);
-  values     = zeros(bufferSize, outputCount);
-  surpluses  = zeros(bufferSize, outputCount);
-  surpluses2 = zeros(bufferSize, outputCount);
+  levels    = zeros(bufferSize, inputCount);
+  nodes     = zeros(bufferSize, inputCount);
+  values    = zeros(bufferSize, outputCount);
+  surpluses = zeros(bufferSize, outputCount);
 
-  oldOrderIndex = zeros(stepBufferSize, inputCount, 'uint32');
-  newLevelIndex = zeros(stepBufferSize, inputCount, 'uint8');
-  newOrderIndex = zeros(stepBufferSize, inputCount, 'uint32');
-  newNodes      = zeros(stepBufferSize, inputCount);
+  oldOrders = zeros(stepBufferSize, inputCount);
+  newLevels = zeros(stepBufferSize, inputCount);
+  newOrders = zeros(stepBufferSize, inputCount);
+  newNodes  = zeros(stepBufferSize, inputCount);
 
   %
   % The first two levels.
   %
   nodeCount = 1 + 2 * inputCount;
 
-  levelIndex(1:nodeCount, :) = 1;
-  nodes     (1:nodeCount, :) = 0.5;
+  levels(1:nodeCount, :) = 1;
+  nodes (1:nodeCount, :) = 0.5;
 
   for i = 1:inputCount
     %
     % The left and right most nodes.
     %
     k = 1 + 2 * (i - 1) + 1;
-    levelIndex(k:(k + 1), i) = 2;
-    nodes     (k:(k + 1), i) = [ 0.0; 1.0 ];
+    levels(k:(k + 1), i) = 2;
+    nodes (k:(k + 1), i) = [ 0.0; 1.0 ];
   end
 
   %
   % Evaluate the function on the first two levels.
   %
   values(1:nodeCount, :) = f(nodes(1:nodeCount, :));
-  surpluses (1, :) = values(1, :);
-  surpluses2(1, :) = values(1, :).^2;
+  surpluses(1, :) = values(1, :);
 
   %
   % Summarize what we have done so far.
@@ -64,13 +63,13 @@ function output = construct(this, f, outputCount)
   stableNodeCount = 1;
   oldNodeCount = 2 * inputCount;
 
-  oldOrderIndex(1:oldNodeCount, :) = 1;
+  oldOrders(1:oldNodeCount, :) = 1;
   for i = 1:inputCount
     %
     % NOTE: The order of the left node is already one;
     % therefore, we initialize only the right node.
     %
-    oldOrderIndex(2 * (i - 1) + 2, i) = 3;
+    oldOrders(2 * (i - 1) + 2, i) = 3;
   end
 
   levelNodeCount = zeros(maximalLevel, 1);
@@ -81,7 +80,6 @@ function output = construct(this, f, outputCount)
   % The first statistics.
   %
   expectation = surpluses(1, :);
-  secondRawMoment = surpluses2(1, :);
 
   %
   % Now, the other levels.
@@ -99,63 +97,50 @@ function output = construct(this, f, outputCount)
     %
     oldNodeRange = (stableNodeCount + 1):(stableNodeCount + oldNodeCount);
 
-    stableLevelIndex = levelIndex(1:stableNodeCount, :);
-    intervals = 2.^(double(stableLevelIndex) - 1);
-    inverseIntervals = 1.0 ./ intervals;
+    stableLevels = levels(1:stableNodeCount, :);
+    intervals = 2.^(double(stableLevels) - 1) + 1;
+    inversed = 1 ./ (intervals - 1);
 
     delta = zeros(stableNodeCount, inputCount);
     for i = oldNodeRange
       for j = 1:inputCount
         delta(:, j) = abs(nodes(1:stableNodeCount, j) - nodes(i, j));
       end
-      I = find(all(delta < inverseIntervals, 2));
+      I = find(all(delta < inversed, 2));
 
       %
       % Ensure that all the (one-dimensional) basis functions at
       % the first level are equal to one.
       %
-      bases = 1.0 - intervals(I, :) .* delta(I, :);
-      bases(stableLevelIndex(I, :) == 1) = 1;
+      bases = 1 - (intervals(I, :) - 1) .* delta(I, :);
+      bases(stableLevels(I, :) == 1) = 1;
       bases = prod(bases, 2);
 
       surpluses (i, :) = values(i, :) - ...
         sum(bsxfun(@times, surpluses(I, :), bases), 1);
-      surpluses2(i, :) = values(i, :).^2 - ...
-        sum(bsxfun(@times, surpluses2(I, :), bases), 1);
     end
 
     %
-    % Now, we take care about the expected value and variance, which
-    % also surve error estimates. But, BEFORE doing so, we should compute
-    % the norm of the current expectation for the future error control.
+    % Now, we shall take care of the expected value, which also surve
+    % error estimates. But, BEFORE doing so, we should compute the norm
+    % of the current expectation for the future error control.
     %
     expectationNorm = norm(expectation);
-    assert(expectationNorm > 0);
+    % assert(expectationNorm > 0);
 
-    oldLevelIndex = levelIndex(oldNodeRange, :);
-
-    integrals = 2.^(1 - double(oldLevelIndex));
-    %
-    % NOTE: We do not need the following line; keep for clarity.
-    %
-    % integrals(oldLevelIndex == 1) = 1;
-    %
-    integrals(oldLevelIndex == 2) = 0.25;
-    integrals = prod(integrals, 2);
+    oldLevels = levels(oldNodeRange, :);
 
     %
-    % Expectations and variances from each `old' node individually.
+    % Expectation
     %
-    oldExpectations = ...
-      bsxfun(@times, surpluses(oldNodeRange, :), integrals);
-    oldSecondRawMoments = ...
-      bsxfun(@times, surpluses2(oldNodeRange, :), integrals);
+    integrals1 = 2.^(1 - double(oldLevels));
+    % integrals1(oldLevels == 1) = 1;
+    integrals1(oldLevels == 2) = 1 / 4;
+    integrals1 = prod(integrals1, 2);
 
-    %
-    % Add the individual statistics to the overall ones.
-    %
+    oldExpectations = bsxfun(@times, ...
+      surpluses(oldNodeRange, :), integrals1);
     expectation = expectation + sum(oldExpectations, 1);
-    secondRawMoment = secondRawMoment + sum(oldSecondRawMoments, 1);
 
     %
     % If the current level is the last one, we do not try to add any
@@ -179,14 +164,10 @@ function output = construct(this, f, outputCount)
       %
       % We need more space.
       %
-      oldOrderIndex = [ oldOrderIndex; ...
-        zeros(addition, inputCount, 'uint32') ];
-      newLevelIndex = [ newLevelIndex; ...
-        zeros(addition, inputCount, 'uint8') ];
-      newOrderIndex = [ newOrderIndex; ...
-        zeros(addition, inputCount, 'uint32') ];
-      newNodes      = [ newNodes; ...
-        zeros(addition, inputCount) ];
+      oldOrders = [ oldOrders; zeros(addition, inputCount) ];
+      newLevels = [ newLevels; zeros(addition, inputCount) ];
+      newOrders = [ newOrders; zeros(addition, inputCount) ];
+      newNodes  = [ newNodes; zeros(addition, inputCount) ];
 
       stepBufferSize = stepBufferSize + addition;
     end
@@ -195,13 +176,8 @@ function output = construct(this, f, outputCount)
     % Adaptivity control.
     %
     switch control
-    case 'InfNorm' % Infinity norm of surpluses and surpluses2
-      nodeContribution = ...
-        max(abs([ surpluses(oldNodeRange, :) surpluses2(oldNodeRange, :) ]), [], 2);
     case 'InfNormSurpluses' % Infinity norm of surpluses
       nodeContribution = max(abs(surpluses(oldNodeRange, :)), [], 2);
-    case 'InfNormSurpluses2' % Infinity norm of squared surpluses
-      nodeContribution = max(abs(surpluses2(oldNodeRange, :)), [], 2);
     case 'NormNormExpectation' % Normalized norm of expectation
       nodeContribution = sqrt(sum(oldExpectations.^2, 2)) / expectationNorm;
     otherwise
@@ -216,15 +192,15 @@ function output = construct(this, f, outputCount)
       % So, the threshold is violated (or the minimal level has not been
       % reached yet); hence, we need to add all the neighbors.
       %
-      currentLevelIndex = levelIndex(i, :);
-      currentOrderIndex = oldOrderIndex(i - stableNodeCount, :);
+      currentLevels = levels(i, :);
+      currentOrders = oldOrders(i - stableNodeCount, :);
       currentNode = nodes(i, :);
 
       for j = 1:inputCount
-        [ childOrderIndex, childNodes ] = computeNeighbors( ...
-          currentLevelIndex(j), currentOrderIndex(j));
+        [ childNodes, childOrders ] = basis.computeChildNodes( ...
+          currentLevels(j), currentOrders(j));
 
-        childCount = length(childOrderIndex);
+        childCount = length(childOrders);
         newNodeCount = newNodeCount + childCount;
 
         assert(newNodeCount <= stepBufferLimit);
@@ -232,11 +208,11 @@ function output = construct(this, f, outputCount)
         for k = 1:childCount
           l = newNodeCount - childCount + k;
 
-          newLevelIndex(l, :) = currentLevelIndex;
-          newLevelIndex(l, j) = currentLevelIndex(j) + 1;
+          newLevels(l, :) = currentLevels;
+          newLevels(l, j) = currentLevels(j) + 1;
 
-          newOrderIndex(l, :) = currentOrderIndex;
-          newOrderIndex(l, j) = childOrderIndex(k);
+          newOrders(l, :) = currentOrders;
+          newOrders(l, j) = childOrders(k);
 
           newNodes(l, :) = currentNode;
           newNodes(l, j) = childNodes(k);
@@ -249,8 +225,8 @@ function output = construct(this, f, outputCount)
     % Therefore, we need to filter out all duplicates.
     %
     [ uniqueNewNodes, I ] = unique(newNodes(1:newNodeCount, :), 'rows');
-    uniqueNewLevelIndex = newLevelIndex(I, :);
-    uniqueNewOrderIndex = newOrderIndex(I, :);
+    uniqueNewLevels = newLevels(I, :);
+    uniqueNewOrders = newOrders(I, :);
 
     newNodeCount = size(uniqueNewNodes, 1);
 
@@ -259,7 +235,7 @@ function output = construct(this, f, outputCount)
     %
     if newNodeCount == 0, break; end
 
-    oldOrderIndex(1:newNodeCount, :) = uniqueNewOrderIndex;
+    oldOrders(1:newNodeCount, :) = uniqueNewOrders;
 
     nodeCount = nodeCount + newNodeCount;
 
@@ -268,25 +244,19 @@ function output = construct(this, f, outputCount)
       %
       % We need more space.
       %
-      levelIndex = [ levelIndex; ...
-        zeros(addition, inputCount, 'uint8') ];
-      nodes      = [ nodes; ...
-        zeros(addition, inputCount) ];
-      values     = [ values; ...
-        zeros(addition, outputCount) ];
-      surpluses  = [ surpluses; ...
-        zeros(addition, outputCount) ];
-      surpluses2 = [ surpluses2; ...
-        zeros(addition, outputCount) ];
+      levels    = [ levels; zeros(addition, inputCount) ];
+      nodes     = [ nodes; zeros(addition, inputCount) ];
+      values    = [ values; zeros(addition, outputCount) ];
+      surpluses = [ surpluses; zeros(addition, outputCount) ];
 
       bufferSize = bufferSize + addition;
     end
 
     range = (nodeCount - newNodeCount + 1):nodeCount;
 
-    levelIndex(range, :) = uniqueNewLevelIndex;
-    nodes     (range, :) = uniqueNewNodes;
-    values    (range, :) = f(uniqueNewNodes);
+    levels(range, :) = uniqueNewLevels;
+    nodes (range, :) = uniqueNewNodes;
+    values(range, :) = f(uniqueNewNodes);
 
     oldNodeCount = nodeCount - stableNodeCount - oldNodeCount;
     stableNodeCount = nodeCount - oldNodeCount;
@@ -313,34 +283,10 @@ function output = construct(this, f, outputCount)
   output.levelNodeCount = levelNodeCount(1:level);
 
   output.nodes = nodes(range, :);
-  output.levelIndex = levelIndex(range, :);
+  output.levels = levels(range, :);
 
   output.surpluses = surpluses(range, :);
 
   output.expectation = expectation;
-  output.variance = secondRawMoment - expectation.^2;
-  output.secondRawMoment = secondRawMoment;
-end
-
-function [ orderIndex, nodes ] = computeNeighbors(level, order)
-  if level > 2
-    orderIndex = uint32([ 2 * order - 2; 2 * order ]);
-    nodes = double(orderIndex - 1) / 2^((double(level) + 1) - 1);
-  elseif level == 2
-    if order == 1
-      orderIndex = uint32(2);
-      nodes = 0.25;
-    elseif order == 3
-      orderIndex = uint32(4);
-      nodes = 0.75;
-    else
-      assert(false);
-    end
-  elseif level == 1
-    assert(order == 1);
-    orderIndex = uint32([ 1; 3 ]);
-    nodes = [ 0.0; 1.0 ];
-  else
-    assert(false);
-  end
+  output.variance = zeros(1, outputCount);
 end
