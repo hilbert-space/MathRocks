@@ -1,5 +1,5 @@
-function validate(i, j)
-  J = index(i);
+function validate(basis, i, j)
+  J = basis.index(i);
 
   if any(J == j), return; end
 
