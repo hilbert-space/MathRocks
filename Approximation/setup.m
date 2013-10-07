@@ -3,11 +3,12 @@ function setup
   use('DataStructure');
   use('ProbabilityTheory');
   use('Visualization');
-  use('Vendor', 'chebfun');
-  use('Vendor', 'uninit');
-  use('Vendor', 'sympoly');
   use('Vendor', 'DataHash');
-  use('Vendor', 'SPARSE_GRID_HW');
   use('Vendor', 'SANDIA_RULES');
   use('Vendor', 'SANDIA_SPARSE');
+  use('Vendor', 'SPARSE_GRID_HW');
+  use('Vendor', 'chebfun');
+  use('Vendor', 'combinator');
+  use('Vendor', 'sympoly');
+  use('Vendor', 'uninit');
 end
