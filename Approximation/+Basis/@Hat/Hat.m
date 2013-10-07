@@ -132,7 +132,82 @@ classdef Hat < Basis.Base
         [ IIJJ(:, 1), IIJJ(:, 3); IIJJ(:, 2), IIJJ(:, 4) ], 'rows');
       [ Yij, Mi, ~, L, R ] = this.computeNodes(IJ(:, 1), IJ(:, 2));
 
-      y = sym('y');
+      function result_ = intOne(yij_, l_, r_)
+        %
+        % int_{l_}^{r_} (y - yij_) dy
+        %
+        result_ = (r_^2 - l_^2) / 2 - (r_ - l_) * yij_;
+      end
+
+      function result_ = intAbsOne(yij_, l_, r_)
+        %
+        % int_{l_}^{r_} |y - yij_| dy
+        %
+        if yij_ < l_
+          result_ = intOne(yij_, l_, r_);
+        elseif yij_ > r_
+          result_ = - intOne(yij_, l_, r_);
+        else
+          result_ = - intOne(yij_, l_, yij_) + intOne(yij_, yij_, r_);
+        end
+      end
+
+      function result_ = intTwo(yij1_, yij2_, l_, r_)
+        %
+        % int_{l_}^{r_} (y - yij1_) * (y - yij2_) dy
+        %
+        result_ = (r_^3 - l_^3) / 3 ...
+          - (r_^2 - l_^2) * (yij1_ + yij2_) / 2 ...
+          + (r_ - l_) * yij1_ * yij2_;
+      end
+
+      function result_ = intAbsTwo(yij1_, yij2_, l_, r_)
+        %
+        % int_{l_}^{r_} |y - yij1_| * |y - yij2_| dy
+        %
+        if yij1_ < l_
+          if yij2_ < l_
+            result_ = ...
+              + intTwo(yij1_, yij2_, l_, r_);
+          elseif yij2_ > r_
+            result_ = ...
+              - intTwo(yij1_, yij2_, l_, r_);
+          else
+            result_ = ...
+              - intTwo(yij1_, yij2_, l_, yij2_) ...
+              + intTwo(yij1_, yij2_, yij2_, r_);
+          end
+        elseif yij1_ > r_
+          if yij2_ < l_
+            result_ = ...
+              - intTwo(yij1_, yij2_, l_, r_);
+          elseif yij2_ > r_
+            result_ = ...
+              + intTwo(yij1_, yij2_, l_, r_);
+          else
+            result_ = ...
+              + intTwo(yij1_, yij2_, l_, yij2_) ...
+              - intTwo(yij1_, yij2_, yij2_, r_);
+          end
+        else
+          if yij2_ < l_
+            result_ = ...
+              - intTwo(yij1_, yij2_, l_, yij1_) ...
+              + intTwo(yij1_, yij2_, yij1_, r_);
+          elseif yij2_ > r_
+            result_ = ...
+              + intTwo(yij1_, yij2_, l_, yij1_) ...
+              - intTwo(yij1_, yij2_, yij1_, r_);
+          else
+            a = min(yij1_, yij2_);
+            b = max(yij1_, yij2_);
+            result_ = ...
+              + intTwo(yij1_, yij2_, l_, a) ...
+              - intTwo(yij1_, yij2_, a, b) ...
+              + intTwo(yij1_, yij2_, b, r_);
+          end
+        end
+      end
 
       result = zeros(count, 1);
       for k = 1:count
@@ -159,9 +234,26 @@ classdef Hat < Basis.Base
         l = max(L(i), L(j));
         r = min(R(i), R(j));
 
-        result(k) = double(int( ...
-          (1 - (mi1 - 1) * abs(y - yij1)) * ...
-          (1 - (mi2 - 1) * abs(y - yij2)), y, l, r));
+        assert(l < r);
+
+        if i == 1
+          %
+          % NOTE: Opposite!
+          %
+          result(k) = (r - l) ...
+            - (mi2 - 1) * intAbsOne(yij2, l, r);
+        elseif j == 1
+          %
+          % NOTE: Opposite!
+          %
+          result(k) = (r - l) ...
+            - (mi1 - 1) * intAbsOne(yij1, l, r);
+        else
+          result(k) = (r - l) ...
+            - (mi1 - 1) * intAbsOne(yij1, l, r) ...
+            - (mi2 - 1) * intAbsOne(yij2, l, r) ...
+            + (mi1 - 1) * (mi2 - 1) * intAbsTwo(yij1, yij2, l, r);
+        end
       end
 
       result = prod(reshape(result(K), size(I1)), 2);
