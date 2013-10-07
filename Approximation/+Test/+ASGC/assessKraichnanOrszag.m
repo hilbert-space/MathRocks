@@ -18,7 +18,8 @@ function assessKraichnanOrszag
     'inputCount', inputCount, ...
     'outputCount', outputCount, ...
     'tolerance', 1e-2, ...
-    'maximalLevel', 20);
+    'maximalLevel', 20, ...
+    'verbose', true);
 
   %
   % Brute-force exploration
@@ -41,8 +42,11 @@ function assessKraichnanOrszag
   target = @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
     timeSpan, innerTimeStep, outerTimeStep, outputCount);
 
-  [ asgcOutput, ~, asgc ] = assess(target, asgcOptions, ...
-    'sampleCount', sampleCount);
+  asgc = ASGC(asgcOptions);
+
+  tic;
+  asgcOutput = asgc.construct(target);
+  fprintf('Construction time: %.2f s\n', toc);
 
   %
   % The expected value
@@ -99,7 +103,7 @@ function Y = solveVector(y0, timeSpan, innerTimeStep, outerTimeStep, outputCount
   end
 end
 
-function dy = rightHandSide(t, y)
+function dy = rightHandSide(~, y)
   dy = [ y(:, 1) .* y(:, 3), - y(:, 2) .* y(:, 3), - y(:, 1).^2 + y(:, 2).^2 ];
 end
 
