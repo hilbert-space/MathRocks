@@ -21,18 +21,42 @@ classdef Hat < Basis.Base
       end
     end
 
-    function result = computeExpectation(~, I, ~, C)
-      [ I, ~, K ] = unique(I, 'rows');
-      result = 2.^(1 - I);
-      result(I == 1) = 1;
-      result(I == 2) = 0.25;
-      result = prod(result, 2);
-      result = bsxfun(@times, C, result(K));
-      result = sum(result, 1);
+    function result = computeExpectation(this, I, ~, C)
+      result = sum(bsxfun(@times, C, ...
+        this.computeBasisExpectation(I)), 1);
     end
 
-    function result = computeVariance(~, I, J, C)
-      result = zeros(1, size(C, 2));
+    function result = computeVariance(this, I, J, C)
+      %result = zeros(1, size(C, 2));
+      %return;
+
+      Z = any(I == 1, 2);
+      I(Z, :) = [];
+      J(Z, :) = [];
+      C(Z, :) = [];
+
+      result1 = sum(bsxfun(@times, C.^2, ...
+        this.computeBasisVariance(I)), 1);
+
+      P = combnk(1:size(I, 1), 2);
+
+      [ ~, ~, ~, L, R ] = this.computeNodes(I, J);
+
+      Z = all( ...
+        max(L(P(:, 1), :), L(P(:, 2), :)) < ...
+        min(R(P(:, 1), :), R(P(:, 2), :)), 2);
+
+      result2 = sum(bsxfun(@times, ...
+        C(P(Z, 1), :) .* C(P(Z, 2), :), ...
+        this.computeBasisCrossExpectation( ...
+          I(P(Z, 1), :), J(P(Z, 1), :), ...
+          I(P(Z, 2), :), J(P(Z, 2), :))), 1);
+
+      expectation = this.computeBasisExpectation(I);
+      result3 = sum(bsxfun(@times, C(P(:, 1), :) .* C(P(:, 2), :), ...
+        expectation(P(:, 1)) .* expectation(P(:, 2))), 1);
+
+      result = result1 + 2 * result2 - 2 * result3;
     end
 
     function [ Yij, Mi, Li, L, R ] = computeNodes(~, I, J)
@@ -83,6 +107,75 @@ classdef Hat < Basis.Base
       otherwise
         J = [ 2 * j - 2; 2 * j ];
       end
+    end
+  end
+
+  methods (Access = 'private')
+    function result = computeBasisExpectation(~, I)
+      [ I, ~, K ] = unique(I, 'rows');
+      result = 2.^(1 - I);
+      result(I == 1) = 1;
+      result(I == 2) = 0.25;
+      result = prod(result, 2);
+      result = result(K);
+    end
+
+    function result = computeBasisVariance(~, I)
+      [ I, ~, K ] = unique(I, 'rows');
+      result = 2.^(2 - I) / 3 - 2.^(2 - 2 * I);
+      result(I == 1) = 0;
+      result(I == 2) = 5 / 48;
+      result = prod(result, 2);
+      result = result(K);
+    end
+
+    function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
+      [ II, K ] = sort([ I1(:), I2(:) ], 2);
+      JJ = [ J1(:), J2(:) ];
+      for i = 1:size(K, 1)
+        JJ(i, :) = JJ(i, K(i, :));
+      end
+
+      [ IIJJ, ~, K ] = unique([ II, JJ ], 'rows');
+      count = size(IIJJ, 1);
+
+      [ IJ, ~, H ] = unique( ...
+        [ IIJJ(:, 1), IIJJ(:, 3); IIJJ(:, 2), IIJJ(:, 4) ], 'rows');
+      [ Yij, Mi, ~, L, R ] = this.computeNodes(IJ(:, 1), IJ(:, 2));
+
+      y = sym('y');
+
+      result = zeros(count, 1);
+      for k = 1:count
+        i = H(k);
+        j = H(k + count);
+
+        if i == j
+          if i == 1
+            result(k) = 1;
+          elseif i == 2
+            result(k) = 1 / 6;
+          else
+            result(k) = 2.^(2 - i) / 3;
+          end
+          continue;
+        end
+
+        yij1 = Yij(i);
+        yij2 = Yij(j);
+
+        mi1 = Mi(i);
+        mi2 = Mi(j);
+
+        l = max(L(i), L(j));
+        r = min(R(i), R(j));
+
+        result(k) = double(int( ...
+          (1 - (mi1 - 1) * abs(y - yij1)) * ...
+          (1 - (mi2 - 1) * abs(y - yij2)), y, l, r));
+      end
+
+      result = prod(reshape(result(K), size(I1)), 2);
     end
   end
 end
