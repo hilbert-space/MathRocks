@@ -6,5 +6,5 @@ function assessCovariance(i1, j1, i2, j2)
 
   compare('Covariance', ...
     basis.deriveCovariance(i1, j1, i2, j2), ...
-    basis.computeCovariance(i1, j1, i2, j2));
+    basis.estimateCovariance(i1, j1, i2, j2));
 end

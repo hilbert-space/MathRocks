@@ -192,10 +192,11 @@ function output = construct(this, f, outputCount)
 
   output.surpluses = surpluses(range, :);
 
-  output.expectation = sum(bsxfun(@times, output.surpluses, ...
-    basis.integrate(output.levels, output.orders)), 1);
+  output.expectation = basis.computeExpectation( ...
+    output.levels, output.orders, output.surpluses);
 
-  output.variance = zeros(1, outputCount);
+  output.variance = basis.computeVariance( ...
+    output.levels, output.orders, output.surpluses);
 end
 
 function nodesND = tensor(nodes1D, dimensionCount)

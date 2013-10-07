@@ -1,7 +1,7 @@
 classdef Hat < Basis.Base
   methods
     function this = Hat(varargin)
-      this = this@Basis.Base(varargin{:});
+      this = this@Basis.Base(varargin{:}, 'support', [ 0, 1 ]);
     end
   end
 
@@ -21,22 +21,37 @@ classdef Hat < Basis.Base
       end
     end
 
-    function result = integrate(this, I, ~)
+    function result = computeExpectation(~, I, ~, C)
+      [ I, ~, K ] = unique(I, 'rows');
       result = 2.^(1 - I);
       result(I == 1) = 1;
       result(I == 2) = 0.25;
       result = prod(result, 2);
+      result = bsxfun(@times, C, result(K));
+      result = sum(result, 1);
     end
 
-    function [ Yij, Mi, Li ] = computeNodes(~, I, J)
+    function result = computeVariance(~, I, J, C)
+      result = zeros(1, size(C, 2));
+    end
+
+    function [ Yij, Mi, Li, L, R ] = computeNodes(~, I, J)
       Mi = 2.^(I - 1) + 1;
       Mi(I == 1) = 1;
 
       Li = 1 ./ (Mi - 1);
       Li(Mi == 1) = 1;
 
-      Yij = (J - 1) ./ (Mi - 1);
+      Yij = (J - 1) .* Li;
       Yij(Mi == 1) = 0.5;
+
+      if nargout < 4, return; end
+
+      L = max(0, Yij - Li);
+
+      if nargout < 5, return; end
+
+      R = min(1, Yij + Li);
     end
 
     function J = computeLevelOrders(this, i)
