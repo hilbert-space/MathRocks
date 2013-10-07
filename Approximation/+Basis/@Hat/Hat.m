@@ -27,16 +27,10 @@ classdef Hat < Basis.Base
     end
 
     function result = computeVariance(this, I, J, C)
-      %result = zeros(1, size(C, 2));
-      %return;
-
-      Z = any(I == 1, 2);
-      I(Z, :) = [];
-      J(Z, :) = [];
-      C(Z, :) = [];
+      expectation = this.computeBasisExpectation(I);
 
       result1 = sum(bsxfun(@times, C.^2, ...
-        this.computeBasisVariance(I)), 1);
+        this.computeBasisSecondRawMoment(I) - expectation.^2), 1);
 
       P = combnk(1:size(I, 1), 2);
 
@@ -46,17 +40,12 @@ classdef Hat < Basis.Base
         max(L(P(:, 1), :), L(P(:, 2), :)) < ...
         min(R(P(:, 1), :), R(P(:, 2), :)), 2);
 
-      result2 = sum(bsxfun(@times, ...
-        C(P(Z, 1), :) .* C(P(Z, 2), :), ...
-        this.computeBasisCrossExpectation( ...
-          I(P(Z, 1), :), J(P(Z, 1), :), ...
-          I(P(Z, 2), :), J(P(Z, 2), :))), 1);
+      result2 = (-1) * expectation(P(:, 1)) .* expectation(P(:, 2));
+      result2(Z) = result2(Z) + this.computeBasisCrossExpectation( ...
+          I(P(Z, 1), :), J(P(Z, 1), :), I(P(Z, 2), :), J(P(Z, 2), :));
+      result2 = sum(bsxfun(@times, C(P(:, 1), :) .* C(P(:, 2), :), result2), 1);
 
-      expectation = this.computeBasisExpectation(I);
-      result3 = sum(bsxfun(@times, C(P(:, 1), :) .* C(P(:, 2), :), ...
-        expectation(P(:, 1)) .* expectation(P(:, 2))), 1);
-
-      result = result1 + 2 * result2 - 2 * result3;
+      result = result1 + 2 * result2;
     end
 
     function [ Yij, Mi, Li, L, R ] = computeNodes(~, I, J)
@@ -115,16 +104,16 @@ classdef Hat < Basis.Base
       [ I, ~, K ] = unique(I, 'rows');
       result = 2.^(1 - I);
       result(I == 1) = 1;
-      result(I == 2) = 0.25;
+      result(I == 2) = 1 / 4;
       result = prod(result, 2);
       result = result(K);
     end
 
-    function result = computeBasisVariance(~, I)
+    function result = computeBasisSecondRawMoment(~, I)
       [ I, ~, K ] = unique(I, 'rows');
-      result = 2.^(2 - I) / 3 - 2.^(2 - 2 * I);
-      result(I == 1) = 0;
-      result(I == 2) = 5 / 48;
+      result = 2.^(2 - I) / 3;
+      result(I == 1) = 1;
+      result(I == 2) = 1 / 6;
       result = prod(result, 2);
       result = result(K);
     end
