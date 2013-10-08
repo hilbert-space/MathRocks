@@ -76,9 +76,9 @@ function result = intAbsOne(yij, l, r)
   %
   % int_l^r |y - yij| dy
   %
-  if yij < l
+  if yij <= l
     result = intOne(yij, l, r);
-  elseif yij > r
+  elseif yij >= r
     result = - intOne(yij, l, r);
   else
     result = - intOne(yij, l, yij) + intOne(yij, yij, r);
@@ -89,11 +89,11 @@ function result = intAbsTwo(yij1, yij2, l, r)
   %
   % int_l^r |y - yij1| * |y - yij2| dy
   %
-  if yij1 < l
-    if yij2 < l
+  if yij1 <= l
+    if yij2 <= l
       result = ...
         + intTwo(yij1, yij2, l, r);
-    elseif yij2 > r
+    elseif yij2 >= r
       result = ...
         - intTwo(yij1, yij2, l, r);
     else
@@ -101,11 +101,11 @@ function result = intAbsTwo(yij1, yij2, l, r)
         - intTwo(yij1, yij2, l, yij2) ...
         + intTwo(yij1, yij2, yij2, r);
     end
-  elseif yij1 > r
-    if yij2 < l
+  elseif yij1 >= r
+    if yij2 <= l
       result = ...
         - intTwo(yij1, yij2, l, r);
-    elseif yij2 > r
+    elseif yij2 >= r
       result = ...
         + intTwo(yij1, yij2, l, r);
     else
@@ -114,11 +114,11 @@ function result = intAbsTwo(yij1, yij2, l, r)
         - intTwo(yij1, yij2, yij2, r);
     end
   else
-    if yij2 < l
+    if yij2 <= l
       result = ...
         - intTwo(yij1, yij2, l, yij1) ...
         + intTwo(yij1, yij2, yij1, r);
-    elseif yij2 > r
+    elseif yij2 >= r
       result = ...
         + intTwo(yij1, yij2, l, yij1) ...
         - intTwo(yij1, yij2, yij1, r);
