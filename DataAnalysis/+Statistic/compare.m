@@ -130,7 +130,7 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   if ~draw, return; end
 
-  Plot.figure;
+  Plot.figure(1200, 400);
 
   oneExp = squeeze(mean(oneData, 1));
   twoExp = squeeze(mean(twoData, 1));
