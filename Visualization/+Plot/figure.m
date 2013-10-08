@@ -1,6 +1,21 @@
-function h = figure(width, height)
-  if nargin < 2, height = 400; end
-  if nargin < 1, width  = 600; end
+function h = figure(varargin)
+  width = 600;
+  height = 400;
+
+  switch length(varargin)
+  case 0
+  case 1
+    width = varargin{1};
+    if ~isscalar(width)
+      height = width(2);
+      width = width(1);
+    end
+  case 2
+    width = varargin{1};
+    height = varargin{2};
+  otherwise
+    assert(false);
+  end
 
   screen = get(0, 'ScreenSize');
   x = ceil((screen(3) - width) / 2);
