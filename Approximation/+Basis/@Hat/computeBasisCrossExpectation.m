@@ -5,11 +5,11 @@ function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
     JJ(i, :) = JJ(i, K(i, :));
   end
 
-  [ IIJJ, ~, K ] = unique([ II, JJ ], 'rows');
-  count = size(IIJJ, 1);
+  [ IJ, ~, K ] = unique([ II, JJ ], 'rows');
+  count = size(IJ, 1);
 
   [ IJ, ~, H ] = unique( ...
-    [ IIJJ(:, 1), IIJJ(:, 3); IIJJ(:, 2), IIJJ(:, 4) ], 'rows');
+    [ IJ(:, 1), IJ(:, 3); IJ(:, 2), IJ(:, 4) ], 'rows');
   [ Yij, Mi, ~, L, R ] = this.computeNodes(IJ(:, 1), IJ(:, 2));
 
   result = zeros(count, 1);
