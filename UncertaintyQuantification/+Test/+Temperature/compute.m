@@ -21,7 +21,7 @@ function compute(varargin)
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
 
-  Plot.figure(800, 400);
+  Plot.figure(800, 800);
   subplot(2, 1, 1);
   plot(options.power, options.dynamicPower, 'figure', false);
   subplot(2, 1, 2);

@@ -6,7 +6,7 @@ function compare(options, secondOptions)
 
   options = Configure.systemSimulation(options);
   options = Configure.processVariation(options);
-  options = Configure.polynomialChaos(options);
+  options = Configure.surrogate(options);
 
   oneMethod = 'MonteCarlo';
   twoMethod = 'Chaos';
