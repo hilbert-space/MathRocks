@@ -32,7 +32,7 @@ classdef Hat < Basis.Base
       result1 = sum(bsxfun(@times, C.^2, ...
         this.computeBasisSecondRawMoment(I) - expectation.^2), 1);
 
-      P = combinator(size(I, 1), 2, 'c', 'n');
+      P = Utils.combnk(size(I, 1), 2);
 
       [ ~, ~, ~, L, R ] = this.computeNodes(I, J);
 
