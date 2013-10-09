@@ -14,8 +14,11 @@ function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
 
   result = zeros(count, 1);
   for k = 1:count
-    i1 = H(k);
-    i2 = H(k + count);
+    n1 = H(k);
+    n2 = H(k + count);
+
+    i1 = IJ(n1, 1);
+    i2 = IJ(n2, 1);
 
     if i1 == i2
       if i1 == 1
@@ -28,55 +31,47 @@ function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
       continue;
     end
 
-    yij1 = Yij(i1);
-    yij2 = Yij(i2);
+    yij1 = Yij(n1);
+    yij2 = Yij(n2);
 
-    mi1 = Mi(i1);
-    mi2 = Mi(i2);
+    mi1 = Mi(n1);
+    mi2 = Mi(n2);
 
-    l1 = L(i1);
-    l2 = L(i2);
-
-    r1 = R(i1);
-    r2 = R(i2);
+    l = L(n2);
+    r = R(n2);
 
     %
     % At this point,
     %
-    assert(i1 < i2 && max(l1, l2) < min(r1, r2));
+    assert(i1 < i2 && L(n1) <= l && r <= R(n1));
 
     if i1 == 1
-      result(k) = (r2 - l2) ...
-        - (mi2 - 1) * intAbsOne(yij2, l2, r2);
+      if i2 == 2
+        result(k) = 1 / 4;
+      else
+        result(k) = 2^(1 - i2);
+      end
       continue;
     end
 
-    l = max(l1, l2);
-    r = min(r1, r2);
+    %
+    % At this point,
+    %
+    assert(i2 > 2);
 
-    result(k) = (r2 - l2) ...
-      - (mi1 - 1) * intAbsOne(yij1, l2, r2) ...
-      - (mi2 - 1) * intAbsOne(yij2, l2, r2) ...
-      + (mi1 - 1) * (mi2 - 1) * intAbsTwo(yij1, yij2, l2, r2);
+    result(k) = (r - l) ...
+      - (mi1 - 1) * intAbsOne(yij1, l, r) ...
+      - (mi2 - 1) * intAbsOne(yij2, l, r) ...
+      + (mi1 - 1) * (mi2 - 1) * intAbsTwo(yij1, yij2, l, r);
   end
 
   result = prod(reshape(result(K), size(I1)), 2);
-end
-
-function result = intOne(yij, l, r)
-  %
-  % int_l^r (y - yij) dy
-  %
-  result = (r^2 - l^2) / 2 - (r - l) * yij;
 end
 
 function result = intTwo(yij1, yij2, l, r)
   %
   % int_l^r (y - yij1) * (y - yij2) dy
   %
-  % result = (r^3 - l^3) / 3 ...
-  %   - (r^2 - l^2) * (yij1 + yij2) / 2 ...
-  %   + (r - l) * yij1 * yij2;
   result = (r - l) * ((r^2 + r * l + l^2) / 3 - ...
     (r + l) * (yij1 + yij2) / 2 + yij1 * yij2);
 end
@@ -86,18 +81,13 @@ function result = intAbsOne(yij, l, r)
   % int_l^r |y - yij| dy
   %
   if yij <= l
-    % result = intOne(yij, l, r);
     result = (r - l) * ((l - yij) + (r - yij)) / 2;
   elseif yij >= r
-    % result = - intOne(yij, l, r);
     result = (r - l) * ((yij - l) + (yij - r)) / 2;
   else
-    % result = - intOne(yij, l, yij) + intOne(yij, yij, r);
     result = ((l - yij)^2 + (r - yij)^2) / 2;
   end
-  if result < 0
-    fprintf('absOne: %g < 0 \n', result);
-  end
+  assert(result >= 0);
 end
 
 function result = intAbsTwo(yij1, yij2, l, r)
