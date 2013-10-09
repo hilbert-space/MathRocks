@@ -20,7 +20,15 @@ function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
     i1 = IJ(n1, 1);
     i2 = IJ(n2, 1);
 
+    j1 = IJ(n1, 2);
+    j2 = IJ(n2, 2);
+
     if i1 == i2
+      %
+      % Second raw moments (see deriveSecondRawMoment).
+      %
+      % int_0^1 (1 - (mi1 - 1) * |y - yij1|)^2 dy
+      %
       if i1 == 1
         result(k) = 1;
       elseif i1 == 2
@@ -31,24 +39,27 @@ function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
       continue;
     end
 
-    yij1 = Yij(n1);
-    yij2 = Yij(n2);
-
-    mi1 = Mi(n1);
-    mi2 = Mi(n2);
-
-    l = L(n2);
-    r = R(n2);
-
     %
     % At this point,
     %
-    assert(i1 < i2 && L(n1) <= l && r <= R(n1));
+    assert(i1 < i2 && L(n1) <= L(n2) && R(n2) <= R(n1));
 
     if i1 == 1
       if i2 == 2
+        %
+        % l = 0 or 0.5
+        % r = 0.5 or 1
+        %
+        % (r - l) - (mi2 - 1) * int_l^r |y - y2| dy
+        %
         result(k) = 1 / 4;
       else
+        %
+        % l = yij2 - 1 / (mi2 - 1)
+        % r = yij2 + 1 / (mi2 - 1)
+        %
+        % (r - l) - (mi2 - 1) * int_l^r |y - y2| dy
+        %
         result(k) = 2^(1 - i2);
       end
       continue;
@@ -59,61 +70,20 @@ function result = computeBasisCrossExpectation(this, I1, J1, I2, J2)
     %
     assert(i2 > 2);
 
-    result(k) = (r - l) ...
-      - (mi1 - 1) * intAbsOne(yij1, l, r) ...
-      - (mi2 - 1) * intAbsOne(yij2, l, r) ...
-      + (mi1 - 1) * (mi2 - 1) * intAbsTwo(yij1, yij2, l, r);
+    %
+    % l = yij2 - 1 / (mi2 - 1)
+    % r = yij2 + 1 / (mi2 - 1)
+    %
+    result(k) = ...
+      ... (r - l)
+      + 2^(2 - i2) ...
+      ... (mi1 - 1) * int_l^r |y - yij1| dy
+      - abs((j2 - 1) * 2^(i1 - 2 * i2 + 2) - (j1 - 1) * 2^(2 - i2)) ...
+      ... (mi2 - 1) * int_l^r |y - yij2| dy
+      - 2^(1 - i2) ...
+      ... (mi1 - 1) * (mi2 - 1) int_l^r |y - yij1| * |y - yij2| dy
+      + abs((j2 - 1) * 2^(i1 - 2 * i2 + 1) - (j1 - 1) * 2^(1 - i2));
   end
 
   result = prod(reshape(result(K), size(I1)), 2);
-end
-
-function result = intTwo(yij1, yij2, l, r)
-  %
-  % int_l^r (y - yij1) * (y - yij2) dy
-  %
-  result = (r - l) * ((r^2 + r * l + l^2) / 3 - ...
-    (r + l) * (yij1 + yij2) / 2 + yij1 * yij2);
-end
-
-function result = intAbsOne(yij, l, r)
-  %
-  % int_l^r |y - yij| dy
-  %
-  if yij <= l
-    result = (r - l) * ((l - yij) + (r - yij)) / 2;
-  elseif yij >= r
-    result = (r - l) * ((yij - l) + (yij - r)) / 2;
-  else
-    result = ((l - yij)^2 + (r - yij)^2) / 2;
-  end
-  assert(result >= 0);
-end
-
-function result = intAbsTwo(yij1, yij2, l, r)
-  %
-  % int_l^r |y - yij1| * |y - yij2| dy
-  %
-  % NOTE: Since (a) there is an overlap between the supports
-  % of the two basis functions, (c) a higher-level support is
-  % composed of an even number of low-level supports, (b) i1 < i2,
-  % the support of the second function is always inside of the
-  % support of the first function, and yij1 is always outside or
-  % on the border of the integration range.
-  %
-  assert(l < yij2 && yij2 < r);
-  if yij1 < yij2
-    assert(yij1 <= l);
-    result = ...
-      - intTwo(yij1, yij2, l, yij2) ...
-      + intTwo(yij1, yij2, yij2, r);
-  else
-    assert(yij1 >= r);
-    result = ...
-      + intTwo(yij1, yij2, l, yij2) ...
-      - intTwo(yij1, yij2, yij2, r);
-  end
-  if result < 0
-    fprintf('absTwo: %g < 0 \n', result);
-  end
 end
