@@ -24,7 +24,7 @@ function combs = combnk(n, k)
     combs(I, 1) = 1;
     combs(I, 2) = -((n - 3):-1:0);
     combs = cumsum(combs);
-    return
+    return;
   end
 
   I = 1:k;

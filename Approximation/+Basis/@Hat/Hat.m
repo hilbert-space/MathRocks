@@ -27,23 +27,48 @@ classdef Hat < Basis.Base
     end
 
     function result = computeVariance(this, I, J, C)
+      %
+      % Here we use the formula:
+      %
+      %   Var(sum w_k * a_k) = result1 + 2 * result2
+      %
+      % where
+      %
+      %   result1 = sum (w_k)^2 * Var(a_k),
+      %   result2 = sum w_k * w_l * Cov(a_k, a_l),
+      %   Var(a_k) = E((a_k)^2) - (E(a_k))^2, and
+      %   Cov(a_k, a_l) = E(a_k * a_l) - E(a_k) * E(a_l).
+      %
       expectation = this.computeBasisExpectation(I);
 
       result1 = sum(bsxfun(@times, C.^2, ...
         this.computeBasisSecondRawMoment(I) - expectation.^2), 1);
 
+      %
+      % The summation in result2 is over all k < l; therefore,
+      % we need to sum over all combinations of two elements.
+      %
       P = Utils.combnk(size(I, 1), 2);
+      P1 = P(:, 1);
+      P2 = P(:, 2);
 
+      %
+      % First, we compute the second part of Cov(a_k, a_l).
+      %
+      result2 = (-1) * expectation(P1) .* expectation(P2);
+
+      %
+      % The computation of the first part, E(a_k * a_l), is only
+      % relevant for those basis functions that have intersections.
+      % Let us find them.
+      %
       [ ~, ~, ~, L, R ] = this.computeNodes(I, J);
+      Z = all(L(P1, :) < R(P2, :) & L(P2, :) < R(P1, :), 2);
 
-      Z = all( ...
-        max(L(P(:, 1), :), L(P(:, 2), :)) < ...
-        min(R(P(:, 1), :), R(P(:, 2), :)), 2);
-
-      result2 = (-1) * expectation(P(:, 1)) .* expectation(P(:, 2));
       result2(Z) = result2(Z) + this.computeBasisCrossExpectation( ...
-          I(P(Z, 1), :), J(P(Z, 1), :), I(P(Z, 2), :), J(P(Z, 2), :));
-      result2 = sum(bsxfun(@times, C(P(:, 1), :) .* C(P(:, 2), :), result2), 1);
+          I(P1(Z), :), J(P1(Z), :), I(P2(Z), :), J(P2(Z), :));
+
+      result2 = sum(bsxfun(@times, C(P1, :) .* C(P2, :), result2), 1);
 
       result = result1 + 2 * result2;
     end
