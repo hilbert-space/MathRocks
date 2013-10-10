@@ -1,9 +1,8 @@
 function result = computeBasisCrossExpectation(~, I1, J1, I2, J2)
   [ II, K ] = sort([ I1(:), I2(:) ], 2);
   JJ = [ J1(:), J2(:) ];
-  for i = 1:size(K, 1)
-    JJ(i, :) = JJ(i, K(i, :));
-  end
+  K = K(:, 1) == 2;
+  JJ(K, :) = fliplr(JJ(K, :));
 
   [ IJ, ~, K ] = unique([ II, JJ ], 'rows');
   count = size(IJ, 1);
