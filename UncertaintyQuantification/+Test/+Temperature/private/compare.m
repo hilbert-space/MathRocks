@@ -9,7 +9,7 @@ function compare(options, secondOptions)
   options = Configure.surrogate(options);
 
   oneMethod = 'MonteCarlo';
-  twoMethod = 'Chaos';
+  twoMethod = options.fetch('surrogate', 'Chaos');
 
   analysis = options.fetch('analysis', 'Transient');
 

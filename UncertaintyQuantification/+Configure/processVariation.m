@@ -27,9 +27,9 @@ function options = processVariation(varargin)
   %
   % System parameters
   %
-  function parameter = configureParameter(name, parameter)
+  function parameter = configureParameter(~, parameter)
     if nargin < 2, parameter = Options; end
-    parameter.model = 'Gaussian';
+    parameter.model = 'Beta';
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };

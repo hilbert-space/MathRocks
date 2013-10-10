@@ -44,14 +44,20 @@ classdef Base < handle
       if nargout < 2, return; end
 
       output.Tvar = reshape(surrogateOutput.variance, this.processorCount, []);
+      output.surrogateOutput = surrogateOutput;
+      output.stepCount = size(Pdyn, 2);
     end
 
-    function Tdata = sample(this, varargin)
-      Tdata = this.surrogate.sample(varargin{:});
+    function Tdata = sample(this, output, varargin)
+      Tdata = reshape(this.surrogate.sample( ...
+        output.surrogateOutput, varargin{:}), ...
+        [], this.processorCount, output.stepCount);
     end
 
-    function Tdata = evaluate(this, varargin)
-      Tdata = this.surrogate.evaluate(varargin{:});
+    function Tdata = evaluate(this, output, varargin)
+      Tdata = reshape(this.surrogate.evaluate( ...
+        output.surrogateOutput, varargin{:}), ...
+        [], this.processorCount, output.stepCount);
     end
   end
 
