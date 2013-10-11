@@ -26,10 +26,25 @@ function compare(options, secondOptions)
     options, secondOptions, 'sampleCount', sampleCount);
 
   [ oneTexp, oneOutput ] = one.compute(options.dynamicPower);
-  [ twoTexp, twoOutput ] = two.compute(options.dynamicPower);
 
-  if ~isfield(twoOutput, 'Tdata')
+  time = tic;
+  fprintf('%s: construction...\n', twoMethod);
+  [ twoTexp, twoOutput ] = two.compute(options.dynamicPower);
+  fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
+
+  stats = two.computeStatistics(twoOutput);
+  fprintf('%s: required %d function evaluations.\n', ...
+    twoMethod, stats.functionEvaluations);
+
+  if ~isfield(twoOutput, 'Tdata') || isempty(twoOutput.Tdata)
+    time = tic;
+    fprintf('%s: collecting %d samples...\n', twoMethod, sampleCount);
     twoOutput.Tdata = two.sample(twoOutput, sampleCount);
+    fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
+  end
+
+  if ~isfield(twoOutput, 'Tvar') || isempty(twoOutput.Tvar)
+    twoOutput.Tvar = squeeze(var(twoOutput.Tdata, [], 1));
   end
 
   %

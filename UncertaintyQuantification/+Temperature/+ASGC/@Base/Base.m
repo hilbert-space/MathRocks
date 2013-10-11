@@ -59,6 +59,10 @@ classdef Base < handle
         output.surrogateOutput, varargin{:}), ...
         [], this.processorCount, output.stepCount);
     end
+
+    function stats = computeStatistics(~, output)
+      stats.functionEvaluations = output.surrogateOutput.nodeCount;
+    end
   end
 
   methods (Access = 'protected')

@@ -70,6 +70,10 @@ classdef Base < handle
     function Tdata = evaluate(this, varargin)
       Tdata = this.surrogate.evaluate(varargin{:});
     end
+
+    function stats = computeStatistics(this, varargin)
+      stats.functionEvaluations = this.surrogate.nodeCount;
+    end
   end
 
   methods (Access = 'protected')

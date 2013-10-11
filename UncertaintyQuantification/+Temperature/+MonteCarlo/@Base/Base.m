@@ -43,10 +43,11 @@ classdef Base < handle
         DataHash({ Pdyn, this.toString }));
 
       if File.exist(filename)
-        fprintf('Monte Carlo: using cached data in "%s"...\n', filename);
+        fprintf('Monte Carlo: loading %d samples from "%s"...\n', ...
+          this.sampleCount, filename);
         load(filename);
       else
-        fprintf('Monte Carlo: running %d simulations...\n', ...
+        fprintf('Monte Carlo: collecting %d samples...\n', ...
           this.sampleCount);
 
         time = tic;
@@ -64,8 +65,7 @@ classdef Base < handle
         save(filename, 'Texp', 'Tvar', 'Tdata', 'time', 'I', '-v7.3');
       end
 
-      fprintf('Monte Carlo: simulation time %.2f s (%d samples).\n', ...
-        time, this.sampleCount);
+      fprintf('Monte Carlo: done in %.2f seconds.\n', time);
 
       nanCount = sum(I);
       if nanCount > 0
@@ -86,6 +86,10 @@ classdef Base < handle
       parameters = this.process.assign(parameters);
       Tdata = permute(this.computeWithLeakage( ...
         output.Pdyn, parameters), [ 3 1 2 ]);
+    end
+
+    function stats = computeStatistics(this, varargin)
+      stats.functionEvaluations = this.sampleCount;
     end
 
     function string = toString(this)
