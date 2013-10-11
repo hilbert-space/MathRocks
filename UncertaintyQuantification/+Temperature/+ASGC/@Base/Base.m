@@ -60,8 +60,9 @@ classdef Base < handle
         [], this.processorCount, output.stepCount);
     end
 
-    function stats = computeStatistics(~, output)
-      stats.functionEvaluations = output.surrogateOutput.nodeCount;
+    function options = computeStatistics(~, output)
+      options = Options( ...
+        'functionEvaluations', output.surrogateOutput.nodeCount);
     end
   end
 

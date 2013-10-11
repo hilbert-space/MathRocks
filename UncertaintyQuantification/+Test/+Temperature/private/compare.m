@@ -33,8 +33,7 @@ function compare(options, secondOptions)
   fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
 
   stats = two.computeStatistics(twoOutput);
-  fprintf('%s: required %d function evaluations.\n', ...
-    twoMethod, stats.functionEvaluations);
+  display(stats, sprintf('Statistics of %s', twoMethod));
 
   if ~isfield(twoOutput, 'Tdata') || isempty(twoOutput.Tdata)
     time = tic;

@@ -14,7 +14,6 @@ function display(this, title, offset)
       '^\s*([a-z])', '${upper($1)}');
     nameWidth = max(nameWidth, length(displayNames{i}));
   end
-  nameWidth = nameWidth + 1;
 
   nameOffset = sprintf([ '%', num2str(offset), 's' ], '');
 

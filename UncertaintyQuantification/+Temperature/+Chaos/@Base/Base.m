@@ -71,8 +71,9 @@ classdef Base < handle
       Tdata = this.surrogate.evaluate(varargin{:});
     end
 
-    function stats = computeStatistics(this, varargin)
-      stats.functionEvaluations = this.surrogate.nodeCount;
+    function options = computeStatistics(this, varargin)
+      options = Options( ...
+        'functionEvaluations', this.surrogate.nodeCount);
     end
   end
 

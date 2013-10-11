@@ -88,8 +88,9 @@ classdef Base < handle
         output.Pdyn, parameters), [ 3 1 2 ]);
     end
 
-    function stats = computeStatistics(this, varargin)
-      stats.functionEvaluations = this.sampleCount;
+    function options = computeStatistics(this, varargin)
+      options = Options( ...
+        'functionEvaluations', this.sampleCount);
     end
 
     function string = toString(this)
