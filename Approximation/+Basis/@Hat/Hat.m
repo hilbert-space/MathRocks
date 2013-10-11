@@ -6,18 +6,19 @@ classdef Hat < Basis.Base
   end
 
   methods
-    function result = evaluate(this, I, J, Y)
-      basisCount = size(I, 1);
+    function values = evaluate(this, I, J, Y, C)
       pointCount = size(Y, 1);
+      outputCount = size(C, 2);
 
       [ Yij, Mi, Li ] = this.computeNodes(I, J);
 
-      result = zeros(basisCount, pointCount);
+      values = zeros(pointCount, outputCount);
 
-      for i = 1:pointCount
+      parfor i = 1:pointCount
         delta = abs(bsxfun(@minus, Yij, Y(i, :)));
         K = all(delta < Li, 2);
-        result(K, i) = prod(1 - (Mi(K, :) - 1) .* delta(K, :), 2);
+        values(i, :) = sum(bsxfun(@times, C(K, :), ...
+          prod(1 - (Mi(K, :) - 1) .* delta(K, :), 2)), 1);
       end
     end
 

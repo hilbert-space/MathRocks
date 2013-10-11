@@ -80,6 +80,7 @@ function output = construct(this, f, outputCount)
         level, passiveCount, activeCount, nodeCount);
     end
 
+    passiveRange = 1:passiveCount;
     activeRange = passiveCount + (1:activeCount);
 
     %
@@ -95,12 +96,9 @@ function output = construct(this, f, outputCount)
     if passiveCount == 0
       surpluses(activeRange, :) = values;
     else
-      I = 1:passiveCount;
-      base = basis.evaluate(levels(I, :), orders(I, :), nodes);
-      for i = 1:activeCount
-        surpluses(activeRange(i), :) = values(i, :) - ...
-          sum(bsxfun(@times, surpluses(I, :), base(:, i)), 1);
-      end
+      surpluses(activeRange, :) = values - basis.evaluate( ...
+        levels(passiveRange, :), orders(passiveRange, :), ...
+        nodes, surpluses(passiveRange, :));
     end
 
     %

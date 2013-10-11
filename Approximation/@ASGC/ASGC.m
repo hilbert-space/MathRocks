@@ -30,6 +30,11 @@ classdef ASGC < handle
       this.verbose = options.get('verbose', true);
     end
 
+    function values = evaluate(this, output, nodes)
+      values = this.basis.evaluate(output.levels, output.orders, ...
+        nodes, output.surpluses);
+    end
+
     function values = sample(this, output, sampleCount)
       values = this.evaluate(output, ...
         rand(sampleCount, output.inputCount));

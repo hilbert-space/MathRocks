@@ -1,4 +1,4 @@
-function derivePartsOfCrossExpectation
+function deriveCrossExpectation
   syms i1 i2 j1 j2
 
   [ yij, mi, ~, l, r ] = configure(2, 1);
