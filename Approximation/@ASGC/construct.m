@@ -6,12 +6,19 @@ function output = construct(this, f, outputCount)
   inputCount = this.inputCount;
   if nargin < 3, outputCount = this.outputCount; end
 
-  tolerance = this.tolerance;
+  absoluteTolerance = this.absoluteTolerance;
+  relativeTolerance = this.relativeTolerance;
 
   minimalLevel = this.minimalLevel;
   maximalLevel = this.maximalLevel;
 
   verbose = this.verbose;
+
+  %
+  % Adaptivity control
+  %
+  minimalValue = Inf(1, outputCount);
+  maximalValue = -Inf(1, outputCount);
 
   %
   % Preallocate some memory such that we do not need to reallocate
@@ -110,17 +117,24 @@ function output = construct(this, f, outputCount)
     %
     % Adaptivity control
     %
+    minimalValue = min([ minimalValue; min(values, [], 1) ], [], 1);
+    maximalValue = max([ maximalValue; max(values, [], 1) ], [], 1);
+
     if level < minimalLevel
-      nodeContribution = Inf(1, activeCount);
+      refineRange = activeRange;
     else
-      nodeContribution = max(abs(surpluses(activeRange, :)), [], 2);
+      absoluteError = abs(surpluses(activeRange, :));
+      refineRange = activeRange( ...
+        max(absoluteError, [], 2) > absoluteTolerance | ...
+        max(bsxfun(@rdivide, absoluteError, ...
+          maximalValue - minimalValue), [], 2) > relativeTolerance);
     end
 
     %
     % Add the neighbors of those nodes that need to be refined.
     %
     newNodeCount = 0;
-    for i = activeRange(nodeContribution > tolerance)
+    for i = refineRange
       for j = 1:inputCount
         childOrders = basis.computeChildOrders( ...
           levels(i, j), orders(i, j));

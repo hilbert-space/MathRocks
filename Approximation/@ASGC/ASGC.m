@@ -5,7 +5,8 @@ classdef ASGC < handle
     inputCount
     outputCount
 
-    tolerance
+    absoluteTolerance
+    relativeTolerance
 
     minimalLevel
     maximalLevel
@@ -22,7 +23,8 @@ classdef ASGC < handle
       this.inputCount = options.inputCount;
       this.outputCount = options.get('outputCount', 1);
 
-      this.tolerance = options.get('tolerance', 1e-3);
+      this.absoluteTolerance = options.get('absoluteTolerance', 1e-4);
+      this.relativeTolerance = options.get('relativeTolerance', 1e-2);
 
       this.minimalLevel = options.get('minimalLevel', 2);
       this.maximalLevel = options.get('maximalLevel', 10);
