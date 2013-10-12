@@ -71,7 +71,6 @@ function output = construct(this, f, outputCount)
   resizeBuffers(nodeCount);
 
   levelNodeCount = zeros(maximalLevel, 1);
-  levelNodeCount(1) = nodeCount;
 
   levels(1:nodeCount, :) = 1;
   orders(1:nodeCount, :) = J;
@@ -86,6 +85,8 @@ function output = construct(this, f, outputCount)
       fprintf('Level %2d: passive %6d, active %6d, total %6d\n', ...
         level, passiveCount, activeCount, nodeCount);
     end
+
+    levelNodeCount(level) = activeCount;
 
     passiveRange = 1:passiveCount;
     activeRange = passiveCount + (1:activeCount);
@@ -164,7 +165,6 @@ function output = construct(this, f, outputCount)
       newOrders(1:newNodeCount, :) ], 'rows');
 
     newNodeCount = length(I);
-    levelNodeCount(level) = newNodeCount;
 
     %
     % If there are no more nodes to refine, we stop.
