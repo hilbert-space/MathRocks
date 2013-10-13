@@ -1,4 +1,8 @@
-function values = evaluate(this, output, nodes)
+function values = evaluate(this, output, nodes, isUniform)
+  if nargin > 3 && isUniform
+    nodes = this.distribution.icdf(nodes);
+  end
+
   rvPower = this.rvPower;
   rvMap = this.rvMap;
 

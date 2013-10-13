@@ -1,5 +1,7 @@
 classdef Base < handle
   properties (SetAccess = 'protected')
+    distribution
+
     order
 
     inputCount
@@ -28,30 +30,8 @@ classdef Base < handle
   methods
     function this = Base(varargin)
       options = Options('method', 'totalOrder', varargin{:});
-      this.initialize(options);
-    end
+      this.distribution = this.configure(options);
 
-    function output = expand(this, f, varargin)
-      coefficients = this.projection * f(this.nodes, varargin{:});
-
-      output.expectation = coefficients(1, :);
-      output.variance = sum(coefficients(2:end, :).^2 .* ...
-        repmat(this.norm(2:end), [ 1, size(coefficients, 2) ]), 1);
-      output.coefficients = coefficients;
-    end
-
-    function display(this)
-      options = Options( ...
-        'inputCount', this.inputCount, ...
-        'polynomialOrder', this.order, ...
-        'polynomialTermCount', this.termCount, ...
-        'quadratureNodeCount', this.nodeCount);
-      display(options, 'Polynomial chaos');
-    end
-  end
-
-  methods (Access = 'protected')
-    function initialize(this, options)
       this.order = options.order;
       this.inputCount = options.inputCount;
 
@@ -77,16 +57,39 @@ classdef Base < handle
       this.rvPower = rvPower;
       this.rvMap = rvMap;
     end
+
+    function output = expand(this, f, varargin)
+      coefficients = this.projection * f(this.nodes, varargin{:});
+
+      output.expectation = coefficients(1, :);
+      output.variance = sum(coefficients(2:end, :).^2 .* ...
+        repmat(this.norm(2:end), [ 1, size(coefficients, 2) ]), 1);
+      output.coefficients = coefficients;
+    end
+
+    function data = sample(this, output, sampleCount)
+      data = this.distribution.sample(sampleCount, this.inputCount);
+      data = this.evaluate(output, data);
+    end
+
+    function display(this)
+      options = Options( ...
+        'inputCount', this.inputCount, ...
+        'polynomialOrder', this.order, ...
+        'polynomialTermCount', this.termCount, ...
+        'quadratureNodeCount', this.nodeCount);
+      display(options, 'Polynomial chaos');
+    end
+  end
+
+  methods (Abstract, Access = 'protected')
+    distribution = configure(this, options)
   end
 
   methods (Abstract, Access = 'protected')
     basis = constructUnivariateBasis(this, x, order)
     [ nodes, weights ] = constructQuadrature(this, options)
     norm = computeNormalizationConstant(this, i, index)
-  end
-
-  methods (Abstract)
-    data = sample(this, output, sampleCount)
   end
 
   methods (Access = 'private')

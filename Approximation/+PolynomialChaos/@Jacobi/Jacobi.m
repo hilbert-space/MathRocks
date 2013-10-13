@@ -10,26 +10,23 @@ classdef Jacobi < PolynomialChaos.Base
     function this = Jacobi(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
     end
-
-    function data = sample(this, output, sampleCount)
-      %
-      % NOTE: We have +1 here as MATLAB's interpretation of the Beta distribution
-      % is different from the one used for the Jocobi chaos.
-      %
-      data = betarnd(this.alpha + 1, this.beta + 1, ...
-        sampleCount, this.inputCount);
-      data = data * (this.b - this.a) + this.a;
-      data = this.evaluate(output, data);
-    end
   end
 
   methods (Access = 'protected')
-    function initialize(this, options)
+    function distribution = configure(this, options)
       this.alpha = options.alpha;
       this.beta = options.beta;
       this.a = options.a;
       this.b = options.b;
-      initialize@PolynomialChaos.Base(this, options);
+
+      %
+      % NOTE: We have +1 here as MATLAB's interpretation of
+      % the Beta distribution is different from the one used
+      % for the Jacobi chaos.
+      %
+      distribution = ProbabilityDistribution.Beta( ...
+        'alpha', this.alpha + 1, 'beta', this.beta + 1, ...
+        'a', this.a, 'b', this.b);
     end
 
     function basis = constructUnivariateBasis(this, x, order)

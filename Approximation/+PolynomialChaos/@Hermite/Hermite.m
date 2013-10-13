@@ -3,14 +3,13 @@ classdef Hermite < PolynomialChaos.Base
     function this = Hermite(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
     end
-
-    function data = sample(this, output, sampleCount)
-      data = normrnd(0, 1, sampleCount, this.inputCount);
-      data = this.evaluate(output, data);
-    end
   end
 
   methods (Access = 'protected')
+    function distribution = configure(this, options)
+      distribution = ProbabilityDistribution.Gaussian;
+    end
+
     function basis = constructUnivariateBasis(this, x, order)
       assert(order >= 0);
 

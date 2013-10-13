@@ -7,7 +7,7 @@ function assess(mcData, pcData, pcOutput, distribution)
   fprintf('  Expectation: %.4f\n', pcOutput.expectation);
   fprintf('  Variance:    %.4f\n', pcOutput.variance);
 
-  Data.compare(mcData, pcData, 'draw', true);
+  Statistic.compare(mcData, pcData, 'draw', true);
 
   if nargin > 3
     fprintf('Exact:\n');
