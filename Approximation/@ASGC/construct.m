@@ -33,11 +33,6 @@ function output = construct(this, f, outputCount)
 
   surpluses = zeros(bufferSize, outputCount);
 
-  newBufferSize = 100 * 2 * inputCount;
-
-  newLevels = zeros(newBufferSize, inputCount);
-  newOrders = zeros(newBufferSize, inputCount);
-
   function resizeBuffers(neededCount)
     addition = neededCount - bufferSize;
 
@@ -51,42 +46,31 @@ function output = construct(this, f, outputCount)
     bufferSize = bufferSize + addition;
   end
 
-  function resizeNewBuffers(neededCount)
-    addition = neededCount - newBufferSize;
-
-    if addition <= 0, return; end
-
-    newLevels = [ newLevels; zeros(addition, inputCount) ];
-    newOrders = [ newOrders; zeros(addition, inputCount) ];
-
-    newBufferSize = newBufferSize + addition;
-  end
-
   %
-  % Level 1
+  % Prepare the first level.
   %
   J = tensor(basis.computeLevelOrders(1), inputCount);
 
   nodeCount = size(J, 1);
   resizeBuffers(nodeCount);
 
-  levelNodeCount = zeros(maximalLevel, 1);
-
   levels(1:nodeCount, :) = 1;
   orders(1:nodeCount, :) = J;
 
+  level = 0;
   passiveCount = 0;
   activeCount = nodeCount;
 
-  level = 1;
+  levelNodeCount = zeros(maximalLevel, 1);
 
-  while true
+  while activeCount > 0
+    level = level + 1;
+    levelNodeCount(level) = activeCount;
+
     if verbose
       fprintf('Level %2d: passive %6d, active %6d, total %6d\n', ...
         level, passiveCount, activeCount, nodeCount);
     end
-
-    levelNodeCount(level) = activeCount;
 
     passiveRange = 1:passiveCount;
     activeRange = passiveCount + (1:activeCount);
@@ -132,57 +116,28 @@ function output = construct(this, f, outputCount)
     end
 
     %
-    % Add the neighbors of those nodes that need to be refined.
+    % Add the child nodes of those nodes that need to be refined.
     %
-    newNodeCount = 0;
-    for i = refineRange
-      for j = 1:inputCount
-        childOrders = basis.computeChildOrders( ...
-          levels(i, j), orders(i, j));
-
-        childCount = length(childOrders);
-        resizeNewBuffers(newNodeCount + childCount);
-
-        for k = 1:childCount
-          l = newNodeCount + k;
-
-          newLevels(l, :) = levels(i, :);
-          newLevels(l, j) = levels(i, j) + 1;
-
-          newOrders(l, :) = orders(i, :);
-          newOrders(l, j) = childOrders(k);
-        end
-
-        newNodeCount = newNodeCount + childCount;
-      end
-    end
+    [ childLevels, childOrders ] = basis.computeChildren( ...
+      levels(refineRange, :), orders(refineRange, :));
 
     %
-    % The new nodes have been identify, but they are not necessary unique.
-    % Therefore, we need to filter out all duplicates.
+    % The child nodes become the new active nodes.
     %
-    [ ~, I ] = unique([ newLevels(1:newNodeCount, :), ...
-      newOrders(1:newNodeCount, :) ], 'rows');
-
-    newNodeCount = length(I);
+    activeCount = size(childLevels, 1);
+    activeRange = nodeCount + (1:activeCount);
 
     %
-    % If there are no more nodes to refine, we stop.
+    % The total number of nodes increases, and the buffers
+    % should be enlarged if needed.
     %
-    if newNodeCount == 0, break; end
-
-    range = nodeCount + (1:newNodeCount);
-
-    nodeCount = nodeCount + newNodeCount;
+    nodeCount = nodeCount + activeCount;
     resizeBuffers(nodeCount);
 
-    levels(range, :) = newLevels(I, :);
-    orders(range, :) = newOrders(I, :);
+    levels(activeRange, :) = childLevels;
+    orders(activeRange, :) = childOrders;
 
-    activeCount = newNodeCount;
     passiveCount = nodeCount - activeCount;
-
-    level = level + 1;
   end
 
   %
