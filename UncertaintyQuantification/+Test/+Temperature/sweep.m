@@ -11,6 +11,11 @@ function sweep(varargin)
   options = Configure.surrogate(options);
 
   temperature = Temperature.Analytical.(analysis)(options);
+
+  Plot.powerTemperature(options.dynamicPower, [], ...
+     temperature.compute(options.dynamicPower), ...
+    'time', options.timeLine);
+
   process = ProcessVariation(options.processOptions);
 
   function Tdata = evaluate(parameters)
@@ -35,7 +40,9 @@ function sweep(varargin)
       sweeps{i} = -4:0.1:4;
       nominals{i} = zeros(length(sweeps{i}), dimensions(i));
     case 'Beta'
-      sweeps{i} = -1:0.05:1;
+      sweeps{i} = -1:0.01:1;
+      sweeps{i}(1) = -1 + sqrt(eps);
+      sweeps{i}(end) = 1 - sqrt(eps);
       nominals{i} = zeros(length(sweeps{i}), dimensions(i));
     otherwise
       assert(false);
@@ -71,6 +78,9 @@ function sweep(varargin)
     end
 
     Tdata = evaluate(parameters);
+    nanCount = sum(isnan(Tdata(:)));
+    if nanCount > 0, fprintf('Detected %d NaNs.\n', nanCount); end
+
     Tdata = Utils.toCelsius(Tdata(:, :, Istep));
 
     Plot.figure(800, 400);
