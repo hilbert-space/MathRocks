@@ -16,6 +16,9 @@ function correlation = correlate(this, variables, options)
 
   for i = 1:dimensionCount
     for j = (i + 1):dimensionCount
+      rho0 = variables.correlation(i, j);
+      if rho0 == 0, continue; end
+
       rv1 = variables{i};
       rv2 = variables{j};
 
@@ -24,8 +27,6 @@ function correlation = correlate(this, variables, options)
 
       sigma1 = sqrt(rv1.variance);
       sigma2 = sqrt(rv2.variance);
-
-      rho0 = variables.correlation(i, j);
 
       weightsOne = weights .* (rv1.icdf(distribution.cdf(nodes(:, 1))) - mu1);
       two = @(rho) rv2.icdf(distribution.cdf(rho * nodes(:, 1) + sqrt(1 - rho^2) * nodes(:, 2))) - mu2;
