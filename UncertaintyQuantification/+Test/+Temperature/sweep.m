@@ -7,19 +7,31 @@ function sweep(varargin)
   fprintf('Analysis: %s\n', analysis);
 
   options = Configure.systemSimulation(options);
-  options = Configure.processVariation(options);
-  options = Configure.surrogate(options);
-
   temperature = Temperature.Analytical.(analysis)(options);
+
+  options = Configure.processVariation(options);
+
+  if options.has('surrogate')
+    fprintf('Surrogate: %s\n', options.surrogate);
+    options = Configure.surrogate(options);
+    surrogate = Utils.instantiate(String.join('.', ...
+      'Temperature', options.surrogate, analysis), options);
+    fprintf('Surrogate: construction...\n');
+    time = tic;
+    [ ~, surrogateOutput ] = surrogate.compute(options.dynamicPower);
+    fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
+
+    process = surrogate.process;
+  else
+    process = ProcessVariation(options.processOptions);
+  end
 
   Plot.powerTemperature(options.dynamicPower, [], ...
      temperature.compute(options.dynamicPower), ...
     'time', options.timeLine);
 
-  process = ProcessVariation(options.processOptions);
-
   function Tdata = evaluate(parameters)
-    parameters = process.evaluate(parameters);
+    parameters = process.evaluate(parameters, true);
     parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
     parameters = process.assign(parameters);
     Tdata = permute(temperature.computeWithLeakage( ...
@@ -34,19 +46,8 @@ function sweep(varargin)
   sweeps = cell(1, parameterCount);
   nominals = cell(1, parameterCount);
   for i = 1:parameterCount
-    parameter = parameters.(names{i});
-    switch parameter.model
-    case 'Gaussian'
-      sweeps{i} = -4:0.1:4;
-      nominals{i} = zeros(length(sweeps{i}), dimensions(i));
-    case 'Beta'
-      sweeps{i} = -1:0.01:1;
-      sweeps{i}(1) = -1 + sqrt(eps);
-      sweeps{i}(end) = 1 - sqrt(eps);
-      nominals{i} = zeros(length(sweeps{i}), dimensions(i));
-    otherwise
-      assert(false);
-    end
+    sweeps{i} = linspace(sqrt(eps), 1 - sqrt(eps), 200);
+    nominals{i} = 0.5 * ones(length(sweeps{i}), dimensions(i));
   end
 
   Iparameter = 1;
@@ -77,15 +78,32 @@ function sweep(varargin)
       parameters{Iparameter}(:, i) = sweeps{Iparameter};
     end
 
+    fprintf('Monte Carlo: evaluation...\n');
+    time = tic;
     Tdata = evaluate(parameters);
-    nanCount = sum(isnan(Tdata(:)));
-    if nanCount > 0, fprintf('Detected %d NaNs.\n', nanCount); end
+    fprintf('Monte Carlo: done in %.2f seconds.\n', toc(time));
 
     Tdata = Utils.toCelsius(Tdata(:, :, Istep));
 
     Plot.figure(800, 400);
-    for i = 1:options.processorCount
-      Plot.line(sweeps{Iparameter}, Tdata(:, i), 'number', i);
+
+    if ~exist('surrogate', 'var')
+      for i = 1:options.processorCount
+        Plot.line(sweeps{Iparameter}, Tdata(:, i), 'number', i);
+      end
+    else
+      fprintf('Surrogate: evaluation...\n');
+      time = tic;
+      surrogateTdata = surrogate.evaluate( ...
+        surrogateOutput, cell2mat(parameters), true); % uniform
+      fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
+      surrogateTdata = Utils.toCelsius(surrogateTdata(:, :, Istep));
+
+      for i = 1:options.processorCount
+        Plot.line(sweeps{Iparameter}, Tdata(:, i), 'number', i);
+        Plot.line(sweeps{Iparameter}, surrogateTdata(:, i), ...
+          'number', i, 'auxiliary', true);
+      end
     end
 
     Plot.title('Sweep at %.3f s', Istep * options.samplingInterval);
