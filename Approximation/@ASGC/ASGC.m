@@ -32,7 +32,7 @@ classdef ASGC < handle
       this.verbose = options.get('verbose', true);
     end
 
-    function values = evaluate(this, output, nodes)
+    function values = evaluate(this, output, nodes, varargin)
       values = this.basis.evaluate(output.levels, output.orders, ...
         nodes, output.surpluses);
     end
