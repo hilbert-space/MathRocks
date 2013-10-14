@@ -1,4 +1,4 @@
-classdef ASGC < handle
+classdef SparseGrid < handle
   properties (SetAccess = 'private')
     basis
 
@@ -8,6 +8,9 @@ classdef ASGC < handle
     absoluteTolerance
     relativeTolerance
 
+    minimalNodeCount
+    maximalNodeCount
+
     minimalLevel
     maximalLevel
 
@@ -15,7 +18,7 @@ classdef ASGC < handle
   end
 
   methods
-    function this = ASGC(varargin)
+    function this = SparseGrid(varargin)
       options = Options(varargin{:});
 
       this.basis = Basis.Hat;
@@ -26,20 +29,13 @@ classdef ASGC < handle
       this.absoluteTolerance = options.get('absoluteTolerance', 1e-4);
       this.relativeTolerance = options.get('relativeTolerance', 1e-2);
 
+      this.minimalNodeCount = options.get('minimalNodeCount', 1);
+      this.maximalNodeCount = options.get('maximalNodeCount', 1e4);
+
       this.minimalLevel = options.get('minimalLevel', 2);
       this.maximalLevel = options.get('maximalLevel', 10);
 
       this.verbose = options.get('verbose', true);
-    end
-
-    function values = evaluate(this, output, nodes, varargin)
-      values = this.basis.evaluate(output.levels, output.orders, ...
-        nodes, output.surpluses);
-    end
-
-    function values = sample(this, output, sampleCount)
-      values = this.evaluate(output, ...
-        rand(sampleCount, output.inputCount));
     end
   end
 end

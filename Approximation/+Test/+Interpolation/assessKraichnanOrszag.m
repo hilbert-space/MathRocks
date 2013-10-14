@@ -14,7 +14,7 @@ function assessKraichnanOrszag
   inputCount = 1;
   outputCount = 3 * stepCount;
 
-  asgcOptions = Options( ...
+  sgOptions = Options( ...
     'inputCount', inputCount, ...
     'outputCount', outputCount, ...
     'absoluteTolerance', 1e-2, ...
@@ -41,10 +41,10 @@ function assessKraichnanOrszag
   target = @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
     timeSpan, innerTimeStep, outerTimeStep, outputCount);
 
-  asgc = ASGC(asgcOptions);
+  sg = Interpolation.SpaceAdaptive(sgOptions);
 
   tic;
-  asgcOutput = asgc.construct(target);
+  asgcOutput = sg.construct(target);
   fprintf('Construction time: %.2f s\n', toc);
 
   %
@@ -75,7 +75,7 @@ function assessKraichnanOrszag
   figure;
 
   Y = transpose(squeeze(Y(end, :, :)));
-  y = asgc.evaluate(asgcOutput, (z + 1) / 2);
+  y = sg.evaluate(asgcOutput, (z + 1) / 2);
   y = y(:, [ ...
     outputCount - 2 * stepCount, ...
     outputCount - 1 * stepCount, ...

@@ -1,4 +1,4 @@
-function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
+function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
   options = Options( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
@@ -15,24 +15,24 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
 
   u = rand(sampleCount, inputCount);
 
-  asgc = ASGC(options);
+  sg = Interpolation.SpaceAdaptive(options);
 
   time = tic;
-  asgcOutput = asgc.construct(f);
+  sgOutput = sg.construct(f);
   fprintf('Construction time: %.2f s\n', toc(time));
 
-  display(Options(asgcOutput), 'Adaptive sparse grid');
+  display(Options(sgOutput), 'Sparse grid');
 
   switch inputCount
   case 1
-    plot(asgc, asgcOutput);
+    plot(sg, sgOutput);
     x = (0:0.01:1).';
     Plot.figure(1000, 600);
     Plot.line(x, f(x), 'number', 1);
-    Plot.line(x, asgc.evaluate(asgcOutput, x), 'number', 2);
+    Plot.line(x, sg.evaluate(sgOutput, x), 'number', 2);
     Plot.legend('Exact', 'Approximation');
   case 2
-    plot(asgc, asgcOutput);
+    plot(sg, sgOutput);
 
     x = 0:0.05:1;
     y = 0:0.05:1;
@@ -46,7 +46,7 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
     mesh(X, Y, Z);
     Plot.title('Exact');
 
-    Z(:) = asgc.evaluate(asgcOutput, [ X(:) Y(:) ]);
+    Z(:) = sg.evaluate(sgOutput, [ X(:) Y(:) ]);
     subplot(1, 2, 2);
     mesh(X, Y, Z);
     Plot.title('Approximation');
@@ -59,23 +59,23 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
   mcOutput.variance = var(mcOutput.data);
 
   time = tic;
-  asgcOutput.data = asgc.evaluate(asgcOutput, u);
-  fprintf('ASGC evaluation time: %.2f s\n', toc(time));
+  sgOutput.data = sg.evaluate(sgOutput, u);
+  fprintf('SG evaluation time: %.2f s\n', toc(time));
 
   names = { ...
     'Empirical MC', ...
-    'Empirical ASGC', ...
-    'Analytical ASGC' };
+    'Empirical SG', ...
+    'Analytical SG' };
 
   expectation = { ...
     mcOutput.expectation, ...
-    mean(asgcOutput.data, 1), ...
-    asgcOutput.expectation };
+    mean(sgOutput.data, 1), ...
+    sgOutput.expectation };
 
   variance = { ...
     mcOutput.variance, ...
-    var(asgcOutput.data, [], 1), ...
-    asgcOutput.variance };
+    var(sgOutput.data, [], 1), ...
+    sgOutput.variance };
 
   if hasExact
     names = [ 'Exact', names ];
@@ -93,11 +93,11 @@ function [ asgcOutput, mcOutput, asgc ] = assess(f, varargin)
 
   fprintf('Pointwise:\n');
   fprintf('  Normalized L2:   %e\n', ...
-    Error.computeNL2(mcOutput.data, asgcOutput.data));
+    Error.computeNL2(mcOutput.data, sgOutput.data));
   fprintf('  Normalized RMSE: %e\n', ...
-    Error.computeNRMSE(mcOutput.data, asgcOutput.data));
+    Error.computeNRMSE(mcOutput.data, sgOutput.data));
   fprintf('  Infinity norm:   %e\n', ...
-    norm(mcOutput.data - asgcOutput.data, Inf));
+    norm(mcOutput.data - sgOutput.data, Inf));
 end
 
 function printMoments(names, values)

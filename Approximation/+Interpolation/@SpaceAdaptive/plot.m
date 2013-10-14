@@ -18,7 +18,7 @@ function plot(this, output)
 
     ylim([ 0, output.level ]);
 
-    Plot.title('Adaptive sparse grid');
+    Plot.title('Space-adaptive sparse grid');
     Plot.label('Random variable', 'Approximation level');
   case 2
     lastNodeCount = levelNodeCount(end);
@@ -37,7 +37,7 @@ function plot(this, output)
       'Marker', '.', 'MarkerSize', 10, ...
       'Color', 'r', 'LineStyle', 'None');
 
-    Plot.title('Adaptive sparse grid');
+    Plot.title('Space-adaptive sparse grid');
     Plot.label('Random variable 1', 'Random variable 2');
   otherwise
     error('Only one- and two-dimensional grids are supported.');
