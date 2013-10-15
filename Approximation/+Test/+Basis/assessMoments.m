@@ -1,31 +1,31 @@
 function assessMoments(i, j)
-  basis = Basis.Hat;
+  basis = Basis.Hat.SpaceWise;
 
   if nargin > 0
     validate(basis, i, j);
 
     compare('Expectation', ...
-      basis.deriveExpectation(i, j), ...
-      basis.estimateExpectation(i, j));
+      deriveExpectation(basis, i, j), ...
+      estimateExpectation(basis, i, j));
 
     compare('Second raw moment', ...
-      basis.deriveSecondRawMoment(i, j), ...
-      basis.estimateSecondRawMoment(i, j));
+      deriveSecondRawMoment(basis, i, j), ...
+      estimateSecondRawMoment(basis, i, j));
 
     compare('Variance', ...
-      basis.deriveVariance(i, j), ...
-      basis.estimateVariance(i, j));
+      deriveVariance(basis, i, j), ...
+      estimateVariance(basis, i, j));
   else
     i = sym('i');
     j = sym('j');
 
     fprintf('Expectation:       %s\n', ...
-      char(basis.deriveExpectation(i, j)));
+      char(deriveExpectation(basis, i, j)));
 
     fprintf('Second raw moment: %s\n', ...
-      char(basis.deriveSecondRawMoment(i, j)));
+      char(deriveSecondRawMoment(basis, i, j)));
 
     fprintf('Variance:          %s\n', ...
-      char(basis.deriveVariance(i, j)));
+      char(deriveVariance(basis, i, j)));
   end
 end

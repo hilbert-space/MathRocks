@@ -1,7 +1,5 @@
 classdef SparseGrid < handle
   properties (SetAccess = 'private')
-    basis
-
     inputCount
     outputCount
 
@@ -20,8 +18,6 @@ classdef SparseGrid < handle
   methods
     function this = SparseGrid(varargin)
       options = Options(varargin{:});
-
-      this.basis = Basis.Hat;
 
       this.inputCount = options.inputCount;
       this.outputCount = options.get('outputCount', 1);

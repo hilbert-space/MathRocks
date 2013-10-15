@@ -1,7 +1,7 @@
 function sweepCrossExpectation(I, assess)
   if nargin < 2, assess = false; end
 
-  basis = Basis.Hat;
+  basis = Basis.Hat.SpaceWise;
 
   levels = zeros(0, 1);
   orders = zeros(0, 1);
@@ -27,13 +27,13 @@ function sweepCrossExpectation(I, assess)
       if l > k
         fprintf('%10s', '');
       elseif assess
-        one = double(basis.deriveCrossExpectation( ...
+        one = double(deriveCrossExpectation(basis, ...
           levels(k), orders(k), levels(l), orders(l)));
-        two = basis.estimateCrossExpectation( ...
+        two = estimateCrossExpectation(basis, ...
           levels(k), orders(k), levels(l), orders(l));
         fprintf('%10.4f', one - two);
       else
-        fprintf('%10s', char(basis.deriveCrossExpectation( ...
+        fprintf('%10s', char(deriveCrossExpectation(basis, ...
           levels(k), orders(k), levels(l), orders(l))));
       end
     end

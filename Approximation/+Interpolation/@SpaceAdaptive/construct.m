@@ -33,19 +33,6 @@ function output = construct(this, f, outputCount)
 
   surpluses = zeros(bufferSize, outputCount);
 
-  function resizeBuffers(neededCount)
-    addition = neededCount - bufferSize;
-
-    if addition <= 0, return; end
-
-    levels = [ levels; zeros(addition, inputCount) ];
-    orders = [ orders; zeros(addition, inputCount) ];
-
-    surpluses = [ surpluses; zeros(addition, outputCount) ];
-
-    bufferSize = bufferSize + addition;
-  end
-
   %
   % Prepare the first level.
   %
@@ -89,8 +76,8 @@ function output = construct(this, f, outputCount)
       surpluses(activeRange, :) = values;
     else
       surpluses(activeRange, :) = values - basis.evaluate( ...
-        levels(passiveRange, :), orders(passiveRange, :), ...
-        nodes, surpluses(passiveRange, :));
+        nodes, levels(passiveRange, :), orders(passiveRange, :), ...
+        surpluses(passiveRange, :));
     end
 
     %
@@ -164,6 +151,20 @@ function output = construct(this, f, outputCount)
 
   output.variance = basis.computeVariance( ...
     output.levels, output.orders, output.surpluses);
+
+  function resizeBuffers(neededCount_)
+    count_ = neededCount_ - bufferSize;
+
+    if count_ <= 0, return; end
+    count_ = max(count_, bufferSize);
+
+    levels = [ levels; zeros(count_, inputCount) ];
+    orders = [ orders; zeros(count_, inputCount) ];
+
+    surpluses = [ surpluses; zeros(count_, outputCount) ];
+
+    bufferSize = bufferSize + count_;
+  end
 end
 
 function nodesND = tensor(nodes1D, dimensionCount)
