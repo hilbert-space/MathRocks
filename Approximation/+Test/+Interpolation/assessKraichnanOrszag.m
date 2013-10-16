@@ -1,4 +1,4 @@
-function assessKraichnanOrszag
+function assessKraichnanOrszag(varargin)
   setup;
 
   sampleCount = 1e2;
@@ -14,7 +14,7 @@ function assessKraichnanOrszag
   inputCount = 1;
   outputCount = 3 * stepCount;
 
-  sgOptions = Options( ...
+  surrogateOptions = Options( ...
     'inputCount', inputCount, ...
     'outputCount', outputCount, ...
     'absoluteTolerance', 1e-2, ...
@@ -41,10 +41,10 @@ function assessKraichnanOrszag
   target = @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
     timeSpan, innerTimeStep, outerTimeStep, outputCount);
 
-  sg = Interpolation.SpaceAdaptive(sgOptions);
+  surrogate = instantiate(surrogateOptions);
 
   tic;
-  asgcOutput = sg.construct(target);
+  surrogateOutput = surrogate.construct(target);
   fprintf('Construction time: %.2f s\n', toc);
 
   %
@@ -55,7 +55,7 @@ function assessKraichnanOrszag
   Plot.title('Expectation');
   Plot.label('Time');
   plotTransient(time, mean(Y, 3));
-  plotTransient(time, reshape(asgcOutput.expectation, ...
+  plotTransient(time, reshape(surrogateOutput.expectation, ...
     [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
@@ -66,7 +66,7 @@ function assessKraichnanOrszag
   Plot.title('Variance');
   Plot.label('Time');
   plotTransient(time, var(Y, [], 3));
-  plotTransient(time, reshape(asgcOutput.variance, ...
+  plotTransient(time, reshape(surrogateOutput.variance, ...
     [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
@@ -75,7 +75,7 @@ function assessKraichnanOrszag
   figure;
 
   Y = transpose(squeeze(Y(end, :, :)));
-  y = sg.evaluate(asgcOutput, (z + 1) / 2);
+  y = surrogate.evaluate(surrogateOutput, (z + 1) / 2);
   y = y(:, [ ...
     outputCount - 2 * stepCount, ...
     outputCount - 1 * stepCount, ...

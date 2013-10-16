@@ -1,6 +1,6 @@
-function assessHat
+function assessHat(varargin)
   setup;
-  assess(@(x) problem(5 * x - 1));
+  assess(@(x) problem(5 * x - 1), varargin{:});
 end
 
 function y = problem(x)

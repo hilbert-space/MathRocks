@@ -1,4 +1,4 @@
-function assessGenz
+function assessGenz(varargin)
   setup;
 
   dimensionCount = 2;
@@ -9,7 +9,8 @@ function assessGenz
     'inputCount', dimensionCount, ...
     'exactExpectation', expectation, ...
     'exactVariance', variance, ...
-    'sampleCount', 1e4);
+    'sampleCount', 1e4, ...
+    varargin{:});
 end
 
 function y = f6(x)

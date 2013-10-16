@@ -1,7 +1,9 @@
 function output = construct(this, f, outputCount)
-  if this.verbose;
+  basis = this.basis;
+
+  if this.verbose
     verbose = @(text, varargin) ...
-      fprintf([ 'Interpolation: ', text ], varargin{:});
+      fprintf([ 'SparseGrid: ', text ], varargin{:});
   else
     verbose = @(varargin) [];
   end
@@ -48,7 +50,7 @@ function output = construct(this, f, outputCount)
   index(1, :) = 1;
   active(1) = true;
 
-  newNodes = computeNodes(index(1, :));
+  newNodes = basis.computeNodes(index(1, :));
   nodeCount = size(newNodes, 1);
   resizeNodeBuffers(nodeCount);
 
@@ -56,8 +58,8 @@ function output = construct(this, f, outputCount)
   mapping(1:nodeCount) = 1;
 
   while true
-    verbose('level %d, passive %d, active %d, nodes %d.\n', ...
-      max(level), nnz(passive), nnz(active), nodeCount);
+    verbose('level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
+      max(level), indexCount, nnz(active), nodeCount);
 
     if nodeCount >= maximalNodeCount
       verbose('The maximal number of nodes has been reached.\n');
@@ -131,7 +133,7 @@ function output = construct(this, f, outputCount)
     %
     % Compute the nodes of each new index.
     %
-    [ newValues, newNodes, newMapping ] = evaluateBasis( ...
+    [ newValues, newNodes, newMapping ] = basis.evaluate( ...
       newIndex, index(1:indexCount, :), surpluses(1:nodeCount, :));
     newMapping = newMapping + indexCount;
     newNodeCount = size(newNodes, 1);
@@ -179,13 +181,14 @@ function output = construct(this, f, outputCount)
   output.nodeCount = nodeCount;
 
   output.index = index(1:indexCount);
-  output.surpluses = surpluses(1:nodeCount);
+  output.surpluses = surpluses(1:nodeCount, :);
   output.mapping = mapping(1:nodeCount);
 
   function resizeIndexBuffers(neededCount_)
     count_ = neededCount_ - indexBufferSize;
 
     if count_ <= 0, return; end
+    count_ = max(count_, indexBufferSize);
 
     index = [ index; zeros(count_, inputCount, 'uint8') ];
     error = [ error; zeros(count_, outputCount) ];
@@ -199,101 +202,11 @@ function output = construct(this, f, outputCount)
     count_ = neededCount_ - nodeBufferSize;
 
     if count_ <= 0, return; end
+    count_ = max(count_, nodeBufferSize);
 
-    surpluses = [ surpluses; zeros(count, outputCount) ];
-    mapping = [ mapping; zeros(count, 1, 'uint32') ];
+    surpluses = [ surpluses; zeros(count_, outputCount) ];
+    mapping = [ mapping; zeros(count_, 1, 'uint32') ];
 
     nodeBufferSize = nodeBufferSize + count_;
-  end
-end
-
-function [ nodes, radius, dimension ] = configureHierarchicalLevel(i)
-  switch i
-  case 1
-    nodes = 0.5;
-    dimension = uint32(1);
-    radius = 1;
-  case 2
-    nodes = [ 0; 1 ];
-    dimension = uint32(3);
-    radius = 0.5;
-  otherwise
-    assert(i <= 32);
-    nodes = transpose((2 * (1:2^(double(i) - 2)) - 1) * 2^(-double(i )+ 1));
-    dimension = uint32(2^(i - 1) + 1);
-    radius = 1 ./ (double(dimension) - 1);
-  end
-end
-
-function basis = configureHierarchicalBasis(levels)
-  maximalLevel = max(levels);
-  basis.nodes = cell(maximalLevel, 1);
-  basis.ranges = zeros(maximalLevel, 1);
-  basis.dimensions = zeros(maximalLevel, 1, 'uint32');
-  basis.counts = zeros(maximalLevel, 1, 'uint32');
-  for i = transpose(levels(:))
-    [ basis.nodes{i}, basis.radius(i), ...
-      basis.dimensions(i) ] = configureHierarchicalLevel(i);
-    basis.counts(i) = numel(basis.nodes{i});
-  end
-end
-
-function [ nodes, mapping, radius, dimensions ] = computeNodes(I)
-  [ indexCount, inputCount ] = size(I);
-
-  basis = configureHierarchicalBasis(unique(I(:)));
-
-  nodeCount = sum(basis.counts(I(:)));
-
-  nodes = zeros(nodeCount, inputCount);
-  mapping = zeros(nodeCount, 1, 'uint32');
-
-  if nargout > 2
-    radius = zeros(nodeCount, inputCount);
-    dimensions = zeros(nodeCount, inputCount, 'uint32');
-  end
-
-  offset = 0;
-
-  nodeSets = cell(1, inputCount);
-  for i = 1:indexCount
-    J = I(i, :);
-
-    count = sum(basis.counts(J));
-    range = (offset + 1):(offset + count);
-    offset = offset + count;
-
-    [ nodeSets{:} ] = ndgrid(basis.nodes{J});
-    nodes(range, :) = cell2mat(cellfun(@(x) x(:), ...
-      nodeSets, 'UniformOutput', false));
-    mapping(range) = i;
-
-    if nargout < 3, continue; end
-
-    radius(range, :) = basis.radius(J);
-    dimensions(range, :) = basis.dimensions(J);
-  end
-
-  assert(nodeCount == offset);
-end
-
-function [ newValues, newNodes, newMapping ] = ...
-  evaluateBasis(I, index, surpluses)
-
-  [ newNodes, newMapping ] = computeNodes(I);
-
-  newNodeCount = size(newNodes, 1);
-  outputCount = size(surpluses, 2);
-
-  [ nodes, ~, radius, dimensions ] = computeNodes(index);
-  assert(size(nodes, 1) == size(surpluses, 1));
-
-  newValues = zeros(newNodeCount, outputCount);
-
-  for i = 1:newNodeCount
-    delta = abs(bsxfun(@minus, nodes, newNodes(i, :)));
-    K = all(delta < radius, 2);
-    newValues(i, :) = sum(bsxfun(@times, surpluses(K, :), ...
-      prod(1 - (double(dimensions(K, :)) - 1) .* delta(K, :), 2)), 1);
   end
 end

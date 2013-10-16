@@ -3,20 +3,25 @@ function output = construct(this, f, outputCount)
 
   basis = this.basis;
 
+  if this.verbose
+    verbose = @(text, varargin) ...
+      fprintf([ 'SparseGrid: ', text ], varargin{:});
+  else
+    verbose = @(varargin) [];
+  end
+
   inputCount = this.inputCount;
   if nargin < 3, outputCount = this.outputCount; end
 
+  %
+  % Adaptivity control
+  %
   absoluteTolerance = this.absoluteTolerance;
   relativeTolerance = this.relativeTolerance;
 
   minimalLevel = this.minimalLevel;
   maximalLevel = this.maximalLevel;
 
-  verbose = this.verbose;
-
-  %
-  % Adaptivity control
-  %
   minimalValue = Inf(1, outputCount);
   maximalValue = -Inf(1, outputCount);
 
@@ -54,10 +59,8 @@ function output = construct(this, f, outputCount)
     level = level + 1;
     levelNodeCount(level) = activeCount;
 
-    if verbose
-      fprintf('Level %2d: passive %6d, active %6d, total %6d\n', ...
-        level, passiveCount, activeCount, nodeCount);
-    end
+    verbose('level %2d, passive %6d, active %6d, total %6d\n', ...
+      level, passiveCount, activeCount, nodeCount);
 
     passiveRange = 1:passiveCount;
     activeRange = passiveCount + (1:activeCount);

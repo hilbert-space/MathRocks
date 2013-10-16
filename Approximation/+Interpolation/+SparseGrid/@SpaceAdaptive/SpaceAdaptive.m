@@ -1,11 +1,11 @@
-classdef SpaceAdaptive < Interpolation.SparseGrid
+classdef SpaceAdaptive < Interpolation.SparseGrid.Base
   properties (SetAccess = 'private')
     basis
   end
 
   methods
     function this = SpaceAdaptive(varargin)
-      this = this@Interpolation.SparseGrid(varargin{:});
+      this = this@Interpolation.SparseGrid.Base(varargin{:});
 
       this.basis = Basis.Hat.SpaceWise;
     end

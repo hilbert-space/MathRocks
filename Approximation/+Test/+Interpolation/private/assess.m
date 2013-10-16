@@ -1,4 +1,4 @@
-function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
+function [ surrogateOutput, surrogate ] = assess(f, varargin)
   options = Options( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
@@ -15,24 +15,24 @@ function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
 
   u = rand(sampleCount, inputCount);
 
-  sg = Interpolation.SpaceAdaptive(options);
+  surrogate = instantiate(options);
 
   time = tic;
-  sgOutput = sg.construct(f);
+  surrogateOutput = surrogate.construct(f);
   fprintf('Construction time: %.2f s\n', toc(time));
 
-  display(Options(sgOutput), 'Sparse grid');
+  display(Options(surrogateOutput), 'Sparse grid');
 
   switch inputCount
   case 1
-    plot(sg, sgOutput);
+    plot(surrogate, surrogateOutput);
     x = (0:0.01:1).';
     Plot.figure(1000, 600);
     Plot.line(x, f(x), 'number', 1);
-    Plot.line(x, sg.evaluate(sgOutput, x), 'number', 2);
+    Plot.line(x, surrogate.evaluate(surrogateOutput, x), 'number', 2);
     Plot.legend('Exact', 'Approximation');
   case 2
-    plot(sg, sgOutput);
+    plot(surrogate, surrogateOutput);
 
     x = 0:0.05:1;
     y = 0:0.05:1;
@@ -46,7 +46,7 @@ function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
     mesh(X, Y, Z);
     Plot.title('Exact');
 
-    Z(:) = sg.evaluate(sgOutput, [ X(:) Y(:) ]);
+    Z(:) = surrogate.evaluate(surrogateOutput, [ X(:) Y(:) ]);
     subplot(1, 2, 2);
     mesh(X, Y, Z);
     Plot.title('Approximation');
@@ -59,7 +59,7 @@ function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
   mcOutput.variance = var(mcOutput.data);
 
   time = tic;
-  sgOutput.data = sg.evaluate(sgOutput, u);
+  surrogateOutput.data = surrogate.evaluate(surrogateOutput, u);
   fprintf('SG evaluation time: %.2f s\n', toc(time));
 
   names = { ...
@@ -69,13 +69,13 @@ function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
 
   expectation = { ...
     mcOutput.expectation, ...
-    mean(sgOutput.data, 1), ...
-    sgOutput.expectation };
+    mean(surrogateOutput.data, 1), ...
+    surrogateOutput.expectation };
 
   variance = { ...
     mcOutput.variance, ...
-    var(sgOutput.data, [], 1), ...
-    sgOutput.variance };
+    var(surrogateOutput.data, [], 1), ...
+    surrogateOutput.variance };
 
   if hasExact
     names = [ 'Exact', names ];
@@ -93,11 +93,11 @@ function [ sgOutput, mcOutput, sg ] = assess(f, varargin)
 
   fprintf('Pointwise:\n');
   fprintf('  Normalized L2:   %e\n', ...
-    Error.computeNL2(mcOutput.data, sgOutput.data));
+    Error.computeNL2(mcOutput.data, surrogateOutput.data));
   fprintf('  Normalized RMSE: %e\n', ...
-    Error.computeNRMSE(mcOutput.data, sgOutput.data));
+    Error.computeNRMSE(mcOutput.data, surrogateOutput.data));
   fprintf('  Infinity norm:   %e\n', ...
-    norm(mcOutput.data - sgOutput.data, Inf));
+    norm(mcOutput.data - surrogateOutput.data, Inf));
 end
 
 function printMoments(names, values)

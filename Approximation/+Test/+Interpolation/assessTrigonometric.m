@@ -1,4 +1,4 @@
-function assessTrigonometric
+function assessTrigonometric(varargin)
   %
   % Reference:
   %
@@ -12,7 +12,8 @@ function assessTrigonometric
   assess(@(x) cube(2 * x - 1), ...
     'inputCount', 2, ...
     'maximalLevel', 30, ...
-    'absoluteTolerance', 1e-3);
+    'absoluteTolerance', 1e-3, ...
+    varargin{:});
 end
 
 function y = cube(x)
