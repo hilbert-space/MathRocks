@@ -23,6 +23,10 @@ function line(x, y, varargin)
     style = [ style, 'LineStyle', '-' ];
   end
 
+  if options.has('style')
+    style = [ style, options.style{:} ];
+  end
+
   line(x{:}, y, style{:});
 
   if ~options.has('markEach'), return; end

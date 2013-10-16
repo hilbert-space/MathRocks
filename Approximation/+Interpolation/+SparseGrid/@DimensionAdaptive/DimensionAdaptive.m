@@ -14,8 +14,7 @@ classdef DimensionAdaptive < Interpolation.SparseGrid.Base
     end
 
     function values = evaluate(this, output, nodes, varargin)
-      values = this.basis.evaluate(output.levels, output.orders, ...
-        nodes, output.surpluses);
+      values = this.basis.evaluate(nodes, output.index, output.surpluses);
     end
   end
 end

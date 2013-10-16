@@ -1,4 +1,6 @@
-function values = evaluate(this, Y, I, C)
+function [ values, Y, mapping ] = evaluateIndex(this, Ipoint, I, C)
+  [ Y, mapping ] = this.computeNodes(Ipoint);
+
   [ Yij, ~, Li, Mi ] = this.computeNodes(I);
   assert(size(Yij, 1) == size(C, 1));
 

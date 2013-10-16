@@ -23,17 +23,18 @@ function [ surrogateOutput, surrogate ] = assess(f, varargin)
 
   display(Options(surrogateOutput), 'Sparse grid');
 
+  if inputCount <= 3
+    surrogate.plot(surrogateOutput);
+  end
+
   switch inputCount
   case 1
-    plot(surrogate, surrogateOutput);
     x = (0:0.01:1).';
     Plot.figure(1000, 600);
     Plot.line(x, f(x), 'number', 1);
     Plot.line(x, surrogate.evaluate(surrogateOutput, x), 'number', 2);
     Plot.legend('Exact', 'Approximation');
   case 2
-    plot(surrogate, surrogateOutput);
-
     x = 0:0.05:1;
     y = 0:0.05:1;
     [ X, Y ] = meshgrid(x, y);
@@ -62,10 +63,7 @@ function [ surrogateOutput, surrogate ] = assess(f, varargin)
   surrogateOutput.data = surrogate.evaluate(surrogateOutput, u);
   fprintf('SG evaluation time: %.2f s\n', toc(time));
 
-  names = { ...
-    'Empirical MC', ...
-    'Empirical SG', ...
-    'Analytical SG' };
+  names = { 'Empirical MC', 'Empirical SG', 'Analytical SG' };
 
   expectation = { ...
     mcOutput.expectation, ...

@@ -1,45 +1,15 @@
 function plot(this, output)
-  Plot.figure(600, 600);
-
   nodes = this.basis.computeNodes(output.levels, output.orders);
-  nodeCount = output.nodeCount;
   levelNodeCount = output.levelNodeCount;
 
-  switch output.inputCount
-  case 1
-    k = 1;
-    for level = 1:output.level
-      x = nodes(k:(k + levelNodeCount(level) - 1));
-      k = k + levelNodeCount(level);
-      line(x, level * ones(size(x)), ...
-        'Marker', '.', 'MarkerSize', 10, ...
-        'Color', [ 1 1 1 ] / 6, 'LineStyle', 'None');
-    end
+  mapping = zeros(sum(levelNodeCount), 1);
 
-    ylim([ 0, output.level ]);
-
-    Plot.title('Space-adaptive sparse grid');
-    Plot.label('Random variable', 'Approximation level');
-  case 2
-    lastNodeCount = levelNodeCount(end);
-
-    line( ...
-      nodes(1:(nodeCount - lastNodeCount), 1), ...
-      nodes(1:(nodeCount - lastNodeCount), 2), ...
-      'Marker', '.', 'MarkerSize', 10, ...
-      'Color', [ 1 1 1 ] / 6, 'LineStyle', 'None');
-
-    if lastNodeCount == 0, return; end
-
-    line( ...
-      nodes((nodeCount - lastNodeCount + 1):end, 1), ...
-      nodes((nodeCount - lastNodeCount + 1):end, 2), ...
-      'Marker', '.', 'MarkerSize', 10, ...
-      'Color', 'r', 'LineStyle', 'None');
-
-    Plot.title('Space-adaptive sparse grid');
-    Plot.label('Random variable 1', 'Random variable 2');
-  otherwise
-    error('Only one- and two-dimensional grids are supported.');
+  k = 0;
+  for i = 1:length(levelNodeCount)
+    mapping((k + 1):(k + levelNodeCount(i))) = i;
+    k = k + levelNodeCount(i);
   end
+
+  Plot.sparseGrid(nodes, mapping);
+  Plot.title('Space-adaptive sparse grid');
 end

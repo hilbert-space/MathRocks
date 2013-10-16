@@ -133,7 +133,7 @@ function output = construct(this, f, outputCount)
     %
     % Compute the nodes of each new index.
     %
-    [ newValues, newNodes, newMapping ] = basis.evaluate( ...
+    [ newValues, newNodes, newMapping ] = basis.evaluateIndex( ...
       newIndex, index(1:indexCount, :), surpluses(1:nodeCount, :));
     newMapping = newMapping + indexCount;
     newNodeCount = size(newNodes, 1);
@@ -183,6 +183,9 @@ function output = construct(this, f, outputCount)
   output.index = index(1:indexCount);
   output.surpluses = surpluses(1:nodeCount, :);
   output.mapping = mapping(1:nodeCount);
+
+  output.expectation = zeros(1, outputCount);
+  output.variance = zeros(1, outputCount);
 
   function resizeIndexBuffers(neededCount_)
     count_ = neededCount_ - indexBufferSize;
