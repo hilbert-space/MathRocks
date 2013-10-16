@@ -17,10 +17,10 @@ classdef DimensionWise < Basis.Hat.Base
 
       assert(this.maximalLevel <= 32);
 
-      this.Yij = cell(this.maximalLevel, 1);
-      this.Li = zeros(this.maximalLevel, 1);
-      this.Mi = zeros(this.maximalLevel, 1, 'uint32');
-      this.Ni = zeros(this.maximalLevel, 1, 'uint32');
+      this.Yij = cell(1, this.maximalLevel);
+      this.Li = zeros(1, this.maximalLevel);
+      this.Mi = zeros(1, this.maximalLevel, 'uint32');
+      this.Ni = zeros(1, this.maximalLevel, 'uint32');
 
       for i = 1:this.maximalLevel
         [ this.Yij{i}, this.Li(i), this.Mi(i) ] = ...

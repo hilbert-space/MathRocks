@@ -1,6 +1,9 @@
 function values = evaluate(this, Y, I, C)
-  [ Yij, ~, Li, Mi ] = this.computeNodes(I);
+  [ Yij, mapping, Li, Mi ] = this.computeNodes(I);
   assert(size(Yij, 1) == size(C, 1));
+
+  Li = Li(mapping, :);
+  Mi = Mi(mapping, :);
 
   pointCount = size(Y, 1);
   outputCount = size(C, 2);

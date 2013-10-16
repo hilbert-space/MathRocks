@@ -97,25 +97,30 @@ function output = construct(this, f, outputCount)
     %
     % Find admissible neighbors of the index being refined.
     %
-    newIndex = repmat(index(R, :), inputCount, 1) + eye(inputCount);
+    newIndex = repmat(index(R, :), inputCount, 1) + eye(inputCount, 'uint8');
 
-    passiveIndex = index(passive, :);
     I = true(inputCount, 1);
     for i = 1:inputCount
       if any(newIndex(i, :) > maximalLevel)
-        %
-        % The maximal level has been reached.
-        %
+        I(i) = false;
+        continue;
+      end
+
+      if ~isempty(find(ismember(index(1:indexCount, :), ...
+        newIndex(i, :), 'rows'), 1))
+
         I(i) = false;
         continue;
       end
 
       backwardIndex = repmat(newIndex(i, :), ...
-        inputCount, 1) - eye(inputCount);
+        inputCount, 1) - eye(inputCount, 'uint8');
       for j = 1:inputCount
         if i == j, continue; end
-        if isempty(find(ismember( ...
-          passiveIndex, backwardIndex(j, :)), 1))
+        if any(backwardIndex(j, :) == 0), continue; end
+        if isempty(find(ismember(index(passive, :), ...
+          backwardIndex(j, :), 'rows'), 1))
+
           I(i) = false;
           break;
         end
@@ -133,8 +138,9 @@ function output = construct(this, f, outputCount)
     %
     % Compute the nodes of each new index.
     %
-    [ newValues, newNodes, newMapping ] = basis.evaluateIndex( ...
-      newIndex, index(1:indexCount, :), surpluses(1:nodeCount, :));
+    [ newNodes, newMapping ] = basis.computeNodes(newIndex);
+    newValues = basis.evaluate(newNodes, ...
+      index(1:indexCount, :), surpluses(1:nodeCount, :));
     newMapping = newMapping + indexCount;
     newNodeCount = size(newNodes, 1);
 
@@ -180,7 +186,7 @@ function output = construct(this, f, outputCount)
   output.indexCount = indexCount;
   output.nodeCount = nodeCount;
 
-  output.index = index(1:indexCount);
+  output.index = index(1:indexCount, :);
   output.surpluses = surpluses(1:nodeCount, :);
   output.mapping = mapping(1:nodeCount);
 

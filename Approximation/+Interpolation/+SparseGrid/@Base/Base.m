@@ -22,10 +22,10 @@ classdef Base < handle
       this.inputCount = options.inputCount;
       this.outputCount = options.get('outputCount', 1);
 
-      this.absoluteTolerance = options.get('absoluteTolerance', 1e-4);
+      this.absoluteTolerance = options.get('absoluteTolerance', 1e-6);
       this.relativeTolerance = options.get('relativeTolerance', 1e-2);
 
-      this.minimalNodeCount = options.get('minimalNodeCount', 1);
+      this.minimalNodeCount = options.get('minimalNodeCount', 1e2);
       this.maximalNodeCount = options.get('maximalNodeCount', 1e4);
 
       this.minimalLevel = options.get('minimalLevel', 2);
