@@ -106,9 +106,7 @@ function output = construct(this, f, outputCount)
         continue;
       end
 
-      if ~isempty(find(ismember(index(1:indexCount, :), ...
-        newIndex(i, :), 'rows'), 1))
-
+      if ismember(newIndex(i, :), index(1:indexCount, :), 'rows')
         I(i) = false;
         continue;
       end
@@ -117,10 +115,8 @@ function output = construct(this, f, outputCount)
         inputCount, 1) - eye(inputCount, 'uint8');
       for j = 1:inputCount
         if i == j, continue; end
-        if any(backwardIndex(j, :) == 0), continue; end
-        if isempty(find(ismember(index(passive, :), ...
-          backwardIndex(j, :), 'rows'), 1))
-
+        if nnz(backwardIndex(j, :)) > 0, continue; end
+        if ~ismember(backwardIndex(j, :), index(passive, :), 'rows')
           I(i) = false;
           break;
         end

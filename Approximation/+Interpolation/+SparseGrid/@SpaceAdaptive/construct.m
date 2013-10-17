@@ -19,6 +19,8 @@ function output = construct(this, f, outputCount)
   absoluteTolerance = this.absoluteTolerance;
   relativeTolerance = this.relativeTolerance;
 
+  maximalNodeCount = this.maximalNodeCount;
+
   minimalLevel = this.minimalLevel;
   maximalLevel = this.maximalLevel;
 
@@ -61,6 +63,11 @@ function output = construct(this, f, outputCount)
 
     verbose('level %2d, passive %6d, active %6d, total %6d\n', ...
       level, passiveCount, activeCount, nodeCount);
+
+    if nodeCount >= maximalNodeCount
+      verbose('The maximal number of nodes has been reached.\n');
+      break;
+    end
 
     passiveRange = 1:passiveCount;
     activeRange = passiveCount + (1:activeCount);
