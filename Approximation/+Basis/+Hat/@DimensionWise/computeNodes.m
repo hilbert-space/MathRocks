@@ -12,18 +12,13 @@ function [ Yij, mapping, Li, Mi ] = computeNodes(this, I)
   end
 
   offset = 0;
-
-  nodeSets = cell(1, dimensionCount);
   for i = 1:indexCount
     J = I(i, :);
 
-    count = prod(this.Ni(J));
-    range = (offset + 1):(offset + count);
-    offset = offset + count;
+    range = (offset + 1):(offset + prod(this.Ni(J)));
+    offset = range(end);
 
-    [ nodeSets{:} ] = ndgrid(this.Yij{J});
-    Yij(range, :) = cell2mat(cellfun(@(x) x(:), ...
-      nodeSets, 'UniformOutput', false));
+    Yij(range, :) = Utils.tensor(this.Yij(J));
     mapping(range) = i;
 
     if nargout < 3, continue; end

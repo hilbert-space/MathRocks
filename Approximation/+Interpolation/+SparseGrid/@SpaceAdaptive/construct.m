@@ -43,7 +43,7 @@ function output = construct(this, f, outputCount)
   %
   % Prepare the first level.
   %
-  J = tensor(basis.computeLevelOrders(1), inputCount);
+  J = Utils.tensor(repmat({ basis.computeLevelOrders(1) }, inputCount, 1));
 
   nodeCount = size(J, 1);
   resizeBuffers(nodeCount);
@@ -174,15 +174,5 @@ function output = construct(this, f, outputCount)
     surpluses = [ surpluses; zeros(count_, outputCount) ];
 
     bufferSize = bufferSize + count_;
-  end
-end
-
-function nodesND = tensor(nodes1D, dimensionCount)
-  nodes1D = nodes1D(:);
-  nodesND = nodes1D;
-  a = ones(size(nodes1D, 1), 1);
-  for i = 2:dimensionCount
-    b = ones(size(nodesND, 1), 1);
-    nodesND = [ kron(nodesND, a), kron(b, nodes1D) ];
   end
 end

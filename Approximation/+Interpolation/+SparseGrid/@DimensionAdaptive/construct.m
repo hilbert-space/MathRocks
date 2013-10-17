@@ -26,8 +26,6 @@ function output = construct(this, f, outputCount)
   minimalValue = Inf(1, outputCount);
   maximalValue = -Inf(1, outputCount);
 
-  globalError = Inf(1, outputCount);
-
   %
   % Memory preallocation
   %
@@ -45,7 +43,6 @@ function output = construct(this, f, outputCount)
   %
   % Initialization
   %
-  level = ones(1, inputCount, 'uint8');
   indexCount = 1;
   index(1, :) = 1;
   active(1) = true;
@@ -54,69 +51,81 @@ function output = construct(this, f, outputCount)
   nodeCount = size(newNodes, 1);
   resizeNodeBuffers(nodeCount);
 
-  surpluses(1:nodeCount) = f(newNodes);
+  newValues = f(newNodes);
+  surpluses(1:nodeCount) = newValues;
   mapping(1:nodeCount) = 1;
 
   while true
+    I = find(active);
+
     verbose('level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
-      max(level), indexCount, nnz(active), nodeCount);
+      max(index(:)), indexCount, numel(I), nodeCount);
 
     if nodeCount >= maximalNodeCount
       verbose('The maximal number of nodes has been reached.\n');
       break;
     end
 
+    minimalValue = min([ minimalValue; min(newValues, [], 1) ], [], 1);
+    maximalValue = max([ maximalValue; max(newValues, [], 1) ], [], 1);
+
+    globalError = max(abs(surpluses( ...
+      ismember(mapping(1:nodeCount), I), :)), [], 1);
+
     if all(globalError < max(absoluteTolerance, ...
       relativeTolerance * (maximalValue - minimalValue)))
-      verbose('The desired level of accuracy has been reached.');
+      verbose('The desired level of accuracy has been reached.\n');
       break;
     end
 
     %
-    % Find the next active index and turn it into a passive one.
+    % Find the next active index to refine.
     %
-    I = find(active);
-
     switch numel(I)
     case 0
-      verbose('There are no active indexes to refine.');
+      verbose('There are no active indexes to refine.\n');
       break;
     case 1
-      R = I;
     otherwise
-      [ total, i ] = min(sum(index(I, :), 2));
-      if total > (1 - adaptivityDegree) * max(sum(index(1:indexCount, :), 2))
+      [ mn, i ] = min(sum(index(I, :), 2));
+      mx = max(sum(index(1:indexCount, :), 2));
+      if mn > (1 - adaptivityDegree) * mx 
         [ ~, i ] = max(sum(error(I, :), 2));
       end
-      R = I(i);
+      I = I(i);
     end
 
-    active(R) = false;
-    passive(R) = true;
+    %
+    % Move the index from the set of active indexes
+    % to the set of passive ones.
+    %
+    active(I) = false;
+    passive(I) = true;
 
     %
-    % Find admissible neighbors of the index being refined.
+    % Find admissible neighbors of the current active index.
     %
-    newIndex = repmat(index(R, :), inputCount, 1) + eye(inputCount, 'uint8');
+    newIndex = repmat(index(I, :), inputCount, 1) + eye(inputCount, 'uint8');
 
     I = true(inputCount, 1);
     for i = 1:inputCount
-      if any(newIndex(i, :) > maximalLevel)
+      forward = newIndex(i, :);
+
+      if any(forward > maximalLevel)
         I(i) = false;
         continue;
       end
 
-      if ismember(newIndex(i, :), index(1:indexCount, :), 'rows')
+      if ismember(forward, index(1:indexCount, :), 'rows')
         I(i) = false;
         continue;
       end
 
-      backwardIndex = repmat(newIndex(i, :), ...
-        inputCount, 1) - eye(inputCount, 'uint8');
-      for j = 1:inputCount
+      for j = find(forward > 1)
         if i == j, continue; end
-        if nnz(backwardIndex(j, :)) > 0, continue; end
-        if ~ismember(backwardIndex(j, :), index(passive, :), 'rows')
+        backward = forward;
+        backward(j) = backward(j) - 1;
+        if ~ismember(backward, index(passive, :), 'rows')
           I(i) = false;
           break;
         end
@@ -124,7 +133,9 @@ function output = construct(this, f, outputCount)
     end
 
     newIndex = newIndex(I, :);
+
     newIndexCount = size(newIndex, 1);
+    resizeIndexBuffers(indexCount + newIndexCount);
 
     if newIndexCount == 0
       verbose('There are no admissible nodes.\n');
@@ -132,51 +143,38 @@ function output = construct(this, f, outputCount)
     end
 
     %
-    % Compute the nodes of each new index.
-    %
-    [ newNodes, newMapping ] = basis.computeNodes(newIndex);
-    newValues = basis.evaluate(newNodes, ...
-      index(1:indexCount, :), surpluses(1:nodeCount, :));
-    newMapping = newMapping + indexCount;
-    newNodeCount = size(newNodes, 1);
-
-    %
     % Store the new indexes and make them active.
     %
     I = indexCount + (1:newIndexCount);
-    indexCount = indexCount + newIndexCount;
-    resizeIndexBuffers(indexCount);
-
     index(I, :) = newIndex;
     active(I) = true;
 
     %
-    % Compute and store the corresponding surpluses.
+    % Compute the nodes and function values for the new indexes.
     %
-    I = nodeCount + (1:newNodeCount);
+    [ newNodes, newMapping ] = basis.computeNodes(newIndex);
+    newValues = f(newNodes);
+
+    newNodeCount = size(newNodes, 1);
+    resizeNodeBuffers(nodeCount + newNodeCount);
+
+    %
+    % Compute and store the corresponding surpluses along with
+    % the interpolation error for each new index.
+    %
+    for i = 1:newIndexCount
+      I = find(newMapping == i);
+      J = I + nodeCount;
+      K = find(sum(bsxfun(@minus, index(1:indexCount, :), newIndex(i, :)), 2) == 0);
+
+      surpluses(J, :) = newValues(I, :) - basis.evaluate(newNodes(I, :), ...
+        index(K, :), surpluses(ismember(mapping(1:nodeCount), K), :));
+      mapping(J) = indexCount + i;
+      error(indexCount + i, :) = sum(abs(surpluses(J, :)), 1) / nnz(I);
+    end
+
+    indexCount = indexCount + newIndexCount;
     nodeCount = nodeCount + newNodeCount;
-    resizeNodeBuffers(nodeCount);
-
-    values = f(newNodes);
-    surpluses(I, :) = values - newValues;
-    mapping(I) = newMapping;
-
-    %
-    % Compute the interpolation error of the index that has
-    % just been refined and the global error.
-    %
-    error(R, :) = sum(abs(surpluses(I, :)), 1) / newNodeCount;
-
-    globalError = max(abs(surpluses(ismember(mapping(1:nodeCount), ...
-      find(active)), :)), [], 1);
-
-    %
-    % Update other statistics.
-    %
-    minimalValue = min([ minimalValue; min(values, [], 1) ], [], 1);
-    maximalValue = max([ maximalValue; max(values, [], 1) ], [], 1);
-
-    level = max([ level; max(newIndex, [], 1) ], [], 1);
   end
 
   output.indexCount = indexCount;
