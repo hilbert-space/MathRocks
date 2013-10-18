@@ -1,9 +1,10 @@
 function [ Yij, mapping, Li, Mi ] = computeNodes(this, I)
   [ indexCount, dimensionCount ] = size(I);
 
-  nodeCount = sum(prod(reshape(this.Ni(I), size(I)), 2));
+  indexNodeCount = prod(reshape(this.Ni(I), size(I)), 2);
+  nodeCount = sum(indexNodeCount);
 
-  Yij = zeros(nodeCount, dimensionCount);
+  Yij = 0.5 * ones(nodeCount, dimensionCount);
   mapping = zeros(nodeCount, 1, 'uint32');
 
   if nargout > 2
@@ -15,10 +16,18 @@ function [ Yij, mapping, Li, Mi ] = computeNodes(this, I)
   for i = 1:indexCount
     J = I(i, :);
 
-    range = (offset + 1):(offset + prod(this.Ni(J)));
-    offset = range(end);
+    range = (offset + 1):(offset + indexNodeCount(i));
+    offset = offset + indexNodeCount(i);
 
-    Yij(range, :) = Utils.tensor(this.Yij(J));
+    K = find(J > 1);
+    switch numel(K)
+    case 0
+    case 1
+      Yij(range, K) = this.Yij{J(K)};
+    otherwise
+      Yij(range, K) = Utils.tensor(this.Yij(J(K)));
+    end
+
     mapping(range) = i;
 
     if nargout < 3, continue; end

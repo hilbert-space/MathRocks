@@ -23,18 +23,14 @@ function output = construct(this, f, outputCount)
 
   adaptivityDegree = this.adaptivityDegree;
 
-  minimalValue = Inf(1, outputCount);
-  maximalValue = -Inf(1, outputCount);
-
   %
   % Memory preallocation
   %
   indexBufferSize = 200 * inputCount;
 
-  index = zeros(indexBufferSize, inputCount, 'uint8');
-  error = zeros(indexBufferSize, outputCount);
+  indexes = zeros(indexBufferSize, inputCount, 'uint8');
+  errors = zeros(indexBufferSize, outputCount);
   active = false(indexBufferSize, 1);
-  passive = false(indexBufferSize, 1);
 
   nodeBufferSize = 200 * inputCount;
   surpluses = zeros(nodeBufferSize, outputCount);
@@ -44,30 +40,29 @@ function output = construct(this, f, outputCount)
   % Initialization
   %
   indexCount = 1;
-  index(1, :) = 1;
+  indexes(1, :) = 1;
   active(1) = true;
 
-  newNodes = basis.computeNodes(index(1, :));
+  newNodes = basis.computeNodes(indexes(1, :));
   nodeCount = size(newNodes, 1);
   resizeNodeBuffers(nodeCount);
 
-  newValues = f(newNodes);
-  surpluses(1:nodeCount) = newValues;
+  surpluses(1:nodeCount) = f(newNodes);
   mapping(1:nodeCount) = 1;
+
+  minimalValue = min(surpluses(1:nodeCount, :), [], 1);
+  maximalValue = max(surpluses(1:nodeCount, :), [], 1);
 
   while true
     I = find(active);
 
     verbose('level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
-      max(index(:)), indexCount, numel(I), nodeCount);
+      max(indexes(:)), indexCount, numel(I), nodeCount);
 
     if nodeCount >= maximalNodeCount
       verbose('The maximal number of nodes has been reached.\n');
       break;
     end
-
-    minimalValue = min([ minimalValue; min(newValues, [], 1) ], [], 1);
-    maximalValue = max([ maximalValue; max(newValues, [], 1) ], [], 1);
 
     globalError = max(abs(surpluses( ...
       ismember(mapping(1:nodeCount), I), :)), [], 1);
@@ -87,54 +82,45 @@ function output = construct(this, f, outputCount)
       break;
     case 1
     otherwise
-      [ mn, i ] = min(sum(index(I, :), 2));
-      mx = max(sum(index(1:indexCount, :), 2));
-      if mn > (1 - adaptivityDegree) * mx 
-        [ ~, i ] = max(sum(error(I, :), 2));
+      [ mn, i ] = min(sum(indexes(I, :), 2));
+      mx = max(sum(indexes(1:indexCount, :), 2));
+      if mn > (1 - adaptivityDegree) * mx
+        [ ~, i ] = max(sum(errors(I, :), 2));
       end
       I = I(i);
     end
 
-    %
-    % Move the index from the set of active indexes
-    % to the set of passive ones.
-    %
     active(I) = false;
-    passive(I) = true;
+    current = indexes(I, :);
 
     %
-    % Find admissible neighbors of the current active index.
+    % Find admissible indexes in the forward neighborhood
+    % of the current active index.
     %
-    newIndex = repmat(index(I, :), inputCount, 1) + eye(inputCount, 'uint8');
+    passiveIndex = indexes(~active(1:indexCount), :);
 
-    I = true(inputCount, 1);
+    I = true(1, inputCount);
+
     for i = 1:inputCount
-      forward = newIndex(i, :);
-
-      if any(forward > maximalLevel)
+      if current(i) + 1 > maximalLevel
         I(i) = false;
         continue;
       end
-
-      if ismember(forward, index(1:indexCount, :), 'rows')
-        I(i) = false;
-        continue;
-      end
-
+      forward = current;
+      forward(i) = forward(i) + 1;
       for j = find(forward > 1)
         if i == j, continue; end
         backward = forward;
         backward(j) = backward(j) - 1;
-        if ~ismember(backward, index(passive, :), 'rows')
+        if ~ismember(backward, passiveIndex, 'rows')
           I(i) = false;
           break;
         end
       end
     end
 
-    newIndex = newIndex(I, :);
-
-    newIndexCount = size(newIndex, 1);
+    I = find(I);
+    newIndexCount = length(I);
     resizeIndexBuffers(indexCount + newIndexCount);
 
     if newIndexCount == 0
@@ -145,32 +131,38 @@ function output = construct(this, f, outputCount)
     %
     % Store the new indexes and make them active.
     %
-    I = indexCount + (1:newIndexCount);
-    index(I, :) = newIndex;
-    active(I) = true;
+    J = indexCount + (1:newIndexCount);
+
+    indexes(J, :) = replicate(current, newIndexCount, I, 1);
+    active(J) = true;
 
     %
-    % Compute the nodes and function values for the new indexes.
+    % Compute the nodes of the new indexes.
     %
-    [ newNodes, newMapping ] = basis.computeNodes(newIndex);
-    newValues = f(newNodes);
-
+    [ newNodes, newMapping ] = basis.computeNodes(indexes(J, :));
     newNodeCount = size(newNodes, 1);
     resizeNodeBuffers(nodeCount + newNodeCount);
+
+    I = nodeCount + (1:newNodeCount);
+
+    surpluses(I, :) = f(newNodes);
+    mapping(I, :) = newMapping + indexCount;
+
+    minimalValue = min([ minimalValue; min(surpluses(I, :), [], 1) ], [], 1);
+    maximalValue = max([ maximalValue; max(surpluses(I, :), [], 1) ], [], 1);
 
     %
     % Compute and store the corresponding surpluses along with
     % the interpolation error for each new index.
     %
     for i = 1:newIndexCount
+      j = indexCount + i;
       I = find(newMapping == i);
       J = I + nodeCount;
-      K = find(sum(bsxfun(@minus, index(1:indexCount, :), newIndex(i, :)), 2) == 0);
-
-      surpluses(J, :) = newValues(I, :) - basis.evaluate(newNodes(I, :), ...
-        index(K, :), surpluses(ismember(mapping(1:nodeCount), K), :));
-      mapping(J) = indexCount + i;
-      error(indexCount + i, :) = sum(abs(surpluses(J, :)), 1) / nnz(I);
+      K = find(sum(bsxfun(@minus, indexes(1:indexCount, :), indexes(j, :)), 2) == 0);
+      surpluses(J, :) = surpluses(J, :) - basis.evaluate(newNodes(I, :), ...
+        indexes(K, :), surpluses(ismember(mapping(1:nodeCount), K), :));
+      errors(j, :) = sum(abs(surpluses(J, :)), 1) / length(I);
     end
 
     indexCount = indexCount + newIndexCount;
@@ -180,12 +172,20 @@ function output = construct(this, f, outputCount)
   output.indexCount = indexCount;
   output.nodeCount = nodeCount;
 
-  output.index = index(1:indexCount, :);
+  output.indexes = indexes(1:indexCount, :);
   output.surpluses = surpluses(1:nodeCount, :);
   output.mapping = mapping(1:nodeCount);
 
   output.expectation = zeros(1, outputCount);
   output.variance = zeros(1, outputCount);
+
+  %
+  % Double-checking the algorithm.
+  %
+  indexCount = size(unique(output.indexes, 'rows'), 1);
+  if indexCount ~= output.indexCount
+    warning('There are %d duplicate indexes.', output.indexCount - indexCount);
+  end
 
   function resizeIndexBuffers(neededCount_)
     count_ = neededCount_ - indexBufferSize;
@@ -193,10 +193,9 @@ function output = construct(this, f, outputCount)
     if count_ <= 0, return; end
     count_ = max(count_, indexBufferSize);
 
-    index = [ index; zeros(count_, inputCount, 'uint8') ];
-    error = [ error; zeros(count_, outputCount) ];
+    indexes = [ indexes; zeros(count_, inputCount, 'uint8') ];
+    errors = [ errors; zeros(count_, outputCount) ];
     active = [ active; false(count_, 1) ];
-    passive = [ passive; false(count_, 1) ];
 
     indexBufferSize = indexBufferSize + count_;
   end
@@ -211,5 +210,12 @@ function output = construct(this, f, outputCount)
     mapping = [ mapping; zeros(count_, 1, 'uint32') ];
 
     nodeBufferSize = nodeBufferSize + count_;
+  end
+
+  function result_ = replicate(etalon_, count_, alter_, change_)
+    result_ = repmat(etalon_, count_, 1);
+    for i_ = 1:count_
+      result_(i_, alter_(i_)) = etalon_(alter_(i_)) + change_;
+    end
   end
 end
