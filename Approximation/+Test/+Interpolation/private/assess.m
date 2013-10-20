@@ -108,7 +108,7 @@ function printMoments(names, values)
   nameWidth = nameWidth + 2;
 
   nameFormat = [ '%', num2str(nameWidth), 's' ];
-  valueFormat = [ '%', num2str(nameWidth), '.8f' ];
+  valueFormat = [ '%', num2str(nameWidth), 'g' ];
 
   fprintf(nameFormat, '');
   fprintf(nameFormat, 'Value');
@@ -126,7 +126,8 @@ function printMoments(names, values)
       if i == j
         fprintf(nameFormat, '-');
       else
-        fprintf(valueFormat, mean(values{i} - values{j}));
+        fprintf(valueFormat, ...
+          abs(mean((values{i} - values{j}) ./ values{i})));
       end
     end
     fprintf('\n');

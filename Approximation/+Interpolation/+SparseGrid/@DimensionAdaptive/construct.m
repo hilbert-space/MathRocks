@@ -11,9 +11,9 @@ function output = construct(this, f, outputCount)
   inputCount = this.inputCount;
   if nargin < 3, outputCount = this.outputCount; end
 
+  maximalLevel = min(intmax('uint8'), this.maximalLevel);
   maximalIndexCount = intmax('uint16');
-  maximalLevel = min(this.maximalLevel, intmax('uint8'));
-  maximalNodeCount = this.maximalNodeCount;
+  maximalNodeCount = min(intmax('uint32'), this.maximalNodeCount);
 
   %
   % Adaptivity control
@@ -27,33 +27,41 @@ function output = construct(this, f, outputCount)
   % Memory preallocation
   %
   indexBufferSize = 200 * inputCount;
+  nodeBufferSize = 200 * inputCount;
 
   indexes = zeros(indexBufferSize, inputCount, 'uint8');
-  forward = zeros(indexBufferSize, inputCount, 'uint16');
-  backward = zeros(indexBufferSize, inputCount, 'uint16');
-  errors = zeros(indexBufferSize, outputCount);
   active = false(indexBufferSize, 1);
 
-  nodeBufferSize = 200 * inputCount;
+  forward = zeros(indexBufferSize, inputCount, 'uint16');
+  backward = zeros(indexBufferSize, inputCount, 'uint16');
+
   surpluses = zeros(nodeBufferSize, outputCount);
-  mapping = zeros(nodeBufferSize, 1, 'uint16');
+  offsets = zeros(indexBufferSize, 1, 'uint32');
+  counts = zeros(indexBufferSize, 1, 'uint32');
+
+  absoluteErrors = zeros(indexBufferSize, outputCount);
+  adaptivityGuides = zeros(indexBufferSize, 1);
 
   %
   % Initialization
   %
+  level = 1;
+
   indexCount = 1;
+  nodeCount = 1;
+
   indexes(1, :) = 1;
   active(1) = true;
 
-  newNodes = basis.computeNodes(indexes(1, :));
-  assert(size(newNodes, 1) == 1);
-  nodeCount = 1;
+  surpluses(1, :) = f(basis.computeNodes(indexes(1, :)));
+  offsets(1) = 0;
+  counts(1) = 1;
 
-  surpluses(1, :) = f(newNodes);
-  mapping(1) = 1;
+  absoluteErrors(1, :) = abs(surpluses(1, :));
+  adaptivityGuides(1) = sum(abs(surpluses(1, :)));
 
-  minimalValue = min(surpluses(1, :), [], 1);
-  maximalValue = max(surpluses(1, :), [], 1);
+  minimalValue = surpluses(1, :);
+  maximalValue = surpluses(1, :);
 
   newBackward = zeros(inputCount, inputCount);
 
@@ -61,13 +69,11 @@ function output = construct(this, f, outputCount)
     I = find(active);
 
     verbose('level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
-      max(indexes(:)), indexCount, numel(I), nodeCount);
+      level, indexCount, numel(I), nodeCount);
 
-    globalError = max(abs(surpluses( ...
-      ismember(mapping(1:nodeCount), I), :)), [], 1);
-
-    if all(globalError < max(absoluteTolerance, ...
+    if all(max(absoluteErrors(I, :), [], 1) < max(absoluteTolerance, ...
       relativeTolerance * (maximalValue - minimalValue)))
+
       verbose('The desired level of accuracy has been reached.\n');
       break;
     end
@@ -82,10 +88,10 @@ function output = construct(this, f, outputCount)
     case 1
       C = I;
     otherwise
-      [ mn, i ] = min(sum(indexes(I, :), 2));
-      mx = max(sum(indexes(1:indexCount, :), 2));
-      if mn > (1 - adaptivityDegree) * mx
-        [ ~, i ] = max(sum(errors(I, :), 2));
+      [ minimalSum, i ] = min(sum(indexes(I, :), 2));
+      maximalSum = max(sum(indexes(1:indexCount, :), 2));
+      if minimalSum > (1 - adaptivityDegree) * maximalSum
+        [ ~, i ] = max(adaptivityGuides(I));
       end
       C = I(i);
     end
@@ -145,7 +151,7 @@ function output = construct(this, f, outputCount)
     %
     % Compute the nodes of the new indexes.
     %
-    [ newNodes, newMapping ] = basis.computeNodes(indexes(J, :));
+    [ newNodes, newOffsets, newCounts ] = basis.computeNodes(indexes(J, :));
     newNodeCount = size(newNodes, 1);
 
     if nodeCount + newNodeCount > maximalNodeCount
@@ -160,20 +166,24 @@ function output = construct(this, f, outputCount)
     % Compute the surpluses of the new nodes.
     %
     surpluses(I, :) = f(newNodes);
-    mapping(I, :) = newMapping + indexCount;
+    offsets(J) = nodeCount + newOffsets;
+    counts(J) = newCounts;
 
     minimalValue = min([ minimalValue; min(surpluses(I, :), [], 1) ], [], 1);
     maximalValue = max([ maximalValue; max(surpluses(I, :), [], 1) ], [], 1);
 
-    for i = 1:newIndexCount
-      j = indexCount + i;
-      I = find(newMapping == i);
-      J = I + nodeCount;
+    for j = J
+      I = (offsets(j) + 1):(offsets(j) + counts(j));
       K = find(sum(bsxfun(@minus, indexes(1:indexCount, :), indexes(j, :)), 2) == 0);
-      surpluses(J, :) = surpluses(J, :) - basis.evaluate(newNodes(I, :), ...
-        indexes(K, :), surpluses(ismember(mapping(1:nodeCount), K), :));
-      errors(j, :) = sum(abs(surpluses(J, :)), 1) / length(I);
+
+      surpluses(I, :) = surpluses(I, :) - basis.evaluate(newNodes(I - nodeCount, :), ...
+        indexes(K, :), surpluses(constructNodeIndex(K), :));
+
+      absoluteErrors(j, :) = max(abs(surpluses(I, :)), [], 1);
+      adaptivityGuides(j) = sum(sum(abs(surpluses(I, :)))) / counts(j);
     end
+
+    level = max(level, max(max(indexes(J, :))));
 
     indexCount = indexCount + newIndexCount;
     nodeCount = nodeCount + newNodeCount;
@@ -183,11 +193,24 @@ function output = construct(this, f, outputCount)
   output.nodeCount = nodeCount;
 
   output.indexes = indexes(1:indexCount, :);
+
   output.surpluses = surpluses(1:nodeCount, :);
-  output.mapping = mapping(1:nodeCount);
+  output.offsets = offsets(1:indexCount);
+  output.counts = counts(1:indexCount);
 
   output.expectation = zeros(1, outputCount);
   output.variance = zeros(1, outputCount);
+
+  function I_ = constructNodeIndex(K_)
+    I_ = zeros(sum(counts(K_)), 1, 'uint32');
+    shift_ = 0;
+    for i_ = 1:length(K_)
+      k_ = K_(i_);
+      I_((shift_ + 1):(shift_ + counts(k_))) = ...
+        (offsets(k_) + 1):(offsets(k_) + counts(k_));
+      shift_ = shift_ + counts(k_);
+    end
+  end
 
   function resizeIndexBuffers(neededCount_)
     count_ = neededCount_ - indexBufferSize;
@@ -198,8 +221,14 @@ function output = construct(this, f, outputCount)
     indexes = [ indexes; zeros(count_, inputCount, 'uint8') ];
     forward = [ forward; zeros(count_, inputCount, 'uint16') ];
     backward = [ backward; zeros(count_, inputCount, 'uint16') ];
-    errors = [ errors; zeros(count_, outputCount) ];
+
     active = [ active; false(count_, 1) ];
+
+    offsets = [ offsets; zeros(count_, 1, 'uint32') ];
+    counts = [ counts; zeros(count_, 1, 'uint32') ];
+
+    absoluteErrors = [ absoluteErrors; zeros(count_, outputCount) ];
+    adaptivityGuides = [ adaptivityGuides; zeros(count_, 1) ];
 
     indexBufferSize = indexBufferSize + count_;
     assert(indexBufferSize <= maximalIndexCount);
@@ -212,7 +241,6 @@ function output = construct(this, f, outputCount)
     count_ = min(maximalNodeCount, max(count_, nodeBufferSize));
 
     surpluses = [ surpluses; zeros(count_, outputCount) ];
-    mapping = [ mapping; zeros(count_, 1, 'uint16') ];
 
     nodeBufferSize = nodeBufferSize + count_;
   end
