@@ -53,6 +53,7 @@ function output = construct(this, f, outputCount)
   indexes(1, :) = 1;
   active(1) = true;
 
+  basis.ensureLevel(level);
   surpluses(1, :) = f(basis.computeNodes(indexes(1, :)));
   offsets(1) = 0;
   counts(1) = 1;
@@ -142,7 +143,10 @@ function output = construct(this, f, outputCount)
     %
     indexes(J, :) = repmat(current, newIndexCount, 1);
     for i = 1:newIndexCount
-      indexes(J(i), I(i)) = current(I(i)) + 1;
+      newLevel = current(I(i)) + 1;
+      level = max(level, newLevel);
+
+      indexes(J(i), I(i)) = newLevel;
       forward(newBackward(I(i), newBackward(I(i), :) > 0), I(i)) = J(i);
     end
     backward(J, :) = newBackward(I, :);
@@ -151,6 +155,7 @@ function output = construct(this, f, outputCount)
     %
     % Compute the nodes of the new indexes.
     %
+    basis.ensureLevel(level);
     [ newNodes, newOffsets, newCounts ] = basis.computeNodes(indexes(J, :));
     newNodeCount = size(newNodes, 1);
 
@@ -169,12 +174,15 @@ function output = construct(this, f, outputCount)
     offsets(J) = nodeCount + newOffsets;
     counts(J) = newCounts;
 
-    minimalValue = min([ minimalValue; min(surpluses(I, :), [], 1) ], [], 1);
-    maximalValue = max([ maximalValue; max(surpluses(I, :), [], 1) ], [], 1);
+    minimalValue = min([ minimalValue; ...
+      min(surpluses(I, :), [], 1) ], [], 1);
+    maximalValue = max([ maximalValue; ...
+      max(surpluses(I, :), [], 1) ], [], 1);
 
     for j = J
       I = (offsets(j) + 1):(offsets(j) + counts(j));
-      K = find(sum(bsxfun(@minus, indexes(1:indexCount, :), indexes(j, :)), 2) == 0);
+      K = find(sum(bsxfun(@minus, ...
+        indexes(1:indexCount, :), indexes(j, :)), 2) == 0);
 
       surpluses(I, :) = surpluses(I, :) - basis.evaluate(newNodes(I - nodeCount, :), ...
         indexes(K, :), surpluses(constructNodeIndex(K), :));
@@ -182,8 +190,6 @@ function output = construct(this, f, outputCount)
       absoluteErrors(j, :) = max(abs(surpluses(I, :)), [], 1);
       adaptivityGuides(j) = sum(sum(abs(surpluses(I, :)))) / counts(j);
     end
-
-    level = max(level, max(max(indexes(J, :))));
 
     indexCount = indexCount + newIndexCount;
     nodeCount = nodeCount + newNodeCount;

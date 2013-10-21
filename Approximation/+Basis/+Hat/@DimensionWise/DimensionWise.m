@@ -1,7 +1,7 @@
 classdef DimensionWise < Basis.Hat.Base
   properties (SetAccess = 'private')
     maximalLevel
-
+    level
     Yij
     Li
     Mi
@@ -13,20 +13,28 @@ classdef DimensionWise < Basis.Hat.Base
       options = Options(varargin{:});
       this = this@Basis.Hat.Base(options);
 
-      this.maximalLevel = options.maximalLevel;
-
-      assert(this.maximalLevel <= 32);
+      this.maximalLevel = min(32, options.maximalLevel);
+      this.level = 0;
 
       this.Yij = cell(1, this.maximalLevel);
       this.Li = zeros(1, this.maximalLevel);
       this.Mi = zeros(1, this.maximalLevel, 'uint32');
       this.Ni = zeros(1, this.maximalLevel, 'uint32');
+    end
 
-      for i = 1:this.maximalLevel
+    function ensureLevel(this, level)
+      assert(level <= this.maximalLevel);
+
+      levels = (this.level + 1):level;
+      if isempty(levels), return; end
+
+      for i = levels
         [ this.Yij{i}, this.Li(i), this.Mi(i) ] = ...
           this.computeBasisNodes(i);
         this.Ni(i) = numel(this.Yij{i});
       end
+
+      this.level = level;
     end
   end
 end
