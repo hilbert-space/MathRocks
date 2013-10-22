@@ -191,7 +191,7 @@ function output = construct(this, f, outputCount)
       surpluses(I, :) = surpluses(I, :) - basis.evaluate(newNodes(I - nodeCount, :), ...
         indexes(K, :), surpluses(constructNodeIndex(K), :));
 
-      scores(j, 2) = sum(sum(abs(surpluses(I, :)), 1) / counts(j));
+      scores(j, 2) = sum(sum(abs(surpluses(I, :)), 1) / double(counts(j)));
       errors(j, :) = max(abs(surpluses(I, :)), [], 1);
     end
 
