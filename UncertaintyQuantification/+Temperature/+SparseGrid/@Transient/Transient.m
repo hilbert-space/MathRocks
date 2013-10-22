@@ -1,12 +1,12 @@
 classdef Transient < ...
   Temperature.Analytical.Transient & ...
-  Temperature.ASGC.Base
+  Temperature.SparseGrid.Base
 
   methods
     function this = Transient(varargin)
       options = Options(varargin{:});
       this = this@Temperature.Analytical.Transient(options);
-      this = this@Temperature.ASGC.Base(options);
+      this = this@Temperature.SparseGrid.Base(options);
     end
 
     function [ Texp, output ] = compute(this, varargin)

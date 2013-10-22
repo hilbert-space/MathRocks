@@ -9,7 +9,9 @@ function plot(this, output)
 end
 
 function plotCoefficients(coefficients)
-  [ termCount, outputCount ] = size(coefficients);
+  termCount = size(coefficients, 1);
+  coefficients = reshape(coefficients, termCount, []);
+  outputCount = size(coefficients, 2);
 
   coefficients = flipud(abs(squeeze(coefficients(2:end, :))));
 

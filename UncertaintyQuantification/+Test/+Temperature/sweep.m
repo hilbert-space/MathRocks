@@ -21,6 +21,8 @@ function sweep(varargin)
     [ ~, surrogateOutput ] = surrogate.compute(options.dynamicPower);
     fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
 
+    display(surrogate.computeStatistics(surrogateOutput), 'Statistics');
+
     process = surrogate.process;
   else
     process = ProcessVariation(options.processOptions);

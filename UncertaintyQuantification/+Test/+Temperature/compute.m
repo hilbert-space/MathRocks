@@ -7,24 +7,27 @@ function compute(varargin)
 
   surrogate = options.fetch('surrogate', 'Chaos');
   analysis = options.fetch('analysis', 'Transient');
-  iterationCount = options.fetch('iterationCount', 10);
+  iterationCount = options.fetch('iterationCount', 1);
 
   fprintf('Surrogate: %s\n', surrogate);
   fprintf('Analysis: %s\n', analysis);
   fprintf('Running %d iterations...\n', iterationCount);
 
-  surrogate = Temperature.(surrogate).(analysis)(options);
+  surrogate = instantiate(surrogate, analysis, options);
 
   time = tic;
   for i = 1:iterationCount
-    [ Texp, output ] = surrogate.compute(options.dynamicPower);
+    [ Texp, surrogateOutput ] = surrogate.compute(options.dynamicPower);
   end
   fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
+
+  display(surrogate.computeStatistics(surrogateOutput), 'Statistics');
+  plot(surrogate, surrogateOutput);
 
   Plot.figure(800, 800);
   subplot(2, 1, 1);
   plot(options.power, options.dynamicPower, 'figure', false);
   subplot(2, 1, 2);
-  Plot.temperatureVariation(Texp, output.Tvar, 'time', options.timeLine, ...
+  Plot.temperatureVariation(Texp, surrogateOutput.Tvar, 'time', options.timeLine, ...
     'figure', false, 'layout', 'one');
 end
