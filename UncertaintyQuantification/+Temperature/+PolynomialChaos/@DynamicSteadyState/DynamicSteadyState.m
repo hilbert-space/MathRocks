@@ -9,8 +9,8 @@ classdef DynamicSteadyState < ...
       this = this@Temperature.PolynomialChaos.Base(options);
     end
 
-    function [ Texp, output ] = compute(this, varargin)
-      [ Texp, output ] = this.expand(varargin{:});
+    function output = compute(this, varargin)
+      output = this.expand(varargin{:});
     end
 
     function plot(this, output)

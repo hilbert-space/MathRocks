@@ -17,17 +17,24 @@ function compute(varargin)
 
   time = tic;
   for i = 1:iterationCount
-    [ Texp, surrogateOutput ] = surrogate.compute(options.dynamicPower);
+    surrogateOutput = surrogate.compute(options.dynamicPower);
   end
-  fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
+  fprintf('Average construction time: %.2f s\n', toc(time) / iterationCount);
 
-  display(surrogate.computeStatistics(surrogateOutput), 'Statistics');
+  time = tic;
+  for i = 1:iterationCount
+    surrogateStats = surrogate.analyze(surrogateOutput);
+  end
+  fprintf('Average analysis time: %.2f s\n', toc(time) / iterationCount);
+
+  display(surrogate, surrogateOutput);
   plot(surrogate, surrogateOutput);
 
   Plot.figure(800, 800);
   subplot(2, 1, 1);
   plot(options.power, options.dynamicPower, 'figure', false);
   subplot(2, 1, 2);
-  Plot.temperatureVariation(Texp, surrogateOutput.Tvar, 'time', options.timeLine, ...
+  Plot.temperatureVariation(surrogateStats.expectation, ...
+     surrogateStats.variance, 'time', options.timeLine, ...
     'figure', false, 'layout', 'one');
 end

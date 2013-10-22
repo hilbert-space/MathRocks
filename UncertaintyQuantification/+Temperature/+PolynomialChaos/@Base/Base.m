@@ -1,7 +1,6 @@
-classdef Base < handle
+classdef Base < Temperature.Surrogate
   properties (SetAccess = 'protected')
     process
-    surrogate
   end
 
   methods
@@ -49,31 +48,10 @@ classdef Base < handle
       end
     end
 
-    function [ Texp, output ] = expand(this, Pdyn)
-      surrogateOutput = this.surrogate.expand(@(rvs) this.postprocess( ...
+    function output = expand(this, Pdyn)
+      output = this.surrogate.expand(@(rvs) this.postprocess( ...
         this.computeWithLeakage(Pdyn, this.preprocess(rvs))));
-
-      Texp = reshape(surrogateOutput.expectation, this.processorCount, []);
-
-      if nargout < 2, return; end
-
-      output.Tvar = reshape(surrogateOutput.variance, this.processorCount, []);
-
-      output.coefficients = reshape(surrogateOutput.coefficients, ...
-        this.surrogate.termCount, this.processorCount, []);
-    end
-
-    function Tdata = sample(this, varargin)
-      Tdata = this.surrogate.sample(varargin{:});
-    end
-
-    function Tdata = evaluate(this, varargin)
-      Tdata = this.surrogate.evaluate(varargin{:});
-    end
-
-    function options = computeStatistics(this, varargin)
-      options = Options( ...
-        'functionEvaluations', this.surrogate.nodeCount);
+      output.stepCount = size(Pdyn, 2);
     end
   end
 

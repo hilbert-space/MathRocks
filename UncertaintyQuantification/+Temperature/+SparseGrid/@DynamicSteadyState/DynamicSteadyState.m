@@ -9,8 +9,8 @@ classdef DynamicSteadyState < ...
       this = this@Temperature.SparseGrid.Base(options);
     end
 
-    function [ Texp, output ] = compute(this, varargin)
-      [ Texp, output ] = this.interpolate(varargin{:});
+    function output = compute(this, varargin)
+      output = this.interpolate(varargin{:});
     end
   end
 end

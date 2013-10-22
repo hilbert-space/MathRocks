@@ -1,8 +1,7 @@
-classdef Base < handle
+classdef Base < Temperature.Surrogate
   properties (SetAccess = 'protected')
     process
     distribution
-    surrogate
   end
 
   methods
@@ -35,34 +34,10 @@ classdef Base < handle
         options.surrogateOptions);
     end
 
-    function [ Texp, output ] = interpolate(this, Pdyn)
-      surrogateOutput = this.surrogate.construct(@(rvs) this.postprocess( ...
+    function output = interpolate(this, Pdyn)
+      output = this.surrogate.construct(@(rvs) this.postprocess( ...
         this.computeWithLeakage(Pdyn, this.preprocess(rvs))), numel(Pdyn));
-
-      Texp = reshape(surrogateOutput.expectation, this.processorCount, []);
-
-      if nargout < 2, return; end
-
-      output.Tvar = reshape(surrogateOutput.variance, this.processorCount, []);
-      output.surrogateOutput = surrogateOutput;
       output.stepCount = size(Pdyn, 2);
-    end
-
-    function Tdata = sample(this, output, varargin)
-      Tdata = reshape(this.surrogate.sample( ...
-        output.surrogateOutput, varargin{:}), ...
-        [], this.processorCount, output.stepCount);
-    end
-
-    function Tdata = evaluate(this, output, varargin)
-      Tdata = reshape(this.surrogate.evaluate( ...
-        output.surrogateOutput, varargin{:}), ...
-        [], this.processorCount, output.stepCount);
-    end
-
-    function options = computeStatistics(~, output)
-      options = Options( ...
-        'functionEvaluations', output.surrogateOutput.nodeCount);
     end
   end
 
