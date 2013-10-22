@@ -23,10 +23,9 @@ function JacobiBeta11
     'beta', distribution.beta - 1, ...
     'a', distribution.a, ...
     'b', distribution.b);
-  display(pc);
 
   pcOutput = pc.expand(f);
   pcData = pc.evaluate(pcOutput, samples);
 
-  assess(mcData, pcData, pcOutput, distribution);
+  assess(mcData, pc, pcData, pcOutput, distribution);
 end

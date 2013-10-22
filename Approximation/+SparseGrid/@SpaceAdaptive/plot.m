@@ -10,6 +10,6 @@ function plot(this, output)
     k = k + levelNodeCount(i);
   end
 
-  Plot.sparseGrid(nodes, mapping);
+  plot@SparseGrid.Base(this, nodes, mapping);
   Plot.title('Space-adaptive sparse grid');
 end

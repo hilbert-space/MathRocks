@@ -20,10 +20,9 @@ function HermiteLognormal
     'quadratureOptions', Options( ...
       'method', 'tensor', ...
       'order', 10));
-  display(pc);
 
   pcOutput = pc.expand(@transformation.evaluate);
   pcData = pc.evaluate(pcOutput, normrnd(0, 1, sampleCount, 1));
 
-  assess(mcData, pcData, pcOutput, distribution);
+  assess(mcData, pc, pcData, pcOutput, distribution);
 end

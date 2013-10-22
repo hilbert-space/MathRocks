@@ -1,13 +1,45 @@
-function plot(this)
-  dimension = this.inputCount;
-  order = this.order;
+function plot(this, output)
+  if nargin > 1
+    plotCoefficients(output.coefficients);
+  end
 
-  assert(dimension == 1);
+  if this.inputCount == 1
+    plotBasis(this);
+  end
+end
+
+function plotCoefficients(coefficients)
+  [ termCount, outputCount ] = size(coefficients);
+
+  coefficients = flipud(abs(squeeze(coefficients(2:end, :))));
+
+  if outputCount > 1
+    xlabels = 1:outputCount;
+  else
+    xlabels = [];
+  end
+
+  if termCount > 2
+    ylabels = termCount:-1:2;
+  else
+    ylabels = [];
+  end
+
+  Plot.figure(1000, 600);
+  heatmap(coefficients, xlabels, ylabels, [], 'colormap', 'hot');
+  Plot.title('Magnitudes of the PC coefficients');
+  Plot.label('Output', 'Coefficient');
+end
+
+function plotBasis(this)
+  inputCount = this.inputCount;
+  order = this.order;
 
   %
   % Construct the RVs.
   %
-  for i = 1:dimension
+  x = sympoly(zeros(1, inputCount));
+  for i = 1:inputCount
     x(i) = sympoly([ 'x', num2str(i) ]);
   end
 
@@ -17,22 +49,22 @@ function plot(this)
   % Construct the corresponding multivariate basis functions.
   %
   basis = this.constructBasis(x, order, index);
-  terms = length(basis);
+  termCount = length(basis);
 
-  figure;
+  Plot.figure(1000, 600);
 
-  nodes = linspace(-4, 4);
+  nodes = this.distribution.icdf( ...
+    linspace(sqrt(eps), 1 - sqrt(eps)));
 
-  labels = {};
-  for i = 1:terms
+  labels = cell(1, termCount);
+  for i = 1:termCount
     f = Utils.toFunction(basis(i), x, 'columns');
     values = f(nodes);
     if length(values) == 1
       values = ones(size(nodes)) * values;
     end
-    norm = this.computeNormalizationConstant(i, index);
     line(nodes, values, 'Color', Color.pick(i), 'LineWidth', 1.5);
-    labels{end + 1} = sprintf('\\Phi_%d', i);
+    labels{i} = sprintf('\\Phi_{%d}', i);
   end
   name = regexp(class(this), '^[^.]*\.([^.]*)$', 'tokens');
   Plot.title('%s polynomial basis', name{1}{1});

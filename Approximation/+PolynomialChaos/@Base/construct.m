@@ -1,11 +1,12 @@
 function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(this, options)
-  dimension = options.inputCount;
+  inputCount = options.inputCount;
   order = options.order;
 
   %
   % Construct the RVs.
   %
-  for i = 1:dimension
+  x = sympoly(zeros(1, inputCount));
+  for i = 1:inputCount
     x(i) = sympoly([ 'x', num2str(i) ]);
   end
 
@@ -13,31 +14,31 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
   % Compute the multi-indices.
   %
   index = Utils.constructMultiIndex( ...
-    dimension, order, [], options.method) + 1;
+    inputCount, order, [], options.method) + 1;
 
   %
   % Construct the corresponding multivariate basis functions.
   %
   basis = this.constructBasis(x, order, index);
-  terms = length(basis);
+  termCount = length(basis);
 
   %
   % Now, the quadrature rule.
   %
   [ nodes, weights ] = this.constructQuadrature( ...
     order, options.quadratureOptions);
-  points = size(nodes, 1);
+  nodeCount = size(nodes, 1);
 
   %
   % The projection matrix.
   %
   % A (# of polynomial terms) x (# of integration nodes) matrix.
   %
-  projection = zeros(terms, points);
+  projection = zeros(termCount, nodeCount);
 
-  norm = zeros(terms, 1);
+  norm = zeros(termCount, 1);
 
-  for i = 1:terms
+  for i = 1:termCount
     f = Utils.toFunction(basis(i), x, 'columns');
     norm(i) = this.computeNormalizationConstant(i, index);
     projection(i, :) = f(nodes) .* weights / norm(i);
@@ -46,7 +47,8 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
   %
   % Construct the overall polynomial with abstract coefficients.
   %
-  for i = 1:terms
+  a = sympoly(zeros(1, termCount));
+  for i = 1:termCount
     a(i) = sympoly([ 'a', num2str(i) ]);
   end
 
@@ -68,7 +70,6 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
   % A (# of quadrature nodes) x (# of monomial terms) matrix
   % that is used to compute the PC expansion at the quadrature nodes.
   %
-  nodeCount = size(nodes, 1);
   monomialCount = size(rvPower, 1);
 
   rvProduct = zeros(nodeCount, monomialCount);

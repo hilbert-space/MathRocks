@@ -1,5 +1,5 @@
 function Basis = constructBasis(this, x, order, index)
-  dimension = length(x);
+  inputCount = length(x);
 
   %
   % Create the univariate basis.
@@ -11,7 +11,7 @@ function Basis = constructBasis(this, x, order, index)
   % If there is only one stochastic dimension,
   % we do not need to do anything else.
   %
-  if dimension == 1
+  if inputCount == 1
     Basis = basis(1, :);
     return;
   end
@@ -19,15 +19,16 @@ function Basis = constructBasis(this, x, order, index)
   %
   % Clone the first 1D polynomial.
   %
-  for i = 2:dimension
+  for i = 2:inputCount
     basis(i, :) = subs(basis(1, :), x(1), x(i));
   end
 
-  terms = size(index, 1);
+  termCount = size(index, 1);
 
-  for i = 1:terms
+  Basis = sympoly(zeros(1, termCount));
+  for i = 1:termCount
     Basis(i) = basis(1, index(i, 1));
-    for j = 2:dimension
+    for j = 2:inputCount
       Basis(i) = Basis(i) * basis(j, index(i, j));
     end
   end

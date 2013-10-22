@@ -1,4 +1,7 @@
-function assess(mcData, pcData, pcOutput, distribution)
+function assess(mcData, pc, pcData, pcOutput, distribution)
+  display(pc);
+  plot(pc, pcOutput);
+
   fprintf('Monte Carlo:\n');
   fprintf('  Expectation: %.4f\n', mean(mcData));
   fprintf('  Variance:    %.4f\n', var(mcData));
@@ -9,7 +12,7 @@ function assess(mcData, pcData, pcOutput, distribution)
 
   Statistic.compare(mcData, pcData, 'draw', true);
 
-  if nargin > 3
+  if nargin > 4
     fprintf('Exact:\n');
     fprintf('  Expectation: %.4f\n', distribution.expectation);
     fprintf('  Variance:    %.4f\n', distribution.variance);

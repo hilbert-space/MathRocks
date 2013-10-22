@@ -1,7 +1,7 @@
-function sparseGrid(nodes, mapping)
+function plot(~, nodes, mapping)
   [ nodeCount, dimensionCount ] = size(nodes);
 
-  if nargin < 2, mapping = ones(nodeCount, 1); end
+  if nargin < 3, mapping = ones(nodeCount, 1); end
   assert(length(mapping) == nodeCount);
 
   levels = transpose(unique(mapping(:), 'sorted'));

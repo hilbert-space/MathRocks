@@ -20,10 +20,9 @@ function JacobiNormal
     'b', beta.b, ...
     'quadratureOptions', Options( ...
       'method', 'adaptive'));
-  display(pc);
 
   pcOutput = pc.expand(@(x) normal.icdf(beta.cdf(x)));
   pcData = pc.evaluate(pcOutput, beta.sample(sampleCount, 1));
 
-  assess(mcData, pcData, pcOutput, normal);
+  assess(mcData, pc, pcData, pcOutput, normal);
 end
