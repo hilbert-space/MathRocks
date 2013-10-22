@@ -6,18 +6,19 @@ classdef SpaceAdaptive < SparseGrid.Base
   methods
     function this = SpaceAdaptive(varargin)
       this = this@SparseGrid.Base(varargin{:});
-
       this.basis = Basis.Hat.SpaceWise;
     end
 
-    function values = evaluate(this, output, nodes, varargin)
-      values = this.basis.evaluate(nodes, output.levels, output.orders, ...
-        output.surpluses);
+    function stats = analyze(this, output)
+      stats.expectation = this.basis.computeExpectation( ...
+        output.levels, output.surpluses);
+      stats.variance = this.basis.computeVariance( ...
+        output.levels, output.orders, output.surpluses);
     end
 
-    function values = sample(this, output, sampleCount)
-      values = this.evaluate(output, ...
-        rand(sampleCount, output.inputCount));
+    function values = evaluate(this, output, nodes)
+      values = this.basis.evaluate(nodes, ...
+        output.levels, output.orders, output.surpluses);
     end
   end
 end

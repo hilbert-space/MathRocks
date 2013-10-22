@@ -1,3 +1,4 @@
-function result = computeExpectation(this, I, ~, C)
-  result = sum(bsxfun(@times, C, this.computeBasisExpectation(I)));
+function result = computeExpectation(this, levels, surpluses)
+  result = sum(bsxfun(@times, surpluses, ...
+    this.computeBasisExpectation(levels)));
 end

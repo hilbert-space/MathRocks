@@ -34,11 +34,9 @@ classdef Base < handle
       this.verbose = options.get('verbose', true);
     end
 
-    function stats = analyze(this, output)
-      stats.expectation = this.basis.computeExpectation( ...
-        output.levels, output.orders, output.surpluses);
-      stats.variance = this.basis.computeVariance( ...
-        output.levels, output.orders, output.surpluses);
+    function values = sample(this, output, sampleCount)
+      values = this.evaluate(output, ...
+        rand(sampleCount, output.inputCount));
     end
 
     function display(this, output)
