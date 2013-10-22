@@ -208,9 +208,6 @@ function output = construct(this, f, outputCount)
   output.offsets = offsets(1:indexCount);
   output.counts = counts(1:indexCount);
 
-  output.expectation = zeros(1, outputCount);
-  output.variance = zeros(1, outputCount);
-
   function I_ = constructNodeIndex(K_)
     I_ = zeros(sum(counts(K_)), 1, 'uint32');
     shift_ = 0;

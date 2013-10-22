@@ -47,6 +47,10 @@ function assessKraichnanOrszag(varargin)
   surrogateOutput = surrogate.construct(target);
   fprintf('Construction time: %.2f s\n', toc);
 
+  tic;
+  surrogateStats = surrogate.analyze(surrogateOutput);
+  fprintf('Analysis time: %.2f s\n', toc);
+
   %
   % The expected value
   %
@@ -55,7 +59,7 @@ function assessKraichnanOrszag(varargin)
   Plot.title('Expectation');
   Plot.label('Time');
   plotTransient(time, mean(Y, 3));
-  plotTransient(time, reshape(surrogateOutput.expectation, ...
+  plotTransient(time, reshape(surrogateStats.expectation, ...
     [ stepCount, 3 ]), 'LineStyle', '--');
 
   %
@@ -66,7 +70,7 @@ function assessKraichnanOrszag(varargin)
   Plot.title('Variance');
   Plot.label('Time');
   plotTransient(time, var(Y, [], 3));
-  plotTransient(time, reshape(surrogateOutput.variance, ...
+  plotTransient(time, reshape(surrogateStats.variance, ...
     [ stepCount, 3 ]), 'LineStyle', '--');
 
   %

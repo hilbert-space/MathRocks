@@ -54,26 +54,33 @@ function [ surrogateOutput, surrogate ] = assess(f, varargin)
   end
 
   time = tic;
-  mcOutput.data = f(u);
-  fprintf('MC evaluation time: %.2f s\n', toc(time));
-  mcOutput.expectation = mean(mcOutput.data);
-  mcOutput.variance = var(mcOutput.data);
+  mcData = f(u);
+  fprintf('Monte-Carlo evaluation time: %.2f s\n', toc(time));
 
   time = tic;
-  surrogateOutput.data = surrogate.evaluate(surrogateOutput, u);
-  fprintf('SG evaluation time: %.2f s\n', toc(time));
+  mcStats.expectation = mean(mcData);
+  mcStats.variance = var(mcData);
+  fprintf('Monte-Carlo analysis time: %.2f s\n', toc(time));
+
+  time = tic;
+  surrogateData = surrogate.evaluate(surrogateOutput, u);
+  fprintf('Surrogate evaluation time: %.2f s\n', toc(time));
 
   names = { 'Empirical MC', 'Empirical SG', 'Analytical SG' };
 
+  time = tic;
+  surrogateStats = surrogate.analyze(surrogateOutput);
+  fprintf('Surrogate analysis time: %.2f s\n', toc(time));
+
   expectation = { ...
-    mcOutput.expectation, ...
-    mean(surrogateOutput.data, 1), ...
-    surrogateOutput.expectation };
+    mcStats.expectation, ...
+    mean(surrogateData, 1), ...
+    surrogateStats.expectation };
 
   variance = { ...
-    mcOutput.variance, ...
-    var(surrogateOutput.data, [], 1), ...
-    surrogateOutput.variance };
+    mcStats.variance, ...
+    var(surrogateData, [], 1), ...
+    surrogateStats.variance };
 
   if hasExact
     names = [ 'Exact', names ];
@@ -91,11 +98,11 @@ function [ surrogateOutput, surrogate ] = assess(f, varargin)
 
   fprintf('Pointwise:\n');
   fprintf('  Normalized L2:   %e\n', ...
-    Error.computeNL2(mcOutput.data, surrogateOutput.data));
+    Error.computeNL2(mcData, surrogateData));
   fprintf('  Normalized RMSE: %e\n', ...
-    Error.computeNRMSE(mcOutput.data, surrogateOutput.data));
+    Error.computeNRMSE(mcData, surrogateData));
   fprintf('  Infinity norm:   %e\n', ...
-    norm(mcOutput.data - surrogateOutput.data, Inf));
+    norm(mcData - surrogateData, Inf));
 end
 
 function printMoments(names, values)

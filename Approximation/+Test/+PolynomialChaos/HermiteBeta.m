@@ -13,7 +13,7 @@ function HermiteBeta
 
   mcData = distribution.sample(sampleCount, 1);
 
-  pc = PolynomialChaos.Hermite( ...
+  surrogate = PolynomialChaos.Hermite( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
     'order', 6, ...
@@ -21,8 +21,8 @@ function HermiteBeta
       'method', 'tensor', ...
       'order', 10));
 
-  pcOutput = pc.expand(@transformation.evaluate);
-  pcData = pc.evaluate(pcOutput, normrnd(0, 1, sampleCount, 1));
+  surrogateOutput = surrogate.expand(@transformation.evaluate);
+  surrogateData = surrogate.evaluate(surrogateOutput, normrnd(0, 1, sampleCount, 1));
 
-  assess(mcData, pc, pcData, pcOutput, distribution);
+  assess(mcData, surrogate, surrogateOutput, surrogateData, distribution);
 end

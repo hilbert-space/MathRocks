@@ -1,16 +1,18 @@
-function assess(mcData, pc, pcData, pcOutput, distribution)
-  display(pc);
-  plot(pc, pcOutput);
+function assess(mcData, surrogate, surrogateOutput, surrogateData, distribution)
+  display(surrogate);
+  plot(surrogate, surrogateOutput);
 
   fprintf('Monte Carlo:\n');
   fprintf('  Expectation: %.4f\n', mean(mcData));
   fprintf('  Variance:    %.4f\n', var(mcData));
 
-  fprintf('Polynomial chaos:\n');
-  fprintf('  Expectation: %.4f\n', pcOutput.expectation);
-  fprintf('  Variance:    %.4f\n', pcOutput.variance);
+  surrogateStats = surrogate.analyze(surrogateOutput);
 
-  Statistic.compare(mcData, pcData, 'draw', true);
+  fprintf('Polynomial chaos:\n');
+  fprintf('  Expectation: %.4f\n', surrogateStats.expectation);
+  fprintf('  Variance:    %.4f\n', surrogateStats.variance);
+
+  Statistic.compare(mcData, surrogateData, 'draw', true);
 
   if nargin > 4
     fprintf('Exact:\n');
@@ -22,8 +24,8 @@ function assess(mcData, pc, pcData, pcOutput, distribution)
     h = line(x, distribution.pdf(x), ...
       'Color', Color.pick(5), 'LineStyle', '--');
 
-    set(h,'erasemode','xor');
-    set(h,'erasemode','background');
+    set(h, 'erasemode', 'xor');
+    set(h, 'erasemode', 'background');
     legend('Monte Carlo', 'Polynomial Chaos', 'Exact');
   else
     legend('Monte Carlo', 'Polynomial Chaos');

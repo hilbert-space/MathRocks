@@ -59,12 +59,13 @@ classdef Base < handle
     end
 
     function output = expand(this, f, varargin)
-      coefficients = this.projection * f(this.nodes, varargin{:});
+      output.coefficients = this.projection * f(this.nodes, varargin{:});
+    end
 
-      output.expectation = coefficients(1, :);
-      output.variance = sum(coefficients(2:end, :).^2 .* ...
-        repmat(this.norm(2:end), [ 1, size(coefficients, 2) ]), 1);
-      output.coefficients = coefficients;
+    function stats = analyze(this, output)
+      stats.expectation = output.coefficients(1, :);
+      stats.variance = sum(output.coefficients(2:end, :).^2 .* ...
+        repmat(this.norm(2:end), [ 1, size(output.coefficients, 2) ]), 1);
     end
 
     function data = sample(this, output, sampleCount)

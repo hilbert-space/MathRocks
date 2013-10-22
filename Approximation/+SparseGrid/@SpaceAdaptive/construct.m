@@ -156,12 +156,6 @@ function output = construct(this, f, outputCount)
 
   output.surpluses = surpluses(range, :);
 
-  output.expectation = basis.computeExpectation( ...
-    output.levels, output.orders, output.surpluses);
-
-  output.variance = basis.computeVariance( ...
-    output.levels, output.orders, output.surpluses);
-
   function resizeBuffers(neededCount_)
     count_ = neededCount_ - bufferSize;
 

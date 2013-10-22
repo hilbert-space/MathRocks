@@ -10,7 +10,7 @@ function JacobiNormal
 
   mcData = normal.sample(sampleCount, 1);
 
-  pc = PolynomialChaos.Jacobi( ...
+  surrogate = PolynomialChaos.Jacobi( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
     'order', 10, ...
@@ -21,8 +21,8 @@ function JacobiNormal
     'quadratureOptions', Options( ...
       'method', 'adaptive'));
 
-  pcOutput = pc.expand(@(x) normal.icdf(beta.cdf(x)));
-  pcData = pc.evaluate(pcOutput, beta.sample(sampleCount, 1));
+  surrogateOutput = surrogate.expand(@(x) normal.icdf(beta.cdf(x)));
+  surrogateData = surrogate.evaluate(surrogateOutput, beta.sample(sampleCount, 1));
 
-  assess(mcData, pc, pcData, pcOutput, normal);
+  assess(mcData, surrogate, surrogateOutput, surrogateData, normal);
 end

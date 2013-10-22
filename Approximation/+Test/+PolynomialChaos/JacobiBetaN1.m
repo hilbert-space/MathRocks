@@ -14,7 +14,7 @@ function JacobiBetaN1
 
   mcData = f(samples);
 
-  pc = PolynomialChaos.Jacobi( ...
+  surrogate = PolynomialChaos.Jacobi( ...
     'order', order, ...
     'inputCount', inputCount, ...
     'outputCount', 1, ...
@@ -25,8 +25,8 @@ function JacobiBetaN1
     'a', distribution.a, ...
     'b', distribution.b);
 
-  pcOutput = pc.expand(f);
-  pcData = pc.evaluate(pcOutput, samples);
+  surrogateOutput = surrogate.expand(f);
+  surrogateData = surrogate.evaluate(surrogateOutput, samples);
 
-  assess(mcData, pc, pcData, pcOutput);
+  assess(mcData, surrogate, surrogateOutput, surrogateData);
 end

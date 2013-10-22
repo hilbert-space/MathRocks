@@ -8,6 +8,7 @@ function setup
   use('Vendor', 'SANDIA_SPARSE');
   use('Vendor', 'SPARSE_GRID_HW');
   use('Vendor', 'chebfun');
+  use('Vendor', 'heatmaps');
   use('Vendor', 'sympoly');
   use('Vendor', 'uninit');
 end
