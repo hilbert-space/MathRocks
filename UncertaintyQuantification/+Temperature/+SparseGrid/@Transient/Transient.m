@@ -12,5 +12,10 @@ classdef Transient < ...
     function output = compute(this, varargin)
       output = this.interpolate(varargin{:});
     end
+
+    function plot(this, varargin)
+      if this.surrogate.inputCount > 3, return; end
+      this.surrogate.plot(varargin{:});
+    end
   end
 end

@@ -40,5 +40,12 @@ classdef Base < handle
       stats.variance = this.basis.computeVariance( ...
         output.levels, output.orders, output.surpluses);
     end
+
+    function display(this, output)
+       options = Options( ...
+        'inputCount', this.inputCount, ...
+        'nodeCount', output.nodeCount);
+      display(options, 'Sparse grid');
+    end
   end
 end

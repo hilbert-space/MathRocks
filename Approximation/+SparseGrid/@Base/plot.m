@@ -1,5 +1,5 @@
 function plot(~, nodes, mapping)
-  [ nodeCount, dimensionCount ] = size(nodes);
+  [ nodeCount, inputCount ] = size(nodes);
 
   if nargin < 3, mapping = ones(nodeCount, 1); end
   assert(length(mapping) == nodeCount);
@@ -9,7 +9,7 @@ function plot(~, nodes, mapping)
   Plot.figure(600, 600);
   Plot.title('Sparse grid');
 
-  switch dimensionCount
+  switch inputCount
   case 1
     color = 'k';
     for i = levels

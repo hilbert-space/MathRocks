@@ -13,8 +13,8 @@ classdef Transient < ...
       output = this.expand(varargin{:});
     end
 
-    function plot(this, output)
-      this.surrogate.plot(output);
+    function plot(this, varargin)
+      this.surrogate.plot(varargin{:});
     end
   end
 end
