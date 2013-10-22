@@ -1,4 +1,4 @@
-classdef DimensionAdaptive < Interpolation.SparseGrid.Base
+classdef DimensionAdaptive < SparseGrid.Base
   properties (SetAccess = 'private')
     basis
     adaptivityDegree
@@ -7,7 +7,7 @@ classdef DimensionAdaptive < Interpolation.SparseGrid.Base
   methods
     function this = DimensionAdaptive(varargin)
       options = Options(varargin{:});
-      this = this@Interpolation.SparseGrid.Base(options);
+      this = this@SparseGrid.Base(options);
 
       this.basis = Basis.Hat.DimensionWise('maximalLevel', this.maximalLevel);
       this.adaptivityDegree = options.get('adaptivityDegree', 0.9);
