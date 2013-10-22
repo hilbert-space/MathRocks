@@ -31,6 +31,7 @@ function output = construct(this, f, outputCount)
 
   indexes = zeros(indexBufferSize, inputCount, 'uint8');
   active = false(indexBufferSize, 1);
+  scores = zeros(indexBufferSize, 2);
 
   forward = zeros(indexBufferSize, inputCount, 'uint16');
   backward = zeros(indexBufferSize, inputCount, 'uint16');
@@ -39,8 +40,7 @@ function output = construct(this, f, outputCount)
   offsets = zeros(indexBufferSize, 1, 'uint32');
   counts = zeros(indexBufferSize, 1, 'uint32');
 
-  absoluteErrors = zeros(indexBufferSize, outputCount);
-  adaptivityGuides = zeros(indexBufferSize, 1);
+  errors = zeros(indexBufferSize, outputCount);
 
   %
   % Initialization
@@ -52,19 +52,21 @@ function output = construct(this, f, outputCount)
 
   indexes(1, :) = 1;
   active(1) = true;
+  scores(1, 1) = sum(indexes(1, :));
 
   basis.ensureLevel(level);
+
   surpluses(1, :) = f(basis.computeNodes(indexes(1, :)));
   offsets(1) = 0;
   counts(1) = 1;
 
-  absoluteErrors(1, :) = abs(surpluses(1, :));
-  adaptivityGuides(1) = sum(abs(surpluses(1, :)));
+  scores(1, 2) = sum(abs(surpluses(1, :)));
+  errors(1, :) = abs(surpluses(1, :));
 
   minimalValue = surpluses(1, :);
   maximalValue = surpluses(1, :);
 
-  newBackward = zeros(inputCount, inputCount);
+  newBackward = zeros(inputCount, inputCount, 'uint16');
 
   while true
     I = find(active);
@@ -72,7 +74,7 @@ function output = construct(this, f, outputCount)
     verbose('level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
       level, indexCount, numel(I), nodeCount);
 
-    if all(max(absoluteErrors(I, :), [], 1) < max(absoluteTolerance, ...
+    if all(max(errors(I, :), [], 1) < max(absoluteTolerance, ...
       relativeTolerance * (maximalValue - minimalValue)))
 
       verbose('The desired level of accuracy has been reached.\n');
@@ -89,10 +91,10 @@ function output = construct(this, f, outputCount)
     case 1
       C = I;
     otherwise
-      [ minimalSum, i ] = min(sum(indexes(I, :), 2));
-      maximalSum = max(sum(indexes(1:indexCount, :), 2));
+      [ minimalSum, i ] = min(scores(I, 1));
+      maximalSum = max(scores(1:indexCount, 1));
       if minimalSum > (1 - adaptivityDegree) * maximalSum
-        [ ~, i ] = max(adaptivityGuides(I));
+        [ ~, i ] = max(scores(I, 2));
       end
       C = I(i);
     end
@@ -135,7 +137,7 @@ function output = construct(this, f, outputCount)
     end
 
     resizeIndexBuffers(indexCount + newIndexCount);
-    J = indexCount + (1:newIndexCount);
+    J = (indexCount + 1):(indexCount + newIndexCount);
 
     %
     % Store the found indexes along with their backward and forward
@@ -150,7 +152,9 @@ function output = construct(this, f, outputCount)
       forward(newBackward(I(i), newBackward(I(i), :) > 0), I(i)) = J(i);
     end
     backward(J, :) = newBackward(I, :);
+
     active(J) = true;
+    scores(J, 1) = sum(indexes(J, :), 2);
 
     %
     % Compute the nodes of the new indexes.
@@ -165,7 +169,7 @@ function output = construct(this, f, outputCount)
     end
 
     resizeNodeBuffers(nodeCount + newNodeCount);
-    I = nodeCount + (1:newNodeCount);
+    I = (nodeCount + 1):(nodeCount + newNodeCount);
 
     %
     % Compute the surpluses of the new nodes.
@@ -187,8 +191,8 @@ function output = construct(this, f, outputCount)
       surpluses(I, :) = surpluses(I, :) - basis.evaluate(newNodes(I - nodeCount, :), ...
         indexes(K, :), surpluses(constructNodeIndex(K), :));
 
-      absoluteErrors(j, :) = max(abs(surpluses(I, :)), [], 1);
-      adaptivityGuides(j) = sum(sum(abs(surpluses(I, :)))) / counts(j);
+      scores(j, 2) = sum(sum(abs(surpluses(I, :)), 1) / counts(j));
+      errors(j, :) = max(abs(surpluses(I, :)), [], 1);
     end
 
     indexCount = indexCount + newIndexCount;
@@ -229,15 +233,14 @@ function output = construct(this, f, outputCount)
     backward = [ backward; zeros(count_, inputCount, 'uint16') ];
 
     active = [ active; false(count_, 1) ];
+    scores = [ scores; zeros(count_, 1) ];
 
     offsets = [ offsets; zeros(count_, 1, 'uint32') ];
     counts = [ counts; zeros(count_, 1, 'uint32') ];
 
-    absoluteErrors = [ absoluteErrors; zeros(count_, outputCount) ];
-    adaptivityGuides = [ adaptivityGuides; zeros(count_, 1) ];
+    errors = [ errors; zeros(count_, outputCount) ];
 
     indexBufferSize = indexBufferSize + count_;
-    assert(indexBufferSize <= maximalIndexCount);
   end
 
   function resizeNodeBuffers(neededCount_)
