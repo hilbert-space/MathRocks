@@ -29,7 +29,7 @@ classdef Base < handle
 
   methods
     function this = Base(varargin)
-      options = Options('method', 'totalOrder', varargin{:});
+      options = Options(varargin{:});
       this.distribution = this.configure(options);
 
       this.order = options.order;
@@ -42,7 +42,7 @@ classdef Base < handle
         load(filename);
       else
         [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-          this.construct(options);
+          this.construct(this.order, this.inputCount, options);
         save(filename, 'nodes', 'norm', 'projection', 'evaluation', ...
           'rvPower', 'rvMap', '-v7.3');
       end
@@ -90,12 +90,12 @@ classdef Base < handle
   methods (Abstract, Access = 'protected')
     basis = constructUnivariateBasis(this, x, order)
     [ nodes, weights ] = constructQuadrature(this, options)
-    norm = computeNormalizationConstant(this, i, index)
+    norm = computeNormalizationConstant(this, i, indexes)
   end
 
   methods (Access = 'private')
-    basis = constructBasis(this, x, order, index)
+    basis = constructBasis(this, x, order, indexes)
     [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-      construct(this, options)
+      construct(this, order, inputCount, varargin)
   end
 end

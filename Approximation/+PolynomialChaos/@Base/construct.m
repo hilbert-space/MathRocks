@@ -1,78 +1,49 @@
-function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(this, options)
-  inputCount = options.inputCount;
-  order = options.order;
+function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
+  construct(this, order, inputCount, options)
 
-  %
-  % Construct the RVs.
-  %
-  x = sympoly(zeros(1, inputCount));
-  for i = 1:inputCount
-    x(i) = sympoly([ 'x', num2str(i) ]);
-  end
+  x = sym('x%d', [ 1, inputCount ]);
+  assume(x, 'real');
 
-  %
-  % Compute the multi-indexes.
-  %
   indexes = Utils.indexTotalOrderSpace(inputCount, order);
 
-  %
-  % Construct the corresponding multivariate basis functions.
-  %
   basis = this.constructBasis(x, order, indexes);
   termCount = length(basis);
 
-  %
-  % Now, the quadrature rule.
-  %
-  [ nodes, weights ] = this.constructQuadrature( ...
-    order, options.get('quadratureOptions', []));
-  nodeCount = size(nodes, 1);
+  quadrature = this.constructQuadrature(order, ...
+    options.get('quadratureOptions', []));
+
+  nodes = quadrature.nodes;
+  weights = quadrature.weights;
+  nodeCount = quadrature.nodeCount;
 
   %
-  % The projection matrix.
+  % The projection matrix
   %
-  % A (# of polynomial terms) x (# of integration nodes) matrix.
+  % (# of polynomial terms) x (# of quadrature nodes)
   %
   projection = zeros(termCount, nodeCount);
-
   norm = zeros(termCount, 1);
 
   for i = 1:termCount
-    f = Utils.toFunction(basis(i), x, 'columns');
+    f = Utils.pointwiseFunction(basis(i), x);
     norm(i) = this.computeNormalizationConstant(i, indexes);
     projection(i, :) = f(nodes) .* weights / norm(i);
   end
 
+  a = sym('a%d', [ 1, termCount ]);
+  assume(a, 'real');
+
+  [ rvPower, rvMap ] = Utils.decomposePolynomial(sum(a .* basis), x, a);
+  assert(size(rvPower, 1) == termCount);
+
   %
-  % Construct the overall polynomial with abstract coefficients.
+  % The evaluation matrix
   %
-  a = sympoly(zeros(1, termCount));
+  % (# of quadrature nodes) x (# of polynomial terms)
+  %
+  rvProduct = zeros(nodeCount, termCount);
+
   for i = 1:termCount
-    a(i) = sympoly([ 'a', num2str(i) ]);
-  end
-
-  %
-  % Express the polynomial in terms of its monomials.
-  %
-  % A (# of monomial terms) x (# of stochastic dimensions) matrix
-  % of the exponents of each of the RVs in each of the monomials.
-  %
-  % A (# of monomial terms) x (# of polynomial terms) matrix that
-  % maps the PC expansion coefficients to the coefficients of
-  % the monomials.
-  %
-  [ rvPower, rvMap ] = Utils.toMatrix(sum(a .* basis));
-
-  %
-  % Compute the evaluation matrix.
-  %
-  % A (# of quadrature nodes) x (# of monomial terms) matrix
-  % that is used to compute the PC expansion at the quadrature nodes.
-  %
-  monomialCount = size(rvPower, 1);
-
-  rvProduct = zeros(nodeCount, monomialCount);
-  for i = 1:monomialCount
     rvProduct(:, i) = prod(realpow( ...
       nodes, repmat(rvPower(i, :), [ nodeCount, 1 ])), 2);
   end

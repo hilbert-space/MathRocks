@@ -25,7 +25,7 @@ function Basis = constructBasis(this, x, order, indexes)
 
   termCount = size(indexes, 1);
 
-  Basis = sympoly(zeros(1, termCount));
+  Basis = sym(zeros(1, termCount));
   for i = 1:termCount
     Basis(i) = basis(1, indexes(i, 1));
     for j = 2:inputCount

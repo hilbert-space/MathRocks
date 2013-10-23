@@ -38,7 +38,9 @@ classdef Jacobi < PolynomialChaos.Base
 
       assert(order >= 0);
 
-      basis(1) = sympoly(1);
+      basis = sym(zeros(1, order + 1));
+
+      basis(1) = sym(1);
       if order == 0, return; end
 
       alpha = this.alpha;
@@ -56,9 +58,7 @@ classdef Jacobi < PolynomialChaos.Base
       end
     end
 
-    function [ nodes, weights ] = constructQuadrature( ...
-      this, polynomialOrder, varargin)
-
+    function quadrature = constructQuadrature(this, polynomialOrder, varargin)
       %
       % NOTE: An n-order Gaussian quadrature rule integrates
       % polynomials of order (2 * n - 1) exactly. We want to have
@@ -70,9 +70,6 @@ classdef Jacobi < PolynomialChaos.Base
         'dimensionCount', this.inputCount, ...
         'alpha', this.alpha, 'beta', this.beta, ...
         'a', this.a, 'b', this.b, varargin{:});
-
-      nodes = quadrature.nodes;
-      weights = quadrature.weights;
     end
 
     function norm = computeNormalizationConstant(this, i, indexes)

@@ -13,9 +13,9 @@ classdef Hermite < PolynomialChaos.Base
     function basis = constructUnivariateBasis(~, x, order)
       assert(order >= 0);
 
-      basis = sympoly(zeros(1, order + 1));
+      basis = sym(zeros(1, order + 1));
 
-      basis(1) = sympoly(1);
+      basis(1) = sym(1);
       if order == 0, return; end
 
       basis(2) = x;
@@ -26,9 +26,7 @@ classdef Hermite < PolynomialChaos.Base
       end
     end
 
-    function [ nodes, weights ] = constructQuadrature( ...
-      this, polynomialOrder, varargin)
-
+    function quadrature = constructQuadrature(this, polynomialOrder, varargin)
       %
       % NOTE: An n-order Gaussian quadrature rule integrates
       % polynomials of order (2 * n - 1) exactly. We want to have
@@ -37,11 +35,7 @@ classdef Hermite < PolynomialChaos.Base
       %
       quadrature = Quadrature.GaussHermite( ...
         'order', polynomialOrder + 1, ...
-        'dimensionCount', this.inputCount, ...
-        varargin{:});
-
-      nodes = quadrature.nodes;
-      weights = quadrature.weights;
+        'dimensionCount', this.inputCount, varargin{:});
     end
 
     function norm = computeNormalizationConstant(~, i, indexes)
