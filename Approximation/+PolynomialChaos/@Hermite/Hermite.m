@@ -44,8 +44,8 @@ classdef Hermite < PolynomialChaos.Base
       weights = quadrature.weights;
     end
 
-    function norm = computeNormalizationConstant(~, i, index)
-      n = index(i, :) - 1;
+    function norm = computeNormalizationConstant(~, i, indexes)
+      n = double(indexes(i, :)) - 1;
 
       %
       % NOTE: The original probabilists' Hermite polynomials have

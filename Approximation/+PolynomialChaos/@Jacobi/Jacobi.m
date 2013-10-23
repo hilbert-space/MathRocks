@@ -75,14 +75,14 @@ classdef Jacobi < PolynomialChaos.Base
       weights = quadrature.weights;
     end
 
-    function norm = computeNormalizationConstant(this, i, index)
+    function norm = computeNormalizationConstant(this, i, indexes)
       %
       % Reference:
       %
       % http://en.wikipedia.org/wiki/Jacobi_polynomials#Basic_properties
       %
 
-      n = index(i, :) - 1;
+      n = double(indexes(i, :)) - 1;
 
       alpha = this.alpha;
       beta_ = this.beta;

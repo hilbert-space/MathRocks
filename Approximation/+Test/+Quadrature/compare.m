@@ -23,10 +23,10 @@ function compare(varargin)
   Plot.name(rule);
 
   subplot(1, 2, 1);
-  Plot.quadrature(quadrature1.nodes, quadrature1.weights, 'figure', false);
-  Plot.title('Tensor with %d nodes', quadrature1.nodeCount);
+  plot(quadrature1, 'figure', false);
+  Plot.title('Tensor-product quadrature (%d nodes)', quadrature1.nodeCount);
 
   subplot(1, 2, 2);
-  Plot.quadrature(quadrature2.nodes, quadrature2.weights, 'figure', false);
-  Plot.title('Sparse with %d nodes', quadrature2.nodeCount);
+  plot(quadrature2, 'figure', false);
+  Plot.title('Sparse-grid quadrature (%d nodes)', quadrature2.nodeCount);
 end

@@ -11,15 +11,14 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
   end
 
   %
-  % Compute the multi-indices.
+  % Compute the multi-indexes.
   %
-  index = Utils.constructMultiIndex( ...
-    inputCount, order, [], options.method) + 1;
+  indexes = Utils.indexTotalOrderSpace(inputCount, order);
 
   %
   % Construct the corresponding multivariate basis functions.
   %
-  basis = this.constructBasis(x, order, index);
+  basis = this.constructBasis(x, order, indexes);
   termCount = length(basis);
 
   %
@@ -40,7 +39,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
 
   for i = 1:termCount
     f = Utils.toFunction(basis(i), x, 'columns');
-    norm(i) = this.computeNormalizationConstant(i, index);
+    norm(i) = this.computeNormalizationConstant(i, indexes);
     projection(i, :) = f(nodes) .* weights / norm(i);
   end
 

@@ -24,7 +24,7 @@ function [ nodesND, weightsND ] = smolyak(rule, order, dimensionCount, varargin)
   for q = max(0, level - dimensionCount + 1):level
     coefficient = (-1)^(level - q) * nchoosek(dimensionCount - 1, level - q);
 
-    indexes = index(dimensionCount, q);
+    indexes = Utils.indexSparseLevel(dimensionCount, q);
     counts = prod(counts1D(indexes), 2);
 
     addition = nodeCount + sum(counts) - maximalNodeCount;
@@ -76,44 +76,4 @@ function [ nodesND, weightsND ] = smolyak(rule, order, dimensionCount, varargin)
   weightsND = weightsND(J);
 
   weightsND = weightsND / sum(weightsND);
-end
-
-function indexes = index(dimensionCount, q)
-  maximalIndexCount = q * dimensionCount;
-
-  sequence = zeros(1, dimensionCount);
-  sequence(1) = q;
-
-  indexes = zeros(maximalIndexCount, dimensionCount);
-  indexes(1, :) = sequence;
-  indexCount = 1;
-
-  c = 1;
-  while sequence(dimensionCount) < q
-    if c == dimensionCount
-      for i = (c - 1):-1:1
-        c = i;
-        if sequence(i) ~= 0, break; end
-      end
-    end
-
-    sequence(c) = sequence(c) - 1;
-    c = c + 1;
-    sequence(c) = q - sum(sequence(1:(c - 1)));
-
-    if c < dimensionCount
-      sequence((c + 1):dimensionCount) = zeros(1, dimensionCount - c);
-    end
-
-    indexCount = indexCount + 1;
-
-    if indexCount > maximalIndexCount
-      indexes = [ indexes; zeros(maximalIndexCount, dimensionCount) ];
-      maximalIndexCount = 2 * maximalIndexCount;
-    end
-
-    indexes(indexCount, :) = sequence;
-  end
-
-  indexes = indexes(1:indexCount, :) + 1;
 end

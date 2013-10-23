@@ -1,4 +1,4 @@
-function Basis = constructBasis(this, x, order, index)
+function Basis = constructBasis(this, x, order, indexes)
   inputCount = length(x);
 
   %
@@ -23,13 +23,13 @@ function Basis = constructBasis(this, x, order, index)
     basis(i, :) = subs(basis(1, :), x(1), x(i));
   end
 
-  termCount = size(index, 1);
+  termCount = size(indexes, 1);
 
   Basis = sympoly(zeros(1, termCount));
   for i = 1:termCount
-    Basis(i) = basis(1, index(i, 1));
+    Basis(i) = basis(1, indexes(i, 1));
     for j = 2:inputCount
-      Basis(i) = Basis(i) * basis(j, index(i, j));
+      Basis(i) = Basis(i) * basis(j, indexes(i, j));
     end
   end
 end
