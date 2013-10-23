@@ -2,12 +2,11 @@ function correlation = correlate(this, variables, options)
   dimensionCount = variables.dimensionCount;
   correlation = eye(dimensionCount);
 
-  qd = Quadrature('method', 'tensor', 'dimensionCount', 2, ...
-     'ruleName', 'GaussHermiteHW', 'order', 5, ...
-     options.get('quadratureOptions', []));
-
-  nodes = qd.nodes;
-  weights = qd.weights;
+  quadrature = Quadrature.GaussHermite( ...
+    'method', 'tensor', 'order', 5, 'dimensionCount', 2, ...
+    options.get('quadratureOptions', []));
+  nodes = quadrature.nodes;
+  weights = quadrature.weights;
 
   distribution = this.gaussianDistribution;
 

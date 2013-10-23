@@ -6,12 +6,14 @@ classdef Hermite < PolynomialChaos.Base
   end
 
   methods (Access = 'protected')
-    function distribution = configure(this, options)
+    function distribution = configure(~, ~)
       distribution = ProbabilityDistribution.Gaussian;
     end
 
-    function basis = constructUnivariateBasis(this, x, order)
+    function basis = constructUnivariateBasis(~, x, order)
       assert(order >= 0);
+
+      basis = sympoly(zeros(1, order + 1));
 
       basis(1) = sympoly(1);
       if order == 0, return; end
@@ -25,25 +27,24 @@ classdef Hermite < PolynomialChaos.Base
     end
 
     function [ nodes, weights ] = constructQuadrature( ...
-      this, polynomialOrder, options)
+      this, polynomialOrder, varargin)
 
       %
-      % NOTE: A n-order Gaussian quadrature rule integrates
+      % NOTE: An n-order Gaussian quadrature rule integrates
       % polynomials of order (2 * n - 1) exactly. We want to have
       % exactness for polynomials of order (2 * n) where n is the
       % order of polynomial chaos expansions. So, +1 here.
       %
-      quadrature = Quadrature( ...
+      quadrature = Quadrature.GaussHermite( ...
         'order', polynomialOrder + 1, ...
         'dimensionCount', this.inputCount, ...
-        'ruleName', 'GaussHermiteHW', ...
-        options);
+        varargin{:});
 
       nodes = quadrature.nodes;
       weights = quadrature.weights;
     end
 
-    function norm = computeNormalizationConstant(this, i, index)
+    function norm = computeNormalizationConstant(~, i, index)
       n = index(i, :) - 1;
 
       %

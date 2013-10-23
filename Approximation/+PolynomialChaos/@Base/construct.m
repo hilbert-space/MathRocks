@@ -26,7 +26,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = construct(thi
   % Now, the quadrature rule.
   %
   [ nodes, weights ] = this.constructQuadrature( ...
-    order, options.quadratureOptions);
+    order, options.get('quadratureOptions', []));
   nodeCount = size(nodes, 1);
 
   %
