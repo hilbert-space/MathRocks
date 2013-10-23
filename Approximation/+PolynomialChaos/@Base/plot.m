@@ -40,10 +40,8 @@ function plotBasis(this)
   %
   % Construct the RVs.
   %
-  x = sympoly(zeros(1, inputCount));
-  for i = 1:inputCount
-    x(i) = sympoly([ 'x', num2str(i) ]);
-  end
+  x = sym('x%d', [ 1, inputCount ]);
+  assume(x, 'real');
 
   index = 1 + (0:order).';
 
@@ -56,11 +54,11 @@ function plotBasis(this)
   Plot.figure(1000, 600);
 
   nodes = this.distribution.icdf( ...
-    linspace(sqrt(eps), 1 - sqrt(eps)));
+    linspace(sqrt(eps), 1 - sqrt(eps)).');
 
   labels = cell(1, termCount);
   for i = 1:termCount
-    f = Utils.toFunction(basis(i), x, 'columns');
+    f = Utils.pointwiseFunction(basis(i), x);
     values = f(nodes);
     if length(values) == 1
       values = ones(size(nodes)) * values;

@@ -7,13 +7,19 @@ function indexes = indexTotalOrderSpace(dimensionCount, totalOrder)
   %
   % Level 0
   %
-  if totalOrder == 0, return; end
+  if totalOrder == 0
+    indexes = indexes + 1;
+    return;
+  end
 
   %
   % Level 1
   %
   indexes((1 + 1):(1 + dimensionCount), :) = eye(dimensionCount, 'uint8');
-  if totalOrder == 1, return; end
+  if totalOrder == 1
+    indexes = indexes + 1;
+    return;
+  end
 
   indexCount = 1 + dimensionCount;
 
