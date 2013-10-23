@@ -36,16 +36,19 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   [ rvPower, rvMap ] = Utils.decomposePolynomial(sum(a .* basis), x, a);
   assert(size(rvPower, 1) == termCount);
 
+  rvMap = sparse(rvMap);
+
   %
   % The evaluation matrix
   %
   % (# of quadrature nodes) x (# of polynomial terms)
   %
-  rvProduct = zeros(nodeCount, termCount);
+  rvProduct = ones(nodeCount, termCount);
 
   for i = 1:termCount
-    rvProduct(:, i) = prod(realpow( ...
-      nodes, repmat(rvPower(i, :), [ nodeCount, 1 ])), 2);
+    for j = find(rvPower(i, :) > 0)
+      rvProduct(:, i) = rvProduct(:, i) .* nodes(:, j).^rvPower(i, j);
+    end
   end
 
   evaluation = rvProduct * rvMap;

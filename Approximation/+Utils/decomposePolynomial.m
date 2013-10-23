@@ -29,10 +29,9 @@ function [ P, M ] = decomposePolynomial(polynomial, x, a)
       end
       P(i, n) = p;
     end
-    [ c, v ] = coeffs(coefficients(i));
-    for j = 1:length(c)
-      n = char(v(j));
-      M(i, str2double(n(2:end))) = double(c(j));
-    end
+
+    match = regexp(char(coefficients(i)), 'a(\d+)', 'tokens');
+    I = cellfun(@(m) str2double(m{1}), match);
+    M(i, I) = double(coeffs(coefficients(i), a(fliplr(I))));
   end
 end
