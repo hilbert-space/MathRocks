@@ -34,21 +34,15 @@ function plotCoefficients(coefficients)
 end
 
 function plotBasis(this)
-  inputCount = this.inputCount;
-  order = this.order;
-
   %
   % Construct the RVs.
   %
-  x = sym('x%d', [ 1, inputCount ]);
-  assume(x, 'real');
-
-  index = 1 + (0:order).';
+  x = sym('x', 'real');
 
   %
   % Construct the corresponding multivariate basis functions.
   %
-  basis = this.constructBasis(x, order, index);
+  basis = this.constructBasis(x, this.order);
   termCount = length(basis);
 
   Plot.figure(1000, 600);
@@ -58,10 +52,11 @@ function plotBasis(this)
 
   labels = cell(1, termCount);
   for i = 1:termCount
-    f = Utils.pointwiseFunction(basis(i), x);
-    values = f(nodes);
-    if length(values) == 1
-      values = ones(size(nodes)) * values;
+    f = matlabFunction(basis(i));
+    if nargin(f) == 0
+      values = ones(size(nodes)) * f();
+    else
+      values = f(nodes);
     end
     line(nodes, values, 'Color', Color.pick(i), 'LineWidth', 1.5);
     labels{i} = sprintf('\\Phi_{%d}', i);
