@@ -24,10 +24,15 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   projection = zeros(termCount, nodeCount);
   norm = zeros(termCount, 1);
 
+  function result_ = evaluateBasisAtNodes(i_)
+    f_ = regexprep(char(basis(i_)), '([\^\*\/])', '.$1');
+    f_ = regexprep(f_, '\<x(\d+)\>', 'nodes(:,$1)');
+    result_ = eval(f_);
+  end
+
   for i = 1:termCount
-    f = Utils.pointwiseFunction(basis(i), x);
     norm(i) = this.computeNormalizationConstant(i, indexes);
-    projection(i, :) = f(nodes) .* weights / norm(i);
+    projection(i, :) = evaluateBasisAtNodes(i) .* weights / norm(i);
   end
 
   a = sym('a%d', [ 1, termCount ]);
