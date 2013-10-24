@@ -6,14 +6,8 @@ function [ Yij, offsets, counts, Li, Mi ] = computeNodes(this, I)
 
   Yij = 0.5 * ones(sum(counts), dimensionCount);
 
-  if nargout > 2
-    Li = zeros(indexCount, dimensionCount);
-    Mi = zeros(indexCount, dimensionCount, 'uint32');
-  end
-
   for i = 1:indexCount
     J = I(i, :);
-
     K = find(J > 1);
     switch numel(K)
     case 0
@@ -22,10 +16,10 @@ function [ Yij, offsets, counts, Li, Mi ] = computeNodes(this, I)
     otherwise
       Yij((offsets(i) + 1):(offsets(i) + counts(i)), K) = Utils.tensor(this.Yij(J(K)));
     end
-
-    if nargout < 3, continue; end
-
-    Li(i, :) = this.Li(J);
-    Mi(i, :) = this.Mi(J);
   end
+
+  if nargout < 3, return; end
+
+  Li = reshape(this.Li(I), size(I));
+  Mi = reshape(this.Mi(I), size(I));
 end

@@ -1,16 +1,16 @@
 function sweepCrossExpectation(I, assess)
   if nargin < 2, assess = false; end
 
-  basis = Basis.Local.NewtonCotesHat;
+  basis = HierarchicalBasis.NewtonCotesHat.Local;
 
-  levels = zeros(0, 1);
-  orders = zeros(0, 1);
+  levels = zeros(1, 0);
+  orders = zeros(1, 0);
 
   for i = I
     J = basis.computeLevelOrders(i);
     count = length(J);
-    levels = [ levels; i * ones(count, 1) ];
-    orders = [ orders; sort(J) ];
+    levels = [ levels, i * ones(1, count) ];
+    orders = [ orders, sort(J) ];
   end
 
   count = length(levels);

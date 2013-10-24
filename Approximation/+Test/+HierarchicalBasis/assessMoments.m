@@ -1,5 +1,5 @@
 function assessMoments(i, j)
-  basis = Basis.Local.NewtonCotesHat;
+  basis = HierarchicalBasis.NewtonCotesHat.Local;
 
   if nargin > 0
     validate(basis, i, j);

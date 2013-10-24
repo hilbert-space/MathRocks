@@ -1,14 +1,14 @@
-function variance = computeVariance(this, levels, orders, surpluses)
-  expectation = this.computeBasisExpectation(levels);
+function variance = computeVariance(this, I, J, surpluses)
+  expectation = this.computeExpectation(I);
 
   result1 = sum(bsxfun(@times, surpluses.^2, ...
-    this.computeBasisSecondRawMoment(levels) - expectation.^2), 1);
+    this.computeSecondRawMoment(I) - expectation.^2), 1);
 
   %
   % The summation in result2 is over all k < l; therefore,
   % we need to sum over all combinations of two elements.
   %
-  P = Utils.combnk(size(levels, 1), 2);
+  P = Utils.combnk(size(I, 1), 2);
   P1 = P(:, 1);
   P2 = P(:, 2);
 
@@ -22,13 +22,13 @@ function variance = computeVariance(this, levels, orders, surpluses)
   % relevant for those basis functions that have intersections.
   % Let us find them.
   %
-  [ Yij, Li ] = this.computeNodes(levels, orders);
+  [ Yij, Li ] = this.computeNodes(I, J);
   L = max(0, Yij - Li);
   R = min(1, Yij + Li);
   Z = all(L(P1, :) < R(P2, :) & L(P2, :) < R(P1, :), 2);
 
-  result2(Z) = result2(Z) + this.computeBasisCrossExpectation( ...
-    levels(P1(Z), :), orders(P1(Z), :), levels(P2(Z), :), orders(P2(Z), :));
+  result2(Z) = result2(Z) + this.computeCrossExpectation( ...
+    I(P1(Z), :), J(P1(Z), :), I(P2(Z), :), J(P2(Z), :));
 
   Z = find(result2 ~= 0);
 

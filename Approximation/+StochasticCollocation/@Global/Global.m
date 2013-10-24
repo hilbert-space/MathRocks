@@ -8,7 +8,7 @@ classdef Global < StochasticCollocation.Base
     function this = Global(varargin)
       options = Options(varargin{:});
       this = this@StochasticCollocation.Base(options);
-      this.basis = Basis.Global.NewtonCotesHat( ...
+      this.basis = HierarchicalBasis.NewtonCotesHat.Global( ...
         'maximalLevel', this.maximalLevel);
       this.adaptivityDegree = options.get('adaptivityDegree', 0.9);
     end

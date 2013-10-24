@@ -6,7 +6,7 @@ classdef Local < StochasticCollocation.Base
   methods
     function this = Local(varargin)
       this = this@StochasticCollocation.Base(varargin{:});
-      this.basis = Basis.Local.NewtonCotesHat;
+      this.basis = HierarchicalBasis.NewtonCotesHat.Local;
     end
 
     function stats = analyze(this, output)

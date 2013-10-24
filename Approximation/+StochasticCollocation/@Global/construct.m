@@ -53,8 +53,6 @@ function output = construct(this, f, outputCount)
   active(1) = true;
   scores(1, 1) = sum(indexes(1, :));
 
-  basis.ensureLevel(level);
-
   surpluses(1, :) = f(basis.computeNodes(indexes(1, :)));
   offsets(1) = 0;
   counts(1) = 1;
@@ -158,7 +156,6 @@ function output = construct(this, f, outputCount)
     %
     % Compute the nodes of the new indexes.
     %
-    basis.ensureLevel(level);
     [ newNodes, newOffsets, newCounts ] = basis.computeNodes(indexes(J, :));
     newNodeCount = size(newNodes, 1);
 

@@ -1,4 +1,4 @@
-function result = computeBasisCrossExpectation(~, I1, J1, I2, J2)
+function result = computeCrossExpectation(~, I1, J1, I2, J2)
   [ II, K ] = sort([ I1(:), I2(:) ], 2);
   JJ = [ J1(:), J2(:) ];
   K = K(:, 1) == 2;
@@ -11,8 +11,6 @@ function result = computeBasisCrossExpectation(~, I1, J1, I2, J2)
 
   result = zeros(count, 1);
 
-  %
-  % Second raw moments (see deriveSecondRawMoment).
   %
   % int_0^1 (1 - (mi1 - 1) * |y - yij1|)^2 dy
   %

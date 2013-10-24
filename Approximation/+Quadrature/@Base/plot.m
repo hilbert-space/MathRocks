@@ -18,4 +18,6 @@ function plot(this, varargin)
   otherwise
     assert(false);
   end
+
+  grid on;
 end

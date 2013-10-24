@@ -1,5 +1,5 @@
 function assessCovariance(i1, j1, i2, j2)
-  basis = Basis.Local.NewtonCotesHat;
+  basis = HierarchicalBasis.NewtonCotesHat.Local;
 
   validate(basis, i1, j1);
   validate(basis, i2, j2);
