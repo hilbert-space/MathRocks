@@ -1,7 +1,7 @@
-classdef Base < Basis.Base
+classdef NewtonCotesHat < Basis.Base.Base
   methods
-    function this = Base(varargin)
-      this = this@Basis.Base(varargin{:});
+    function this = NewtonCotesHat(varargin)
+      this = this@Basis.Base.Base(varargin{:});
     end
   end
 

@@ -1,12 +1,12 @@
-classdef SpaceAdaptive < SparseGrid.Base
+classdef Local < StochasticCollocation.Base
   properties (SetAccess = 'private')
     basis
   end
 
   methods
-    function this = SpaceAdaptive(varargin)
-      this = this@SparseGrid.Base(varargin{:});
-      this.basis = Basis.Hat.SpaceWise;
+    function this = Local(varargin)
+      this = this@StochasticCollocation.Base(varargin{:});
+      this.basis = Basis.Local.NewtonCotesHat;
     end
 
     function stats = analyze(this, output)

@@ -1,14 +1,15 @@
-classdef DimensionAdaptive < SparseGrid.Base
+classdef Global < StochasticCollocation.Base
   properties (SetAccess = 'private')
     basis
     adaptivityDegree
   end
 
   methods
-    function this = DimensionAdaptive(varargin)
+    function this = Global(varargin)
       options = Options(varargin{:});
-      this = this@SparseGrid.Base(options);
-      this.basis = Basis.Hat.DimensionWise('maximalLevel', this.maximalLevel);
+      this = this@StochasticCollocation.Base(options);
+      this.basis = Basis.Global.NewtonCotesHat( ...
+        'maximalLevel', this.maximalLevel);
       this.adaptivityDegree = options.get('adaptivityDegree', 0.9);
     end
 

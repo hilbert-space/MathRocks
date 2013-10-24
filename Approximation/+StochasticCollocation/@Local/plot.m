@@ -10,6 +10,5 @@ function plot(this, output)
     k = k + levelNodeCount(i);
   end
 
-  plot@SparseGrid.Base(this, nodes, mapping);
-  Plot.title('Space-adaptive sparse grid');
+  plot@StochasticCollocation.Base(this, nodes, mapping);
 end

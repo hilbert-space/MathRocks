@@ -4,8 +4,7 @@ function output = construct(this, f, outputCount)
   basis = this.basis;
 
   if this.verbose
-    verbose = @(text, varargin) ...
-      fprintf([ 'SparseGrid: ', text ], varargin{:});
+    verbose = @(text, varargin) fprintf(text, varargin{:});
   else
     verbose = @(varargin) [];
   end
@@ -61,7 +60,7 @@ function output = construct(this, f, outputCount)
     level = level + 1;
     levelNodeCount(level) = activeCount;
 
-    verbose('level %2d, passive %6d, active %6d, total %6d\n', ...
+    verbose('Level %2d, passive %6d, active %6d, total %6d\n', ...
       level, passiveCount, activeCount, nodeCount);
 
     if nodeCount >= maximalNodeCount

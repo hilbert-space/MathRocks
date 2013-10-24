@@ -1,5 +1,5 @@
 function assessCovariance(i1, j1, i2, j2)
-  basis = Basis.Hat.SpaceWise;
+  basis = Basis.Local.NewtonCotesHat;
 
   validate(basis, i1, j1);
   validate(basis, i2, j2);

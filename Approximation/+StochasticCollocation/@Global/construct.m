@@ -2,8 +2,7 @@ function output = construct(this, f, outputCount)
   basis = this.basis;
 
   if this.verbose
-    verbose = @(text, varargin) ...
-      fprintf([ 'SparseGrid: ', text ], varargin{:});
+    verbose = @(text, varargin) fprintf(text, varargin{:});
   else
     verbose = @(varargin) [];
   end
@@ -71,7 +70,7 @@ function output = construct(this, f, outputCount)
   while true
     I = find(active);
 
-    verbose('level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
+    verbose('Level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
       level, indexCount, numel(I), nodeCount);
 
     if all(max(errors(I, :), [], 1) < max(absoluteTolerance, ...

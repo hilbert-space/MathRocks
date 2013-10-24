@@ -1,4 +1,7 @@
-classdef DimensionWise < Basis.Hat.Base
+classdef NewtonCotesHat < ...
+  Basis.Base.NewtonCotesHat & ...
+  Basis.Global.Base
+
   properties (SetAccess = 'private')
     maximalLevel
     level
@@ -9,9 +12,11 @@ classdef DimensionWise < Basis.Hat.Base
   end
 
   methods
-    function this = DimensionWise(varargin)
+    function this = NewtonCotesHat(varargin)
       options = Options(varargin{:});
-      this = this@Basis.Hat.Base(options);
+
+      this = this@Basis.Base.NewtonCotesHat(options);
+      this = this@Basis.Global.Base(options);
 
       this.maximalLevel = min(32, options.maximalLevel);
       this.level = 0;

@@ -1,7 +1,7 @@
 function sweepCrossExpectation(I, assess)
   if nargin < 2, assess = false; end
 
-  basis = Basis.Hat.SpaceWise;
+  basis = Basis.Local.NewtonCotesHat;
 
   levels = zeros(0, 1);
   orders = zeros(0, 1);
