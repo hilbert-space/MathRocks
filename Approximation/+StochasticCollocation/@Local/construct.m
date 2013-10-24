@@ -32,8 +32,8 @@ function output = construct(this, f, outputCount)
   %
   bufferSize = 200 * inputCount;
 
-  levels = zeros(bufferSize, inputCount);
-  orders = zeros(bufferSize, inputCount);
+  levels = zeros(bufferSize, inputCount, 'uint8');
+  orders = zeros(bufferSize, inputCount, 'uint32');
 
   surpluses = zeros(bufferSize, outputCount);
 
@@ -82,9 +82,15 @@ function output = construct(this, f, outputCount)
     if passiveCount == 0
       surpluses(activeRange, :) = values;
     else
-      surpluses(activeRange, :) = values - basis.evaluate( ...
-        nodes, levels(passiveRange, :), orders(passiveRange, :), ...
-        surpluses(passiveRange, :));
+      for i = 1:activeCount
+        j = activeRange(i);
+        K = find(sum(bsxfun(@minus, ...
+          levels(passiveRange, :), levels(j, :)), 2) == 0);
+
+        surpluses(j, :) = values(i, :) - basis.evaluate( ...
+          nodes(i, :), levels(passiveRange(K), :), orders(passiveRange(K), :), ...
+          surpluses(passiveRange(K), :));
+      end
     end
 
     %
@@ -159,8 +165,8 @@ function output = construct(this, f, outputCount)
     if count_ <= 0, return; end
     count_ = max(count_, bufferSize);
 
-    levels = [ levels; zeros(count_, inputCount) ];
-    orders = [ orders; zeros(count_, inputCount) ];
+    levels = [ levels; zeros(count_, inputCount, 'uint8') ];
+    orders = [ orders; zeros(count_, inputCount, 'uint32') ];
 
     surpluses = [ surpluses; zeros(count_, outputCount) ];
 
