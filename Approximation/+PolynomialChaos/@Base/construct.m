@@ -5,9 +5,16 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   assume(x, 'real');
 
   indexes = Utils.indexTotalOrderSpace(inputCount, order);
+  termCount = size(indexes, 1);
 
-  basis = this.constructBasis(x, order, indexes);
-  termCount = length(basis);
+  basis1D = this.constructUnivariateBasis(x(1), order);
+  assert(length(basis1D) == order + 1);
+
+  basisND = basis1D(indexes(:, 1));
+  for i = 2:inputCount
+    basis1D = subs(basis1D, x(i - 1), x(i));
+    basisND = basisND .* basis1D(indexes(:, i));
+  end
 
   quadrature = this.constructQuadrature(order, ...
     options.get('quadratureOptions', []));
@@ -25,7 +32,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   norm = zeros(termCount, 1);
 
   function result_ = evaluateBasisAtNodes(i_)
-    f_ = regexprep(char(basis(i_)), '([\^\*\/])', '.$1');
+    f_ = regexprep(char(basisND(i_)), '([\^\*\/])', '.$1');
     f_ = regexprep(f_, '\<x(\d+)\>', 'nodes(:,$1)');
     result_ = eval(f_);
   end
@@ -38,7 +45,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   a = sym('a%d', [ 1, termCount ]);
   assume(a, 'real');
 
-  [ rvPower, rvMap ] = Utils.decomposePolynomial(sum(a .* basis), x, a);
+  [ rvPower, rvMap ] = Utils.decomposePolynomial(sum(a .* basisND), x, a);
   assert(size(rvPower, 1) == termCount);
 
   rvMap = sparse(rvMap);
