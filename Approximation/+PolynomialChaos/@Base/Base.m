@@ -88,13 +88,12 @@ classdef Base < handle
   end
 
   methods (Abstract, Access = 'protected')
-    basis = constructUnivariateBasis(this, x, order)
+    basis = constructBasis(this, x, order)
     [ nodes, weights ] = constructQuadrature(this, options)
     norm = computeNormalizationConstant(this, i, indexes)
   end
 
   methods (Access = 'private')
-    basis = constructBasis(this, x, order, indexes)
     [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
       construct(this, order, inputCount, varargin)
   end

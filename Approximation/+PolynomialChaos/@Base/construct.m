@@ -7,7 +7,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   indexes = Utils.indexTotalOrderSpace(inputCount, order);
   termCount = size(indexes, 1);
 
-  basis1D = this.constructUnivariateBasis(x(1), order);
+  basis1D = this.constructBasis(x(1), order);
   assert(length(basis1D) == order + 1);
 
   basisND = basis1D(indexes(:, 1));

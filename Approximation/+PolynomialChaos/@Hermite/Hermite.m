@@ -10,7 +10,7 @@ classdef Hermite < PolynomialChaos.Base
       distribution = ProbabilityDistribution.Gaussian;
     end
 
-    function basis = constructUnivariateBasis(~, x, order)
+    function basis = constructBasis(~, x, order)
       assert(order >= 0);
 
       basis = sym(zeros(1, order + 1));

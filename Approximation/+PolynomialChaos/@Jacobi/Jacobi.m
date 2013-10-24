@@ -29,7 +29,7 @@ classdef Jacobi < PolynomialChaos.Base
         'a', this.a, 'b', this.b);
     end
 
-    function basis = constructUnivariateBasis(this, x, order)
+    function basis = constructBasis(this, x, order)
       %
       % Reference:
       %
