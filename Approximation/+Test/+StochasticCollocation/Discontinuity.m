@@ -1,4 +1,4 @@
-function assessDiscontinuity(varargin)
+function Discontinuity(varargin)
   setup;
 
   odeOptions = odeset( ...

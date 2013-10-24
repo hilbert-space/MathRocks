@@ -1,4 +1,4 @@
-function assessTrigonometric(varargin)
+function Trigonometric(varargin)
   %
   % Reference:
   %

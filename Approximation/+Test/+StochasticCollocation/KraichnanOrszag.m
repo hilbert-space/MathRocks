@@ -1,4 +1,4 @@
-function assessKraichnanOrszag(varargin)
+function KraichnanOrszag(varargin)
   setup;
 
   sampleCount = 1e2;

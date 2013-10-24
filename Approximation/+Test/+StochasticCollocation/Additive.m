@@ -1,4 +1,4 @@
-function assessAdditive(varargin)
+function Additive(varargin)
   setup;
   inputCount = 2;
   assess(@(u) sum(u.^2, 2), ...

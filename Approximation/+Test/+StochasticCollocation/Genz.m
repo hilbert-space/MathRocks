@@ -1,4 +1,4 @@
-function assessGenz(varargin)
+function Genz(varargin)
   setup;
 
   dimensionCount = 2;

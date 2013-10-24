@@ -1,6 +1,4 @@
 function output = construct(this, f, outputCount)
-  zeros = @uninit;
-
   basis = this.basis;
 
   if this.verbose
