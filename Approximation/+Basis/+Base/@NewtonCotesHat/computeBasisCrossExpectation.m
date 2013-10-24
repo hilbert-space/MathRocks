@@ -5,6 +5,8 @@ function result = computeBasisCrossExpectation(~, I1, J1, I2, J2)
   JJ(K, :) = fliplr(JJ(K, :));
 
   [ IJ, ~, K ] = unique([ II, JJ ], 'rows');
+  IJ = double(IJ);
+
   count = size(IJ, 1);
 
   result = zeros(count, 1);

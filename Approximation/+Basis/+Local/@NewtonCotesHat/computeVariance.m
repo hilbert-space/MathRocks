@@ -1,7 +1,4 @@
 function variance = computeVariance(this, levels, orders, surpluses)
-  variance = zeros(1, size(surpluses, 2));
-  return;
-
   expectation = this.computeBasisExpectation(levels);
 
   result1 = sum(bsxfun(@times, surpluses.^2, ...

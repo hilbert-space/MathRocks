@@ -2,8 +2,8 @@ function [ Ichild, Jchild ] = computeChildren(~, Iparent, Jparent)
   [ parentCount, dimensionCount ] = size(Iparent);
   childCount = 2 * parentCount * dimensionCount - nnz(Iparent == 2);
 
-  Ichild = zeros(childCount, dimensionCount);
-  Jchild = zeros(childCount, dimensionCount);
+  Ichild = zeros(childCount, dimensionCount, 'uint8');
+  Jchild = zeros(childCount, dimensionCount, 'uint32');
 
   l = 0;
   for i = 1:parentCount

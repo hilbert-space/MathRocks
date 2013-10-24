@@ -82,13 +82,13 @@ function output = construct(this, f, outputCount)
     if passiveCount == 0
       surpluses(activeRange, :) = values;
     else
-      for i = 1:activeCount
-        j = activeRange(i);
-        K = find(sum(bsxfun(@minus, ...
-          levels(passiveRange, :), levels(j, :)), 2) == 0);
-
-        surpluses(j, :) = values(i, :) - basis.evaluate( ...
-          nodes(i, :), levels(passiveRange(K), :), orders(passiveRange(K), :), ...
+      [ uniqueLevels, ~, I ] = unique(levels(activeRange, :), 'rows');
+      for i = 1:size(uniqueLevels, 1)
+        J = I == i;
+        K = sum(bsxfun(@minus, levels(passiveRange, :), ...
+          uniqueLevels(i, :)), 2) == 0;
+        surpluses(activeRange(J), :) = values(J, :) - basis.evaluate( ...
+          nodes(J, :), levels(passiveRange(K), :), orders(passiveRange(K), :), ...
           surpluses(passiveRange(K), :));
       end
     end
