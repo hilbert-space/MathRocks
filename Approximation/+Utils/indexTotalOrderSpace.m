@@ -23,7 +23,7 @@ function indexes = indexTotalOrderSpace(dimensionCount, totalOrder)
 
   indexCount = 1 + dimensionCount;
 
-  p = zeros(totalOrder, dimensionCount, 'uint8');
+  p = zeros(totalOrder, dimensionCount, 'uint32');
   p(1, :) = 1;
 
   for order = 2:totalOrder

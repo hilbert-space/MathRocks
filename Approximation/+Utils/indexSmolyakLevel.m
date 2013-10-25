@@ -1,4 +1,4 @@
-function indexes = indexSparseLevel(dimensionCount, q)
+function indexes = indexSparseLevel(q, dimensionCount)
   assert(dimensionCount + q <= intmax('uint8'));
 
   maximalIndexCount = q * dimensionCount;

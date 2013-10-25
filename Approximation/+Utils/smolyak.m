@@ -24,7 +24,7 @@ function [ nodesND, weightsND ] = smolyak(rule, order, dimensionCount, varargin)
   for q = max(0, level - dimensionCount + 1):level
     coefficient = (-1)^(level - q) * nchoosek(dimensionCount - 1, level - q);
 
-    indexes = Utils.indexSparseLevel(dimensionCount, q);
+    indexes = Utils.indexSmolyakLevel(q, dimensionCount);
     counts = prod(counts1D(indexes), 2);
 
     addition = nodeCount + sum(counts) - maximalNodeCount;
