@@ -34,8 +34,8 @@ classdef Hermite < PolynomialChaos.Base
       % order of polynomial chaos expansions. So, +1 here.
       %
       quadrature = Quadrature.GaussHermite( ...
-        'order', polynomialOrder + 1, ...
-        'dimensionCount', this.inputCount, varargin{:});
+        'dimensionCount', this.inputCount, ...
+        'order', polynomialOrder + 1, varargin{:});
     end
 
     function norm = computeNormalizationConstant(~, i, indexes)

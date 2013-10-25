@@ -1,7 +1,7 @@
 classdef Base < handle
   properties (SetAccess = 'private')
-    order
     dimensionCount
+    order
     nodes
     weights
     nodeCount
@@ -11,8 +11,8 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      this.order = options.order;
       this.dimensionCount = options.dimensionCount;
+      this.order = options.order;
 
       filename = File.temporal([ String.join('_', ...
         class(this), DataHash(String(options))), '.mat' ]);
@@ -23,13 +23,13 @@ classdef Base < handle
         switch lower(options.get('method', 'adaptive'))
         case 'adaptive'
           [ nodes, weights ] = this.constructAdaptive( ...
-            this.order, this.dimensionCount, options);
+            this.dimensionCount, this.order, options);
         case 'tensor'
           [ nodes, weights ] = this.constructTensor( ...
-            this.order, this.dimensionCount, options);
+            this.dimensionCount, this.order, options);
         case 'sparse'
           [ nodes, weights ] = this.constructSparse( ...
-            this.order, this.dimensionCount, options);
+            this.dimensionCount, this.order, options);
         otherwise
           assert('false');
         end
@@ -48,10 +48,10 @@ classdef Base < handle
 
   methods (Access = 'private')
     function [ nodes, weights ] = constructAdaptive( ...
-      this, order, dimensionCount, options)
+      this, dimensionCount, order, options)
 
       [ nodes, weights ] = this.constructSparse( ...
-        order, dimensionCount, options);
+        dimensionCount, order, options);
 
       sparseNodeCount = length(weights);
       tensorNodeCount = order^dimensionCount;
@@ -59,11 +59,11 @@ classdef Base < handle
       if sparseNodeCount <= tensorNodeCount, return; end
 
       [ nodes, weights ] = this.constructTensor( ...
-        order, dimensionCount, options);
+        dimensionCount, order, options);
     end
 
     function [ nodes, weights ] = constructTensor( ...
-      this, order, dimensionCount, options)
+      this, dimensionCount, order, options)
 
       [ nodes, weights ] = this.rule(order, options);
 
@@ -72,11 +72,11 @@ classdef Base < handle
     end
 
     function [ nodes, weights ] = constructSparse( ...
-      this, order, dimensionCount, options)
+      this, dimensionCount, order, options)
 
       compute = @(order) this.rule(order, options);
 
-      [ nodes, weights ] = Utils.smolyak(compute, order, dimensionCount);
+      [ nodes, weights ] = Utils.smolyak(dimensionCount, compute, order);
     end
   end
 end

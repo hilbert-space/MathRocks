@@ -1,4 +1,4 @@
-function indexes = indexSparseLevel(q, dimensionCount)
+function indexes = indexSmolyakLevel(dimensionCount, q)
   assert(dimensionCount + q <= intmax('uint8'));
 
   maximalIndexCount = q * dimensionCount;

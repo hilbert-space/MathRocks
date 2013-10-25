@@ -1,10 +1,8 @@
-function [ nodesND, weightsND ] = smolyak(rule, order, dimensionCount, varargin)
+function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, order, varargin)
   %
-  % NOTE: The sparse grid will be exact for up to
-  % (2 * order - 1)-total-order polynomials.
+  % NOTE: When Gaussian quadratures are utilized, the sparse grid will be
+  % exact for polynomial with the total order up to (2 * order - 1).
   %
-  level = order - 1;
-
   epsilon = 1e-8;
   maximalNodeCount = 100 * order * dimensionCount;
 
@@ -21,10 +19,13 @@ function [ nodesND, weightsND ] = smolyak(rule, order, dimensionCount, varargin)
     counts1D(i) = length(weights1D{i});
   end
 
-  for q = max(0, level - dimensionCount + 1):level
-    coefficient = (-1)^(level - q) * nchoosek(dimensionCount - 1, level - q);
+  minq = max(0, order - dimensionCount);
+  maxq = order - 1;
 
-    indexes = Utils.indexSmolyakLevel(q, dimensionCount);
+  for q = minq:maxq
+    coefficient = (-1)^(maxq - q) * nchoosek(dimensionCount - 1, maxq - q);
+
+    indexes = Utils.indexSmolyakLevel(dimensionCount, q);
     counts = prod(counts1D(indexes), 2);
 
     addition = nodeCount + sum(counts) - maximalNodeCount;

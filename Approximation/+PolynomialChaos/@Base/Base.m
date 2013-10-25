@@ -2,9 +2,9 @@ classdef Base < handle
   properties (SetAccess = 'protected')
     distribution
 
+    inputCount
     order
 
-    inputCount
     nodeCount
     termCount
 
@@ -32,8 +32,8 @@ classdef Base < handle
       options = Options(varargin{:});
       this.distribution = this.configure(options);
 
-      this.order = options.order;
       this.inputCount = options.inputCount;
+      this.order = options.order;
 
       filename = File.temporal([ String.join('_', ...
         class(this), DataHash(String(options))), '.mat' ]);
@@ -42,7 +42,7 @@ classdef Base < handle
         load(filename);
       else
         [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-          this.construct(this.order, this.inputCount, options);
+          this.construct(this.inputCount, this.order, options);
         save(filename, 'nodes', 'norm', 'projection', 'evaluation', ...
           'rvPower', 'rvMap', '-v7.3');
       end
@@ -95,6 +95,6 @@ classdef Base < handle
 
   methods (Access = 'private')
     [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-      construct(this, order, inputCount, varargin)
+      construct(this, inputCount, order, varargin)
   end
 end

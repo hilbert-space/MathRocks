@@ -1,5 +1,5 @@
 function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-  construct(this, order, inputCount, options)
+  construct(this, inputCount, order, options)
 
   x = sym('x%d', [ 1, inputCount ]);
   assume(x, 'real');
