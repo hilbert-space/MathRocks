@@ -1,9 +1,12 @@
-function plot(this, output)
-  if nargin > 1
+function plot(this, output, basis)
+  if nargin < 2, output = []; end
+  if nargin < 3, basis = true; end
+
+  if ~isempty(output)
     plotCoefficients(output.coefficients);
   end
 
-  if this.inputCount == 1
+  if basis && this.inputCount == 1
     plotBasis(this);
   end
 end
@@ -66,7 +69,7 @@ function plotBasis(this)
   Plot.label('\zeta', '\Phi_i(\zeta)');
   Plot.legend(labels{:});
 
-  ylim([ -15, 15 ]);
+  axis tight;
 
   line(xlim, [ 0, 0 ], 'Color', 0.3 * [ 1 1 1 ], 'LineStyle', '--');
   line([ 0, 0 ], ylim, 'Color', 0.3 * [ 1 1 1 ], 'LineStyle', '--');

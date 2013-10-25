@@ -76,7 +76,7 @@ classdef Jacobi < PolynomialChaos.Base
       %
       % Reference:
       %
-      % http://en.wikipedia.org/wiki/Jacobi_polynomials#Basic_properties
+      % http://en.wikipedia.org/wiki/Jacobi_polynomials#Orthogonality
       %
 
       n = double(indexes(i, :)) - 1;

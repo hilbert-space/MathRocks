@@ -1,6 +1,6 @@
 function assess(mcData, surrogate, surrogateOutput, surrogateData, distribution)
   display(surrogate);
-  plot(surrogate, surrogateOutput);
+  plot(surrogate, surrogateOutput, false);
 
   fprintf('Monte Carlo:\n');
   fprintf('  Expectation: %.4f\n', mean(mcData));
@@ -26,8 +26,8 @@ function assess(mcData, surrogate, surrogateOutput, surrogateData, distribution)
 
     set(h, 'erasemode', 'xor');
     set(h, 'erasemode', 'background');
-    legend('Monte Carlo', 'Polynomial Chaos', 'Exact');
+    legend('Monte Carlo', 'Polynomial chaos', 'Exact');
   else
-    legend('Monte Carlo', 'Polynomial Chaos');
+    legend('Monte Carlo', 'Polynomial chaos');
   end
 end
