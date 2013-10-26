@@ -1,31 +1,41 @@
-function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, order, varargin)
+function [ nodesND, weightsND ] = smolyak( ...
+  dimensionCount, rule, level, varargin)
+
   %
-  % NOTE: When Gaussian quadratures are utilized, the sparse grid will be
-  % exact for polynomial with the total order up to (2 * order - 1).
+  % NOTE 1: The level parameter start from zero. Due to the one-based
+  % indexation of MATLAB, we need to have +1 in some parts of the code
+  % given below.
   %
+  % NOTE 2: When Gaussian quadratures with the slow-linear growth rule
+  % are utilized, the sparse grid will be exact for polynomial with the
+  % total order up to (2 * level + 1).
+  %
+  % Reference:
+  %
+  % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
+  %
+
   epsilon = 1e-8;
-  maximalNodeCount = 100 * order * dimensionCount;
+  maximalNodeCount = 100 * dimensionCount;
 
   nodesND = zeros(maximalNodeCount, dimensionCount);
   weightsND = zeros(maximalNodeCount, 1);
   nodeCount = 0;
 
-  nodes1D = cell(1, order);
-  weights1D = cell(1, order);
-  counts1D = zeros(1, order);
+  nodes1D = cell(1, level + 1);
+  weights1D = cell(1, level + 1);
+  counts1D = zeros(1, level + 1);
 
-  for i = 1:order
-    [ nodes1D{i}, weights1D{i} ] = feval(rule, i, varargin{:});
+  for q = 0:level
+    i = q + 1;
+    [ nodes1D{i}, weights1D{i} ] = feval(rule, q, varargin{:});
     counts1D(i) = length(weights1D{i});
   end
 
-  minq = max(0, order - dimensionCount);
-  maxq = order - 1;
+  for q = max(0, level - dimensionCount + 1):level
+    coefficient = (-1)^(level - q) * nchoosek(dimensionCount - 1, level - q);
 
-  for q = minq:maxq
-    coefficient = (-1)^(maxq - q) * nchoosek(dimensionCount - 1, maxq - q);
-
-    indexes = Utils.indexSmolyakLevel(dimensionCount, q);
+    indexes = Utils.indexSmolyakLevel(dimensionCount, q) + 1;
     counts = prod(counts1D(indexes), 2);
 
     addition = nodeCount + sum(counts) - maximalNodeCount;

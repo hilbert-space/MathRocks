@@ -1,4 +1,9 @@
 classdef Legendre < PolynomialChaos.Base
+  properties (SetAccess = 'private')
+    a
+    b
+  end
+
   methods
     function this = Legendre(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
@@ -7,10 +12,14 @@ classdef Legendre < PolynomialChaos.Base
 
   methods (Access = 'protected')
     function distribution = configure(this, options)
-      distribution = ProbabilityDistribution.Uniform('a', -1, 'b', 1);
+      this.a = options.get('a', -1);
+      this.b = options.get('b', 1);
+
+      distribution = ProbabilityDistribution.Uniform( ...
+        'a', this.a, 'b', this.b);
     end
 
-    function basis = constructBasis(this, x, order)
+    function basis = constructBasis(~, x, order)
       %
       % Reference:
       %
@@ -38,14 +47,18 @@ classdef Legendre < PolynomialChaos.Base
       % NOTE: An n-order Gaussian quadrature rule integrates
       % polynomials of order (2 * n - 1) exactly. We want to have
       % exactness for polynomials of order (2 * n) where n is the
-      % order of polynomial chaos expansions. So, +1 here.
+      % order of polynomial chaos expansions. Therefore, the order
+      % of the quadrature should be (polynomialOrder + 1). Using
+      % the slow-linear growth rule, the level is then (order - 1).
       %
       quadrature = Quadrature.GaussLegendre( ...
         'dimensionCount', this.inputCount, ...
-        'order', polynomialOrder + 1, varargin{:});
+        'level', (polynomialOrder + 1) - 1, ...
+        'growth', 'slow-linear', ...
+        'a', this.a, 'b', this.b, varargin{:});
     end
 
-    function norm = computeNormalizationConstant(~, i, indexes)
+    function norm = computeNormalizationConstant(this, i, indexes)
       %
       % Reference:
       %
@@ -55,10 +68,10 @@ classdef Legendre < PolynomialChaos.Base
       n = double(indexes(i, :)) - 1;
 
       %
-      % NOTE: Here we also divide by 2 to preserve the weight of
-      % the uniform distribution on the interval [-1, 1].
+      % NOTE: Here we also divide by (b - a) to preserve the weight of
+      % the uniform distribution on the interval [a, b].
       %
-      norm = prod(2 ./ (2 * n + 1) / 2);
+      norm = prod(2 ./ (2 * n + 1) / (this.b - this.a));
     end
   end
 end

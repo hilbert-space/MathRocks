@@ -6,8 +6,25 @@ classdef GaussJacobi < Quadrature.Base
   end
 
   methods (Access = 'protected')
-    function [ nodes, weights ] = rule(~, order, options)
+    function [ nodes, weights ] = rule(~, level, options)
+      %
+      % First, we determine the growth rule.
+      %
+      % Reference:
+      %
+      % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
+      %
+      switch options.get('growth', 'slow-linear')
+      case 'slow-linear'
+        order = level + 1;
+      case 'full-exponential'
+        order = 2^(level + 1) - 1;
+      otherwise
+        assert(false);
+      end
+
       [ nodes, weights ] = jacobi_compute(order, options.alpha, options.beta);
+
       %
       % The computed nodes and weights can be used to evaluate integrals
       % with the weight function equal to

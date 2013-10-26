@@ -14,10 +14,10 @@ classdef Jacobi < PolynomialChaos.Base
 
   methods (Access = 'protected')
     function distribution = configure(this, options)
-      this.alpha = options.alpha;
-      this.beta = options.beta;
-      this.a = options.a;
-      this.b = options.b;
+      this.alpha = options.get('alpha', 2);
+      this.beta = options.get('beta', 2);
+      this.a = options.get('a', -1);
+      this.b = options.get('b', 1);
 
       %
       % NOTE: We have +1 here as MATLAB's interpretation of
@@ -63,11 +63,14 @@ classdef Jacobi < PolynomialChaos.Base
       % NOTE: An n-order Gaussian quadrature rule integrates
       % polynomials of order (2 * n - 1) exactly. We want to have
       % exactness for polynomials of order (2 * n) where n is the
-      % order of polynomial chaos expansions. So, +1 here.
+      % order of polynomial chaos expansions. Therefore, the order
+      % of the quadrature should be (polynomialOrder + 1). Using
+      % the slow-linear growth rule, the level is then (order - 1).
       %
       quadrature = Quadrature.GaussJacobi( ...
         'dimensionCount', this.inputCount, ...
-        'order', polynomialOrder + 1, ...
+        'level', (polynomialOrder + 1) - 1, ...
+        'growth', 'slow-linear', ...
         'alpha', this.alpha, 'beta', this.beta, ...
         'a', this.a, 'b', this.b, varargin{:});
     end

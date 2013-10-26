@@ -1,7 +1,7 @@
 classdef Base < handle
   properties (SetAccess = 'private')
     dimensionCount
-    order
+    level
     nodes
     weights
     nodeCount
@@ -12,7 +12,7 @@ classdef Base < handle
       options = Options(varargin{:});
 
       this.dimensionCount = options.dimensionCount;
-      this.order = options.order;
+      this.level = options.level;
 
       filename = File.temporal([ String.join('_', ...
         class(this), DataHash(String(options))), '.mat' ]);
@@ -23,13 +23,13 @@ classdef Base < handle
         switch lower(options.get('method', 'adaptive'))
         case 'adaptive'
           [ nodes, weights ] = this.constructAdaptive( ...
-            this.dimensionCount, this.order, options);
+            this.dimensionCount, this.level, options);
         case 'tensor'
           [ nodes, weights ] = this.constructTensor( ...
-            this.dimensionCount, this.order, options);
+            this.dimensionCount, this.level, options);
         case 'sparse'
           [ nodes, weights ] = this.constructSparse( ...
-            this.dimensionCount, this.order, options);
+            this.dimensionCount, this.level, options);
         otherwise
           assert('false');
         end
@@ -43,40 +43,41 @@ classdef Base < handle
   end
 
   methods (Access = 'protected')
-    [ nodes, weights ] = rule(this, order)
+    [ nodes, weights ] = rule(this, level)
   end
 
   methods (Access = 'private')
     function [ nodes, weights ] = constructAdaptive( ...
-      this, dimensionCount, order, options)
+      this, dimensionCount, level, options)
 
       [ nodes, weights ] = this.constructSparse( ...
-        dimensionCount, order, options);
-
+        dimensionCount, level, options);
       sparseNodeCount = length(weights);
+
+      order = size(this.rule(level, options), 1);
       tensorNodeCount = order^dimensionCount;
 
       if sparseNodeCount <= tensorNodeCount, return; end
 
       [ nodes, weights ] = this.constructTensor( ...
-        dimensionCount, order, options);
+        dimensionCount, level, options);
     end
 
     function [ nodes, weights ] = constructTensor( ...
-      this, dimensionCount, order, options)
+      this, dimensionCount, level, options)
 
-      [ nodes, weights ] = this.rule(order, options);
+      [ nodes, weights ] = this.rule(level, options);
 
       nodes = Utils.tensor(repmat({ nodes }, 1, dimensionCount));
       weights = prod(Utils.tensor(repmat({ weights }, 1, dimensionCount)), 2);
     end
 
     function [ nodes, weights ] = constructSparse( ...
-      this, dimensionCount, order, options)
+      this, dimensionCount, level, options)
 
-      compute = @(order) this.rule(order, options);
+      compute = @(level) this.rule(level, options);
 
-      [ nodes, weights ] = Utils.smolyak(dimensionCount, compute, order);
+      [ nodes, weights ] = Utils.smolyak(dimensionCount, compute, level);
     end
   end
 end

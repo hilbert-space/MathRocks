@@ -31,11 +31,15 @@ classdef Hermite < PolynomialChaos.Base
       % NOTE: An n-order Gaussian quadrature rule integrates
       % polynomials of order (2 * n - 1) exactly. We want to have
       % exactness for polynomials of order (2 * n) where n is the
-      % order of polynomial chaos expansions. So, +1 here.
+      % order of polynomial chaos expansions. Therefore, the order
+      % of the quadrature should be (polynomialOrder + 1). Using
+      % the slow-linear growth rule, the level is then (order - 1).
       %
       quadrature = Quadrature.GaussHermite( ...
         'dimensionCount', this.inputCount, ...
-        'order', polynomialOrder + 1, varargin{:});
+        'level', (polynomialOrder + 1) - 1, ...
+        'growth', 'slow-linear', ...
+        varargin{:});
     end
 
     function norm = computeNormalizationConstant(~, i, indexes)

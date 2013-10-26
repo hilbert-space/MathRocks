@@ -1,17 +1,17 @@
-function indexes = indexSmolyakLevel(dimensionCount, q)
-  assert(dimensionCount + q <= intmax('uint8'));
+function indexes = indexSmolyakLevel(dimensionCount, level)
+  assert(dimensionCount + level <= intmax('uint8'));
 
-  maximalIndexCount = q * dimensionCount;
+  maximalIndexCount = 10 * dimensionCount;
   indexes = zeros(maximalIndexCount, dimensionCount, 'uint8');
 
   sequence = zeros(1, dimensionCount, 'uint8');
-  sequence(1) = q;
+  sequence(1) = level;
 
   indexes(1, :) = sequence;
   indexCount = 1;
 
   c = 1;
-  while sequence(dimensionCount) < q
+  while sequence(dimensionCount) < level
     if c == dimensionCount
       for i = (c - 1):-1:1
         c = i;
@@ -21,7 +21,7 @@ function indexes = indexSmolyakLevel(dimensionCount, q)
 
     sequence(c) = sequence(c) - 1;
     c = c + 1;
-    sequence(c) = q - sum(sequence(1:(c - 1)));
+    sequence(c) = level - sum(sequence(1:(c - 1)));
 
     if c < dimensionCount
       sequence((c + 1):dimensionCount) = ...
@@ -39,5 +39,5 @@ function indexes = indexSmolyakLevel(dimensionCount, q)
     indexes(indexCount, :) = sequence;
   end
 
-  indexes = indexes(1:indexCount, :) + 1;
+  indexes = indexes(1:indexCount, :);
 end

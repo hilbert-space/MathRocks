@@ -8,7 +8,7 @@ classdef Beta < ProbabilityDistribution.Base
 
   methods
     function this = Beta(varargin)
-      this = this@ProbabilityDistribution.Base();
+      this = this@ProbabilityDistribution.Base;
 
       options = Options( ...
         'alpha', 1, 'beta', 1, 'a', 0, 'b', 1, varargin{:});
