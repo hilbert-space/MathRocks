@@ -1,4 +1,4 @@
-function assessAccuracy(varargin)
+function assessMonomialAccuracy(varargin)
   setup;
 
   %

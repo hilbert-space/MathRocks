@@ -1,4 +1,4 @@
-function compare(varargin)
+function compareTensorSparse(varargin)
   setup;
 
   options = Options( ...

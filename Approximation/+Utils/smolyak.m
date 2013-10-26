@@ -50,7 +50,8 @@ function [ nodesND, weightsND ] = smolyak( ...
       range = (nodeCount + 1):(nodeCount + counts(i));
 
       nodesND(range, :) = Utils.tensor(nodes1D(indexes(i, :)));
-      weightsND(range) = coefficient * prod(Utils.tensor(weights1D(indexes(i, :))), 2);
+      weightsND(range) = coefficient * ...
+        prod(Utils.tensor(weights1D(indexes(i, :))), 2);
 
       nodeCount = nodeCount + counts(i);
     end
