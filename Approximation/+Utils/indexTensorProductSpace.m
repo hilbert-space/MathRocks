@@ -1,4 +1,4 @@
-function indexes = indexTensorProductSpace(dimensionCount, order)
-  assert(order <= intmax('uint8'));
-  indexes = Utils.tensor(repmat({ uint8(1:(order + 1)) }, 1, dimensionCount));
+function indexes = indexTensorProductSpace(dimensionCount, level)
+  assert(level <= intmax('uint8'));
+  indexes = Utils.tensor(repmat({ uint8(0:level) }, 1, dimensionCount));
 end

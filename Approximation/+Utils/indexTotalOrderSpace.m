@@ -40,6 +40,5 @@ function indexes = indexTotalOrderSpace(dimensionCount, totalOrder)
     end
   end
 
-  indexes = indexes + 1;
   assert(maximalIndexCount == indexCount);
 end

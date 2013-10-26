@@ -4,7 +4,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   x = sym('x%d', [ 1, inputCount ]);
   assume(x, 'real');
 
-  indexes = Utils.indexTotalOrderSpace(inputCount, order);
+  indexes = Utils.indexTotalOrderSpace(inputCount, order) + 1;
   termCount = size(indexes, 1);
 
   basis1D = this.constructBasis(x(1), order);
