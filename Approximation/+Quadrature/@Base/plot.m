@@ -8,12 +8,14 @@ function plot(this, varargin)
 
   switch this.dimensionCount
   case 1
-    Plot.line(this.nodes, ones(size(this.nodes)), 'discrete', true);
+    Plot.line(this.nodes, ones(size(this.nodes)), ...
+      'discrete', true, 'style', { 'MarkerSize', 10 });
   case 2
-    Plot.line(this.nodes(:, 1), this.nodes(:, 2), 'discrete', true);
+    Plot.line(this.nodes(:, 1), this.nodes(:, 2), ...
+      'discrete', true, 'style', { 'MarkerSize', 10 });
   case 3
-    Plot.line({ this.nodes(:, 1), this.nodes(:, 2) }, ...
-      this.nodes(:, 3), 'discrete', true);
+    Plot.line({ this.nodes(:, 1), this.nodes(:, 2) }, this.nodes(:, 3), ...
+      'discrete', true, 'style', { 'MarkerSize', 10 });
     view(45, 45);
   otherwise
     assert(false);
