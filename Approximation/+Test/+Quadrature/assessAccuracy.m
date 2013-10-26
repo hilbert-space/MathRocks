@@ -1,15 +1,23 @@
 function assessAccuracy(varargin)
   setup;
 
+  %
+  % Example 3.5 in "Adaptive Smolyak Pseudospectral Approximations"
+  % by P. Conrad and Y. Marzouk.
+  %
+  % NOTE: The difference between the level enumeration used in the
+  % code and the one used in the above paper is into account here
+  % with (5 - 1).
+  %
   options = Options( ...
-    'dimensionCount', 3, ...
-    'rule', 'GaussHermite', ...
-    'level', 3, ...
+    'dimensionCount', 2, ...
+    'rule', 'GaussLegendre', ...
+    'a', -1, 'b', 1, ...
+    'level', 5 - 1, ...
+    'order', 8 + 4, ...
     'method', 'sparse', ...
-    'growth', 'slow-linear', ...
+    'growth', @(level) 2^level, ...
     varargin{:});
-
-  options.ensure('order', 2 * options.level + 1);
 
   display(options, 'Setup');
 
@@ -50,7 +58,7 @@ function assessAccuracy(varargin)
     'Expected', 'Difference');
   for i = 1:monomialCount
     computed = sum(evaluateMonomialAtNodes(i) .* weights);
-    expected = computeExact(rule, indexes(i, :));
+    expected = computeExact(rule, indexes(i, :), options);
     error = abs(computed - expected);
     fprintf('%20s%20e%20e%20e', char(monomialND(i)), ...
       computed, expected, error);
@@ -59,7 +67,7 @@ function assessAccuracy(varargin)
   end
 end
 
-function values = computeExact(rule, index)
+function values = computeExact(rule, index, options)
   values = zeros(size(index));
   switch rule
   case 'GaussHermite'
@@ -67,6 +75,11 @@ function values = computeExact(rule, index)
     values(I) = 1;
     I = ~I & (mod(index, 2) == 0);
     values(I) = factorial2(double(index(I)) - 1);
+  case 'GaussLegendre'
+    for i = 1:numel(index)
+      k = double(index(i));
+      values(i) = sum((options.a).^(0:k) .* (options.b).^(k - (0:k))) / (k + 1);
+    end
   otherwise
     assert(false);
   end

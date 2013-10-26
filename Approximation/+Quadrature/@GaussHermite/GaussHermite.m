@@ -14,12 +14,14 @@ classdef GaussHermite < Quadrature.Base
       %
       % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
       %
-      switch options.get('growth', 'slow-linear')
-      case 'slow-linear'
+      growth = options.get('growth', 'slow-linear');
+      if isa(growth, 'function_handle')
+        order = feval(growth, level);
+      elseif strcmpi(growth, 'slow-linear')
         order = level + 1;
-      case 'full-exponential'
+      elseif strcmpi(growth, 'full-exponential')
         order = 2^(level + 1) - 1;
-      otherwise
+      else
         assert(false);
       end
 
