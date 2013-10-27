@@ -1,18 +1,27 @@
 function Genz(varargin)
   setup;
+  use('Vendor', 'TESTPACK');
 
+  functionNumber = 6;
   dimensionCount = 2;
-  expectation = (exp(1) - 1)^dimensionCount;
-  variance = (0.5 * (exp(2) - 1))^dimensionCount - expectation^2;
+  alpha = ones(1, dimensionCount);
+  beta = ones(1, dimensionCount);
 
-  assess(@f6, ...
+  function y = evaluate(x)
+    y = zeros(size(x, 1), 1);
+    for i = 1:size(x, 1)
+      y(i) = genz_function(functionNumber, ...
+        dimensionCount, x(i, :), alpha, beta);
+    end
+  end
+
+  expectation = genz_integral(functionNumber, ...
+    dimensionCount, 0, 1, alpha, beta);
+
+  assess(@evaluate, ...
     'inputCount', dimensionCount, ...
     'exactExpectation', expectation, ...
-    'exactVariance', variance, ...
+    'exactVariance', NaN(1, dimensionCount), ...
     'sampleCount', 1e4, ...
     varargin{:});
-end
-
-function y = f6(x)
-  y = exp(sum(x, 2));
 end
