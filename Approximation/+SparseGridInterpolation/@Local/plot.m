@@ -10,5 +10,5 @@ function plot(this, output)
     k = k + levelNodeCount(i);
   end
 
-  plot@StochasticCollocation.Base(this, nodes, mapping);
+  plot@SparseGridInterpolation.Base(this, nodes, mapping);
 end

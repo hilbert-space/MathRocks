@@ -1,4 +1,4 @@
-classdef Global < StochasticCollocation.Base
+classdef Global < SparseGridInterpolation.Base
   properties (SetAccess = 'private')
     basis
     adaptivityDegree
@@ -7,7 +7,7 @@ classdef Global < StochasticCollocation.Base
   methods
     function this = Global(varargin)
       options = Options(varargin{:});
-      this = this@StochasticCollocation.Base(options);
+      this = this@SparseGridInterpolation.Base(options);
       this.basis = HierarchicalBasis.NewtonCotesHat.Global( ...
         'maximalLevel', this.maximalLevel);
       this.adaptivityDegree = options.get('adaptivityDegree', 0.9);

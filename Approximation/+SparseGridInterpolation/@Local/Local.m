@@ -1,11 +1,11 @@
-classdef Local < StochasticCollocation.Base
+classdef Local < SparseGridInterpolation.Base
   properties (SetAccess = 'private')
     basis
   end
 
   methods
     function this = Local(varargin)
-      this = this@StochasticCollocation.Base(varargin{:});
+      this = this@SparseGridInterpolation.Base(varargin{:});
       this.basis = HierarchicalBasis.NewtonCotesHat.Local;
     end
 
