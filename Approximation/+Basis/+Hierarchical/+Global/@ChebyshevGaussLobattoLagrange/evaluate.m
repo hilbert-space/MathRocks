@@ -2,7 +2,7 @@ function values = evaluate(this, points, indexes, surpluses)
   [ pointCount, dimensionCount ] = size(points);
   outputCount = size(surpluses, 2);
 
-  counts = prod(reshape(this.Ni(indexes), size(indexes)), 2);
+  counts = prod(reshape(this.counts(indexes), size(indexes)), 2);
   offsets = cumsum([ 0; counts(1:(end - 1)) ]);
 
   values = zeros(pointCount, outputCount);
@@ -14,8 +14,8 @@ function values = evaluate(this, points, indexes, surpluses)
 
   for i = 1:size(indexes, 1)
     range = (offsets(i) + 1):(offsets(i) + counts(i));
-    orders = this.Ni(indexes(i, :)) - 1;
-    nodes = this.Yij(indexes(i ,:));
+    orders = this.counts(indexes(i, :)) - 1;
+    nodes = this.nodes(indexes(i ,:));
 
     active(:) = false;
     tensor(:) = 0;

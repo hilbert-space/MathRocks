@@ -1,11 +1,7 @@
 classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
   properties (SetAccess = 'private')
-    Yij
-    Yi
-    Wi
-    Ji
-    Mi
-    Ni
+    nodes
+    counts
   end
 
   methods
@@ -15,49 +11,24 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
       this = this@Basis.Hierarchical.Global.Base(options);
 
       if this.maximalLevel > 10
-        warning('The maximal level is too high. Changing it to 10.');
+        warning('The maximal level is too high; changing to 10.');
         this.maximalLevel = 10;
       end
 
-      Yij = cell(1, this.maximalLevel);
-      Yi = cell(1, this.maximalLevel);
-      Wi = cell(1, this.maximalLevel);
-      Ji = cell(1, this.maximalLevel);
-      Mi = zeros(1, this.maximalLevel, 'uint32');
-      Ni = zeros(1, this.maximalLevel, 'uint32');
+      this.nodes = cell(1, this.maximalLevel);
+      this.counts = zeros(1, this.maximalLevel, 'uint32');
 
       for i = 1:this.maximalLevel
         switch i
         case 1
-          Yij{i} = 0.5;
-          Yi{i} = 0.5;
-          Wi{i} = 0.5;
-          Ji{i} = uint32(1);
-          Mi(i) = uint32(1);
+          this.nodes{i} = 0.5;
         case 2
-          Yij{i} = [ 0 1 ];
-          Yi{i} = [ 0 0.5 1 ];
-          Wi{i} = [ 0.5 -1 0.5 ];
-          Ji{i} = uint32([ 1 3 ]);
-          Mi(i) = uint32(3);
+          this.nodes{i} = [ 0 1 ];
         otherwise
-          Ji{i} = uint32((1:2^(i - 2)) * 2);
-          Mi(i) = uint32(2^(i - 1) + 1);
-          Yij{i} = (-cos(pi * (double(Ji{i}) - 1) / (double(Mi(i)) - 1)) + 1) / 2;
-          Yi{i} = (-cos(pi * (double(1:Mi(i)) - 1) / (double(Mi(i)) - 1)) + 1) / 2;
-          Wi{i} = (-1).^(double(1:Mi(i)) - 1);
-          Wi{i}(1) = 0.5;
-          Wi{i}(end) = 0.5 * (-1)^(double(Mi(i)) - 1);
+          this.nodes{i} = (-cos(pi * ((1:2^(i - 2)) * 2 - 1) / 2^(i - 1)) + 1) / 2;
         end
-        Ni(i) = numel(Yij{i});
+        this.counts(i) = numel(this.nodes{i});
       end
-
-      this.Yij = Yij;
-      this.Yi = Yi;
-      this.Wi = Wi;
-      this.Ji = Ji;
-      this.Mi = Mi;
-      this.Ni = Ni;
     end
   end
 end

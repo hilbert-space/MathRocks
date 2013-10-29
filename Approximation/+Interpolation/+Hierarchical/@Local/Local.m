@@ -21,7 +21,8 @@ classdef Local < Interpolation.Hierarchical.Base
 
   methods (Access = 'protected')
     function basis = configure(this, options)
-      basis = Basis.Hierarchical.Local.NewtonCotesHat(options);
+      basis = options.get('basis', 'NewtonCotesHat');
+      basis = Basis.Hierarchical.Local.(basis)(options);
       this.minimalLevel = options.get('minimalLevel', 2);
     end
   end

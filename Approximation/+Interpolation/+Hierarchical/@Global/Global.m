@@ -21,7 +21,8 @@ classdef Global < Interpolation.Hierarchical.Base
 
   methods (Access = 'protected')
     function basis = configure(this, options)
-      basis = Basis.Hierarchical.Global.NewtonCotesHat(options);
+      basis = options.get('basis', 'NewtonCotesHat');
+      basis = Basis.Hierarchical.Global.(basis)(options);
       this.adaptivityDegree = options.get('adaptivityDegree', 0.9);
     end
   end

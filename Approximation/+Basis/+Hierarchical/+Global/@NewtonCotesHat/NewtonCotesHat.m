@@ -13,7 +13,7 @@ classdef NewtonCotesHat < Basis.Hierarchical.Global.Base
       this = this@Basis.Hierarchical.Global.Base(options);
 
       if this.maximalLevel > 32
-        warning('The maximal level is too high. Changing it to 32.');
+        warning('The maximal level is too high; changing to 32.');
         this.maximalLevel = 32;
       end
 
