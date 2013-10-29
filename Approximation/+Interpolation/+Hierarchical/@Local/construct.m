@@ -19,7 +19,7 @@ function output = construct(this, f, outputCount)
   maximalNodeCount = this.maximalNodeCount;
 
   minimalLevel = this.minimalLevel;
-  maximalLevel = this.maximalLevel;
+  maximalLevel = basis.maximalLevel;
 
   minimalValue = Inf(1, outputCount);
   maximalValue = -Inf(1, outputCount);

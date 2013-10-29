@@ -1,4 +1,4 @@
-function result = computeCrossExpectation(~, I1, J1, I2, J2)
+function result = integrateCrossed(~, I1, J1, I2, J2)
   [ II, K ] = sort([ I1(:), I2(:) ], 2);
   JJ = [ J1(:), J2(:) ];
   K = K(:, 1) == 2;

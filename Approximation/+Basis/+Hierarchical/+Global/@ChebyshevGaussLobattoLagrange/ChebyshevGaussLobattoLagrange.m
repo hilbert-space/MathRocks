@@ -14,16 +14,19 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
 
       this = this@Basis.Hierarchical.Global.Base(options);
 
-      maximalLevel = min(10, options.maximalLevel);
+      if this.maximalLevel > 10
+        warning('The maximal level is too high. Changing it to 10.');
+        this.maximalLevel = 10;
+      end
 
-      Yij = cell(1, maximalLevel);
-      Yi = cell(1, maximalLevel);
-      Wi = cell(1, maximalLevel);
-      Ji = cell(1, maximalLevel);
-      Mi = zeros(1, maximalLevel, 'uint32');
-      Ni = zeros(1, maximalLevel, 'uint32');
+      Yij = cell(1, this.maximalLevel);
+      Yi = cell(1, this.maximalLevel);
+      Wi = cell(1, this.maximalLevel);
+      Ji = cell(1, this.maximalLevel);
+      Mi = zeros(1, this.maximalLevel, 'uint32');
+      Ni = zeros(1, this.maximalLevel, 'uint32');
 
-      for i = 1:maximalLevel
+      for i = 1:this.maximalLevel
         switch i
         case 1
           Yij{i} = 0.5;

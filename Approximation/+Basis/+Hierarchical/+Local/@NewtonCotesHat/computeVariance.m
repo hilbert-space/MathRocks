@@ -1,8 +1,8 @@
 function variance = computeVariance(this, I, J, surpluses)
-  expectation = this.computeExpectation(I);
+  expectation = this.integrate(I);
 
   result1 = sum(bsxfun(@times, surpluses.^2, ...
-    this.computeSecondRawMoment(I) - expectation.^2), 1);
+    this.integrateSquared(I) - expectation.^2), 1);
 
   %
   % The summation in result2 is over all k < l; therefore,
@@ -27,7 +27,7 @@ function variance = computeVariance(this, I, J, surpluses)
   R = min(1, Yij + Li);
   Z = all(L(P1, :) < R(P2, :) & L(P2, :) < R(P1, :), 2);
 
-  result2(Z) = result2(Z) + this.computeCrossExpectation( ...
+  result2(Z) = result2(Z) + this.integrateCrossed( ...
     I(P1(Z), :), J(P1(Z), :), I(P2(Z), :), J(P2(Z), :));
 
   Z = find(result2 ~= 0);

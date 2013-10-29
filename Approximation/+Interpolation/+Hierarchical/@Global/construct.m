@@ -10,7 +10,7 @@ function output = construct(this, f, outputCount)
   inputCount = this.inputCount;
   if nargin < 3, outputCount = this.outputCount; end
 
-  maximalLevel = min(intmax('uint8'), this.maximalLevel);
+  maximalLevel = min(intmax('uint8'), basis.maximalLevel);
   maximalIndexCount = intmax('uint16');
   maximalNodeCount = min(intmax('uint32'), this.maximalNodeCount);
 

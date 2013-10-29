@@ -1,4 +1,4 @@
-function result = computeExpectation(~, I, surpluses)
+function result = integrate(~, I, surpluses)
   result = 2.^(1 - double(I));
   result(I == 1) = 1;
   result(I == 2) = 1 / 4;

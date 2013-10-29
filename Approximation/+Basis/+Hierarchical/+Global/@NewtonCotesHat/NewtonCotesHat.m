@@ -7,19 +7,22 @@ classdef NewtonCotesHat < Basis.Hierarchical.Global.Base
   end
 
   methods
-    function this = Global(varargin)
+    function this = NewtonCotesHat(varargin)
       options = Options(varargin{:});
 
       this = this@Basis.Hierarchical.Global.Base(options);
 
-      maximalLevel = min(32, options.maximalLevel);
+      if this.maximalLevel > 32
+        warning('The maximal level is too high. Changing it to 32.');
+        this.maximalLevel = 32;
+      end
 
-      Yij = cell(1, maximalLevel);
-      Li = zeros(1, maximalLevel);
-      Mi = zeros(1, maximalLevel, 'uint32');
-      Ni = zeros(1, maximalLevel, 'uint32');
+      Yij = cell(1, this.maximalLevel);
+      Li = zeros(1, this.maximalLevel);
+      Mi = zeros(1, this.maximalLevel, 'uint32');
+      Ni = zeros(1, this.maximalLevel, 'uint32');
 
-      for i = 1:maximalLevel
+      for i = 1:this.maximalLevel
         switch i
         case 1
           Yij{i} = 0.5;
