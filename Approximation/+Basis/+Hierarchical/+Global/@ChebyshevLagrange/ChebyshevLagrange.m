@@ -1,11 +1,11 @@
-classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
+classdef ChebyshevLagrange < Basis.Hierarchical.Global.Base
   properties (SetAccess = 'private')
     nodes
     counts
   end
 
   methods
-    function this = ChebyshevGaussLobattoLagrange(varargin)
+    function this = ChebyshevLagrange(varargin)
       options = Options(varargin{:});
 
       this = this@Basis.Hierarchical.Global.Base(options);
