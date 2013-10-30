@@ -1,25 +1,27 @@
-function [ Yij, offsets, counts, Li, Mi ] = computeNodes(this, I)
-  [ indexCount, dimensionCount ] = size(I);
+function [ nodes, offsets, counts, Li, Mi ] = computeNodes(this, indexes)
+  [ indexCount, dimensionCount ] = size(indexes);
 
-  counts = prod(reshape(this.Ni(I), size(I)), 2);
+  counts = prod(reshape(this.Ni(indexes), size(indexes)), 2);
   offsets = cumsum([ 0; counts(1:(end - 1)) ]);
 
-  Yij = 0.5 * ones(sum(counts), dimensionCount);
+  nodes = 0.5 * ones(sum(counts), dimensionCount);
 
   for i = 1:indexCount
-    J = I(i, :);
+    J = indexes(i, :);
     K = find(J > 1);
     switch numel(K)
     case 0
     case 1
-      Yij((offsets(i) + 1):(offsets(i) + counts(i)), K) = this.Yij{J(K)};
+      nodes((offsets(i) + 1):(offsets(i) + counts(i)), K) = ...
+        this.Yij{J(K)};
     otherwise
-      Yij((offsets(i) + 1):(offsets(i) + counts(i)), K) = Utils.tensor(this.Yij(J(K)));
+      nodes((offsets(i) + 1):(offsets(i) + counts(i)), K) = ...
+        Utils.tensor(this.Yij(J(K)));
     end
   end
 
   if nargout < 3, return; end
 
-  Li = reshape(this.Li(I), size(I));
-  Mi = reshape(this.Mi(I), size(I));
+  Li = reshape(this.Li(indexes), size(indexes));
+  Mi = reshape(this.Mi(indexes), size(indexes));
 end

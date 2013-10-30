@@ -1,9 +1,9 @@
-function values = evaluate(this, points, I, surpluses)
-  [ indexCount, dimensionCount ] = size(I);
+function values = evaluate(this, points, indexes, surpluses)
+  [ indexCount, dimensionCount ] = size(indexes);
   pointCount = size(points, 1);
   outputCount = size(surpluses, 2);
 
-  [ nodes, offsets, counts, Li, Mi ] = this.computeNodes(I);
+  [ nodes, offsets, counts, Li, Mi ] = this.computeNodes(indexes);
 
   nodeCount = size(nodes, 1);
   assert(nodeCount == size(surpluses, 1));
@@ -20,8 +20,8 @@ function values = evaluate(this, points, I, surpluses)
 
   for i = 1:pointCount
     distances = abs(bsxfun(@minus, nodes, points(i, :)));
-    I = all(distances < L, 2);
-    values(i, :) = sum(bsxfun(@times, surpluses(I, :), ...
-      prod(1 - (M(I, :) - 1) .* distances(I, :), 2)), 1);
+    indexes = all(distances < L, 2);
+    values(i, :) = sum(bsxfun(@times, surpluses(indexes, :), ...
+      prod(1 - (M(indexes, :) - 1) .* distances(indexes, :), 2)), 1);
   end
 end

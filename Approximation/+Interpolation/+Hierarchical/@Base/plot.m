@@ -7,7 +7,7 @@ function plot(~, nodes, mapping)
   levels = transpose(unique(mapping(:), 'sorted'));
 
   Plot.figure(600, 600);
-  Plot.title('Integration grid');
+  Plot.title('Interpolation grid');
 
   switch inputCount
   case 1

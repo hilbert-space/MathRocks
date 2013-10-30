@@ -184,8 +184,8 @@ function output = construct(this, f, outputCount)
       K = find(sum(bsxfun(@minus, ...
         indexes(1:indexCount, :), indexes(j, :)), 2) == 0);
 
-      surpluses(I, :) = surpluses(I, :) - basis.evaluate(newNodes(I - nodeCount, :), ...
-        indexes(K, :), surpluses(constructNodeIndex(K), :));
+      surpluses(I, :) = surpluses(I, :) - basis.evaluate( ...
+        newNodes(I - nodeCount, :), indexes, surpluses, offsets, K);
 
       scores(j, 2) = sum(sum(abs(surpluses(I, :)), 1) / double(counts(j)));
       errors(j, :) = max(abs(surpluses(I, :)), [], 1);
@@ -199,21 +199,7 @@ function output = construct(this, f, outputCount)
   output.nodeCount = nodeCount;
 
   output.indexes = indexes(1:indexCount, :);
-
   output.surpluses = surpluses(1:nodeCount, :);
-  output.offsets = offsets(1:indexCount);
-  output.counts = counts(1:indexCount);
-
-  function I_ = constructNodeIndex(K_)
-    I_ = zeros(sum(counts(K_)), 1, 'uint32');
-    shift_ = 0;
-    for i_ = 1:length(K_)
-      k_ = K_(i_);
-      I_((shift_ + 1):(shift_ + counts(k_))) = ...
-        (offsets(k_) + 1):(offsets(k_) + counts(k_));
-      shift_ = shift_ + counts(k_);
-    end
-  end
 
   function resizeIndexBuffers(neededCount_)
     count_ = neededCount_ - indexBufferSize;

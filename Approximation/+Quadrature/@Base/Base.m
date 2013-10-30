@@ -11,7 +11,7 @@ classdef Base < handle
     function this = Base(varargin)
       options = Options(varargin{:});
 
-      this.dimensionCount = options.dimensionCount;
+      this.dimensionCount = options.get('dimensionCount', 1);
       this.level = options.level;
 
       filename = File.temporal([ String.join('_', ...
@@ -19,6 +19,9 @@ classdef Base < handle
 
       if File.exist(filename)
         load(filename);
+      elseif this.dimensionCount == 1
+        [ nodes, weights ] = this.rule(this.level, options);
+        save(filename, 'nodes', 'weights', '-v7.3');
       else
         switch lower(options.get('method', 'adaptive'))
         case 'adaptive'
