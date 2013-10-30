@@ -21,7 +21,7 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
   surrogateOutput = surrogate.construct(f);
   fprintf('Construction time: %.2f s\n', toc(time));
 
-  display(Options(surrogateOutput), 'Sparse grid');
+  display(Options(surrogateOutput), 'Interpolation');
 
   if inputCount <= 3
     surrogate.plot(surrogateOutput);

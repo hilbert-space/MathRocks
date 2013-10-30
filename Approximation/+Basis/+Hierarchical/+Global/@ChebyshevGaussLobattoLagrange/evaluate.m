@@ -22,10 +22,12 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
   enumerator = zeros(dimensionCount, outputCount);
 
   for i = range
-    orders = this.counts(indexes(i, :)) - 1;
-    nodes = this.nodes(indexes(i, :));
     quadratureNodes = this.quadratureNodes(indexes(i, :));
     polynomialOrders = this.quadratureOrders(indexes(i, :)) - 1;
+    barycentricWeights = this.barycentricWeights(indexes(i, :));
+
+    orders = this.counts(indexes(i, :)) - 1;
+    nodes = this.nodes(indexes(i, :));
 
     active(:) = false;
     iterator(:) = 0;
@@ -63,8 +65,8 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
       denominator = 1;
       for k = dimensions
-        coefficients{k} = transpose([ 0.5, ones(1, polynomialOrders(k) - 1), 0.5 ] .* ...
-          (-1).^double(0:polynomialOrders(k)) ./ (point(k) - quadratureNodes{k}));
+        coefficients{k} = transpose(barycentricWeights{k} ./ ...
+          (point(k) - quadratureNodes{k}));
         denominator = denominator * sum(coefficients{k});
 
         %
@@ -82,25 +84,22 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       end
 
       done = leftDimensionCount == 1;
-
       cursor = positions(j);
-      step = uint32(index(dimensions(1)) + 1) * ...
-        prod(uint32(orders(1:(dimensions(1) - 1)) + 1));
 
       enumerator(:) = 0;
       while true
         k = dimensions(1);
         if outputCount == 1
           enumerator(k, :) = enumerator(k, :) + sum( ...
-            surpluses(cursor + step * (0:orders(k)), :) .* ...
+            surpluses(cursor + (0:orders(k)), :) .* ...
             coefficients{k});
         else
           enumerator(k, :) = enumerator(k, :) + sum(bsxfun(@times, ...
-            surpluses(cursor + step * (0:orders(k)), :), ...
+            surpluses(cursor + (0:orders(k)), :), ...
             coefficients{k}), 1);
         end
         index(k) = orders(k);
-        cursor = cursor + step * (orders(k) + 1);
+        cursor = cursor + orders(k) + 1;
         for l = 2:leftDimensionCount
           k = dimensions(l);
           enumerator(k, :) = enumerator(k, :) + ...

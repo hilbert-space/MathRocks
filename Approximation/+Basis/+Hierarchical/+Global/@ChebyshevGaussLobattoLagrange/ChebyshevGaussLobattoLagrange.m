@@ -2,6 +2,7 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
   properties (SetAccess = 'private')
     quadratureNodes
     quadratureOrders
+    barycentricWeights
 
     nodes
     weights
@@ -21,6 +22,7 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
 
       this.quadratureNodes = cell(1, this.maximalLevel);
       this.quadratureOrders = zeros(1, this.maximalLevel, 'uint32');
+      this.barycentricWeights = cell(1, this.maximalLevel);
 
       this.nodes = cell(1, this.maximalLevel);
       this.weights = cell(1, this.maximalLevel);
@@ -33,6 +35,9 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
         quadrature = Quadrature.ChebyshevGaussLobatto('level', level - 1);
         this.quadratureNodes{level} = quadrature.nodes;
         this.quadratureOrders(level) = quadrature.nodeCount;
+        this.barycentricWeights{level} = ...
+          [ 0.5, ones(1, quadrature.nodeCount - 2), 0.5 ] .* ...
+          (-1).^double(0:(quadrature.nodeCount - 1));
 
         %
         % Extract the nodes and weights that belong to the current
