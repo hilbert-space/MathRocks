@@ -3,8 +3,8 @@ function correlation = correlate(this, variables, options)
   correlation = eye(dimensionCount);
 
   quadrature = Quadrature.GaussHermite( ...
-    'method', 'tensor', 'order', 5, 'dimensionCount', 2, ...
-    options.get('quadratureOptions', []));
+    'method', 'tensor', 'level', 4, 'growth', 'slow-linear', ...
+    'dimensionCount', 2, options.get('quadratureOptions', []));
   nodes = quadrature.nodes;
   weights = quadrature.weights;
 
