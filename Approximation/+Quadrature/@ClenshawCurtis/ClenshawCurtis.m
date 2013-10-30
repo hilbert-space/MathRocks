@@ -1,6 +1,6 @@
-classdef ChebyshevGaussLobatto < Quadrature.Base
+classdef ClenshawCurtis < Quadrature.Base
   methods
-    function this = ChebyshevGaussLobatto(varargin)
+    function this = ClenshawCurtis(varargin)
       this = this@Quadrature.Base(varargin{:});
     end
   end
@@ -20,6 +20,11 @@ classdef ChebyshevGaussLobatto < Quadrature.Base
         assert(strcmpi(options.growth, 'full-exponential'));
       end
 
+      %
+      % Reference:
+      %
+      % http://people.sc.fsu.edu/~jburkardt/m_src/sparse_grid_cc/sparse_grid_cc.html
+      %
       n = 2^level + 1;
 
       %
@@ -31,12 +36,19 @@ classdef ChebyshevGaussLobatto < Quadrature.Base
       %
 
       m = n - 1;
+
+      x = cos(pi * (0:m) / m);
+
       c = zeros(1, n);
       c(1:2:n) = 2 ./ [ 1, 1 - (2:2:m).^2 ];
       f = real(ifft([ c(1:n), c(m:-1:2) ]));
       w = [ f(1), 2 * f(2:m), f(n) ];
 
-      nodes = (-cos(pi * (0:m) / m) + 1) / 2;
+      %
+      % The computed nodes and weights are for the integration on [-1, 1];
+      % however, we would like to work on the standard interval [0, 1].
+      %
+      nodes = (-x + 1) / 2;
       weights = w / 2;
     end
   end

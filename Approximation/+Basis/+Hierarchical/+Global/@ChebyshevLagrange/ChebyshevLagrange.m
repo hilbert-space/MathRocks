@@ -1,4 +1,4 @@
-classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
+classdef ChebyshevLagrange < Basis.Hierarchical.Global.Base
   properties (SetAccess = 'private')
     quadratureNodes
     quadratureOrders
@@ -10,7 +10,7 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
   end
 
   methods
-    function this = ChebyshevGaussLobattoLagrange(varargin)
+    function this = ChebyshevLagrange(varargin)
       options = Options(varargin{:});
 
       this = this@Basis.Hierarchical.Global.Base(options);
@@ -32,7 +32,7 @@ classdef ChebyshevGaussLobattoLagrange < Basis.Hierarchical.Global.Base
         %
         % NOTE: Observe the difference in the level enumeration.
         %
-        quadrature = Quadrature.ChebyshevGaussLobatto('level', level - 1);
+        quadrature = Quadrature.ClenshawCurtis('level', level - 1);
         this.quadratureNodes{level} = quadrature.nodes;
         this.quadratureOrders(level) = quadrature.nodeCount;
         this.barycentricWeights{level} = ...
