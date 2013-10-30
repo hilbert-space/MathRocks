@@ -10,12 +10,12 @@ classdef Global < Interpolation.Hierarchical.Base
 
     function result = integrate(this, output)
       result = this.basis.integrate( ...
-        output.indexes, output.surpluses);
+        output.indexes, output.surpluses, output.offsets);
     end
 
     function values = evaluate(this, output, nodes)
       values = this.basis.evaluate(nodes, ...
-        output.indexes, output.surpluses);
+        output.indexes, output.surpluses, output.offsets);
     end
   end
 

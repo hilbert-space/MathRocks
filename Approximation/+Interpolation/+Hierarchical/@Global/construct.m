@@ -37,7 +37,6 @@ function output = construct(this, f, outputCount)
 
   surpluses = zeros(nodeBufferSize, outputCount);
   offsets = zeros(indexBufferSize, 1, 'uint32');
-  counts = zeros(indexBufferSize, 1, 'uint32');
 
   errors = zeros(indexBufferSize, outputCount);
 
@@ -55,7 +54,6 @@ function output = construct(this, f, outputCount)
 
   surpluses(1, :) = f(basis.computeNodes(indexes(1, :)));
   offsets(1) = 0;
-  counts(1) = 1;
 
   scores(1, 2) = sum(abs(surpluses(1, :)));
   errors(1, :) = abs(surpluses(1, :));
@@ -172,23 +170,22 @@ function output = construct(this, f, outputCount)
     %
     surpluses(I, :) = f(newNodes);
     offsets(J) = nodeCount + newOffsets;
-    counts(J) = newCounts;
 
     minimalValue = min([ minimalValue; ...
       min(surpluses(I, :), [], 1) ], [], 1);
     maximalValue = max([ maximalValue; ...
       max(surpluses(I, :), [], 1) ], [], 1);
 
-    for j = J
-      I = (offsets(j) + 1):(offsets(j) + counts(j));
-      K = find(sum(bsxfun(@minus, ...
-        indexes(1:indexCount, :), indexes(j, :)), 2) == 0);
+    for i = 1:newIndexCount
+      I = (nodeCount + newOffsets(i) + 1): ...
+        (nodeCount + newOffsets(i) + newCounts(i));
 
       surpluses(I, :) = surpluses(I, :) - basis.evaluate( ...
-        newNodes(I - nodeCount, :), indexes, surpluses, offsets, K);
+        newNodes(I - nodeCount, :), indexes, surpluses, offsets, ...
+        findInferiorIndexes(indexes(J(i), :)));
 
-      scores(j, 2) = sum(sum(abs(surpluses(I, :)), 1) / double(counts(j)));
-      errors(j, :) = max(abs(surpluses(I, :)), [], 1);
+      scores(J(i), 2) = sum(sum(abs(surpluses(I, :)), 1) / double(newCounts(i)));
+      errors(J(i), :) = max(abs(surpluses(I, :)), [], 1);
     end
 
     indexCount = indexCount + newIndexCount;
@@ -200,6 +197,12 @@ function output = construct(this, f, outputCount)
 
   output.indexes = indexes(1:indexCount, :);
   output.surpluses = surpluses(1:nodeCount, :);
+  output.offsets = offsets(1:indexCount);
+
+  function I_ = findInferiorIndexes(index_)
+    I_ = find(sum(bsxfun(@minus, ...
+      indexes(1:indexCount, :), index_), 2) == 0).';
+  end
 
   function resizeIndexBuffers(neededCount_)
     count_ = neededCount_ - indexBufferSize;
@@ -215,7 +218,6 @@ function output = construct(this, f, outputCount)
     scores = [ scores; zeros(count_, 1) ];
 
     offsets = [ offsets; zeros(count_, 1, 'uint32') ];
-    counts = [ counts; zeros(count_, 1, 'uint32') ];
 
     errors = [ errors; zeros(count_, outputCount) ];
 

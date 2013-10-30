@@ -1,4 +1,4 @@
-function result = evaluate(this, points, indexes, surpluses, offsets, K)
+function result = evaluate(this, points, indexes, surpluses, offsets, range)
   %
   % Evaluation of multidimensional Lagrange polynomials using
   % the barycentric formula on Chebyshev-Gauss-Lobatto quadratureNodes.
@@ -9,11 +9,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, K)
   % sparse grids. University of Stuttgart. 2006.
   %
 
-  if nargin < 6
-    counts = prod(reshape(this.counts(indexes), size(indexes)), 2);
-    offsets = cumsum([ 0; counts(1:(end - 1)) ]);
-    K = 1:size(indexes, 1);
-  end
+  if ~exist('range', 'var'), range = 1:size(indexes, 1); end
 
   [ pointCount, dimensionCount ] = size(points);
   outputCount = size(surpluses, 2);
@@ -25,7 +21,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, K)
   coefficients = cell(dimensionCount, 1);
   enumerator = zeros(dimensionCount, outputCount);
 
-  for i = transpose(K(:))
+  for i = range
     orders = this.counts(indexes(i, :)) - 1;
     nodes = this.nodes(indexes(i, :));
     quadratureNodes = this.quadratureNodes(indexes(i, :));

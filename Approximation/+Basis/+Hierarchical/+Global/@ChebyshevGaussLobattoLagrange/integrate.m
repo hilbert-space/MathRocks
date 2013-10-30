@@ -1,13 +1,13 @@
-function result = integrate(this, indexes, surpluses)
-  [ indexCount, dimensionCount ] = size(indexes);
+function result = integrate(this, indexes, surpluses, offsets, range)
+  if ~exist('range', 'var'), range = 1:size(indexes, 1); end
+
+  dimensionCount = size(indexes, 2);
   outputCount = size(surpluses, 2);
 
-  counts = prod(reshape(this.counts(indexes), indexCount, []), 2);
-  offsets = cumsum([ 0; counts(1:(end - 1)) ]);
-
   result = 0;
-  for i = 1:indexCount
-    range = (offsets(i) + 1):(offsets(i) + counts(i));
+
+  for i = range
+    range = (offsets(i) + 1):(offsets(i) + prod(this.counts(indexes(i, :))));
     if dimensionCount == 1
       weights = this.weights{indexes(i)}(:);
     else
