@@ -10,13 +10,13 @@ classdef Surrogate < handle
       stats.variance = reshape(stats.variance, this.processorCount, []);
     end
 
-    function Tdata = sample(this, output, varargin)
-      Tdata = reshape(this.surrogate.sample(output, varargin{:}), ...
+    function data = sample(this, output, varargin)
+      data = reshape(this.surrogate.sample(output, varargin{:}), ...
         [], this.processorCount, output.stepCount);
     end
 
-    function Tdata = evaluate(this, output, varargin)
-      Tdata = reshape(this.surrogate.evaluate(output, varargin{:}), ...
+    function data = evaluate(this, output, varargin)
+      data = reshape(this.surrogate.evaluate(output, varargin{:}), ...
         [], this.processorCount, output.stepCount);
     end
 

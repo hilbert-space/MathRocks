@@ -20,8 +20,8 @@ classdef Transient < ...
       this = this@Temperature.MonteCarlo.Base(options);
     end
 
-    function [ Texp, output ] = compute(this, Pdyn, varargin)
-      [ Texp, output ] = this.estimate(Pdyn, varargin{:});
+    function output = compute(this, Pdyn, varargin)
+      output = this.estimate(Pdyn, varargin{:});
     end
 
     function string = toString(this)

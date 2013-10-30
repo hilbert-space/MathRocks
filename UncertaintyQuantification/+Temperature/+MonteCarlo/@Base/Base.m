@@ -28,7 +28,7 @@ classdef Base < handle
       this.process = ProcessVariation(options);
     end
 
-    function [ Texp, output ] = estimate(this, Pdyn, varargin)
+    function output = estimate(this, Pdyn, varargin)
       %
       % NOTE: We always generate samples here, even though the futher
       % MC simulations might be cached. The reason is to advance the RNG
@@ -51,18 +51,15 @@ classdef Base < handle
           this.sampleCount);
 
         time = tic;
-        Tdata = this.computeWithLeakage(Pdyn, parameters);
 
-        I = squeeze(any(any(isnan(Tdata), 1), 2));
-        Tdata(:, :, I) = [];
-
-        Texp = mean(Tdata, 3);
-        Tvar = var(Tdata, [], 3);
-        Tdata = permute(Tdata, [ 3 1 2 ]);
+        data = this.computeWithLeakage(Pdyn, parameters);
+        I = squeeze(any(any(isnan(data), 1), 2));
+        data(:, :, I) = [];
+        data = permute(data, [ 3 1 2 ]);
 
         time = toc(time);
 
-        save(filename, 'Texp', 'Tvar', 'Tdata', 'time', 'I', '-v7.3');
+        save(filename, 'data', 'I', 'time', '-v7.3');
       end
 
       fprintf('Monte Carlo: done in %.2f seconds.\n', time);
@@ -74,23 +71,22 @@ classdef Base < handle
       end
 
       output.Pdyn = Pdyn;
-      output.Tvar = Tvar;
-      output.Tdata = Tdata;
+      output.data = data;
       output.time = time;
     end
 
-    function Tdata = evaluate(this, output, rvs)
+    function data = evaluate(this, output, rvs)
       parameters = this.process.partition(rvs);
       parameters = this.process.evaluate(parameters);
       parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
       parameters = this.process.assign(parameters);
-      Tdata = permute(this.computeWithLeakage( ...
+      data = permute(this.computeWithLeakage( ...
         output.Pdyn, parameters), [ 3 1 2 ]);
     end
 
-    function options = computeStatistics(this, varargin)
-      options = Options( ...
-        'functionEvaluations', this.sampleCount);
+    function stats = analyze(~, output)
+      stats.expectation = squeeze(mean(output.data, 1));
+      stats.variance = squeeze(var(output.data, [], 1));
     end
 
     function string = toString(this)
