@@ -19,7 +19,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
   active = false(pointCount, dimensionCount);
   iterator = zeros(pointCount, dimensionCount, 'uint8');
   coefficients = cell(dimensionCount, 1);
-  enumerator = zeros(dimensionCount, outputCount);
+  numerator = zeros(dimensionCount, outputCount);
 
   for i = range
     quadratureNodes = this.quadratureNodes(indexes(i, :));
@@ -86,15 +86,15 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       done = leftDimensionCount == 1;
       cursor = positions(j);
 
-      enumerator(:) = 0;
+      numerator(:) = 0;
       while true
         k = dimensions(1);
         if outputCount == 1
-          enumerator(k, :) = enumerator(k, :) + sum( ...
+          numerator(k, :) = numerator(k, :) + sum( ...
             surpluses(cursor + (0:orders(k)), :) .* ...
             coefficients{k});
         else
-          enumerator(k, :) = enumerator(k, :) + sum(bsxfun(@times, ...
+          numerator(k, :) = numerator(k, :) + sum(bsxfun(@times, ...
             surpluses(cursor + (0:orders(k)), :), ...
             coefficients{k}), 1);
         end
@@ -102,9 +102,9 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
         cursor = cursor + orders(k) + 1;
         for l = 2:leftDimensionCount
           k = dimensions(l);
-          enumerator(k, :) = enumerator(k, :) + ...
-            coefficients{k}(index(k) + 1) * enumerator(dimensions(l - 1), :);
-          enumerator(dimensions(l - 1), :) = 0;
+          numerator(k, :) = numerator(k, :) + ...
+            coefficients{k}(index(k) + 1) * numerator(dimensions(l - 1), :);
+          numerator(dimensions(l - 1), :) = 0;
           if index(k) < orders(k)
             index(k) = index(k) + 1;
             break;
@@ -118,7 +118,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       end
 
       result(I(j), :) = result(I(j), :) + ...
-        enumerator(dimensions(end), :) / denominator;
+        numerator(dimensions(end), :) / denominator;
     end
   end
 end
