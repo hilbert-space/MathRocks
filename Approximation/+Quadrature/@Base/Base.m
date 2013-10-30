@@ -57,7 +57,7 @@ classdef Base < handle
         dimensionCount, level, options);
       sparseNodeCount = length(weights);
 
-      order = size(this.rule(level, options), 1);
+      order = numel(this.rule(level, options));
       tensorNodeCount = order^dimensionCount;
 
       if sparseNodeCount <= tensorNodeCount, return; end
