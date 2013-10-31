@@ -1,27 +1,42 @@
-function values = evaluate(this, points, indexes, surpluses)
-  [ indexCount, dimensionCount ] = size(indexes);
-  pointCount = size(points, 1);
+function result = evaluate(this, points, indexes, surpluses, offsets, range)
+  if ~exist('range', 'var'), range = 1:size(indexes, 1); end
+
+  [ pointCount, dimensionCount ] = size(points);
   outputCount = size(surpluses, 2);
 
-  [ nodes, offsets, counts, Li, Mi ] = this.computeNodes(indexes);
+  result = zeros(pointCount, outputCount);
 
-  nodeCount = size(nodes, 1);
-  assert(nodeCount == size(surpluses, 1));
+  for i = range
+    active = indexes(i, :) > 1;
 
-  L = zeros(nodeCount, dimensionCount);
-  M = zeros(nodeCount, dimensionCount);
-  for i = 1:indexCount
-    range = (offsets(i) + 1):(offsets(i) + counts(i));
-    L(range, :) = repmat(Li(i, :), counts(i), 1);
-    M(range, :) = repmat(double(Mi(i, :)), counts(i), 1);
-  end
+    if all(~active)
+      result = result + surpluses(offsets(i) + 1, :);
+      continue;
+    end
 
-  values = zeros(pointCount, outputCount);
+    nodes = this.computeNodes(indexes(i, active));
+    nodeCount = size(nodes, 1);
 
-  for i = 1:pointCount
-    distances = abs(bsxfun(@minus, nodes, points(i, :)));
-    indexes = all(distances < L, 2);
-    values(i, :) = sum(bsxfun(@times, surpluses(indexes, :), ...
-      prod(1 - (M(indexes, :) - 1) .* distances(indexes, :), 2)), 1);
+    range = (offsets(i) + 1):(offsets(i) + nodeCount); % overwrite
+
+    limits = this.limits(indexes(i, active));
+    orders = double(this.orders(indexes(i, active)));
+
+    if dimensionCount == 1
+      for j = 1:pointCount
+        D = abs(nodes - points(j));
+        J = D < limits;
+        result(j, :) = result(j, :) + ...
+          sum(surpluses(range(J), :) * (1 - (orders - 1) * D(J, :)), 1);
+      end
+    else
+      for j = 1:pointCount
+        D = abs(bsxfun(@minus, nodes, points(j, active)));
+        J = all(bsxfun(@lt, D, limits), 2);
+        result(j, :) = result(j, :) + ...
+          sum(bsxfun(@times, surpluses(range(J), :), ...
+            prod(1 - bsxfun(@times, D(J, :), orders - 1), 2)), 1);
+      end
+    end
   end
 end

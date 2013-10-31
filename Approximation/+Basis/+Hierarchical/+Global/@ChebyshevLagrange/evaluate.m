@@ -23,7 +23,6 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
   for i = range
     quadratureNodes = this.quadratureNodes(indexes(i, :));
-    polynomialOrders = this.quadratureOrders(indexes(i, :)) - 1;
     barycentricWeights = this.barycentricWeights(indexes(i, :));
 
     orders = this.counts(indexes(i, :)) - 1;

@@ -32,6 +32,7 @@ function plot(~, nodes, mapping)
     I = mapping == levels(end);
     Plot.line({ nodes(I, 1), nodes(I, 2) }, nodes(I, 3), ...
       'discrete', true, 'style', { 'MarkerFaceColor', 'r' });
+    view(-45, 45);
   otherwise
     assert(false);
   end
