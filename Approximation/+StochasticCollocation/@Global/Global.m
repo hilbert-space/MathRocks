@@ -1,7 +1,7 @@
-classdef Global < StochasticCollocation.Hierarchical.Base
+classdef Global < StochasticCollocation.Base
   methods
     function this = Global(varargin)
-      this = this@StochasticCollocation.Hierarchical.Base(varargin{:});
+      this = this@StochasticCollocation.Base(varargin{:});
     end
   end
 

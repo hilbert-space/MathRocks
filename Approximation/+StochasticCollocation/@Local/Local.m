@@ -1,7 +1,7 @@
-classdef Local < StochasticCollocation.Hierarchical.Base
+classdef Local < StochasticCollocation.Base
   methods
     function this = Local(varargin)
-      this = this@StochasticCollocation.Hierarchical.Base(varargin{:});
+      this = this@StochasticCollocation.Base(varargin{:});
     end
   end
 
