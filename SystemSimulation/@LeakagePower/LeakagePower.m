@@ -31,7 +31,7 @@ classdef LeakagePower < handle
         load(filename);
       else
         fit = Utils.instantiate( ...
-          options.approximation, options, 'targetName', 'Ileak');
+          options.method, options, 'targetName', 'Ileak');
         save(filename, 'fit', '-v7.3');
       end
 
