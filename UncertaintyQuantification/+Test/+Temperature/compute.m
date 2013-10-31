@@ -5,7 +5,7 @@ function compute(varargin)
   options = Configure.processVariation(options);
   options = Configure.surrogate(options);
 
-  surrogate = options.fetch('surrogate', 'Chaos');
+  surrogate = options.fetch('surrogate', 'PolynomialChaos');
   analysis = options.fetch('analysis', 'Transient');
   iterationCount = options.fetch('iterationCount', 1);
 

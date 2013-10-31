@@ -1,37 +1,7 @@
 classdef Base < Temperature.Surrogate
-  properties (SetAccess = 'protected')
-    process
-    distribution
-  end
-
   methods
     function this = Base(varargin)
-      options = Options(varargin{:});
-
-      this.process = ProcessVariation(options.processOptions);
-
-      %
-      % NOTE: For now, only one distribution and only beta.
-      %
-      distributions = this.process.distributions;
-      this.distribution = distributions{1};
-      for i = 2:this.process.parameterCount
-        assert(this.distribution == distributions{i});
-      end
-
-      switch class(this.distribution)
-      case 'ProbabilityDistribution.Beta'
-      otherwise
-        assert(false);
-      end
-
-      this.surrogate = SparseGrid.SpaceAdaptive( ...
-        'inputCount', sum(this.process.dimensions), ...
-        'relativeTolerance', 1e-2, ...
-        'absoluteTolerance', 1e-3, ...
-        'maximalLevel', 10, ...
-        'verbose', true, ...
-        options.surrogateOptions);
+      this = this@Temperature.Surrogate(varargin{:});
     end
 
     function output = interpolate(this, Pdyn)
@@ -42,6 +12,30 @@ classdef Base < Temperature.Surrogate
   end
 
   methods (Access = 'protected')
+    function surrogate = configure(this, options)
+      %
+      % NOTE: For now, only one distribution and only beta.
+      %
+      distributions = this.process.distributions;
+      distribution = distributions{1};
+      for i = 2:this.process.parameterCount
+        assert(distribution == distributions{i});
+      end
+
+      switch class(distribution)
+      case 'ProbabilityDistribution.Beta'
+      otherwise
+        assert(false);
+      end
+
+      surrogate = Utils.instantiate( ...
+         String.join('.', 'Interpolation', options.interpolant), ...
+        'inputCount', sum(this.process.dimensions), ...
+        'relativeTolerance', 1e-2, ...
+        'absoluteTolerance', 1e-3, ...
+        'maximalLevel', 10, options);
+    end
+
     function parameters = preprocess(this, rvs)
       rvs(rvs == 0) = sqrt(eps);
       rvs(rvs == 1) = 1 - sqrt(eps);

@@ -1,12 +1,12 @@
 classdef DynamicSteadyState < ...
   Temperature.Analytical.DynamicSteadyState & ...
-  Temperature.SparseGrid.Base
+  Temperature.StochasticCollocation.Base
 
   methods
     function this = DynamicSteadyState(varargin)
       options = Options(varargin{:});
       this = this@Temperature.Analytical.DynamicSteadyState(options);
-      this = this@Temperature.SparseGrid.Base(options);
+      this = this@Temperature.StochasticCollocation.Base(options);
     end
 
     function output = compute(this, varargin)

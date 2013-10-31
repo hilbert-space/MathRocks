@@ -1,9 +1,16 @@
 classdef Surrogate < handle
-  properties (SetAccess = 'protected')
+  properties (SetAccess = 'private')
+    process
     surrogate
   end
 
   methods
+    function this = Surrogate(varargin)
+      options = Options(varargin{:});
+      this.process = ProcessVariation(options.processOptions);
+      this.surrogate = this.configure(options.surrogateOptions);
+    end
+
     function stats = analyze(this, varargin)
       stats = this.surrogate.analyze(varargin{:});
       stats.expectation = reshape(stats.expectation, this.processorCount, []);
@@ -23,5 +30,9 @@ classdef Surrogate < handle
     function display(this, varargin)
       this.surrogate.display(varargin{:});
     end
+  end
+
+  methods (Abstract, Access = 'protected')
+    surrogate = configure(this, options)
   end
 end
