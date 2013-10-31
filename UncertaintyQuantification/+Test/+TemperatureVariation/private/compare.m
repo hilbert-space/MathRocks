@@ -6,7 +6,7 @@ function compare(options, secondOptions)
 
   options = Configure.systemSimulation(options);
   options = Configure.processVariation(options);
-  options = Configure.surrogate(options);
+  options = Configure.temperatureVariation(options);
 
   oneMethod = 'MonteCarlo';
   twoMethod = options.fetch('surrogate', 'Chaos');

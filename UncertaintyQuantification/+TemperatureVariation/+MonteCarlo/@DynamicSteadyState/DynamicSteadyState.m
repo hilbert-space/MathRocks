@@ -1,6 +1,6 @@
 classdef DynamicSteadyState < ...
   Temperature.Analytical.DynamicSteadyState & ...
-  Temperature.MonteCarlo.Base
+  TemperatureVariation.MonteCarlo.Base
 
   methods
     function this = DynamicSteadyState(varargin)
@@ -22,7 +22,7 @@ classdef DynamicSteadyState < ...
       end
 
       this = this@Temperature.Analytical.DynamicSteadyState(options);
-      this = this@Temperature.MonteCarlo.Base(options);
+      this = this@TemperatureVariation.MonteCarlo.Base(options);
     end
 
     function output = compute(this, Pdyn, varargin)

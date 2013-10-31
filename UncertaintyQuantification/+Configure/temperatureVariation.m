@@ -1,4 +1,4 @@
-function options = surrogate(varargin)
+function options = temperatureVariation(varargin)
   options = Options(varargin{:});
 
   switch options.ensure('surrogate', 'PolynomialChaos')

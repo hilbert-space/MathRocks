@@ -1,7 +1,7 @@
-classdef Base < Temperature.Surrogate
+classdef Base < TemperatureVariation.Base
   methods
     function this = Base(varargin)
-      this = this@Temperature.Surrogate(varargin{:});
+      this = this@TemperatureVariation.Base(varargin{:});
     end
 
     function output = expand(this, Pdyn)

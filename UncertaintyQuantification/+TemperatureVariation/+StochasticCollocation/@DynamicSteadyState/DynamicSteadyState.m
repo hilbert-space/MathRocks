@@ -1,19 +1,20 @@
 classdef DynamicSteadyState < ...
   Temperature.Analytical.DynamicSteadyState & ...
-  Temperature.PolynomialChaos.Base
+  TemperatureVariation.StochasticCollocation.Base
 
   methods
     function this = DynamicSteadyState(varargin)
       options = Options(varargin{:});
       this = this@Temperature.Analytical.DynamicSteadyState(options);
-      this = this@Temperature.PolynomialChaos.Base(options);
+      this = this@TemperatureVariation.StochasticCollocation.Base(options);
     end
 
     function output = compute(this, varargin)
-      output = this.expand(varargin{:});
+      output = this.interpolate(varargin{:});
     end
 
     function plot(this, varargin)
+      if this.surrogate.inputCount > 3, return; end
       this.surrogate.plot(varargin{:});
     end
   end

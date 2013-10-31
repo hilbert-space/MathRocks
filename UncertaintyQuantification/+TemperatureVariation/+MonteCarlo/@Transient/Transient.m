@@ -1,6 +1,6 @@
 classdef Transient < ...
   Temperature.Analytical.Transient & ...
-  Temperature.MonteCarlo.Base
+  TemperatureVariation.MonteCarlo.Base
 
   methods
     function this = Transient(varargin)
@@ -17,7 +17,7 @@ classdef Transient < ...
       end
 
       this = this@Temperature.Analytical.Transient(options);
-      this = this@Temperature.MonteCarlo.Base(options);
+      this = this@TemperatureVariation.MonteCarlo.Base(options);
     end
 
     function output = compute(this, Pdyn, varargin)
@@ -27,7 +27,7 @@ classdef Transient < ...
     function string = toString(this)
       string = [ '[ ', ...
         toString@Temperature.Analytical.Transient(this), ', ', ...
-        toString@Temperature.MonteCarlo.Base(this), ' ]' ];
+        toString@TemperatureVariation.MonteCarlo.Base(this), ' ]' ];
     end
   end
 end

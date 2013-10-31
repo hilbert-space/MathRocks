@@ -1,11 +1,11 @@
-classdef Surrogate < handle
+classdef Base < handle
   properties (SetAccess = 'private')
     process
     surrogate
   end
 
   methods
-    function this = Surrogate(varargin)
+    function this = Base(varargin)
       options = Options(varargin{:});
       this.process = ProcessVariation(options.processOptions);
       this.surrogate = this.configure(options.surrogateOptions);
