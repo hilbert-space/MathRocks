@@ -13,15 +13,15 @@ function sweep(varargin)
 
   if options.has('surrogate')
     fprintf('Surrogate: %s\n', options.surrogate);
-    options = Configure.surrogate(options);
+    options = Configure.temperatureVariation(options);
     surrogate = Utils.instantiate(String.join('.', ...
-      'Temperature', options.surrogate, analysis), options);
+      'TemperatureVariation', options.surrogate, analysis), options);
     fprintf('Surrogate: construction...\n');
     time = tic;
-    [ ~, surrogateOutput ] = surrogate.compute(options.dynamicPower);
+    surrogateOutput = surrogate.compute(options.dynamicPower);
     fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
 
-    display(surrogate.computeStatistics(surrogateOutput), 'Statistics');
+    display(surrogate, surrogateOutput);
 
     process = surrogate.process;
   else

@@ -59,8 +59,6 @@ function options = systemSimulation(varargin)
   %
   % Leakage power
   %
-  options.ensure('referenceCircuit', 'ring_nangate_VTL_T_L_Tox');
-
   function parameter = configureParameter(name, parameter)
     if nargin < 2, parameter = Options; end
     switch name
@@ -94,6 +92,8 @@ function options = systemSimulation(varargin)
   end
 
   options.leakageParameters = leakageParameters;
+  options.ensure('referenceCircuit', ...
+    [ 'ring_nangate_VTL_', Name.parameters(leakageParameters) ]);
 
   %
   % Leakage power

@@ -147,7 +147,6 @@ function output = construct(this, f, outputCount)
 
   output = struct;
 
-  output.inputCount = inputCount;
   output.outputCount = outputCount;
 
   output.level = level;

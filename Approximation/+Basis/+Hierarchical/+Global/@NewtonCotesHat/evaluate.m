@@ -10,7 +10,8 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     active = indexes(i, :) > 1;
 
     if all(~active)
-      result = result + surpluses(offsets(i) + 1, :);
+      result = result + ...
+        repmat(surpluses(offsets(i) + 1, :), pointCount, 1);
       continue;
     end
 

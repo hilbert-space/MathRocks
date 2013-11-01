@@ -42,7 +42,10 @@ function compare(options, secondOptions)
     fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
   end
 
-  if ~isfield(twoStats, 'variance') || isempty(twoStats.variance)
+  if ~isfield(twoStats, 'variance') || ...
+    isempty(twoStats.variance) || ...
+    any(isnan(twoStats.variance(:)))
+
     twoStats.variance = squeeze(var(twoOutput.data, [], 1));
   end
 
