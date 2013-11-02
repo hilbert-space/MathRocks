@@ -16,48 +16,137 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
   result = zeros(pointCount, outputCount);
 
+  present = false(pointCount, 1);
   active = false(pointCount, dimensionCount);
-  iterator = zeros(pointCount, dimensionCount, 'uint8');
-  coefficients = cell(dimensionCount, 1);
+  nonzero = false(pointCount, 1);
+
+  iterators = zeros(pointCount, dimensionCount, 'uint32');
   numerator = zeros(dimensionCount, outputCount);
 
+  coefficients = cell(dimensionCount, 1);
+
   for i = range
+    index = indexes(i, :);
+
+    if all(index == 1)
+      %
+      % A special case: there is only one multidimensional node; thus,
+      % the order of the Lagrange polynomial is zero, and its value is
+      % just the corresponding surplus itself.
+      %
+      result = result + repmat(surpluses(offsets(i) + 1, :), pointCount, 1);
+      continue;
+    end
+
     quadratureNodes = this.quadratureNodes(indexes(i, :));
     barycentricWeights = this.barycentricWeights(indexes(i, :));
-
     orders = this.counts(indexes(i, :)) - 1;
-    nodes = this.nodes(indexes(i, :));
 
     active(:) = false;
-    iterator(:) = 0;
+    nonzero(:) = true;
+
+    iterators(:) = 0;
 
     for k = 1:dimensionCount
-      if orders(k) == 0, continue; end
-      [ M, I ] = ismember(points(:, k), nodes{k});
-      iterator(M, k) = I(M) - 1;
-      active(~M, k) = true;
+      %
+      % The same comment as before: the first level correspond to
+      % zero-order Lagrange polynomials, and, for a zero-order
+      % polynomial, we do not need any complex interpolation: the
+      % polynomial in the kth dimension is one.
+      %
+      if index(k) == 1, continue; end
+
+      %
+      % The following two categories of points require special treatments:
+      %
+      % (a) the points that belong to the hierarchical set of points and
+      % (b) the points that are present in the nodal set of points but not
+      % in the hierarchical one.
+      %
+      % In the first case, the one-dimensional Lagrange polynomial in
+      % the kth dimension is one.
+      %
+      % In the second case, the one-dimensional Lagrange polynomial in
+      % the kth dimension is zero, and, therefore, the multidimensional
+      % polynomial is also zero.
+      %
+      [ present(:), I ] = isalmostmember(points(:, k), quadratureNodes{k});
+
+      if nnz(present) == 0
+        active(:, k) = true;
+        continue;
+      end
+
+      active(~present, k) = true;
+
+      if index(k) == 2
+        %
+        % In this case, the second category contains only one node,
+        % which is the middle node equal to 0.5.
+        %
+        nonzero(present & (I == 2)) = false;
+
+        %
+        % Convert the nodal-based ordering of the nodes to the
+        % hierarchical one and start counting from zero.
+        %
+        % 1 -> 0 -> 0
+        % 3 -> 2 -> 1
+        %
+        iterators(present & nonzero, k) = (I(present & nonzero) - 1) / 2;
+      else % level > 2
+        %
+        % In this case, the second category contains the nodes whose
+        % indexes (starting from one) are odd numbers.
+        %
+        nonzero(present & (mod(I, 2) == 1)) = false;
+
+        %
+        % Convert the nodal-based ordering of the nodes to the
+        % hierarchical one and start counting from zero.
+        %
+        % 2 -> 1 -> 0
+        % 4 -> 2 -> 1
+        % 6 -> 3 -> 2
+        % ...
+        %
+        iterators(present & nonzero, k) = I(present & nonzero) / 2 - 1;
+      end
+
+      if nnz(nonzero) == 0, break; end
     end
 
-    I = all(~active, 2);
+    %
+    % Find the nodes whose multidimensional Lagrange polynomials are
+    % equal to one. This event occurs when each component of a node
+    % either is in the corresponding one-dimensional quadrature or
+    % its corresponding level is one. For such nodes, the corresponding
+    % surpluses can be added without any extra coefficients.
+    %
+    I = all(~active, 2) & nonzero;
     if any(I)
       result(I, :) = result(I, :) + surpluses(offsets(i) + ...
-        Utils.indexTensor(iterator(I, :) + 1, orders + 1), :);
-      I = find(~I);
-      leftPointCount = length(I);
-      if leftPointCount == 0, continue; end
-    else
-      I = 1:pointCount;
-      leftPointCount = pointCount;
+        Utils.indexTensor(iterators(I, :) + 1, orders + 1), :);
     end
+
+    %
+    % Find the nodes that require interpolation: they are not in
+    % the multidimensional grid, and the corresponding polynomials
+    % are nonzero.
+    %
+    I = find(any(active, 2) & nonzero);
+    leftPointCount = length(I);
+
+    if leftPointCount == 0, continue; end
 
     positions = offsets(i) + ones(leftPointCount, 1, 'uint32');
     for k = 1:dimensionCount
-      positions = positions + (uint32(iterator(I, k) + 1) - 1) * ...
+      positions = positions + (iterators(I, k) + 1 - 1) * ...
         prod(uint32(orders(1:(k - 1)) + 1));
     end
 
     for j = 1:leftPointCount
-      index = iterator(I(j), :);
+      iterator = iterators(I(j), :);
       point = points(I(j), :);
       dimensions = find(active(I(j), :));
       leftDimensionCount = length(dimensions);
@@ -72,43 +161,44 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
         % Preserve only the coefficients that are relevant to
         % the hierarchical level.
         %
-        switch indexes(i, k)
-        case 1
-        case 2
+        if index(k) == 2
           coefficients{k} = coefficients{k}([ 1, 3 ]);
-        otherwise
+        else % level > 2 as it cannot be one at this point
           coefficients{k} = coefficients{k}( ...
-            (1:2^(uint32(indexes(i, k)) - 2)) * 2);
+            (1:2^(uint32(index(k)) - 2)) * 2);
         end
       end
 
       done = leftDimensionCount == 1;
       cursor = positions(j);
+      step = uint32(iterator(dimensions(1)) + 1) * ...
+        prod(uint32(orders(1:(dimensions(1) - 1)) + 1));
 
       numerator(:) = 0;
       while true
         k = dimensions(1);
         if outputCount == 1
           numerator(k, :) = numerator(k, :) + sum( ...
-            surpluses(cursor + (0:orders(k)), :) .* ...
+            surpluses(cursor + step * (0:orders(k)), :) .* ...
             coefficients{k});
         else
           numerator(k, :) = numerator(k, :) + sum(bsxfun(@times, ...
-            surpluses(cursor + (0:orders(k)), :), ...
+            surpluses(cursor + step * (0:orders(k)), :), ...
             coefficients{k}), 1);
         end
-        index(k) = orders(k);
-        cursor = cursor + orders(k) + 1;
+        iterator(k) = orders(k);
+        cursor = cursor + step * (orders(k) + 1);
         for l = 2:leftDimensionCount
           k = dimensions(l);
           numerator(k, :) = numerator(k, :) + ...
-            coefficients{k}(index(k) + 1) * numerator(dimensions(l - 1), :);
+            coefficients{k}(iterator(k) + 1) * ...
+            numerator(dimensions(l - 1), :);
           numerator(dimensions(l - 1), :) = 0;
-          if index(k) < orders(k)
-            index(k) = index(k) + 1;
+          if iterator(k) < orders(k)
+            iterator(k) = iterator(k) + 1;
             break;
           elseif l < leftDimensionCount
-            index(k) = 0;
+            iterator(k) = 0;
           else
             done = true;
           end
@@ -120,4 +210,9 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
         numerator(dimensions(end), :) / denominator;
     end
   end
+end
+
+function [ LIA, LOCB ] = isalmostmember(A, B)
+  epsilon = sqrt(eps);
+  [ LIA, LOCB ] = ismember(round(A / epsilon), round(B / epsilon));
 end

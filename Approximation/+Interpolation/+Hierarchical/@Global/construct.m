@@ -144,7 +144,10 @@ function output = construct(this, f, outputCount)
       level = max(level, newLevel);
 
       indexes(J(i), I(i)) = newLevel;
-      forward(newBackward(I(i), newBackward(I(i), :) > 0), I(i)) = J(i);
+
+      for j = find(newBackward(I(i), :) > 0)
+        forward(newBackward(I(i), j), j) = J(i);
+      end
     end
     backward(J, :) = newBackward(I, :);
 

@@ -34,8 +34,8 @@ function line(x, y, varargin)
   x = cellfun(@(z) z(1:options.markEach:end), x, 'UniformOutput', false);
   y = y(1:options.markEach:end);
 
-  h = line(x{:}, y, style{:}, 'LineStyle', 'None', ...
-    'Marker', Marker.pick(number), 'MarkerSize', 16);
+  h = line(x{:}, y, 'LineStyle', 'None', ...
+    'Marker', Marker.pick(number), 'MarkerSize', 10, style{:});
 
   set(get(get(h, 'Annotation'), 'LegendInformation'), ...
     'IconDisplayStyle', 'off');

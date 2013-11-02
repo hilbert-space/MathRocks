@@ -15,7 +15,7 @@ function [ nodesND, weightsND ] = smolyak( ...
   % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
   %
 
-  epsilon = 1e-8;
+  epsilon = sqrt(eps);
   maximalNodeCount = 100 * dimensionCount;
 
   nodesND = zeros(maximalNodeCount, dimensionCount);
@@ -66,7 +66,7 @@ function [ nodesND, weightsND ] = smolyak( ...
 
   nodeCount = size(nodesND, 1);
 
-  [ ~, I ] = sortrows(round(nodesND / epsilon) * epsilon);
+  [ ~, I ] = sortrows(round(nodesND / epsilon));
   nodesND = nodesND(I, :);
   weightsND = weightsND(I);
 

@@ -1,19 +1,14 @@
 function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
   options = Options( ...
-    'inputCount', 1, ...
-    'outputCount', 1, ...
     'sampleCount', 1e3, ...
-    'absoluteTolerance', 1e-3, ...
+    'absoluteTolerance', 1e-4, ...
     'relativeTolerance', 1e-2, ...
-    'maximalLevel', 20, ...
+    'maximalLevel', 10, ...
     'verbose', true, varargin{:});
 
   inputCount = options.inputCount;
-  sampleCount = options.sampleCount;
 
   hasExact = options.has('exactExpectation') && options.has('exactVariance');
-
-  u = rand(sampleCount, inputCount);
 
   surrogate = instantiate(options);
 
@@ -21,7 +16,7 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
   surrogateOutput = surrogate.construct(f);
   fprintf('Construction time: %.2f s\n', toc(time));
 
-  display(Options(surrogateOutput), 'Interpolation');
+  display(surrogate, surrogateOutput);
 
   if inputCount <= 3
     surrogate.plot(surrogateOutput);
@@ -29,29 +24,61 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
 
   switch inputCount
   case 1
-    x = (0:0.01:1).';
-    Plot.figure(1000, 600);
-    Plot.line(x, f(x), 'number', 1);
-    Plot.line(x, surrogate.evaluate(surrogateOutput, x), 'number', 2);
-    Plot.legend('Exact', 'Approximation');
-  case 2
-    x = 0:0.05:1;
-    y = 0:0.05:1;
-    [ X, Y ] = meshgrid(x, y);
-    Z = zeros(size(X));
+    if options.has('plotGrid')
+      x = options.plotGrid;
+    else
+      x = (0:0.01:1).';
+    end
+
+    z1 = f(x);
+    z2 = surrogate.evaluate(surrogateOutput, x);
 
     Plot.figure(1000, 600);
 
-    Z(:) = f([ X(:) Y(:) ]);
     subplot(1, 2, 1);
-    mesh(X, Y, Z);
+    Plot.line(x, z1);
     Plot.title('Exact');
 
-    Z(:) = surrogate.evaluate(surrogateOutput, [ X(:) Y(:) ]);
     subplot(1, 2, 2);
-    mesh(X, Y, Z);
+    Plot.line(x, z2);
     Plot.title('Approximation');
+
+    Plot.figure(1000, 600);
+
+    Plot.line(x, abs(z1 - z2), 'number', 1);
+    Plot.title('Absolute error');
+  case 2
+    if options.has('plotGrid')
+      X = options.plotGrid{1};
+      Y = options.plotGrid{2};
+    else
+      x = 0:0.05:1;
+      y = 0:0.05:1;
+      [ X, Y ] = meshgrid(x, y);
+    end
+
+    Z1 = zeros(size(X));
+    Z2 = zeros(size(X));
+
+    Plot.figure(1000, 600);
+
+    Z1(:) = f([ X(:) Y(:) ]);
+    subplot(1, 2, 1);
+    mesh(X, Y, Z1);
+    Plot.title('Exact');
+
+    Z2(:) = surrogate.evaluate(surrogateOutput, [ X(:) Y(:) ]);
+    subplot(1, 2, 2);
+    mesh(X, Y, Z2);
+    Plot.title('Approximation');
+
+    Plot.figure(1000, 600);
+
+    mesh(X, Y, abs(Z1 - Z2));
+    Plot.title('Absolute error');
   end
+
+  u = rand(options.sampleCount, inputCount);
 
   time = tic;
   mcData = f(u);
@@ -97,6 +124,8 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
   fprintf('\n');
 
   fprintf('Pointwise:\n');
+  fprintf('  L2:              %e\n', ...
+    Error.computeL2(mcData, surrogateData));
   fprintf('  Normalized L2:   %e\n', ...
     Error.computeNL2(mcData, surrogateData));
   fprintf('  Normalized RMSE: %e\n', ...
