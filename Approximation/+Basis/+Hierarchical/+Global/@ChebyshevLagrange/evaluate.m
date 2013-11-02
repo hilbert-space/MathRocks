@@ -26,7 +26,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
   coefficients = cell(dimensionCount, 1);
 
   for i = range
-    index = indexes(i, :);
+    index = uint32(indexes(i, :));
 
     if all(index == 1)
       %
@@ -40,7 +40,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
     quadratureNodes = this.quadratureNodes(indexes(i, :));
     barycentricWeights = this.barycentricWeights(indexes(i, :));
-    orders = this.counts(indexes(i, :)) - 1;
+    orders = uint32(this.counts(indexes(i, :)) - 1);
 
     active(:) = false;
     nonzero(:) = true;
@@ -69,6 +69,11 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       % In the second case, the one-dimensional Lagrange polynomial in
       % the kth dimension is zero, and, therefore, the multidimensional
       % polynomial is also zero.
+      %
+
+      %
+      % TODO: Cache the result of this operation as it is being repeated
+      % several times with the same arguments?
       %
       [ present(:), I ] = isalmostmember(points(:, k), quadratureNodes{k});
 
@@ -139,10 +144,21 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
     if leftPointCount == 0, continue; end
 
+    %
+    % Precompute the starting positions of the surpluses and
+    % the corresponding steps with respect to the first active
+    % dimension.
+    %
     positions = offsets(i) + ones(leftPointCount, 1, 'uint32');
+    steps = ones(leftPointCount, 1, 'uint32');
+
+    [ J, K ] = find(active(I, :));
+    K = accumarray(J, K, [], @min);
+
     for k = 1:dimensionCount
       positions = positions + (iterators(I, k) + 1 - 1) * ...
-        prod(uint32(orders(1:(k - 1)) + 1));
+        prod(orders(1:(k - 1)) + 1);
+      steps(k < K) = steps(k < K) .* (orders(k) + 1);
     end
 
     for j = 1:leftPointCount
@@ -151,7 +167,11 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       dimensions = find(active(I(j), :));
       leftDimensionCount = length(dimensions);
 
+      %
+      % First, we compute the denominator.
+      %
       denominator = 1;
+
       for k = dimensions
         coefficients{k} = transpose(barycentricWeights{k} ./ ...
           (point(k) - quadratureNodes{k}));
@@ -164,30 +184,33 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
         if index(k) == 2
           coefficients{k} = coefficients{k}([ 1, 3 ]);
         else % level > 2 as it cannot be one at this point
-          coefficients{k} = coefficients{k}( ...
-            (1:2^(uint32(index(k)) - 2)) * 2);
+          coefficients{k} = coefficients{k}((1:2^(index(k) - 2)) * 2);
         end
       end
 
-      done = leftDimensionCount == 1;
-      cursor = positions(j);
-      step = uint32(iterator(dimensions(1)) + 1) * ...
-        prod(uint32(orders(1:(dimensions(1) - 1)) + 1));
-
+      %
+      % Then, we compute the numerator.
+      %
       numerator(:) = 0;
+
+      position = positions(j);
+      step = steps(j);
+
+      done = leftDimensionCount == 1;
+
       while true
         k = dimensions(1);
         if outputCount == 1
-          numerator(k, :) = numerator(k, :) + sum( ...
-            surpluses(cursor + step * (0:orders(k)), :) .* ...
+          numerator(k) = numerator(k) + sum( ...
+            surpluses(position + step * (0:orders(k))) .* ...
             coefficients{k});
         else
           numerator(k, :) = numerator(k, :) + sum(bsxfun(@times, ...
-            surpluses(cursor + step * (0:orders(k)), :), ...
+            surpluses(position + step * (0:orders(k)), :), ...
             coefficients{k}), 1);
         end
         iterator(k) = orders(k);
-        cursor = cursor + step * (orders(k) + 1);
+        position = position + step * (orders(k) + 1);
         for l = 2:leftDimensionCount
           k = dimensions(l);
           numerator(k, :) = numerator(k, :) + ...
