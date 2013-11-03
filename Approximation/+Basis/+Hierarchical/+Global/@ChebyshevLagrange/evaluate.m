@@ -161,8 +161,8 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     K = accumarray(J, K, [], @min);
     J = [ 1, cumprod(orders(1:(end - 1)) + 1) ];
 
-    positions = double(offsets(i)) + 1 + ...
-      sum(bsxfun(@times, iterators(I, :), J), 2); % sum returns double
+    positions = offsets(i) + 1 + ...
+      sum(bsxfun(@times, iterators(I, :), J), 2, 'native');
     steps = J(K);
 
     for j = 1:leftPointCount
