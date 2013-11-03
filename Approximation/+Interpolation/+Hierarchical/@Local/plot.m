@@ -10,5 +10,11 @@ function plot(this, output)
     k = k + levelNodeCount(i);
   end
 
-  plot@Interpolation.Hierarchical.Base(this, nodes, mapping);
+  %
+  % NOTE: Regarding the indexes, the drawing is inefficient as there are
+  % a lot of overlaps (many nodes correspond to the same set of levels).
+  %
+  plot@Interpolation.Hierarchical.Base(this, ...
+    'nodes', nodes, 'nodeMapping', mapping, ...
+    'indexes', output.levels, 'indexMapping', mapping);
 end
