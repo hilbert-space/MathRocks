@@ -154,21 +154,16 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     if leftPointCount == 0, continue; end
 
     %
-    % Precompute the starting positions of the surpluses and
-    % the corresponding steps with respect to the first active
-    % dimension.
+    % Precompute the starting positions of the surpluses and the
+    % corresponding steps with respect to the first active dimension.
     %
-    positions = offsets(i) + ones(leftPointCount, 1, 'uint32');
-    steps = ones(leftPointCount, 1, 'uint32');
-
     [ J, K ] = find(active(I, :));
     K = accumarray(J, K, [], @min);
+    J = [ 1, cumprod(orders(1:(end - 1)) + 1) ];
 
-    for k = 1:dimensionCount
-      positions = positions + (iterators(I, k) + 1 - 1) * ...
-        prod(orders(1:(k - 1)) + 1);
-      steps(k < K) = steps(k < K) .* (orders(k) + 1);
-    end
+    positions = double(offsets(i)) + 1 + ...
+      sum(bsxfun(@times, iterators(I, :), J), 2); % sum returns double
+    steps = J(K);
 
     for j = 1:leftPointCount
       iterator = iterators(I(j), :);
