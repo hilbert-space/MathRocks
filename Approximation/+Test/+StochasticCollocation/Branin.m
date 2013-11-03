@@ -3,7 +3,8 @@ function Branin(varargin)
   % Reference:
   %
   % A. Klimke. Sparse Grid Interpolation Toolbox.
-  % (examples/spadaptdemo.m)
+  %
+  % examples/spadaptdemo.m
   %
   setup;
 
