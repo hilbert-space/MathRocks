@@ -1,5 +1,6 @@
 function error = computeKLD(P, Q)
-  assert(size(P, 1) == 1 && size(Q, 1) == 1 && size(P, 2) == size(Q, 2));
+  P = P(:);
+  Q = Q(:);
 
   Q = Q ./ sum(Q);
   P = P ./ sum(P);

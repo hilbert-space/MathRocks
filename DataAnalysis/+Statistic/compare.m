@@ -14,11 +14,9 @@ function [ globalError, localError ] = compare(varargin)
     'The given number of dimensions is not supported.');
 
   options = Options('draw', false, 'layout', 'tiles', 'names', {}, ...
-    'errorMetric', 'NRMSE', options);
+    'errorMetric', 'RMSE', options);
 
-  if ~options.has('distanceMetric');
-    options.distanceMetric = options.errorMetric;
-  end
+  options.ensure('distanceMetric', 'KLD');
 
   if dimensions == 2
     [ globalError, localError ] = compare2D(data{1}, data{2}, options);
@@ -119,12 +117,22 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   localError = zeros(dimensionCount, codimensionCount);
 
-  h = Bar(sprintf('Comparison of %d steps in parallel...', codimensionCount), 100, 50);
-  parfor i = 1:codimensionCount
-    [ ~, localError(:, i) ] = compare2D( ...
-      oneData(:, :, i), twoData(:, :, i), options);
+  if matlabpool('size') == 0
+    h = Bar('Comparing step %d out of %d...', codimensionCount);
+    for i = 1:codimensionCount
+      [ ~, localError(:, i) ] = compare2D( ...
+        oneData(:, :, i), twoData(:, :, i), options);
+      h.increase;
+    end
+  else
+    h = Bar(sprintf('Comparison of %d steps in parallel...', ...
+      codimensionCount), 100, 50);
+    parfor i = 1:codimensionCount
+      [ ~, localError(:, i) ] = compare2D( ...
+        oneData(:, :, i), twoData(:, :, i), options);
+    end
+    close(h);
   end
-  close(h);
 
   globalError = mean(localError(:));
 
@@ -155,7 +163,8 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   Plot.limit(time);
 
   subplot(1, 3, 3);
-  Plot.title('Distribution (mean %.4f)', globalError);
+  Plot.title('Distribution (%s %.4f)', ...
+    options.distanceMetric, globalError);
   Plot.label('', options.distanceMetric);
   Plot.limit(time);
 
