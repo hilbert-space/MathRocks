@@ -8,7 +8,7 @@ function assess(varargin)
   options = Configure.systemSimulation(options);
   options = options.leakageOptions;
 
-  approximation = options.approximation;
+  method = options.method;
 
   leakage = LeakagePower(options);
   parameters = options.parameters;
@@ -16,13 +16,13 @@ function assess(varargin)
   %
   % Accuracy
   %
-  switch approximation
+  switch method
   case 'Interpolation.Linear'
     plotLeakage(leakage, parameters);
   otherwise
     referenceLeakage = LeakagePower( ...
       'filename', options.filename, 'parameters', parameters, ...
-      'approximation', 'Interpolation.Linear');
+      'method', 'Interpolation.Linear');
 
     grid = Grid(options, 'targetName', 'Ileak');
     Iref = referenceLeakage.compute(grid.parameterData{:});
@@ -31,7 +31,7 @@ function assess(varargin)
     error = Error.compute(errorMetric, Iref, Ipred);
 
     Plot.figure(1200, 400);
-    Plot.name('%s: %s %.4f', approximation, errorMetric, error);
+    Plot.name('%s: %s %.4f', method, errorMetric, error);
 
     subplot(1, 2, 1);
     plotLeakage(referenceLeakage, parameters, 'figure', false);
@@ -39,7 +39,7 @@ function assess(varargin)
 
     subplot(1, 2, 2);
     plotLeakage(leakage, parameters, 'figure', false, 'grid', grid);
-    Plot.title(approximation);
+    Plot.title(method);
   end
 
   if ~assessSpeed, return; end
