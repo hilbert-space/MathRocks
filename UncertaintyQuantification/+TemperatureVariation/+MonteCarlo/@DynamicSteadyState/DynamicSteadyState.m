@@ -1,5 +1,5 @@
 classdef DynamicSteadyState < ...
-  Temperature.Analytical.DynamicSteadyState & ...
+  TemperatureAnalysis.Analytical.DynamicSteadyState & ...
   TemperatureVariation.MonteCarlo.Base
 
   methods
@@ -21,7 +21,7 @@ classdef DynamicSteadyState < ...
         options.algorithmVersion = 2;
       end
 
-      this = this@Temperature.Analytical.DynamicSteadyState(options);
+      this = this@TemperatureAnalysis.Analytical.DynamicSteadyState(options);
       this = this@TemperatureVariation.MonteCarlo.Base(options);
     end
 

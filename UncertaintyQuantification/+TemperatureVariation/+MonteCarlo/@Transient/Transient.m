@@ -1,5 +1,5 @@
 classdef Transient < ...
-  Temperature.Analytical.Transient & ...
+  TemperatureAnalysis.Analytical.Transient & ...
   TemperatureVariation.MonteCarlo.Base
 
   methods
@@ -16,7 +16,7 @@ classdef Transient < ...
         options.remove('linearizeLeakage');
       end
 
-      this = this@Temperature.Analytical.Transient(options);
+      this = this@TemperatureAnalysis.Analytical.Transient(options);
       this = this@TemperatureVariation.MonteCarlo.Base(options);
     end
 

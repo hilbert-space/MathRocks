@@ -1,11 +1,11 @@
 classdef Transient < ...
-  Temperature.Analytical.Transient & ...
+  TemperatureAnalysis.Analytical.Transient & ...
   TemperatureVariation.StochasticCollocation.Base
 
   methods
     function this = Transient(varargin)
       options = Options(varargin{:});
-      this = this@Temperature.Analytical.Transient(options);
+      this = this@TemperatureAnalysis.Analytical.Transient(options);
       this = this@TemperatureVariation.StochasticCollocation.Base(options);
     end
 
