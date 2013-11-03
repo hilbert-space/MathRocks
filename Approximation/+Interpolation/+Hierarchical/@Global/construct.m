@@ -65,9 +65,15 @@ function output = construct(this, f, outputCount)
 
   while true
     I = find(active);
+    activeIndexCount = numel(I);
 
     verbose('Level %2d, total indexes %6d, active indexes %6d, nodes %6d.\n', ...
-      level, indexCount, numel(I), nodeCount);
+      level, indexCount, activeIndexCount, nodeCount);
+
+    if activeIndexCount == 0
+      verbose('There are no active indexes to refine.\n');
+      break;
+    end
 
     if all(max(errors(I, :), [], 1) < max(absoluteTolerance, ...
       relativeTolerance * (maximalValue - minimalValue)))
@@ -79,13 +85,9 @@ function output = construct(this, f, outputCount)
     %
     % Find the next active index to refine.
     %
-    switch numel(I)
-    case 0
-      verbose('There are no active indexes to refine.\n');
-      break;
-    case 1
+    if activeIndexCount == 1
       C = I;
-    otherwise
+    else
       [ minimalSum, i ] = min(scores(I, 1));
       maximalSum = max(scores(1:indexCount, 1));
       if minimalSum > (1 - adaptivityDegree) * maximalSum
