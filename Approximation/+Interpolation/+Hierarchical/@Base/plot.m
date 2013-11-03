@@ -35,7 +35,7 @@ function draw(quantity, levels, mapping, style)
   case 1
     color = 'k';
     for i = levels
-      if i == levels(end), color = 'r'; end
+      if i > 1 && i == levels(end), color = 'r'; end
       I = mapping == i;
       Plot.line(quantity(I), i * ones(size(nnz(I), 1)), ...
         'discrete', true, 'style', style(color));
@@ -44,23 +44,25 @@ function draw(quantity, levels, mapping, style)
       Plot.tick(unique(quantity), [], levels, []);
     end
   case 2
-    I = mapping ~= levels(end);
-    Plot.line(quantity(I, 1), quantity(I, 2), ...
-      'discrete', true, 'style', style('k'));
     I = mapping == levels(end);
+    if all(I), I(:) = false; end;
     Plot.line(quantity(I, 1), quantity(I, 2), ...
       'discrete', true, 'style', style('r'));
+    I = ~I;
+    Plot.line(quantity(I, 1), quantity(I, 2), ...
+      'discrete', true, 'style', style('k'));
     if isinteger(quantity)
       Plot.tick(unique(quantity(:, 1)), [], ...
         unique(quantity(:, 2)), []);
     end
   case 3
-    I = mapping ~= levels(end);
-    Plot.line({ quantity(I, 1), quantity(I, 2) }, quantity(I, 3), ...
-      'discrete', true, 'style', style('k'));
     I = mapping == levels(end);
     Plot.line({ quantity(I, 1), quantity(I, 2) }, quantity(I, 3), ...
       'discrete', true, 'style', style('r'));
+    if all(I), I(:) = false; end
+    I = ~I;
+    Plot.line({ quantity(I, 1), quantity(I, 2) }, quantity(I, 3), ...
+      'discrete', true, 'style', style('k'));
     view(-45, 45);
     if isinteger(quantity)
       Plot.tick(unique(quantity(:, 1)), [], ...
