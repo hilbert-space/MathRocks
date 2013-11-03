@@ -1,21 +1,22 @@
 function sweep(varargin)
   setup;
 
+  errorMetric = 'RMSE';
+
   options = Options(varargin{:});
 
   analysis = options.fetch('analysis', 'Transient');
   fprintf('Analysis: %s\n', analysis);
 
   options = Configure.systemSimulation(options);
-  temperature = Temperature.Analytical.(analysis)(options);
+  temperature = TemperatureAnalysis.Analytical.(analysis)(options);
 
   options = Configure.processVariation(options);
 
   if options.has('surrogate')
     fprintf('Surrogate: %s\n', options.surrogate);
     options = Configure.temperatureVariation(options);
-    surrogate = Utils.instantiate(String.join('.', ...
-      'TemperatureVariation', options.surrogate, analysis), options);
+    surrogate = instantiate(options.surrogate, analysis, options);
     fprintf('Surrogate: construction...\n');
     time = tic;
     surrogateOutput = surrogate.compute(options.dynamicPower);
@@ -82,35 +83,54 @@ function sweep(varargin)
 
     fprintf('Monte Carlo: evaluation...\n');
     time = tic;
-    Tdata = evaluate(parameters);
+    data = evaluate(parameters);
     fprintf('Monte Carlo: done in %.2f seconds.\n', toc(time));
 
-    Tdata = Utils.toCelsius(Tdata(:, :, Istep));
+    data = Utils.toCelsius(data(:, :, Istep));
 
     Plot.figure(800, 400);
 
     if ~exist('surrogate', 'var')
       for i = 1:options.processorCount
-        Plot.line(sweeps{Iparameter}, Tdata(:, i), 'number', i);
+        Plot.line(sweeps{Iparameter}, data(:, i), 'number', i);
       end
     else
       fprintf('Surrogate: evaluation...\n');
       time = tic;
-      surrogateTdata = surrogate.evaluate( ...
+      surrogateData = surrogate.evaluate( ...
         surrogateOutput, cell2mat(parameters), true); % uniform
       fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
-      surrogateTdata = Utils.toCelsius(surrogateTdata(:, :, Istep));
+      surrogateData = Utils.toCelsius(surrogateData(:, :, Istep));
+
+      legend = {};
+      for i = 1:options.processorCount
+        Plot.line(sweeps{Iparameter}, ...
+          abs(data(:, i) - surrogateData(:, i)), 'number', i);
+        legend{end + 1} = sprintf('%s %.4f', errorMetric, ...
+          Error.compute(errorMetric, data(:, i), surrogateData(:, i)));
+      end
+
+      Plot.title('Absolute error at %.3f s', ...
+        Istep * options.samplingInterval);
+      Plot.label(sprintf('%s(%s)', names{Iparameter}, ...
+        String(Ivariable)), 'log(Absolute error, C)');
+      Plot.legend(legend{:});
+
+      set(gca, 'YScale', 'log');
+
+      Plot.figure(800, 400);
 
       for i = 1:options.processorCount
-        Plot.line(sweeps{Iparameter}, Tdata(:, i), 'number', i);
-        Plot.line(sweeps{Iparameter}, surrogateTdata(:, i), ...
+        Plot.line(sweeps{Iparameter}, data(:, i), 'number', i);
+        Plot.line(sweeps{Iparameter}, surrogateData(:, i), ...
           'number', i, 'auxiliary', true);
       end
     end
 
-    Plot.title('Sweep at %.3f s', Istep * options.samplingInterval);
-    Plot.label(sprintf('%s(%s)', names{Iparameter}, String(Ivariable)), ...
-      'Temperature, C');
+    Plot.title('Temperature variation at %.3f s', ...
+      Istep * options.samplingInterval);
+    Plot.label(sprintf('%s(%s)', names{Iparameter}, ...
+      String(Ivariable)), 'Temperature, C');
 
     if ~Console.question('Sweep more? '), break; end
   end
