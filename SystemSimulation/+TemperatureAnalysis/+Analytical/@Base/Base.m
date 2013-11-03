@@ -1,4 +1,4 @@
-classdef Base < Temperature.HotSpot
+classdef Base < TemperatureAnalysis.Base
   properties (Access = 'protected')
     %
     % Original
@@ -42,7 +42,7 @@ classdef Base < Temperature.HotSpot
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
-      this = this@Temperature.HotSpot(options);
+      this = this@TemperatureAnalysis.Base(options);
 
       processorCount = this.processorCount;
       nodeCount = this.nodeCount;

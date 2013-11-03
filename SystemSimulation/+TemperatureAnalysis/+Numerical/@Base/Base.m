@@ -1,4 +1,4 @@
-classdef Base < Temperature.HotSpot
+classdef Base < TemperatureAnalysis.Base
   properties (Access = 'protected')
     At
     Bt
@@ -6,7 +6,7 @@ classdef Base < Temperature.HotSpot
 
   methods
     function this = Base(varargin)
-      this = this@Temperature.HotSpot(varargin{:});
+      this = this@TemperatureAnalysis.Base(varargin{:});
 
       nodeCount = this.nodeCount;
       processorCount = this.processorCount;

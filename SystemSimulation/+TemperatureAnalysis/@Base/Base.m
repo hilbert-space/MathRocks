@@ -1,4 +1,4 @@
-classdef HotSpot < handle
+classdef Base < handle
   properties (SetAccess = 'private')
     %
     % The thermal circuit by HotSpot:
@@ -41,7 +41,7 @@ classdef HotSpot < handle
   end
 
   methods
-    function this = HotSpot(varargin)
+    function this = Base(varargin)
       options = Options(varargin{:});
 
       this.samplingInterval = options.samplingInterval;

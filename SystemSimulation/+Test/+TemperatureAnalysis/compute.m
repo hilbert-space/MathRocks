@@ -10,7 +10,7 @@ function compute(varargin)
 
   Pdyn = options.dynamicPower;
 
-  temperature = Temperature.(method).(analysis)(options);
+  temperature = TemperatureAnalysis.(method).(analysis)(options);
 
   fprintf('Method: %s\n', method);
   fprintf('Analysis: %s\n', analysis);

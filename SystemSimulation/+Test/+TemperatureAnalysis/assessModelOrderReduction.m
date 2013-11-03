@@ -9,7 +9,7 @@ function assessModelOrderReduction(varargin)
 
   fprintf('Analysis: %s\n', analysis);
 
-  one = Temperature.Analytical.(analysis)(options);
+  one = TemperatureAnalysis.Analytical.(analysis)(options);
   Tone = Utils.toCelsius(one.compute(options.dynamicPower));
 
   minimalError = 0.1;
@@ -17,7 +17,7 @@ function assessModelOrderReduction(varargin)
 
   fprintf('%15s%15s%15s\n', 'Reduction', 'Nodes', errorMetric);
   for limit = reductionLimit
-    two = Temperature.Analytical.(analysis)(options, ...
+    two = TemperatureAnalysis.Analytical.(analysis)(options, ...
       'reduceModelOrder', Options('threshold', 0, 'limit', limit));
     Ttwo = Utils.toCelsius(two.compute(options.dynamicPower));
 
