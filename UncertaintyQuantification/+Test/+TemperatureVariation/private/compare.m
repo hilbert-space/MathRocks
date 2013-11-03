@@ -32,8 +32,15 @@ function compare(options, secondOptions)
   twoOutput = two.compute(options.dynamicPower);
   fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
 
+  time = tic;
+  fprintf('%s: analysis...\n', oneMethod);
   oneStats = one.analyze(oneOutput);
+  fprintf('%s: done in %.2f seconds.\n', oneMethod, toc(time));
+
+  time = tic;
+  fprintf('%s: analysis...\n', twoMethod);
   twoStats = two.analyze(twoOutput);
+  fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
 
   if ~isfield(twoOutput, 'data') || isempty(twoOutput.data)
     time = tic;
