@@ -84,9 +84,11 @@ classdef Base < handle
         output.Pdyn, parameters), [ 3 1 2 ]);
     end
 
-    function stats = analyze(~, output)
-      stats.expectation = squeeze(mean(output.data, 1));
-      stats.variance = squeeze(var(output.data, [], 1));
+    function stats = analyze(this, output)
+      stats.expectation = reshape(mean(output.data, 1), ...
+        this.processorCount, []);
+      stats.variance = reshape(var(output.data, [], 1), ...
+        this.processorCount, []);
     end
 
     function string = toString(this)
