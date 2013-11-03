@@ -1,7 +1,7 @@
 function result = evaluate(this, points, indexes, surpluses, offsets, range)
   %
   % Evaluation of multidimensional Lagrange polynomials using
-  % the barycentric formula on Chebyshev-Gauss-Lobatto quadratureNodes.
+  % the barycentric formula on Chebyshev-Gauss-Lobatto nodes.
   %
   % Reference:
   %
@@ -27,6 +27,13 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
   coefficients = cell(dimensionCount, 1);
 
+  %
+  % Shortcuts
+  %
+  quadratureNodes = this.quadratureNodes;
+  barycentricWeights = this.barycentricWeights;
+  counts = this.counts;
+
   for i = range
     index = uint32(indexes(i, :));
 
@@ -36,13 +43,12 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       % the order of the Lagrange polynomial is zero, and its value is
       % just the corresponding surplus itself.
       %
-      result = result + repmat(surpluses(offsets(i) + 1, :), pointCount, 1);
+      result = result + surpluses( ...
+        ones(pointCount, 1, 'uint32') + offsets(i), :);
       continue;
     end
 
-    quadratureNodes = this.quadratureNodes(indexes(i, :));
-    barycentricWeights = this.barycentricWeights(indexes(i, :));
-    orders = uint32(this.counts(indexes(i, :)) - 1);
+    orders = counts(indexes(i, :)) - 1;
 
     active(:) = false;
     nonzero(:) = true;
@@ -50,13 +56,15 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     iterators(:) = 0;
 
     for k = 1:dimensionCount
+      level = index(k);
+
       %
       % The same comment as before: the first level correspond to
       % zero-order Lagrange polynomials, and, for a zero-order
       % polynomial, we do not need any complex interpolation: the
       % polynomial in the kth dimension is one.
       %
-      if index(k) == 1, continue; end
+      if level == 1, continue; end
 
       %
       % The following two categories of points require special treatments:
@@ -83,7 +91,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       % being repeated several times with the same arguments?
       %
       I = builtin('_ismemberfirst', round(points(:, k) / epsilon), ...
-        round(quadratureNodes{k} / epsilon));
+        round(quadratureNodes{level} / epsilon));
       present(:) = I > 0;
 
       if nnz(present) == 0
@@ -93,7 +101,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
 
       active(~present, k) = true;
 
-      if index(k) == 2
+      if level == 2
         %
         % In this case, the second category contains only one node,
         % which is the middle node equal to 0.5.
@@ -131,6 +139,11 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     end
 
     %
+    % NOTE: Used for locating the surpluses of the current index.
+    %
+    dimensionOffsets = [ 1, cumprod(orders(1:(end - 1)) + 1) ];
+
+    %
     % Find the nodes whose multidimensional Lagrange polynomials are
     % equal to one. This event occurs when each component of a node
     % either is in the corresponding one-dimensional quadrature or
@@ -139,8 +152,9 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     %
     I = all(~active, 2) & nonzero;
     if any(I)
-      result(I, :) = result(I, :) + surpluses(offsets(i) + ...
-        Utils.indexTensor(iterators(I, :) + 1, orders + 1), :);
+      positions = offsets(i) + 1 + ...
+        sum(bsxfun(@times, iterators(I, :), dimensionOffsets), 2, 'native');
+      result(I, :) = result(I, :) + surpluses(positions, :);
     end
 
     %
@@ -154,16 +168,19 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
     if leftPointCount == 0, continue; end
 
     %
-    % Precompute the starting positions of the surpluses and the
-    % corresponding steps with respect to the first active dimension.
+    % Precompute the starting positions of the surpluses (the same
+    % code as the one given above but for different I).
+    %
+    positions = offsets(i) + 1 + ...
+      sum(bsxfun(@times, iterators(I, :), dimensionOffsets), 2, 'native');
+
+    %
+    % Precompute the corresponding steps with respect to the
+    % first active dimension.
     %
     [ J, K ] = find(active(I, :));
-    K = accumarray(J, K, [], @min);
-    J = [ 1, cumprod(orders(1:(end - 1)) + 1) ];
-
-    positions = offsets(i) + 1 + ...
-      sum(bsxfun(@times, iterators(I, :), J), 2, 'native');
-    steps = J(K);
+    J = accumarray(J, K, [], @min);
+    steps = dimensionOffsets(J);
 
     for j = 1:leftPointCount
       iterator = iterators(I(j), :);
@@ -177,18 +194,20 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       denominator = 1;
 
       for k = dimensions
-        coefficients{k} = transpose(barycentricWeights{k} ./ ...
-          (point(k) - quadratureNodes{k}));
+        level = index(k);
+
+        coefficients{k} = barycentricWeights{level} ./ ...
+          (point(k) - quadratureNodes{level});
         denominator = denominator * sum(coefficients{k});
 
         %
         % Preserve only the coefficients that are relevant to
         % the hierarchical level.
         %
-        if index(k) == 2
-          coefficients{k} = coefficients{k}([ 1, 3 ]);
+        if level == 2
+          coefficients{k} = coefficients{k}([ 1, 3 ]).';
         else % level > 2 as it cannot be one at this point
-          coefficients{k} = coefficients{k}((1:2^(index(k) - 2)) * 2);
+          coefficients{k} = coefficients{k}((1:2^(level - 2)) * 2).';
         end
       end
 
