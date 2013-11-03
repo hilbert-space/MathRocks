@@ -28,6 +28,11 @@ classdef GaussJacobi < Quadrature.Base
       [ nodes, weights ] = jacobi_compute(order, options.alpha, options.beta);
 
       %
+      % For some reason, the nodes are returned as a row vector.
+      %
+      nodes = nodes(:);
+
+      %
       % The computed nodes and weights can be used to evaluate integrals
       % with the weight function equal to
       %

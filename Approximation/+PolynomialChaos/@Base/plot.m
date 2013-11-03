@@ -18,13 +18,13 @@ function plotCoefficients(coefficients)
 
   coefficients = flipud(abs(squeeze(coefficients(2:end, :))));
 
-  if outputCount > 1
+  if outputCount > 10
     xlabels = 1:outputCount;
   else
     xlabels = [];
   end
 
-  if termCount > 2
+  if termCount > 10
     ylabels = termCount:-1:2;
   else
     ylabels = [];
