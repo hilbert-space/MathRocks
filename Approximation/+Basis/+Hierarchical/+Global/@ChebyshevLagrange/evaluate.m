@@ -9,6 +9,8 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
   % sparse grids. University of Stuttgart. 2006.
   %
 
+  epsilon = sqrt(eps);
+
   if ~exist('range', 'var'), range = 1:size(indexes, 1); end
 
   [ pointCount, dimensionCount ] = size(points);
@@ -72,10 +74,17 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       %
 
       %
-      % TODO: Cache the result of this operation as it is being repeated
-      % several times with the same arguments?
+      % The task now is to check whether the points, with respect to the kth
+      % dimension, are among the nodes of the corresponding one-dimensional
+      % quadrature. Since the quadrature nodes are sorted, the membership
+      % check can be simplified as follows.
       %
-      [ present(:), I ] = isalmostmember(points(:, k), quadratureNodes{k});
+      % NOTE: Is it worth caching the result of this operation as it is
+      % being repeated several times with the same arguments?
+      %
+      I = builtin('_ismemberfirst', round(points(:, k) / epsilon), ...
+        round(quadratureNodes{k} / epsilon));
+      present(:) = I > 0;
 
       if nnz(present) == 0
         active(:, k) = true;
@@ -233,9 +242,4 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
         numerator(dimensions(end), :) / denominator;
     end
   end
-end
-
-function [ LIA, LOCB ] = isalmostmember(A, B)
-  epsilon = sqrt(eps);
-  [ LIA, LOCB ] = ismember(round(A / epsilon), round(B / epsilon));
 end
