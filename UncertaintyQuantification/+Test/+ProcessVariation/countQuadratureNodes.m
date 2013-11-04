@@ -1,58 +1,59 @@
 function countQuadratureNodes(varargin)
   setup;
 
-  quadratureNames = { 'GaussHermite' };
-  polynomialOrder = [ 1 2 3 4 5 ];
-  processorCountSet  = [ 2 4 8 16 32 ];
+  polynomialOrders = [ 1 2 3 4 5 ];
+  processorCounts  = [ 2 4 8 16 32 ];
+  dimensionCounts = zeros(length(processorCounts), 1);
 
-  dimensionCountSet = zeros(length(processorCountSet), 1);
-
-  for i = 1:length(processorCountSet)
-    options = Configure.systemSimulation(varargin{:}, ...
-      'processorCount', processorCountSet(i));
+  for i = 1:length(processorCounts)
+    options = Configure.systemSimulation( ...
+      varargin{:}, 'processorCount', processorCounts(i));
     options = Configure.processVariation(options);
     process = ProcessVariation(options.processOptions);
-    dimensionCountSet(i) = sum(process.dimensions);
+    dimensionCounts(i) = sum(process.dimensions);
   end
 
-  for k = 1:(2 * length(quadratureNames))
-    name = quadratureNames{ceil(k / 2)};
-    sparse = mod(k, 2) == 1;
+  count('GaussHermite', 'sparse', ...
+    polynomialOrders, processorCounts, dimensionCounts);
+  count('GaussHermite', 'tensor', ...
+    polynomialOrders, processorCounts, dimensionCounts);
+end
 
-    if sparse
-      fprintf('Sparse %s grid\n', name);
-      method = 'sparse';
-    else
-      fprintf('Full-tensor-product %s gird\n', name);
-      method = 'tensor';
-    end
+function count(name, method, polynomialOrders, processorCounts, dimensionCounts)
+  switch method
+  case 'tensor'
+    fprintf('Full-tensor-product %s grid\n', name);
+  case 'sparse'
+    fprintf('Sparse %s grid\n', name);
+  otherwise
+    assert(false);
+  end
 
-    fprintf('%10s%10s', 'PC order', 'QD order');
-    for i = 1:length(processorCountSet)
-      fprintf('%15s', sprintf('%d / %d', ...
-        processorCountSet(i), dimensionCountSet(i)));
-    end
-    fprintf('\n');
+  fprintf('%10s%10s', 'PC order', 'QD order');
+  for i = 1:length(processorCounts)
+    fprintf('%15s', sprintf('%d / %d', ...
+      processorCounts(i), dimensionCounts(i)));
+  end
+  fprintf('\n');
 
-    for i = 1:length(polynomialOrder)
-      level = polynomialOrder(i) + 1 - 1;
+  for i = 1:length(polynomialOrders)
+    level = polynomialOrders(i) + 1 - 1; % slow-linear growth
 
-      fprintf('%10d%10d', polynomialOrder(i), level);
+    fprintf('%10d%10d', polynomialOrders(i), level);
 
-      for j = 1:length(processorCountSet)
-        if sparse
-          quadrature = Quadrature.(name)( ...
-            'dimensionCount', dimensionCountSet(j), ...
-            'level', level, 'method', method);
-          fprintf('%15d', quadrature.nodeCount);
-        else
-          quadrature = Quadrature.(name)( ...
-            'dimensionCount', 1, ...
-            'level', level, 'method', method);
-          fprintf('%15d', quadrature.nodeCount^dimensionCountSet(j));
-        end
+    for j = 1:length(processorCounts)
+      switch method
+      case 'tensor'
+        quadrature = Quadrature.(name)( ...
+          'dimensionCount', 1, 'level', level, ...
+          'method', method, 'growth', 'slow-linear');
+        fprintf('%15d', quadrature.nodeCount^dimensionCounts(j));
+      case 'sparse'
+        quadrature = Quadrature.(name)( ...
+          'dimensionCount', dimensionCounts(j), 'level', level, ...
+          'method', method, 'growth', 'slow-linear');
+        fprintf('%15d', quadrature.nodeCount);
       end
-      fprintf('\n');
     end
     fprintf('\n');
   end
