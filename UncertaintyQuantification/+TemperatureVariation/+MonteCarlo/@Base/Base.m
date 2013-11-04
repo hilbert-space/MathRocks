@@ -30,13 +30,12 @@ classdef Base < handle
 
     function output = estimate(this, Pdyn, varargin)
       %
-      % NOTE: We always generate samples here, even though the futher
+      % NOTE: We always generate samples here, even though the further
       % MC simulations might be cached. The reason is to advance the RNG
       % of MATLAB and have the same bahavior of the computations outside
       % this method.
       %
       parameters = this.process.sample(this.sampleCount);
-      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
       parameters = this.process.assign(parameters);
 
       filename = sprintf('MonteCarlo_%s.mat', ...
@@ -78,7 +77,6 @@ classdef Base < handle
     function data = evaluate(this, output, rvs)
       parameters = this.process.partition(rvs);
       parameters = this.process.evaluate(parameters);
-      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
       parameters = this.process.assign(parameters);
       data = permute(this.computeWithLeakage( ...
         output.Pdyn, parameters), [ 3 1 2 ]);

@@ -50,7 +50,6 @@ classdef Base < TemperatureVariation.Base
     function parameters = preprocess(this, rvs)
       parameters = this.process.partition(rvs);
       parameters = this.process.evaluate(parameters);
-      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
       parameters = this.process.assign(parameters);
     end
 

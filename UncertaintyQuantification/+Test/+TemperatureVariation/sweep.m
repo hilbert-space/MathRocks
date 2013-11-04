@@ -35,7 +35,6 @@ function sweep(varargin)
 
   function Tdata = evaluate(parameters)
     parameters = process.evaluate(parameters, true);
-    parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
     parameters = process.assign(parameters);
     Tdata = permute(temperature.computeWithLeakage( ...
       options.dynamicPower, parameters), [ 3 1 2 ]);

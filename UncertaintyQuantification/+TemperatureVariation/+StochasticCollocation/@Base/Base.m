@@ -41,7 +41,6 @@ classdef Base < TemperatureVariation.Base
       rvs(rvs == 1) = 1 - sqrt(eps);
       parameters = this.process.partition(rvs);
       parameters = this.process.evaluate(parameters, true); % uniform
-      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
       parameters = this.process.assign(parameters);
     end
 
