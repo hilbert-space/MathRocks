@@ -1,4 +1,4 @@
-function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, parameters)
+function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, varargin)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
 
@@ -16,17 +16,10 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, parameters)
   leakage = this.leakage;
   leak = leakage.compute;
 
-  if nargin < 3, parameters = struct; end;
-  parameters.T = NaN;
-
-  [ parameters, dimensions, Tindex ] = ...
-    leakage.assign(parameters, [ processorCount, NaN ]);
-  assert(isscalar(Tindex));
+  [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
 
   param = cell(1, leakage.parameterCount);
   Pindex = setdiff(1:leakage.parameterCount, Tindex);
-
-  sampleCount = dimensions(2);
 
   iterationCount = zeros(1, sampleCount);
 

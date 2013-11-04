@@ -66,7 +66,7 @@ classdef Fitting < handle
       index = [];
       for i = 1:this.parameterCount
         if isnan(parameters{i})
-          index = [ index, i ];
+          index(end + 1) = i;
           continue;
         end
         dims = size(parameters{i});

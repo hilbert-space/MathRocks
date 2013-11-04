@@ -1,4 +1,4 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, parameters)
+function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
 
@@ -10,14 +10,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters)
   leakage = this.leakage;
   leak = leakage.compute;
 
-  if nargin < 3, parameters = struct; end;
-  parameters.T = NaN;
-
-  [ parameters, dimensions, Tindex ] = ...
-    leakage.assign(parameters, [ processorCount, NaN ]);
-  assert(isscalar(Tindex));
-
-  sampleCount = dimensions(2);
+  [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
 
   T = zeros(processorCount, stepCount, sampleCount);
   P = zeros(processorCount, stepCount, sampleCount);

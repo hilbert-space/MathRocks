@@ -83,6 +83,37 @@ classdef Base < handle
   end
 
   methods (Access = 'protected')
+    function [ parameters, sampleCount, Tindex ] = ...
+      prepareParameters(this, parameters)
+
+      if nargin < 2, parameters = struct; end
+      parameters.T = NaN;
+
+      %
+      % NOTE: The parameters come as a structure whose fields are
+      % m-by-n matrices, one for each leakage parameter. For each
+      % matrix, the (i, j)th element corresponds to the ith sample
+      % assigned to the jth processing element.
+      %
+      [ parameters, dimensions, Tindex ] = this.leakage.assign( ...
+        parameters, [ NaN, this.processorCount ]);
+
+      %
+      % For convenience, we would like to have n-by-m matrices instead.
+      %
+      parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
+
+      %
+      % Tindex is the position of the temperature parameter among
+      % the leakage parameters.
+      %
+      assert(isscalar(Tindex));
+
+      sampleCount = dimensions(1);
+    end
+  end
+
+  methods (Access = 'private')
     function circuit = constructCircuit(~, options)
       processorCount = options.processorCount;
 
