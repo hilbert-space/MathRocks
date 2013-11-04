@@ -5,9 +5,7 @@ classdef Base < TemperatureVariation.Base
     end
 
     function output = expand(this, Pdyn)
-      output = this.surrogate.expand(@(rvs) this.postprocess( ...
-        this.computeWithLeakage(Pdyn, this.preprocess(rvs))));
-      output.stepCount = size(Pdyn, 2);
+      output = this.surrogate.expand(@(rvs) this.surve(Pdyn, rvs));
     end
   end
 
@@ -47,14 +45,14 @@ classdef Base < TemperatureVariation.Base
       end
     end
 
-    function parameters = preprocess(this, rvs)
+    function T = surve(this, Pdyn, rvs)
+      sampleCount = size(rvs, 1);
+
       parameters = this.process.partition(rvs);
       parameters = this.process.evaluate(parameters);
       parameters = this.process.assign(parameters);
-    end
 
-    function T = postprocess(~, T)
-      sampleCount = size(T, 3);
+      T = this.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
     end
   end

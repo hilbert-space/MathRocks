@@ -60,6 +60,7 @@ classdef Base < handle
 
     function output = expand(this, f, varargin)
       output.coefficients = this.projection * f(this.nodes, varargin{:});
+      output.outputCount = size(output.coefficients, 2);
     end
 
     function stats = analyze(this, output)

@@ -11,24 +11,31 @@ classdef Base < handle
       this.surrogate = this.configure(options.surrogateOptions);
     end
 
-    function stats = analyze(this, varargin)
-      stats = this.surrogate.analyze(varargin{:});
-      stats.expectation = reshape(stats.expectation, this.processorCount, []);
-      stats.variance = reshape(stats.variance, this.processorCount, []);
+    function stats = analyze(this, output)
+      stats = this.surrogate.analyze(output);
+      stats.expectation = this.postprocess(output, stats.expectation);
+      stats.variance = this.postprocess(output, stats.variance);
     end
 
     function data = sample(this, output, varargin)
-      data = reshape(this.surrogate.sample(output, varargin{:}), ...
-        [], this.processorCount, output.stepCount);
+      data = this.surrogate.sample(output, varargin{:});
+      data = this.postprocess(output, data);
     end
 
     function data = evaluate(this, output, varargin)
-      data = reshape(this.surrogate.evaluate(output, varargin{:}), ...
-        [], this.processorCount, output.stepCount);
+      data = this.surrogate.evaluate(output, varargin{:});
+      data = this.postprocess(output, data);
     end
 
     function display(this, varargin)
       this.surrogate.display(varargin{:});
+    end
+  end
+
+  methods (Access = 'protected')
+    function data = postprocess(this, output, data)
+      data = squeeze(reshape(data, [], this.processorCount, ...
+        output.outputCount / this.processorCount));
     end
   end
 

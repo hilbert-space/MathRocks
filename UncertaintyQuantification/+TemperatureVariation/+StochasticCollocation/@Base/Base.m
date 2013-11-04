@@ -5,9 +5,8 @@ classdef Base < TemperatureVariation.Base
     end
 
     function output = interpolate(this, Pdyn)
-      output = this.surrogate.construct(@(rvs) this.postprocess( ...
-        this.computeWithLeakage(Pdyn, this.preprocess(rvs))), numel(Pdyn));
-      output.stepCount = size(Pdyn, 2);
+      output = this.surrogate.construct( ...
+        @(rvs) this.surve(Pdyn, rvs), numel(Pdyn));
     end
   end
 
@@ -36,16 +35,16 @@ classdef Base < TemperatureVariation.Base
         'maximalLevel', 10, options);
     end
 
-    function parameters = preprocess(this, rvs)
+    function T = surve(this, Pdyn, rvs)
+      sampleCount = size(rvs, 1);
+
       rvs(rvs == 0) = sqrt(eps);
       rvs(rvs == 1) = 1 - sqrt(eps);
       parameters = this.process.partition(rvs);
       parameters = this.process.evaluate(parameters, true); % uniform
       parameters = this.process.assign(parameters);
-    end
 
-    function T = postprocess(~, T)
-      sampleCount = size(T, 3);
+      T =  this.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
     end
   end
