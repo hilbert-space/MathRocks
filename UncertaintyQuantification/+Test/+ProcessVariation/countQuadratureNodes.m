@@ -1,7 +1,7 @@
 function countQuadratureNodes(varargin)
   setup;
 
-  quadratureRule = { 'GaussHermite', 'GaussHermiteHW' };
+  quadratureNames = { 'GaussHermite' };
   polynomialOrder = [ 1 2 3 4 5 ];
   processorCountSet  = [ 2 4 8 16 32 ];
 
@@ -15,15 +15,15 @@ function countQuadratureNodes(varargin)
     dimensionCountSet(i) = sum(process.dimensions);
   end
 
-  for k = 1:(2 * length(quadratureRule))
-    ruleName = quadratureRule{ceil(k / 2)};
+  for k = 1:(2 * length(quadratureNames))
+    name = quadratureNames{ceil(k / 2)};
     sparse = mod(k, 2) == 1;
 
     if sparse
-      fprintf('Sparse %s grid\n', ruleName);
+      fprintf('Sparse %s grid\n', name);
       method = 'sparse';
     else
-      fprintf('Full-tensor-product %s gird\n', ruleName);
+      fprintf('Full-tensor-product %s gird\n', name);
       method = 'tensor';
     end
 
@@ -35,14 +35,22 @@ function countQuadratureNodes(varargin)
     fprintf('\n');
 
     for i = 1:length(polynomialOrder)
-      order = polynomialOrder(i) + 1;
+      level = polynomialOrder(i) + 1 - 1;
 
-      fprintf('%10d%10d', polynomialOrder(i), order);
+      fprintf('%10d%10d', polynomialOrder(i), level);
 
       for j = 1:length(processorCountSet)
-        quadrature = Quadrature('dimensionCount', dimensionCountSet(j), ...
-          'order', order, 'ruleName', ruleName, 'method', method);
-        fprintf('%15d', quadrature.nodeCount);
+        if sparse
+          quadrature = Quadrature.(name)( ...
+            'dimensionCount', dimensionCountSet(j), ...
+            'level', level, 'method', method);
+          fprintf('%15d', quadrature.nodeCount);
+        else
+          quadrature = Quadrature.(name)( ...
+            'dimensionCount', 1, ...
+            'level', level, 'method', method);
+          fprintf('%15d', quadrature.nodeCount^dimensionCountSet(j));
+        end
       end
       fprintf('\n');
     end
