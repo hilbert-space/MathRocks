@@ -1,5 +1,5 @@
 function setup
-  use('Approximation');
+  use('UncertaintyQuantification');
   use('Interaction');
 
   use('ElectronicSystems', 'SystemSimulation');
