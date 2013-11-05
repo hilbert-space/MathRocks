@@ -1,6 +1,0 @@
-function name = leakageParameterDataFile(varargin)
-  options = Options(varargin{:});
-  name = File.join(File.library('CircuitSimulation'), 'Circuits', ...
-    [ String.join('_', 'parameters', ...
-      Name.parameters(options.leakageParameters)), '.txt' ]);
-end

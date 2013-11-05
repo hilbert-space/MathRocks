@@ -3,6 +3,7 @@ function setup
   use('DataStructure');
   use('ProbabilityTheory');
   use('Visualization');
+
   use('Vendor', 'DataHash');
   use('Vendor', 'SANDIA_RULES');
   use('Vendor', 'SANDIA_SPARSE');
