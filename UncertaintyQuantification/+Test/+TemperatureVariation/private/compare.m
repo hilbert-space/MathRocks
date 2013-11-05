@@ -1,7 +1,6 @@
 function compare(options, secondOptions)
   if nargin < 2, secondOptions = []; end
 
-  close all;
   setup;
 
   options = Configure.systemSimulation(options);
@@ -33,6 +32,7 @@ function compare(options, secondOptions)
   fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
 
   display(two, twoOutput);
+  if two.surrogate.inputCount <= 3, plot(two, twoOutput); end
 
   time = tic;
   fprintf('%s: analysis...\n', oneMethod);
@@ -55,7 +55,8 @@ function compare(options, secondOptions)
     isempty(twoStats.variance) || ...
     any(isnan(twoStats.variance(:)))
 
-    twoStats.variance = squeeze(var(twoOutput.data, [], 1));
+    twoStats.variance = reshape(var(twoOutput.data, [], 1), ...
+      options.processorCount, []);
   end
 
   %
