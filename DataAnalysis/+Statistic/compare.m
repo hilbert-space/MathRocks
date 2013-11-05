@@ -118,14 +118,14 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   localError = zeros(dimensionCount, codimensionCount);
 
   if matlabpool('size') == 0
-    h = Bar('Comparing step %d out of %d...', codimensionCount);
+    h = Bar('Comparing the distributions at step %d out of %d...', codimensionCount);
     for i = 1:codimensionCount
       [ ~, localError(:, i) ] = compare2D( ...
         oneData(:, :, i), twoData(:, :, i), options);
       h.increase;
     end
   else
-    h = Bar(sprintf('Comparison of %d steps in parallel...', ...
+    h = Bar(sprintf('Comparing the distributions at %d steps in parallel...', ...
       codimensionCount), 100, 50);
     parfor i = 1:codimensionCount
       [ ~, localError(:, i) ] = compare2D( ...
@@ -140,12 +140,12 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   Plot.figure(1200, 400);
 
-  oneExp = squeeze(mean(oneData, 1));
-  twoExp = squeeze(mean(twoData, 1));
+  oneExp = reshape(mean(oneData, 1), dimensionCount, codimensionCount);
+  twoExp = reshape(mean(twoData, 1), dimensionCount, codimensionCount);
   expectationError = abs(oneExp - twoExp);
 
-  oneVar = squeeze(var(oneData, [], 1));
-  twoVar = squeeze(var(twoData, [], 1));
+  oneVar = reshape(var(oneData, [], 1), dimensionCount, codimensionCount);
+  twoVar = reshape(var(twoData, [], 1), dimensionCount, codimensionCount);
   varianceError = abs(oneVar - twoVar);
 
   time = 0:(codimensionCount - 1);

@@ -199,8 +199,6 @@ function output = construct(this, f, outputCount)
 
   output = struct;
 
-  output.outputCount = outputCount;
-
   output.indexCount = indexCount;
   output.nodeCount = nodeCount;
 

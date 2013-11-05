@@ -34,8 +34,12 @@ classdef Base < handle
 
   methods (Access = 'protected')
     function data = postprocess(this, output, data)
-      data = squeeze(reshape(data, [], this.processorCount, ...
-        output.outputCount / this.processorCount));
+      sampleCount = size(data, 1);
+      if sampleCount == 1
+        data = reshape(data, this.processorCount, []);
+      else
+        data = reshape(data, sampleCount, this.processorCount, []);
+      end
     end
   end
 
