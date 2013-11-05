@@ -5,8 +5,7 @@ function compare(options, secondOptions)
 
   options = Configure.systemSimulation(options);
   options = Configure.deterministicAnalysis(options);
-  options = Configure.processVariation(options);
-  options = Configure.temperatureVariation(options);
+  options = Configure.stochasticAnalysis(options);
 
   oneMethod = 'MonteCarlo';
   twoMethod = options.fetch('surrogate', 'Chaos');
@@ -33,7 +32,7 @@ function compare(options, secondOptions)
   fprintf('%s: done in %.2f seconds.\n', twoMethod, toc(time));
 
   display(two, twoOutput);
-  if two.surrogate.inputCount <= 3, plot(two, twoOutput); end
+  if two.inputCount <= 3, plot(two, twoOutput); end
 
   time = tic;
   fprintf('%s: analysis...\n', oneMethod);

@@ -9,7 +9,7 @@ function countQuadratureNodes(varargin)
     options = Configure.systemSimulation( ...
       varargin{:}, 'processorCount', processorCounts(i));
     options = Configure.deterministicAnalysis(options);
-    options = Configure.processVariation(options);
+    options = Configure.stochasticAnalysis(options);
     process = ProcessVariation(options.processOptions);
     dimensionCounts(i) = sum(process.dimensions);
   end

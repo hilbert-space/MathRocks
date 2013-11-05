@@ -8,7 +8,7 @@ function assessVariations(varargin)
     options = Configure.systemSimulation(varargin{:}, ...
       'processorCount', processorCount);
     options = Configure.deterministicAnalysis(options);
-    options = Configure.processVariation(options);
+    options = Configure.stochasticAnalysis(options);
 
     parameters = options.processOptions.parameters;
     parameterCount = length(parameters);

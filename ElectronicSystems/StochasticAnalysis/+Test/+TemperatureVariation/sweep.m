@@ -12,11 +12,10 @@ function sweep(varargin)
   options = Configure.deterministicAnalysis(options);
   temperature = Temperature.Analytical.(analysis)(options);
 
-  options = Configure.processVariation(options);
+  options = Configure.stochasticAnalysis(options);
 
   if options.has('surrogate')
     fprintf('Surrogate: %s\n', options.surrogate);
-    options = Configure.temperatureVariation(options);
     surrogate = instantiate(options.surrogate, analysis, options);
     fprintf('Surrogate: construction...\n');
     time = tic;
@@ -24,6 +23,7 @@ function sweep(varargin)
     fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
 
     display(surrogate, surrogateOutput);
+    if surrogate.inputCount <= 3, plot(surrogate, surrogateOutput); end
 
     process = surrogate.process;
   else
@@ -31,7 +31,7 @@ function sweep(varargin)
   end
 
   Plot.powerTemperature(options.dynamicPower, [], ...
-     temperature.compute(options.dynamicPower), ...
+    temperature.compute(options.dynamicPower), ...
     'time', options.timeLine);
 
   function Tdata = evaluate(parameters)
@@ -123,7 +123,7 @@ function sweep(varargin)
       for i = 1:options.processorCount
         Plot.line(sweeps{Iparameter}, data(:, i), 'number', i);
         Plot.line(sweeps{Iparameter}, surrogateData(:, i), ...
-          'number', i, 'auxiliary', true);
+          'auxiliary', true, 'style', { 'Color', 'k' });
       end
     end
 

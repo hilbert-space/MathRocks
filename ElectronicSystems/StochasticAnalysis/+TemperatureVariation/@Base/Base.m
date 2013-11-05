@@ -30,6 +30,10 @@ classdef Base < handle
     function display(this, varargin)
       this.surrogate.display(varargin{:});
     end
+
+    function count = inputCount(this)
+      count = sum(this.process.dimensions);
+    end
   end
 
   methods (Access = 'protected')
