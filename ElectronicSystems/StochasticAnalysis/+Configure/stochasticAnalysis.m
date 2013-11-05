@@ -33,7 +33,7 @@ function options = stochasticAnalysis(varargin)
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };
-    parameter.globalContribution = 1;
+    parameter.globalContribution = 0.5;
     parameter.reductionThreshold = 0.96;
   end
 
@@ -53,7 +53,7 @@ function options = stochasticAnalysis(varargin)
   %
   switch options.ensure('surrogate', 'PolynomialChaos')
   case 'PolynomialChaos'
-    options.surrogateOptions = Options('order', 3, ...
+    options.surrogateOptions = Options('order', 4, ...
       'quadratureOptions', Options('method', 'adaptive'), ...
       options.get('surrogateOptions', []));
   case 'StochasticCollocation'
