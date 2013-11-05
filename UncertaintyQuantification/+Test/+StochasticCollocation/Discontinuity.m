@@ -56,6 +56,7 @@ function Discontinuity(varargin)
   plotSlice(t, z, y, Y(k, :));
 
   Statistic.observe(surrogateData, 'draw', true, 'method', 'histogram');
+  Plot.title('Histogram');
 end
 
 function y = solve(t, y0, options, f)
