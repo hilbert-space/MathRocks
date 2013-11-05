@@ -1,7 +1,7 @@
-classdef Polynomial < Fitting
+classdef Polynomial < Fitting.Base
   methods
     function this = Polynomial(varargin)
-      this = this@Fitting(varargin{:});
+      this = this@Fitting.Base(varargin{:});
     end
   end
 

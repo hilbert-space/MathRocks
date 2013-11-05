@@ -1,7 +1,7 @@
-classdef LogPolynomial < Regression.Polynomial
+classdef LogPolynomial < Fitting.Regression.Polynomial
   methods
     function this = LogPolynomial(varargin)
-      this = this@Regression.Polynomial(varargin{:});
+      this = this@Fitting.Regression.Polynomial(varargin{:});
     end
   end
 

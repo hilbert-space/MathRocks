@@ -54,16 +54,9 @@ function [ arguments, body ] = toFunctionString(p, varargin)
     error('The numbers of elements do not match.');
   end
 
-  if isa(p, 'sympoly')
-    s = string(p, 'longg');
-    s = regexprep(s, '\^', '.^');
-    s = regexprep(s, '\*', '.*');
-    s = regexprep(s, '\/', './');
-  else
-    f = matlabFunction(p);
-    s = func2str(f);
-    s = regexprep(s, '@\([^)]*\)', '');
-  end
+  f = matlabFunction(p);
+  s = func2str(f);
+  s = regexprep(s, '@\([^)]*\)', '');
 
   for i = 1:count
     y0 = y{i};

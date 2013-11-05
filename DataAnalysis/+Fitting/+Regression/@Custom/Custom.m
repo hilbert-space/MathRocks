@@ -1,7 +1,7 @@
-classdef Custom < Fitting
+classdef Custom < Fitting.Base
   methods
     function this = Custom(varargin)
-      this = this@Fitting(varargin{:});
+      this = this@Fitting.Base(varargin{:});
     end
   end
 

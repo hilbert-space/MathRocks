@@ -1,7 +1,7 @@
-classdef Linear < Fitting
+classdef Linear < Fitting.Base
   methods
     function this = Linear(varargin)
-      this = this@Fitting(varargin{:});
+      this = this@Fitting.Base(varargin{:});
     end
   end
 

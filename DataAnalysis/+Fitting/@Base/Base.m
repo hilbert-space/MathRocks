@@ -1,4 +1,4 @@
-classdef Fitting < handle
+classdef Base < handle
   properties (SetAccess = 'private')
     targetName
     parameterNames
@@ -11,7 +11,7 @@ classdef Fitting < handle
   end
 
   methods
-    function this = Fitting(varargin)
+    function this = Base(varargin)
       options = Options(varargin{:});
       grid = Grid(options);
       this.targetName = grid.targetName;

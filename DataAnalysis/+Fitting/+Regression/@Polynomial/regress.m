@@ -32,13 +32,13 @@ function [ output, arguments, body ] = regress(~, Z, XY, termPowers)
   %
   % Post-processing
   %
-  Xs = sympoly('X');
-  Ys = sympoly('Y');
+  Xs = sym('X');
+  Ys = sym('Y');
 
   Xn = (Xs - E(1)) / S(1);
   Yn = (Ys - E(2)) / S(2);
 
-  Zs = sympoly(0);
+  Zs = sym(0);
   for i = 1:termCount
     Zs = Zs + C(i) * Xn^termPowers{1}(i) * Yn^termPowers{2}(i);
   end
