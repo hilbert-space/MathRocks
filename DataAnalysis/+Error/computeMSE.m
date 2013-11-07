@@ -1,7 +1,10 @@
 function error = computeMSE(observed, predicted, dimension)
   %
-  % Computes the mean-square error.
+  % Reference:
   %
+  % https://en.wikipedia.org/wiki/Mean_squared_error
+  %
+  if nargin < 2, predicted = 0; end
   if nargin < 3
    observed = observed(:);
    predicted = predicted(:);

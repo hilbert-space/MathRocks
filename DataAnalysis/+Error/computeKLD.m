@@ -1,4 +1,9 @@
 function error = computeKLD(P, Q)
+  %
+  % Reference:
+  %
+  % https://en.wikipedia.org/wiki/Kullback–Leibler_divergence
+  %
   P = P(:);
   Q = Q(:);
 

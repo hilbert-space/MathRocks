@@ -1,12 +1,10 @@
 function error = computeNL2(observed, predicted, dimension)
-  %
-  % Computes the normalized L2 error.
-  %
+  if nargin < 2, predicted = 0; end
   if nargin < 3
    observed = observed(:);
    predicted = predicted(:);
    dimension = 1;
   end
-  error = sqrt(sum((observed - predicted).^2, dimension)) ./ ...
+  error = Error.computeL2(observed, predicted, dimension) ./ ...
     sqrt(sum(observed.^2, dimension));
 end

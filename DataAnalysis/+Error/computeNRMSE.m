@@ -1,13 +1,15 @@
-function error = computeNRMSE(observed, predicted)
+function error = computeNRMSE(observed, predicted, dimension)
   %
-  % Computes the normalized root-mean-square error.
+  % Reference:
   %
+  % https://en.wikipedia.org/wiki/Root-mean-square_deviation#Normalized_root-mean-square_deviation
+  %
+  if nargin < 2, predicted = 0; end
   if nargin < 3
-   observed = observed(:);
-   predicted = predicted(:);
-   dimension = 1;
+    dimension = 1;
+    observed = observed(:);
+    predicted = predicted(:);
   end
-  error = sqrt(sum((observed - predicted).^2, dimension) ./ ...
-    size(observed, dimension)) ./ ...
+  error = Error.computeRMSE(observed, predicted, dimension) ./ ...
     (max(observed, [], dimension) - min(observed, [], dimension));
 end
