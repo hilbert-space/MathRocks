@@ -32,7 +32,7 @@ classdef Base < handle
     end
 
     function count = inputCount(this)
-      count = sum(this.process.dimensions);
+      count = this.surrogate.inputCount;
     end
   end
 

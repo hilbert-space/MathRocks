@@ -3,7 +3,7 @@ function compute(varargin)
 
   options = Configure.systemSimulation(varargin{:});
   options = Configure.deterministicAnalysis(options);
-  options = Configure.stoshasticVariation(options);
+  options = Configure.stochasticAnalysis(options);
 
   surrogate = options.fetch('surrogate', 'PolynomialChaos');
   analysis = options.fetch('analysis', 'Transient');

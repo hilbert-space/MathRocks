@@ -1,7 +1,10 @@
 function sweep(varargin)
   setup;
 
-  errorMetric = 'RMSE';
+  errorMetric = 'Inf';
+
+  lowerBound = 0;
+  upperBound = 0.05;
 
   options = Options(varargin{:});
 
@@ -49,7 +52,9 @@ function sweep(varargin)
   sweeps = cell(1, parameterCount);
   nominals = cell(1, parameterCount);
   for i = 1:parameterCount
-    sweeps{i} = linspace(sqrt(eps), 1 - sqrt(eps), 200);
+    sweeps{i} = linspace( ...
+      max(lowerBound, sqrt(eps)), ...
+      min(upperBound, 1 - sqrt(eps)), 200);
     nominals{i} = 0.5 * ones(length(sweeps{i}), dimensions(i));
   end
 
