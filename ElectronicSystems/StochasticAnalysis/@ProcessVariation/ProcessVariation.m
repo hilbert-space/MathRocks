@@ -60,6 +60,20 @@ classdef ProcessVariation < handle
       end
     end
 
+    function parameters = normalize(this, parameters)
+      for i = 1:this.parameterCount
+        range = this.parameters.get(i).range;
+        parameters{i} = (parameters{i} - range(1)) / (range(2) - range(1));
+      end
+    end
+
+    function parameters = denormalize(this, parameters)
+      for i = 1:this.parameterCount
+        range = this.parameters.get(i).range;
+        parameters{i} = range(1) + (range(2) - range(1)) * parameters{i};
+      end
+    end
+
     function parameters = sample(this, sampleCount)
       parameters = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
