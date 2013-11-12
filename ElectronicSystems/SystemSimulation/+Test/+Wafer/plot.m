@@ -1,5 +1,5 @@
 setup;
 
 wafer = Wafer('floorplan', File.join('Assets', '002.flp'), ...
-  'columns', 20, 'rows', 40);
+  'columnCount', 20, 'rowCount', 20);
 plot(wafer);
