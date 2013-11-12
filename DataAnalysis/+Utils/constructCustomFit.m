@@ -1,7 +1,13 @@
 function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
-  E = mean(X, 1);
-  S = std(X, [], 1);
-  X = bsxfun(@rdivide, bsxfun(@minus, X, E), S);
+  Ex = mean(X, 1);
+  Sx = std(X, [], 1);
+  X = bsxfun(@rdivide, bsxfun(@minus, X, Ex), Sx);
+
+  Ey = mean(Y);
+  Sy = std(Y);
+  Y = (Y - Ey) / Sy;
+
+  Fs = (Fs - Ey) / Sy;
 
   parameterCount = length(Xs);
   coefficientCount = length(Cs);
@@ -37,10 +43,10 @@ function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
 
   Xs = num2cell(Xs);
   for i = 1:length(varargin)
-    Fs = varargin{i};
+    Fs = Sy * varargin{i} + Ey;
     Fs = subs(Fs, Cs, C);
     for j = 1:parameterCount
-      Fs = subs(Fs, Xs{j}, (Xs{j} - E(j)) / S(j));
+      Fs = subs(Fs, Xs{j}, (Xs{j} - Ex(j)) / Sx(j));
     end
     varargout{i} = Fs;
   end
