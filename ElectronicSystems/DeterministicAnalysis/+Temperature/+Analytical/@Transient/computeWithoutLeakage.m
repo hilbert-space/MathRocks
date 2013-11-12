@@ -5,7 +5,7 @@ function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
   C = this.C;
   E = this.E;
   F = this.F;
-  Tamb = this.Tamb;
+  Tamb = this.ambientTemperature;
 
   Q = F * Pdyn;
   X = Q(:, 1);

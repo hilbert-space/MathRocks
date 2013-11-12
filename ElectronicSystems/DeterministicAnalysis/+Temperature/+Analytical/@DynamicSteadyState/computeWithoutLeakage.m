@@ -20,7 +20,7 @@ function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
     X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
   end
 
-  T = this.C * X + this.Tamb;
+  T = this.C * X + this.ambientTemperature;
 
   output = struct;
 end

@@ -25,7 +25,7 @@ classdef Base < handle
     %
     % The ambient temperature
     %
-    Tamb
+    ambientTemperature
   end
 
   properties (SetAccess = 'protected')
@@ -45,7 +45,8 @@ classdef Base < handle
       options = Options(varargin{:});
 
       this.samplingInterval = options.samplingInterval;
-      this.Tamb = options.get('Tamb', Utils.toKelvin(45));
+      this.ambientTemperature = options.get( ...
+        'ambientTemperature', Utils.toKelvin(45));
 
       if options.has('leakage')
         this.leakage = options.leakage;

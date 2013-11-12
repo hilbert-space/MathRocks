@@ -5,7 +5,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, varargin)
   C = this.C;
   E = this.E;
   F = this.F;
-  Tamb = this.Tamb;
+  Tamb = this.ambientTemperature;
 
   leakage = this.leakage;
   leak = leakage.compute;

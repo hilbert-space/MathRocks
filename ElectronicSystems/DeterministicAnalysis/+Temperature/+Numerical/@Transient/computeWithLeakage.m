@@ -5,7 +5,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   At = this.At;
   Bt = this.Bt;
   dt = this.samplingInterval;
-  Tamb = this.Tamb;
+  Tamb = this.ambientTemperature;
 
   leakage = this.leakage;
   leak = leakage.compute;

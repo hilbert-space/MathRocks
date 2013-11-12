@@ -5,7 +5,7 @@ function T = computeWithoutLeakage(this, Pdyn, varargin)
   At = this.At;
   Bt = this.Bt;
   dt = this.samplingInterval;
-  Tamb = this.Tamb;
+  Tamb = this.ambientTemperature;
 
   T = zeros(processorCount, stepCount);
   T0 = Tamb * ones(1, this.nodeCount);

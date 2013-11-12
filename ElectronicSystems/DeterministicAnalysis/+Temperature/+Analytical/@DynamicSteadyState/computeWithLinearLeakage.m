@@ -47,7 +47,7 @@ function [ T, output ] = computeWithLinearLeakage(this, Pdyn, varargin)
       K(:, 1:processorCount, i) * Pleak);
   end
 
-  T = T + this.Tamb;
+  T = T + this.ambientTemperature;
 
   output = struct;
   output.iterationCount = ones(1, sampleCount);

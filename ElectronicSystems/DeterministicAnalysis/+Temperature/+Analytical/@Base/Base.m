@@ -49,6 +49,7 @@ classdef Base < Temperature.Base
 
       Cth = this.circuit.A;
       Gth = this.circuit.B;
+      Tamb = this.ambientTemperature;
 
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
@@ -59,7 +60,7 @@ classdef Base < Temperature.Base
       if ~isempty(options.get('linearizeLeakage', []))
         alpha = this.leakage.linearize( ...
           options.linearizeLeakage, 'target', 'T', ...
-          'compose', @(alpha, beta) this.Tamb * alpha + beta);
+          'compose', @(alpha, beta) Tamb * alpha + beta);
         Gth = Gth - M * alpha * eye(processorCount) * M';
       end
 
