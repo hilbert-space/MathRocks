@@ -31,10 +31,10 @@ function data = computeHistogram(x, data, options)
 
   switch options.quantity
   case 'pdf'
-    data = data / sum(data);
+    data = data / sum(data) / dx;
   case 'cdf'
     data = cumsum(data);
-    data = data / data(end);
+    data = data / data(end) / dx;
   otherwise
     error('The function is unknown.');
   end

@@ -1,12 +1,19 @@
 function result = evaluate(this, points, indexes, surpluses, offsets, range)
   %
   % Evaluation of multidimensional Lagrange polynomials using
-  % the barycentric formula on Chebyshev-Gauss-Lobatto nodes.
+  % the barycentric formula of the second kind.
   %
-  % Reference:
+  % References:
   %
-  % W. A. Klimke. Uncertainty modeling using fuzzy arithmetic and
-  % sparse grids. University of Stuttgart. 2006.
+  % Non-hierarchical barycentric formula:
+  %
+  % A. Klimke. Uncertainty Modeling Using Fuzzy Arithmetic and Sparse
+  % Grids. University of Stuttgart. 2006.
+  %
+  % Hierarchical barycentric formula:
+  %
+  % A. Klimke. Efficient Construction of Hierarchical Polynomial Sparse
+  % Grid Interpolants using the Fast Discrete Cosine Transform. 2006.
   %
 
   epsilon = sqrt(eps);
