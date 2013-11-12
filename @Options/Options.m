@@ -33,14 +33,39 @@ classdef Options < dynamicprops
     end
 
     function this = set(this, name, value)
-      if isprop(this, name)
-        if isa(this.(name), 'Options') && isa(value, 'struct')
-          this.(name).update(value);
+      if isa(name, 'cell')
+        %
+        % Multiple assignments
+        %
+        if isa(value, 'cell')
+          %
+          % Each property has a separate value
+          %
+          for i = 1:length(name)
+            this.set(name{i}, value{i});
+          end
         else
-          this.(name) = value;
+          %
+          % All properties have the same value
+          %
+          for i = 1:length(name)
+            this.set(name{i}, value);
+          end
         end
       else
-        this.add(name, value);
+        %
+        % Singular assignemnt
+        %
+        if isnumeric(name), name = this.names__{name}; end
+        if isprop(this, name)
+          if isa(this.(name), 'Options') && isa(value, 'struct')
+            this.(name).update(value);
+          else
+            this.(name) = value;
+          end
+        else
+          this.add(name, value);
+        end
       end
     end
 
