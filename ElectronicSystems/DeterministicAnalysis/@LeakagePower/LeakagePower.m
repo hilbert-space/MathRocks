@@ -1,12 +1,13 @@
 classdef LeakagePower < handle
   properties (SetAccess = 'protected')
+    surrogate
+
     parameterNames
     parameterCount
 
     reference
     powerScale
 
-    surrogate
     evaluate
 
     toString
@@ -19,18 +20,6 @@ classdef LeakagePower < handle
       referencePower = options.fetch('referencePower', NaN); % do not cache
 
       this.toString = sprintf('%s(%s)', class(this), String(options));
-
-      this.parameterNames = fieldnames(options.parameters);
-      this.parameterCount = length(this.parameterNames);
-
-      %
-      % Compute the reference values of the parameters
-      %
-      this.reference = cell(1, this.parameterCount);
-      for i = 1:this.parameterCount
-        this.reference{i} = ...
-          options.parameters.(this.parameterNames{i}).reference;
-      end
 
       %
       % Load or construct the surrogate
@@ -45,13 +34,19 @@ classdef LeakagePower < handle
         save(filename, 'surrogate', '-v7.3');
       end
 
-      assert(this.parameterCount == surrogate.parameterCount);
-      for i = 1:this.parameterCount
-        assert(strcmp(this.parameterNames{i}, ...
-          surrogate.parameterNames{i}));
-      end
-
       this.surrogate = surrogate;
+
+      this.parameterNames = surrogate.parameterNames;
+      this.parameterCount = surrogate.parameterCount;
+
+      %
+      % Compute the reference values of the parameters
+      %
+      this.reference = cell(1, this.parameterCount);
+      for i = 1:this.parameterCount
+        this.reference{i} = ...
+          options.parameters.(this.parameterNames{i}).reference;
+      end
 
       %
       % Compute the power scale
