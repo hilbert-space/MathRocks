@@ -49,7 +49,6 @@ classdef Base < Temperature.Base
 
       Cth = this.circuit.A;
       Gth = this.circuit.B;
-      Tamb = this.ambientTemperature;
 
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
@@ -57,10 +56,18 @@ classdef Base < Temperature.Base
       %
       % Leakage linearization
       %
-      if ~isempty(options.get('linearizeLeakage', []))
+      if isa(this.leakage, 'LeakagePower.Linear')
+        %
+        % The linearization is as follows:
+        %
+        % Pleak = alpha * T + beta.
+        %
+        % Then, the needed change of the thermal coefficients is
+        %
+        % Gth = Gth - M * alpha * eye(processorCount) * M'.
+        %
         alpha = this.leakage.linearize( ...
-          options.linearizeLeakage, 'target', 'T', ...
-          'compose', @(alpha, beta) Tamb * alpha + beta);
+          'ambientTemperature', this.ambientTemperature);
         Gth = Gth - M * alpha * eye(processorCount) * M';
       end
 
@@ -95,18 +102,5 @@ classdef Base < Temperature.Base
       this.E = E;
       this.F = F;
     end
-
-    function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
-      if this.leakage.isLinearized
-        [ T, output ] = this.computeWithLinearLeakage(Pdyn, varargin{:});
-      else
-        [ T, output ] = this.computeWithNonlinearLeakage(Pdyn, varargin{:});
-      end
-    end
-  end
-
-  methods (Abstract)
-    [ T, output ] = computeWithLinearLeakage(this, Pdyn, varargin)
-    [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, varargin)
   end
 end

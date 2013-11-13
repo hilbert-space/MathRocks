@@ -1,4 +1,4 @@
-function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, varargin)
+function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   [ processorCount, stepCount ] = size(Pdyn);
   assert(processorCount == this.processorCount);
 
@@ -8,7 +8,7 @@ function [ T, output ] = computeWithNonlinearLeakage(this, Pdyn, varargin)
   Tamb = this.ambientTemperature;
 
   leakage = this.leakage;
-  leak = leakage.compute;
+  leak = leakage.evaluate;
 
   [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
 

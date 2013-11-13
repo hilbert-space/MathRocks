@@ -3,7 +3,7 @@ classdef DynamicSteadyState < Temperature.Analytical.Base
     iterationLimit
     temperatureLimit
     convergenceTolerance
-    algorithmVersion
+    algorithm
   end
 
   methods
@@ -17,8 +17,8 @@ classdef DynamicSteadyState < Temperature.Analytical.Base
         options.get('temperatureLimit', Utils.toKelvin(1e3));
       this.convergenceTolerance = ...
         options.get('convergenceTolerance', 0.5);
-      this.algorithmVersion = ...
-        options.get('algorithmVersion', 1);
+      this.algorithm = ...
+        options.get('algorithm', 1);
     end
   end
 end

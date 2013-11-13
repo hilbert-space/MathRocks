@@ -5,17 +5,13 @@ function compute(varargin)
   options = Configure.systemSimulation(varargin{:});
   options = Configure.deterministicAnalysis(options);
 
-  method = options.fetch('method', 'Analytical');
-  analysis = options.fetch('analysis', 'Transient');
+  Pdyn = options.dynamicPower;
   iterationCount = options.fetch('iterationCount', 10);
 
-  Pdyn = options.dynamicPower;
+  temperature = Temperature(options.temperatureOptions);
 
-  temperature = Temperature.(method).(analysis)(options);
-
-  fprintf('Method: %s\n', method);
-  fprintf('Analysis: %s\n', analysis);
-  fprintf('Running %d iterations...\n', iterationCount);
+  fprintf('%s: running %d iterations...\n', ...
+    class(temperature), iterationCount);
   time = tic;
   for i = 1:iterationCount
     [ T, output ] = temperature.compute(Pdyn);

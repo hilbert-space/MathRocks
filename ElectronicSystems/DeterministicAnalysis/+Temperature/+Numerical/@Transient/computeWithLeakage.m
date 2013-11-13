@@ -8,7 +8,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   Tamb = this.ambientTemperature;
 
   leakage = this.leakage;
-  leak = leakage.compute;
+  leak = leakage.evaluate;
 
   [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
 

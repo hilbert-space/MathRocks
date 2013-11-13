@@ -7,40 +7,39 @@ function assess(varargin)
 
   options = Configure.systemSimulation(options);
   options = Configure.deterministicAnalysis(options);
+
   options = options.leakageOptions;
+  options.referencePower = NaN;
 
-  method = options.method;
-
-  leakage = LeakagePower(options);
+  leakageOne = LeakagePower(options);
   parameters = options.parameters;
 
   %
   % Accuracy
   %
-  switch method
-  case 'Interpolation.Linear'
-    plotLeakage(leakage, parameters);
+  switch class(leakageOne.surrogate)
+  case 'Fitting.Interpolation.Linear'
+    plotLeakage(leakageOne, [], parameters);
   otherwise
-    referenceLeakage = LeakagePower( ...
+    leakageTwo = LeakagePower( ...
       'filename', options.filename, 'parameters', parameters, ...
-      'method', 'Interpolation.Linear');
+      'method', 'Interpolation', 'algorithm', 'Linear');
 
-    grid = Grid(options, 'targetName', 'Ileak');
-    Iref = referenceLeakage.compute(grid.parameterData{:});
-    Ipred = leakage.compute(grid.parameterData{:});
+    parameterCount = length(parameters);
+    grid = cell(1, parameterCount);
+    for i = 1:parameterCount
+      range = parameters.get(i).range;
+      grid{i} = linspace(min(range), max(range), 50);
+    end
+    [ grid{:} ] = ndgrid(grid{:});
 
-    error = Error.compute(errorMetric, Iref, Ipred);
+    I1 = leakageOne.evaluate(grid{:});
+    I2 = leakageTwo.evaluate(grid{:});
 
-    Plot.figure(1200, 400);
-    Plot.name('%s: %s %.4f', method, errorMetric, error);
+    error = Error.compute(errorMetric, I2, I1);
+    fprintf('%s: %.4f (%d points)\n', errorMetric, error, numel(I1));
 
-    subplot(1, 2, 1);
-    plotLeakage(referenceLeakage, parameters, 'figure', false);
-    Plot.title('Interpolation.Linear');
-
-    subplot(1, 2, 2);
-    plotLeakage(leakage, parameters, 'figure', false, 'grid', grid);
-    Plot.title(method);
+    plotLeakage(leakageOne, leakageTwo, parameters);
   end
 
   if ~assessSpeed, return; end
@@ -51,8 +50,8 @@ function assess(varargin)
   pointCount = 1e2;
   iterationCount = 1e2;
 
-  parameterCount = leakage.parameterCount;
-  parameterSweeps = leakage.parameterSweeps;
+  parameterCount = leakageOne.parameterCount;
+  parameterSweeps = leakageOne.parameterSweeps;
 
   for i = 1:parameterCount
     parameterSweeps{i} = linspace( ...
@@ -66,12 +65,12 @@ function assess(varargin)
 
   time = tic;
   for k = 1:iterationCount
-    leakage.compute(grids{:});
+    leakageOne.evaluate(grids{:});
   end
   fprintf('Computational time: %.4f s\n', toc(time) / iterationCount);
 end
 
-function plotLeakage(leakage, parameters, varargin)
+function plotLeakage(leakageOne, leakageTwo, parameters, varargin)
   names = fieldnames(parameters);
   dimensionCount = length(names);
 
@@ -79,6 +78,9 @@ function plotLeakage(leakage, parameters, varargin)
   for i = 1:dimensionCount
     normalization.(names{i}) = parameters.(names{i}).nominal;
   end
+
+  options = Options('logScale', true, ...
+    'normalization', normalization, varargin{:});
 
   combinations = [ ...
     mat2cell(1:dimensionCount, ...
@@ -92,8 +94,21 @@ function plotLeakage(leakage, parameters, varargin)
       fixedParameters.(names{j}) = parameters.(names{j}).nominal;
     end
 
-    plot(leakage, 'logScale', true, 'normalization', normalization, ...
-      'fixedParameters', fixedParameters, varargin{:});
-    colormap(flipud(hot));
+    if isempty(leakageTwo)
+      plot(leakageOne, options, 'fixedParameters', fixedParameters);
+      colormap(flipud(hot));
+    else
+      Plot.figure(1200, 400);
+
+      subplot(1, 2, 1);
+      plot(leakageOne, options, 'figure', false, ...
+        'fixedParameters', fixedParameters);
+      colormap(flipud(hot));
+
+      subplot(1, 2, 2);
+      plot(leakageTwo, options, 'figure', false, ...
+        'fixedParameters', fixedParameters);
+      colormap(flipud(hot));
+    end
   end
 end

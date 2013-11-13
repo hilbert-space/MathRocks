@@ -6,11 +6,8 @@ function assessModelOrderReduction(varargin)
   options = Configure.deterministicAnalysis(options);
 
   errorMetric = 'RMSE';
-  analysis = options.get('analysis', 'Transient');
 
-  fprintf('Analysis: %s\n', analysis);
-
-  one = Temperature.Analytical.(analysis)(options);
+  one = Temperature(options.temperatureOptions);
   Tone = Utils.toCelsius(one.compute(options.dynamicPower));
 
   minimalError = 0.1;
@@ -18,7 +15,7 @@ function assessModelOrderReduction(varargin)
 
   fprintf('%15s%15s%15s\n', 'Reduction', 'Nodes', errorMetric);
   for limit = reductionLimit
-    two = Temperature.Analytical.(analysis)(options, ...
+    two = Temperature(options.temperatureOptions, ...
       'reduceModelOrder', Options('threshold', 0, 'limit', limit));
     Ttwo = Utils.toCelsius(two.compute(options.dynamicPower));
 
@@ -37,8 +34,8 @@ function assessModelOrderReduction(varargin)
     line(time, Ttwo(i, :), 'Color', color, 'LineStyle', '--');
   end
 
-  Plot.title('Reduction from %d to %d nodes: %s %.4f', ...
-    one.nodeCount, two.nodeCount, errorMetric, error);
+  Plot.title('%s: %d/%d nodes: %s %.4f', ...
+    class(one), one.nodeCount, two.nodeCount, errorMetric, error);
   Plot.label('Time, s', 'Temperature, C');
   Plot.limit(time);
 end

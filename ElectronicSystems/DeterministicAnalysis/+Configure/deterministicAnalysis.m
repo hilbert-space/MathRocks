@@ -31,16 +31,19 @@ function options = deterministicAnalysis(varargin)
   end
 
   %
-  % Leakage power
+  % Technological process
   %
-  function parameter = configureParameter(name, parameter)
-    if nargin < 2, parameter = Options; end
-    switch name
-    case 'T'
-      parameter.reference = Utils.toKelvin(120);
-      parameter.nominal = Utils.toKelvin(50);
-      parameter.range = Utils.toKelvin([ 40, 400 ]);
-      return;
+  processParameters = options.get('processParameters', { 'L', 'Tox' });
+  if ~isa(processParameters, 'Options')
+    processParameters = Options(processParameters, []);
+  end
+
+  names = fieldnames(processParameters);
+  for i = 1:length(names)
+    parameter = processParameters.(names{i});
+    if isempty(parameter), parameter = Options; end
+
+    switch names{i}
     case 'L'
       nominal = 50e-9;
       sigma = 0.05 * (nominal - (50e-9 - 22.5e-9));
@@ -50,31 +53,32 @@ function options = deterministicAnalysis(varargin)
     otherwise
       assert(false);
     end
+
     parameter.reference = nominal;
     parameter.nominal = nominal;
     parameter.sigma = sigma;
     parameter.range = nominal + [ -4, 4 ] * sigma;
+
+    processParameters.(names{i}) = parameter;
   end
 
-  leakageParameters = Options;
-  leakageParameters.add('T', configureParameter('T'));
-
-  processParameters = options.ensure('processParameters', { 'L', 'Tox' });
-  for i = 1:length(processParameters)
-    name = processParameters{i};
-    leakageParameters.add(name, configureParameter(name));
-  end
-
-  options.leakageParameters = leakageParameters;
-  options.ensure('referenceCircuit', ...
-    [ 'ring_nangate_VTL_', Name.parameters(leakageParameters) ]);
+  options.processParameters = processParameters;
 
   %
   % Leakage power
   %
+  leakageParameters = Options;
+  leakageParameters.add('T', struct( ...
+    'reference', Utils.toKelvin(120), ...
+    'nominal', Utils.toKelvin(50), ...
+    'range', Utils.toKelvin([ 40, 400 ])));
+  leakageParameters.update(processParameters);
+
   options.leakageOptions = Options( ...
     'method', 'Interpolation.Linear', ...
-    'filename', Name.leakageDataFile(options), ...
+    'filename', Name.leakageDataFile( ...
+      'referenceCircuit', [ 'ring_nangate_VTL_', ...
+      Name.parameters(leakageParameters) ]), ...
     'parameters', leakageParameters, ...
     'referencePower', 2 / 3 * mean(options.dynamicPower(:)), ...
     options.get('leakageOptions', []));
@@ -82,6 +86,14 @@ function options = deterministicAnalysis(varargin)
   %
   % Temperature
   %
-  options.Tamb = Utils.toKelvin(45);
-  options.hotspotConfig = File.choose(paths, 'hotspot.config');
+  options.temperatureOptions = Options( ...
+    'method', 'Analytical', ...
+    'analysis', 'Transient', ...
+    'processorCount', options.processorCount, ...
+    'floorplan', options.die.filename, ...
+    'hotspotConfig', File.choose(paths, 'hotspot.config'), ...
+    'samplingInterval', options.samplingInterval, ...
+    'ambientTemperature', Utils.toKelvin(45), ...
+    'leakageOptions', options.leakageOptions, ...
+    options.get('temperatureOptions', []));
 end

@@ -28,7 +28,6 @@ function options = systemSimulation(varargin)
     options.taskCount = taskCount;
   end
 
-  options.floorplan = File.choose(paths, ...
-    sprintf('%03d.flp', processorCount));
-  options.die = Die('floorplan', options.floorplan);
+  options.die = Die('floorplan', ...
+    File.choose(paths, sprintf('%03d.flp', processorCount)));
 end

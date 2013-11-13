@@ -1,4 +1,4 @@
-function compare(options, secondOptions)
+function assess(options, secondTemperatureOptions)
   close all;
   setup;
 
@@ -6,19 +6,15 @@ function compare(options, secondOptions)
   options = Configure.deterministicAnalysis(options);
 
   errorMetric = 'RMSE';
-  analysis = options.get('analysis', 'Transient');
 
-  one = Temperature.Analytical.(analysis)(options);
+  one = Temperature(options.temperatureOptions);
   T0 = Utils.toCelsius(one.computeWithoutLeakage(options.dynamicPower));
   T1 = Utils.toCelsius(one.compute(options.dynamicPower));
 
-  two = Temperature.Analytical.(analysis)(options, secondOptions);
+  two = Temperature(options.temperatureOptions, secondTemperatureOptions);
   T2 = Utils.toCelsius(two.compute(options.dynamicPower));
 
   error = Error.compute(errorMetric, T1, T2);
-
-  fprintf('Analysis: %s\n', analysis);
-  fprintf('%s: %.4f\n', errorMetric, error);
 
   time = options.timeLine;
 
@@ -29,7 +25,7 @@ function compare(options, secondOptions)
     Plot.line(time, T2(i, :), 'number', i, 'auxiliary', true);
   end
 
-  Plot.title('%s %.4f', errorMetric, error);
+  Plot.title('%s: %s %.4f', class(one), errorMetric, error);
   Plot.label('Time, s', 'Temperature, C');
   Plot.limit(time);
 end
