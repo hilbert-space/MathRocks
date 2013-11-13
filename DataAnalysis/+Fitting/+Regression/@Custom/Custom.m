@@ -32,7 +32,7 @@ classdef Custom < Fitting.Base
         X(:, i) = grid.parameterData{k}(:);
       end
 
-      evaluator = Utils.constructCustomFit(Y, X, Fs, Xs, Cs);
+      evaluator = Utils.regress(Y, X, Fs, Xs, Cs);
     end
   end
 end

@@ -21,39 +21,13 @@ function plot(this, varargin)
   %
   % Construction of the evaluation grids
   %
-  exactTarget = [];
-  if options.has('grid');
-    grid = options.grid;
-
-    I = setdiff(1:parameterCount, index);
-    J = false(length(grid.targetData(:)), length(I));
-    for i = 1:length(I)
-      J(:, i) = grid.parameterData{i}(:) == parameters{I(i)};
-    end
-    J = all(J, 2);
-
-    switch length(index)
-    case 1
-      exactTarget = grid.targetData(J);
-      parameters{index} = grid.parameterData{index}(J);
-    case 2
-      dimensions = cellfun(@length, grid.parameterSweeps(index));
-      exactTarget = reshape(grid.targetData(J), dimensions);
-      for i = index
-        parameters{i} = reshape(grid.parameterData{i}(J), dimensions);
-      end
-    otherwise
-      assert(false);
-    end
-  else
-    switch length(index)
-    case 1
-      parameters{index} = this.parameterSweeps{index};
-    case 2
-      [ parameters{index} ] = ndgrid(this.parameterSweeps{index});
-    otherwise
-      assert(false);
-    end
+  switch length(index)
+  case 1
+    parameters{index} = this.parameterSweeps{index};
+  case 2
+    [ parameters{index} ] = ndgrid(this.parameterSweeps{index});
+  otherwise
+    assert(false);
   end
 
   %
@@ -77,7 +51,6 @@ function plot(this, varargin)
     referenceParameters = this.assign(options.normalization);
     referenceTarget = this.evaluate(referenceParameters{:});
     target = target / referenceTarget;
-    exactTarget = exactTarget / referenceTarget;
   end
 
   %
@@ -90,10 +63,6 @@ function plot(this, varargin)
   switch length(index)
   case 1
     Plot.line(parameters(index), target);
-    if ~isempty(exactTarget)
-      Plot.line(parameters(index), exactTarget, ...
-        'discrete', true, 'number', 2);
-    end
     if options.get('logScale', false)
       set(gca, 'YScale', 'log');
     end
@@ -101,10 +70,6 @@ function plot(this, varargin)
     surfc(parameters{index}, target);
     colormap(jet);
     set(gcf, 'Renderer', 'painters')
-    if ~isempty(exactTarget)
-      Plot.line(parameters(index), exactTarget, ...
-        'discrete', true, 'number', 2);
-    end
     if options.get('logScale', false)
       set(gca, 'ZScale', 'log');
     end
@@ -117,7 +82,7 @@ function plot(this, varargin)
     Plot.dot(referenceParameters{index}, 1);
   end
 
-  evalin('base', 'grid on');
+  grid on;
 
   Plot.title([ this.targetName, '(', title, ')' ]);
 

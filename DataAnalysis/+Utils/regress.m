@@ -1,4 +1,4 @@
-function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
+function evaluator = regress(Y, X, Fs, Xs, Cs)
   Ex = mean(X, 1);
   Sx = std(X, [], 1);
   X = bsxfun(@rdivide, bsxfun(@minus, X, Ex), Sx);
@@ -38,18 +38,11 @@ function varargout = constructCustomFit(Y, X, Fs, Xs, Cs, varargin)
 
   C = lsqnonlin(@target, zeros(1, coefficientCount), [], [], options);
 
-  varargin = [ { Fs }, varargin ];
-  varargout = cell(1, length(varargin));
-
   Xs = num2cell(Xs);
-  for i = 1:length(varargin)
-    Fs = Sy * varargin{i} + Ey;
-    Fs = subs(Fs, Cs, C);
-    for j = 1:parameterCount
-      Fs = subs(Fs, Xs{j}, (Xs{j} - Ex(j)) / Sx(j));
-    end
-    varargout{i} = Fs;
+  Fs = subs(Sy * Fs + Ey, Cs, C);
+  for j = 1:parameterCount
+    Fs = subs(Fs, Xs{j}, (Xs{j} - Ex(j)) / Sx(j));
   end
 
-  varargout{1} = Utils.toFunction(varargout{1}, Xs{:});
+  evaluator = Utils.toFunction(Fs, Xs{:});
 end
