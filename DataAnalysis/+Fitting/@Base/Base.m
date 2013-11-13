@@ -4,10 +4,7 @@ classdef Base < handle
     parameterNames
     parameterCount
     parameterSweeps
-  end
-
-  properties (Access = 'private')
-    output
+    evaluate
   end
 
   methods
@@ -18,11 +15,7 @@ classdef Base < handle
       this.parameterNames = grid.parameterNames;
       this.parameterCount = grid.parameterCount;
       this.parameterSweeps = grid.parameterSweeps;
-      this.output = this.construct(grid, options);
-    end
-
-    function target = compute(this, varargin)
-      target = this.evaluate(this.output, varargin{:});
+      this.evaluate = this.construct(grid, options);
     end
 
     function [ parameters, dimensions, index ] = ...
@@ -79,7 +72,6 @@ classdef Base < handle
   end
 
   methods (Abstract, Access = 'protected')
-    output = construct(this, grid, options)
-    target = evaluate(this, output, varargin)
+    evaluator = construct(this, grid, options)
   end
 end

@@ -6,7 +6,7 @@ classdef Custom < Fitting.Base
   end
 
   methods (Access = 'protected')
-    function output = construct(~, grid, options)
+    function evaluator = construct(~, grid, options)
       Fs = options.expression.formula;
       Xs = options.expression.parameters;
       Cs = options.expression.coefficients;
@@ -32,11 +32,7 @@ classdef Custom < Fitting.Base
         X(:, i) = grid.parameterData{k}(:);
       end
 
-      output.evaluate = Utils.constructCustomFit(Y, X, Fs, Xs, Cs);
-    end
-
-    function target = evaluate(~, output, varargin)
-      target = output.evaluate(varargin{:});
+      evaluator = Utils.constructCustomFit(Y, X, Fs, Xs, Cs);
     end
   end
 end

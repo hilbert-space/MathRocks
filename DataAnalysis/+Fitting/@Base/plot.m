@@ -68,14 +68,14 @@ function plot(this, varargin)
       parameters{i} = parameters{i} * ones(size(parameters{index(1)}));
     end
   end
-  target = this.evaluate(this.output, parameters{:});
+  target = this.evaluate(parameters{:});
 
   %
   % Normalization
   %
   if options.has('normalization')
     referenceParameters = this.assign(options.normalization);
-    referenceTarget = this.evaluate(this.output, referenceParameters{:});
+    referenceTarget = this.evaluate(referenceParameters{:});
     target = target / referenceTarget;
     exactTarget = exactTarget / referenceTarget;
   end

@@ -6,13 +6,9 @@ classdef Linear < Fitting.Base
   end
 
   methods (Access = 'protected')
-    function output = construct(~, grid, ~)
-      output.F = griddedInterpolant( ...
+    function evaluator = construct(~, grid, ~)
+      evaluator = griddedInterpolant( ...
         grid.parameterData{:}, grid.targetData, 'linear', 'none');
-    end
-
-    function target = evaluate(~, output, varargin)
-      target = output.F(varargin{:});
     end
   end
 end
