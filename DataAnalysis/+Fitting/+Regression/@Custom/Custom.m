@@ -1,4 +1,8 @@
 classdef Custom < Fitting.Base
+  properties (SetAccess = 'protected')
+    expression
+  end
+
   methods
     function this = Custom(varargin)
       this = this@Fitting.Base(varargin{:});
@@ -6,10 +10,12 @@ classdef Custom < Fitting.Base
   end
 
   methods (Access = 'protected')
-    function evaluator = construct(~, grid, options)
-      Fs = options.expression.formula;
-      Xs = options.expression.parameters;
-      Cs = options.expression.coefficients;
+    function evaluator = construct(this, grid, options)
+      expression = options.expression;
+
+      Fs = expression.formula;
+      Xs = expression.parameters;
+      Cs = expression.coefficients;
 
       assert(length(Xs) == grid.parameterCount);
 
@@ -32,7 +38,16 @@ classdef Custom < Fitting.Base
         X(:, i) = grid.parameterData{k}(:);
       end
 
-      evaluator = Utils.regress(Y, X, Fs, Xs, Cs);
+      Fs = Utils.regress(Y, X, Fs, Xs, Cs);
+
+      expression = struct;
+      expression.formula = Fs;
+      expression.parameters = Xs;
+
+      this.expression = expression;
+
+      Xs = num2cell(Xs);
+      evaluator = Utils.toFunction(Fs, Xs{:});
     end
   end
 end

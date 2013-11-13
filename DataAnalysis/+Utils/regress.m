@@ -1,4 +1,4 @@
-function evaluator = regress(Y, X, Fs, Xs, Cs)
+function Fs = regress(Y, X, Fs, Xs, Cs)
   Ex = mean(X, 1);
   Sx = std(X, [], 1);
   X = bsxfun(@rdivide, bsxfun(@minus, X, Ex), Sx);
@@ -38,11 +38,8 @@ function evaluator = regress(Y, X, Fs, Xs, Cs)
 
   C = lsqnonlin(@target, zeros(1, coefficientCount), [], [], options);
 
-  Xs = num2cell(Xs);
   Fs = subs(Sy * Fs + Ey, Cs, C);
   for j = 1:parameterCount
-    Fs = subs(Fs, Xs{j}, (Xs{j} - Ex(j)) / Sx(j));
+    Fs = subs(Fs, Xs(j), (Xs(j) - Ex(j)) / Sx(j));
   end
-
-  evaluator = Utils.toFunction(Fs, Xs{:});
 end
