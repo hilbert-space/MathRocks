@@ -21,7 +21,6 @@ function assessMonomialAccuracy(varargin)
 
   display(options, 'Setup');
 
-  rule = options.fetch('rule');
   dimensionCount = options.dimensionCount;
   order = options.fetch('order');
 
@@ -42,7 +41,7 @@ function assessMonomialAccuracy(varargin)
     monomialND = monomialND .* monomial1D(indexes(:, i) + 1);
   end
 
-  quadrature = Quadrature.(rule)(options);
+  quadrature = Quadrature(options);
 
   nodes = quadrature.nodes;
   weights = quadrature.weights;
@@ -58,7 +57,7 @@ function assessMonomialAccuracy(varargin)
     'Expected', 'Difference');
   for i = 1:monomialCount
     computed = sum(evaluateMonomialAtNodes(i) .* weights);
-    expected = computeExact(rule, indexes(i, :), options);
+    expected = computeExact(quadrature, indexes(i, :), options);
     error = abs(computed - expected);
     fprintf('%20s%20e%20e%20e', char(monomialND(i)), ...
       computed, expected, error);
@@ -67,15 +66,15 @@ function assessMonomialAccuracy(varargin)
   end
 end
 
-function values = computeExact(rule, index, options)
+function values = computeExact(quadrature, index, options)
   values = zeros(size(index));
-  switch rule
-  case 'GaussHermite'
+  switch class(quadrature)
+  case 'Quadrature.GaussHermite'
     I = index == 0;
     values(I) = 1;
     I = ~I & (mod(index, 2) == 0);
     values(I) = factorial2(double(index(I)) - 1);
-  case 'GaussLegendre'
+  case 'Quadrature.GaussLegendre'
     for i = 1:numel(index)
       k = double(index(i));
       values(i) = sum((options.a).^(0:k) .* (options.b).^(k - (0:k))) / (k + 1);

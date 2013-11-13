@@ -1,7 +1,7 @@
 function assessCrossIntegral(varargin)
   options = Options(varargin{:});
 
-  basis = instantiate(options);
+  basis = Basis(options);
 
   compare('Integral of the product of two basis functions', ...
     call(basis, 'deriveCrossIntegral', options), ...

@@ -1,4 +1,4 @@
-function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
+function interpolation = assess(f, varargin)
   options = Options( ...
     'inputCount', 1, ...
     'outputCount', 1, ...
@@ -12,16 +12,16 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
 
   exactIntegral = options.get('exactIntegral', []);
 
-  surrogate = instantiate(options);
+  interpolation = Interpolation(options);
 
   time = tic;
-  surrogateOutput = surrogate.construct(f);
+  output = interpolation.construct(f);
   fprintf('Construction time: %.2f s\n', toc(time));
 
-  display(surrogate, surrogateOutput);
+  display(interpolation, output);
 
   if inputCount <= 3
-    surrogate.plot(surrogateOutput);
+    interpolation.plot(output);
   end
 
   switch inputCount
@@ -33,7 +33,7 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
     end
 
     z1 = f(x);
-    z2 = surrogate.evaluate(surrogateOutput, x);
+    z2 = interpolation.evaluate(output, x);
 
     Plot.figure(1000, 600);
 
@@ -69,7 +69,7 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
     mesh(X, Y, Z1);
     Plot.title('Exact');
 
-    Z2(:) = surrogate.evaluate(surrogateOutput, [ X(:) Y(:) ]);
+    Z2(:) = interpolation.evaluate(output, [ X(:) Y(:) ]);
     subplot(1, 2, 2);
     mesh(X, Y, Z2);
     Plot.title('Approximation');
@@ -91,16 +91,16 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
   fprintf('Monte-Carlo analysis time: %.2f s\n', toc(time));
 
   time = tic;
-  surrogateData = surrogate.evaluate(surrogateOutput, u);
+  interpolationData = interpolation.evaluate(output, u);
   fprintf('Surrogate evaluation time: %.2f s\n', toc(time));
 
   names = { 'Empirical MC', 'Empirical SG', 'Analytical SG' };
 
   time = tic;
-  surrogateIntegral = surrogate.integrate(surrogateOutput);
+  interpolationIntegral = interpolation.integrate(output);
   fprintf('Surrogate analysis time: %.2f s\n', toc(time));
 
-  integral = { mcIntegral, mean(surrogateData, 1), surrogateIntegral };
+  integral = { mcIntegral, mean(interpolationData, 1), interpolationIntegral };
 
   if ~isempty(exactIntegral)
     names = [ 'Exact', names ];
@@ -113,13 +113,13 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
 
   fprintf('Pointwise:\n');
   fprintf('  L2:              %e\n', ...
-    Error.computeL2(mcData, surrogateData));
+    Error.computeL2(mcData, interpolationData));
   fprintf('  Normalized L2:   %e\n', ...
-    Error.computeNL2(mcData, surrogateData));
+    Error.computeNL2(mcData, interpolationData));
   fprintf('  Normalized RMSE: %e\n', ...
-    Error.computeNRMSE(mcData, surrogateData));
+    Error.computeNRMSE(mcData, interpolationData));
   fprintf('  Infinity norm:   %e\n', ...
-    norm(mcData - surrogateData, Inf));
+    norm(mcData - interpolationData, Inf));
 end
 
 function printIntegral(names, values)

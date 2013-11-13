@@ -1,7 +1,7 @@
 function assessIntegral(varargin)
   options = Options(varargin{:});
 
-  basis = instantiate(options);
+  basis = Basis(options);
 
   compare('Integral of the basis function', ...
     call(basis, 'deriveIntegral', options), ...

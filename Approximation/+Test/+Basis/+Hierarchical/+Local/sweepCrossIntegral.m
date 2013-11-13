@@ -1,9 +1,7 @@
 function sweepCrossIntegral(varargin)
   options = Options(varargin{:});
 
-  driver = Test.Basis.Hierarchical.driver;
-
-  basis = driver.instantiate(options);
+  basis = Basis(options);
   assess = options.get('assess', true);
 
   levels = zeros(1, 0);
@@ -30,15 +28,15 @@ function sweepCrossIntegral(varargin)
       if l > k
         fprintf('%10s', '');
       elseif assess
-        one = double(driver.call(basis, 'deriveCrossIntegral', ...
+        one = double(call(basis, 'deriveCrossIntegral', ...
           'i1', levels(k), 'j1', orders(k), ...
           'i2', levels(l), 'j2', orders(l)));
-        two = driver.call(basis, 'estimateCrossIntegral', ...
+        two = call(basis, 'estimateCrossIntegral', ...
           'i1', levels(k), 'j1', orders(k), ...
           'i2', levels(l), 'j2', orders(l));
         fprintf('%10.4f', one - two);
       else
-        fprintf('%10s', char(driver.call(basis, 'deriveCrossIntegral', ...
+        fprintf('%10s', char(call(basis, 'deriveCrossIntegral', ...
           'i1', levels(k), 'j1', orders(k), ...
           'i2', levels(l), 'j2', orders(l))));
       end

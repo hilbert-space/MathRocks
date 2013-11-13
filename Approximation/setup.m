@@ -1,4 +1,6 @@
 function setup
+  use('DataAnalysis');
+  use('LinearAlgebra');
   use('Visualization');
 
   use('Vendor', 'DataHash');
