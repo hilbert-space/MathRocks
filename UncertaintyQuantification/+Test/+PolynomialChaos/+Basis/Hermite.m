@@ -1,6 +1,6 @@
-function HermiteBasis
+function Hermite
   setup;
-  surrogate = PolynomialChaos.Hermite( ...
+  surrogate = PolynomialChaos('basis', 'Hermite', ...
     'inputCount', 1, 'outputCount', 1, 'order', 5);
   plot(surrogate);
   xlim([ -3, 3 ]);

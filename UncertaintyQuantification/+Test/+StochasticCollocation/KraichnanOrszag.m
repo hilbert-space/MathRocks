@@ -41,7 +41,7 @@ function KraichnanOrszag(varargin)
   target = @(u) solveVector([ ones(size(u)), 0.1 * (2 * u - 1), zeros(size(u)) ], ...
     timeSpan, innerTimeStep, outerTimeStep, outputCount);
 
-  surrogate = instantiate(surrogateOptions);
+  surrogate = StochasticCollocation(surrogateOptions);
 
   tic;
   surrogateOutput = surrogate.construct(target);

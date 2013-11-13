@@ -1,10 +1,10 @@
 function HermiteStep
   setup;
 
-  surrogate = PolynomialChaos.Hermite( ...
+  surrogate = PolynomialChaos('basis', 'Hermite', ...
     'inputCount', 1, 'outputCount', 1, 'order', 10);
 
-  output = surrogate.expand(@(x) problem(x));
+  output = surrogate.construct(@(x) problem(x));
 
   x = linspace(-3, 3).';
 

@@ -42,7 +42,7 @@ classdef Base < handle
         load(filename);
       else
         [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-          this.construct(this.inputCount, this.order, options);
+          this.prepare(this.inputCount, this.order, options);
         save(filename, 'nodes', 'norm', 'projection', 'evaluation', ...
           'rvPower', 'rvMap', '-v7.3');
       end
@@ -58,7 +58,7 @@ classdef Base < handle
       this.rvMap = rvMap;
     end
 
-    function output = expand(this, f, varargin)
+    function output = construct(this, f, varargin)
       output.coefficients = this.projection * f(this.nodes, varargin{:});
     end
 
@@ -85,9 +85,6 @@ classdef Base < handle
 
   methods (Abstract, Access = 'protected')
     distribution = configure(this, options)
-  end
-
-  methods (Abstract, Access = 'protected')
     basis = constructBasis(this, x, order)
     [ nodes, weights ] = constructQuadrature(this, options)
     norm = computeNormalizationConstant(this, i, indexes)
@@ -95,6 +92,6 @@ classdef Base < handle
 
   methods (Access = 'private')
     [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
-      construct(this, inputCount, order, varargin)
+      prepare(this, inputCount, order, varargin)
   end
 end

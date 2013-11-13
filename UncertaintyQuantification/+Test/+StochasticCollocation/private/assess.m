@@ -12,7 +12,7 @@ function [ surrogate, surrogateOutput, surrogateData ] = assess(f, varargin)
 
   hasExact = options.has('exactExpectation') && options.has('exactVariance');
 
-  surrogate = instantiate(options);
+  surrogate = StochasticCollocation(options);
 
   time = tic;
   surrogateOutput = surrogate.construct(f);
