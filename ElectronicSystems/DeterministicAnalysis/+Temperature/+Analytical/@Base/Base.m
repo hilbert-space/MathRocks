@@ -53,24 +53,6 @@ classdef Base < Temperature.Base
       M = [ diag(ones(1, processorCount)); ...
         zeros(nodeCount - processorCount, processorCount) ];
 
-      %
-      % Leakage linearization
-      %
-      if isa(this.leakage, 'LeakagePower.Linear')
-        %
-        % The linearization is as follows:
-        %
-        % Pleak = alpha * T + beta.
-        %
-        % Then, the needed change of the thermal coefficients is
-        %
-        % Gth = Gth - M * alpha * eye(processorCount) * M'.
-        %
-        alpha = this.leakage.linearize( ...
-          'ambientTemperature', this.ambientTemperature);
-        Gth = Gth - M * alpha * eye(processorCount) * M';
-      end
-
       T = diag(sqrt(1 ./ Cth));
 
       A = T * (-Gth) * T;

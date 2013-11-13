@@ -1,4 +1,4 @@
-classdef Base < handle
+classdef LeakagePower < handle
   properties (SetAccess = 'protected')
     parameterNames
     parameterCount
@@ -13,7 +13,7 @@ classdef Base < handle
   end
 
   methods
-    function this = Base(varargin)
+    function this = LeakagePower(varargin)
       options = Options(varargin{:}, 'targetName', 'Ileak');
 
       referencePower = options.fetch('referencePower', NaN); % do not cache
@@ -41,7 +41,7 @@ classdef Base < handle
       if File.exist(filename)
         load(filename);
       else
-        surrogate = this.construct(options);
+        surrogate = Fitting(options);
         save(filename, 'surrogate', '-v7.3');
       end
 
@@ -85,9 +85,5 @@ classdef Base < handle
     function result = parameterSweeps(this)
       result = this.surrogate.parameterSweeps;
     end
-  end
-
-  methods (Abstract, Access = 'protected')
-    surrogate = construct(this, options)
   end
 end

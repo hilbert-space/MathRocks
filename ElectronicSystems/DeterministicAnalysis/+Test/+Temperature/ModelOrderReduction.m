@@ -1,4 +1,4 @@
-function assessModelOrderReduction(varargin)
+function ModelOrderReduction(varargin)
   close all;
   setup;
 
