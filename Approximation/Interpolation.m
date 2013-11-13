@@ -1,5 +1,5 @@
-function interpolation = Interpolation(varargin)
+function surrogate = Interpolation(varargin)
   options = Options(varargin{:});
   structure = options.get('structure', 'Hierarchical');
-  interpolation = Interpolation.(structure)(options);
+  surrogate = Interpolation.(structure)(options);
 end
