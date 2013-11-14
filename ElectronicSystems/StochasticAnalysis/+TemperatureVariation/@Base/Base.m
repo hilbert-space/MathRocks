@@ -1,5 +1,6 @@
 classdef Base < handle
   properties (SetAccess = 'private')
+    temperature
     process
     surrogate
   end
@@ -7,6 +8,7 @@ classdef Base < handle
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
+      this.temperature = Temperature(options.temperatureOptions);
       this.process = ProcessVariation(options.processOptions);
       this.surrogate = this.configure(options.surrogateOptions);
     end
@@ -28,7 +30,12 @@ classdef Base < handle
     end
 
     function display(this, varargin)
-      this.surrogate.display(varargin{:});
+      display(this.surrogate, varargin{:});
+    end
+
+    function plot(this, varargin)
+      if this.surrogate.inputCount > 3, return; end
+      this.surrogate.plot(varargin{:});
     end
 
     function count = inputCount(this)
@@ -37,12 +44,13 @@ classdef Base < handle
   end
 
   methods (Access = 'protected')
-    function data = postprocess(this, output, data)
+    function data = postprocess(this, ~, data)
       sampleCount = size(data, 1);
       if sampleCount == 1
-        data = reshape(data, this.processorCount, []);
+        data = reshape(data, this.temperature.processorCount, []);
       else
-        data = reshape(data, sampleCount, this.processorCount, []);
+        data = reshape(data, sampleCount, ...
+          this.temperature.processorCount, []);
       end
     end
   end

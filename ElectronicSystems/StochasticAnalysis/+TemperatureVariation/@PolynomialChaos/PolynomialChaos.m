@@ -1,11 +1,12 @@
-classdef Base < TemperatureVariation.Base
+classdef PolynomialChaos < TemperatureVariation.Base
   methods
-    function this = Base(varargin)
+    function this = PolynomialChaos(varargin)
       this = this@TemperatureVariation.Base(varargin{:});
     end
 
-    function output = expand(this, Pdyn)
-      output = this.surrogate.expand(@(rvs) this.surve(Pdyn, rvs));
+    function output = compute(this, Pdyn)
+      output = this.surrogate.construct( ...
+        @(rvs) this.surve(Pdyn, rvs));
     end
   end
 
@@ -52,7 +53,7 @@ classdef Base < TemperatureVariation.Base
       parameters = this.process.evaluate(parameters);
       parameters = this.process.assign(parameters);
 
-      T = this.computeWithLeakage(Pdyn, parameters);
+      T = this.temperature.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
     end
   end

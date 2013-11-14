@@ -1,29 +1,21 @@
 function sweep(varargin)
   setup;
 
-  errorMetric = 'Inf';
+  options = Configure.systemSimulation(varargin{:});
+  options = Configure.deterministicAnalysis(options);
+  options = Configure.stochasticAnalysis(options);
 
   lowerBound = 0;
   upperBound = 0.05;
+  errorMetric = 'Inf';
 
-  options = Options(varargin{:});
-
-  analysis = options.fetch('analysis', 'Transient');
-  fprintf('Analysis: %s\n', analysis);
-
-  options = Configure.systemSimulation(options);
-  options = Configure.deterministicAnalysis(options);
-  temperature = Temperature.Analytical.(analysis)(options);
-
-  options = Configure.stochasticAnalysis(options);
-
-  if options.has('surrogate')
+  if  options.get('compare', false)
     fprintf('Surrogate: %s\n', options.surrogate);
-    surrogate = instantiate(options.surrogate, analysis, options);
-    fprintf('Surrogate: construction...\n');
+    surrogate = TemperatureVariation(options);
+    fprintf('%s: construction...\n', class(surrogate));
     time = tic;
     surrogateOutput = surrogate.compute(options.dynamicPower);
-    fprintf('Surrogate: done in %.2f seconds.\n', toc(time));
+    fprintf('%s: done in %.2f seconds.\n', class(surrogate), toc(time));
 
     display(surrogate, surrogateOutput);
     if surrogate.inputCount <= 3, plot(surrogate, surrogateOutput); end
@@ -32,6 +24,8 @@ function sweep(varargin)
   else
     process = ProcessVariation(options.processOptions);
   end
+
+  temperature = Temperature(options.temperatureOptions);
 
   Plot.powerTemperature(options.dynamicPower, [], ...
     temperature.compute(options.dynamicPower), ...

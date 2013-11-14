@@ -1,10 +1,10 @@
-classdef Base < TemperatureVariation.Base
+classdef StochasticCollocation < TemperatureVariation.Base
   methods
-    function this = Base(varargin)
+    function this = StochasticCollocation(varargin)
       this = this@TemperatureVariation.Base(varargin{:});
     end
 
-    function output = interpolate(this, Pdyn)
+    function output = compute(this, Pdyn)
       output = this.surrogate.construct( ...
         @(rvs) this.surve(Pdyn, rvs), numel(Pdyn));
     end

@@ -25,38 +25,39 @@ function options = stochasticAnalysis(varargin)
   lou = lse;
 
   %
-  % System parameters
+  % Process variation
   %
-  function parameter = configureParameter(~, parameter)
-    if nargin < 2, parameter = Options; end
+  processParameters = options.processParameters;
+
+  for i = 1:length(processParameters)
+    parameter = processParameters.get(i);
+
     parameter.model = 'Beta';
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };
     parameter.globalContribution = 0.5;
     parameter.reductionThreshold = 0.96;
+
+    processParameters.set(i, parameter);
   end
 
-  leakageParameters = options.ensure('leakageParameters', Options);
-  processParameters = options.ensure('processParameters', { 'L', 'Tox' });
-  for i = 1:length(processParameters)
-    name = processParameters{i};
-    leakageParameters.(name) = configureParameter( ...
-      name, leakageParameters.get(name, Options));
-  end
-
-  options.processOptions = Options('die', options.die, ...
-    'parameters', leakageParameters.subset(processParameters));
+  options.processOptions = Options( ...
+    'die', options.die, ...
+    'parameters', processParameters, ...
+    options.get('processOptions', []));
 
   %
   % Temperature variation
   %
   switch options.ensure('surrogate', 'PolynomialChaos')
+  case 'MonteCarlo'
+    options.surrogateOptions = Options('sampleCount', 1e4);
   case 'PolynomialChaos'
     options.surrogateOptions = Options('order', 4, ...
       'quadratureOptions', Options('method', 'adaptive'), ...
       options.get('surrogateOptions', []));
-    case { 'StochasticCollocation', 'Interpolation' }
+  case { 'StochasticCollocation', 'Interpolation' }
     options.surrogateOptions = Options( ...
       'method', 'Global', ...
       'basis', 'ChebyshevLagrange', ...

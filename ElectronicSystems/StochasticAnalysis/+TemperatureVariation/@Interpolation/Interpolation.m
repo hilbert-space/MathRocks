@@ -1,15 +1,15 @@
-classdef Base < TemperatureVariation.Base
+classdef Interpolation < TemperatureVariation.Base
   methods
-    function this = Base(varargin)
+    function this = Interpolation(varargin)
       this = this@TemperatureVariation.Base(varargin{:});
     end
 
-    function output = interpolate(this, Pdyn)
+    function output = compute(this, Pdyn)
       output = this.surrogate.construct( ...
         @(rvs) this.surve(Pdyn, rvs), numel(Pdyn));
     end
 
-    function stats = analyze(this, output)
+    function stats = analyze(~, ~)
       stats.expectation = NaN;
       stats.variance = NaN;
     end
