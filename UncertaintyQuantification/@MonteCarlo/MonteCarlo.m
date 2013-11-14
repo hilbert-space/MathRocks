@@ -21,8 +21,11 @@ classdef MonteCarlo < handle
       output.target = target;
     end
 
-    function data = evaluate(this, output, rvs)
-      data = output.target(rvs);
+    function data = evaluate(this, output, nodes, isUniform)
+      if nargin > 3 && isUniform
+        nodes = this.distribution.icdf(nodes);
+      end
+      data = output.target(nodes);
     end
 
     function stats = analyze(this, output)
