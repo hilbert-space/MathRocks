@@ -38,6 +38,11 @@ classdef Jacobi < PolynomialChaos.Base
 
       assert(order >= 0);
 
+      a = this.a;
+      b = this.b;
+
+      x = 2 * (x - a) / (b - a) - 1;
+
       basis = sym(zeros(1, order + 1));
 
       basis(1) = sym(1);
@@ -51,10 +56,10 @@ classdef Jacobi < PolynomialChaos.Base
 
       for i = 3:(order + 1)
         n = i - 1;
-        a = (2 * n + alpha + beta - 1) * ((2 * n + alpha + beta) * (2 * n + alpha + beta - 2) * x + alpha^2 - beta^2);
-        b = 2 * (n + alpha - 1) * (n + beta - 1) * (2 * n + alpha + beta);
-        c = 2 * n * (n + alpha + beta) * (2 * n + alpha + beta - 2);
-        basis(i) = (a * basis(i - 1) - b * basis(i - 2)) / c;
+        c1 = (2 * n + alpha + beta - 1) * ((2 * n + alpha + beta) * (2 * n + alpha + beta - 2) * x + alpha^2 - beta^2);
+        c2 = 2 * (n + alpha - 1) * (n + beta - 1) * (2 * n + alpha + beta);
+        c3 = 2 * n * (n + alpha + beta) * (2 * n + alpha + beta - 2);
+        basis(i) = (c1 * basis(i - 1) - c2 * basis(i - 2)) / c3;
       end
     end
 

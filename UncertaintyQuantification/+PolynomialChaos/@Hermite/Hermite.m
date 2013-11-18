@@ -1,4 +1,9 @@
 classdef Hermite < PolynomialChaos.Base
+  properties (SetAccess = 'private')
+    mu
+    sigma
+  end
+
   methods
     function this = Hermite(varargin)
       this = this@PolynomialChaos.Base(varargin{:});
@@ -6,8 +11,18 @@ classdef Hermite < PolynomialChaos.Base
   end
 
   methods (Access = 'protected')
-    function distribution = configure(~, ~)
-      distribution = ProbabilityDistribution.Gaussian;
+    function distribution = configure(this, options)
+      this.mu = options.get('mu', 0);
+      this.sigma = options.get('sigma', 1);
+
+      %
+      % NOTE: Other values are not supported yet.
+      %
+      assert(this.mu == 0);
+      assert(this.sigma == 1);
+
+      distribution = ProbabilityDistribution.Gaussian( ...
+        'mu', this.mu, 'sigma', this.sigma);
     end
 
     function basis = constructBasis(~, x, order)

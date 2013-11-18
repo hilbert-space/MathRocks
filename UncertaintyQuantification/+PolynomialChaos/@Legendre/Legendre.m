@@ -19,7 +19,7 @@ classdef Legendre < PolynomialChaos.Base
         'a', this.a, 'b', this.b);
     end
 
-    function basis = constructBasis(~, x, order)
+    function basis = constructBasis(this, x, order)
       %
       % Reference:
       %
@@ -27,6 +27,11 @@ classdef Legendre < PolynomialChaos.Base
       %
 
       assert(order >= 0);
+
+      a = this.a;
+      b = this.b;
+
+      x = 2 * (x - a) / (b - a) - 1;
 
       basis = sym(zeros(1, order + 1));
 
