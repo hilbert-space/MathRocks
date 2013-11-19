@@ -32,7 +32,8 @@ function options = stochasticAnalysis(varargin)
   for i = 1:length(processParameters)
     parameter = processParameters.get(i);
 
-    parameter.model = 'Beta';
+    parameter.distribution = 'Beta';
+    parameter.transformation = 'Beta';
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };

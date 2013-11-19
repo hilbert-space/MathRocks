@@ -21,29 +21,9 @@ classdef PolynomialChaos < TemperatureVariation.Base
         assert(distribution == distributions{i});
       end
 
-      switch class(distribution)
-      case 'ProbabilityDistribution.Gaussian'
-        assert(distribution.expectation == 0);
-        assert(distribution.variance == 1);
-
-        surrogate = PolynomialChaos.Hermite( ...
-          'inputCount', sum(this.process.dimensions), options);
-      case 'ProbabilityDistribution.Beta'
-        alpha = distribution.alpha;
-        beta = distribution.beta;
-        a = distribution.a;
-        b = distribution.b;
-
-        %
-        % NOTE: MATLAB's interpretation of the beta distribution
-        % differs from the one used in the Gauss-Jacobi quadrature rule.
-        %
-        surrogate = PolynomialChaos.Jacobi( ...
-          'inputCount', sum(this.process.dimensions), ...
-          'alpha', alpha - 1, 'beta', beta - 1, 'a', a, 'b', b, options);
-      otherwise
-        assert(false);
-      end
+      surrogate = PolynomialChaos( ...
+        'inputCount', sum(this.process.dimensions), ...
+        'distribution', distribution, options);
     end
 
     function T = surve(this, Pdyn, rvs)
