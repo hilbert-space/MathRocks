@@ -9,5 +9,5 @@ function HermiteLognormal
     'variables', variables);
 
   assess(@transformation.evaluate, ...
-    'basis', 'Hermite', 'distribution', distribution);
+    'basis', 'Hermite', 'exact', distribution);
 end

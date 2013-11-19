@@ -7,7 +7,7 @@ function assess(target, varargin)
     'sampleCount', 1e4, ...
     varargin{:});
 
-  distribution = options.get('distribution', []);
+  exact = options.get('exact', []);
 
   surrogate = PolynomialChaos(options);
 
@@ -17,11 +17,11 @@ function assess(target, varargin)
   display(surrogate);
   plot(surrogate, surrogateOutput, false);
 
-  if isempty(distribution)
+  if isempty(exact)
     mcData = target(surrogate.distribution.sample( ...
       options.sampleCount, options.inputCount));
   else
-    mcData = distribution.sample(options.sampleCount, options.inputCount);
+    mcData = exact.sample(options.sampleCount, options.inputCount);
   end
 
   fprintf('Monte Carlo:\n');
@@ -37,15 +37,15 @@ function assess(target, varargin)
   Statistic.compare(mcData, surrogateData, 'draw', true);
   Plot.legend('Monte Carlo', 'Polynomial chaos');
 
-  if isempty(distribution), return; end
+  if isempty(exact), return; end
 
   fprintf('Exact:\n');
-  fprintf('  Expectation: %.4f\n', distribution.expectation);
-  fprintf('  Variance:    %.4f\n', distribution.variance);
+  fprintf('  Expectation: %.4f\n', exact.expectation);
+  fprintf('  Variance:    %.4f\n', exact.variance);
 
   x = xlim(gca);
   x = linspace(x(1), x(2), 200);
-  h = line(x, distribution.pdf(x), 'Color', Color.pick(5), 'LineStyle', '--');
+  h = line(x, exact.pdf(x), 'Color', Color.pick(5), 'LineStyle', '--');
 
   set(h, 'erasemode', 'xor');
   set(h, 'erasemode', 'background');

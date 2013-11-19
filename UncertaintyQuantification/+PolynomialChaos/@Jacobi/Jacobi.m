@@ -1,55 +1,29 @@
 classdef Jacobi < PolynomialChaos.Base
-  properties (SetAccess = 'private')
-    alpha
-    beta
-    a
-    b
-  end
-
   methods
     function this = Jacobi(varargin)
-      this = this@PolynomialChaos.Base(varargin{:});
+      this = this@PolynomialChaos.Base('distribution', ...
+        ProbabilityDistribution.Beta, varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function distribution = configure(this, options)
-      this.alpha = options.get('alpha', 2);
-      this.beta = options.get('beta', 2);
-      this.a = options.get('a', -1);
-      this.b = options.get('b', 1);
-
-      %
-      % NOTE: We have +1 here as MATLAB's interpretation of
-      % the Beta distribution is different from the one used
-      % for the Jacobi chaos.
-      %
-      distribution = ProbabilityDistribution.Beta( ...
-        'alpha', this.alpha + 1, 'beta', this.beta + 1, ...
-        'a', this.a, 'b', this.b);
-    end
-
     function basis = constructBasis(this, x, order)
       %
       % Reference:
       %
-      % http://en.wikipedia.org/wiki/Jacobi_polynomials#Recurrence_relation
+      % http://en.wikipedia.org/wiki/Jacobi_polynomials#Recursion_relation
       %
+      a = this.distribution.a;
+      b = this.distribution.b;
+      [ alpha, beta ] = Utils.toJacobiExponents( ...
+        this.distribution.alpha, this.distribution.beta);
 
-      assert(order >= 0);
-
-      a = this.a;
-      b = this.b;
-
-      x = 2 * (x - a) / (b - a) - 1;
+      x = 2 * (x - a) / (b - a) - 1; % standardize
 
       basis = sym(zeros(1, order + 1));
 
       basis(1) = sym(1);
       if order == 0, return; end
-
-      alpha = this.alpha;
-      beta = this.beta;
 
       basis(2) = (1 / 2) * (2 * (alpha + 1) + (alpha + beta + 2) * (x - 1));
       if order == 1, return; end
@@ -73,38 +47,69 @@ classdef Jacobi < PolynomialChaos.Base
       % the slow-linear growth rule, the level is then (order - 1).
       %
       quadrature = Quadrature.GaussJacobi( ...
+        'distribution', this.distribution, ...
         'dimensionCount', this.inputCount, ...
         'level', (polynomialOrder + 1) - 1, ...
         'growth', 'slow-linear', ...
-        'alpha', this.alpha, 'beta', this.beta, ...
-        'a', this.a, 'b', this.b, varargin{:});
+        varargin{:});
     end
 
-    function norm = computeNormalizationConstant(this, i, indexes)
+    function norm = computeNormalizationConstant(this, index)
+      %
+      % Denote the norm of the standard Jacobi polynomials, defined on
+      % the interval [-1, 1], with the parameters alpha' and beta' by
+      %
+      %  J(alpha', beta', n).
+      %
+      % After the standardization
+      %
+      %  x = 2 * (x - a) / (b - a) - 1,
+      %
+      % the norm becomes
+      %
+      %  (b - a)^(alpha' + beta' + 1)
+      %  ---------------------------- * J(alpha', beta', n).
+      %      2^(alpha' + beta' + 1)
+      %
+      % The normalization constant of the four-parameter beta
+      % distribution with the parameters alpha, beta, a, and b is
+      %
+      %                        1
+      %  ----------------------------------------------.
+      %  (b - a)^(alpha + beta - 1) * Beta(alpha, beta)
+      %
+      % This weight should be preserved; thus, the norm of the
+      % properly weighted Jacobi polynomials with the parameters
+      % alpha' = beta - 1, beta' = alpha - 1, a, and b is
+      %
+      %                     1
+      %  ---------------------------------------- * J(beta - 1, alpha - 1, n).
+      %  2^(alpha + beta - 1) * Beta(alpha, beta)
       %
       % Reference:
       %
       % http://en.wikipedia.org/wiki/Jacobi_polynomials#Orthogonality
       %
+      n = double(index);
 
-      n = double(indexes(i, :)) - 1;
+      alpha = this.distribution.alpha;
+      beta_ = this.distribution.beta; % do not overwrite the beta function
 
-      alpha = this.alpha;
-      beta_ = this.beta;
-      a = this.a;
-      b = this.b;
+      %
+      % Convert beta exponents to Jacobi exponents
+      %
+      [ alpha, beta_ ] = Utils.toJacobiExponents(alpha, beta_);
 
       c = 2^(alpha + beta_ + 1) ./ (2 * n + alpha + beta_ + 1);
       d = gamma(n + alpha + 1) .* gamma(n + beta_ + 1) ./ ...
         (gamma(n + alpha + beta_ + 1) .* gamma(n + 1));
 
       %
-      % NOTE: The product of the above two cancels out the weight;
-      % however, we want to preserve the beta weight and, therefore,
-      % divide by the following constant. Also, +1 is due to the fact
-      % pointed out earlier.
+      % Convert Jacobi exponents back to beta exponents
       %
-      e = (b - a)^(alpha + 1 + beta_ + 1 - 1) * beta(alpha + 1, beta_ + 1);
+      [ alpha, beta_ ] = Utils.toBetaExponents(alpha, beta_);
+
+      e = 2^(alpha + beta_ - 1) * beta(alpha, beta_);
 
       norm = prod(c .* d ./ e);
     end

@@ -1,12 +1,14 @@
 classdef GaussJacobi < Quadrature.Base
   methods
     function this = GaussJacobi(varargin)
-      this = this@Quadrature.Base(varargin{:});
+      this = this@Quadrature.Base( ...
+        'distribution', ProbabilityDistribution.Beta, ...
+        'growth', 'slow-linear', varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function [ nodes, weights ] = rule(~, level, options)
+    function [ nodes, weights ] = rule(this, level)
       %
       % First, we determine the growth rule.
       %
@@ -14,48 +16,70 @@ classdef GaussJacobi < Quadrature.Base
       %
       % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
       %
-      growth = options.get('growth', 'slow-linear');
-      if isa(growth, 'function_handle')
-        order = feval(growth, level);
-      elseif strcmpi(growth, 'slow-linear')
+      if isa(this.growth, 'function_handle')
+        order = feval(this.growth, level);
+      elseif strcmpi(this.growth, 'slow-linear')
         order = level + 1;
-      elseif strcmpi(growth, 'full-exponential')
+      elseif strcmpi(this.growth, 'full-exponential')
         order = 2^(level + 1) - 1;
       else
         assert(false);
       end
 
-      [ nodes, weights ] = jacobi_compute(order, options.alpha, options.beta);
+      alpha = this.distribution.alpha;
+      beta_ = this.distribution.beta; % do not overwrite the beta function
+      a = this.distribution.a;
+      b = this.distribution.b;
 
       %
-      % For some reason, the nodes are returned as a row vector.
+      % Convert beta exponents to Jacobi exponents
       %
-      nodes = nodes(:);
+      [ alpha, beta_ ] = Utils.toJacobiExponents(alpha, beta_);
+
+      [ nodes, weights ] = jacobi_compute(order, alpha, beta_);
+      nodes = nodes(:); % returned as a row vector
 
       %
-      % The computed nodes and weights can be used to evaluate integrals
-      % with the weight function equal to
+      % Convert Jacobi exponents back to beta exponents
       %
-      % (1 - y)^alpha * (1 + y)^beta
+      [ alpha, beta_ ] = Utils.toBetaExponents(alpha, beta_);
+
       %
-      % where the integration goes from -1 to 1. However, we need the
-      % four-parameter beta weight, i.e.,
+      % We would like to compute integrals with respect to the density
+      % of the four-parameter beta distribution with the parameters
+      % alpha, beta, a, and b:
       %
-      %            (x - a)^alpha * (b - x)^beta
-      % ------------------------------------------------------
-      % (b - a)^(alpha + beta + 1) * Beta(alpha + 1, beta + 1)
+      %         b
+      %         /           (x - a)^(alpha - 1) * (b - x)^(beta - 1)
+      %  g(x) = | h(x) * ---------------------------------------------- * dx.
+      %         /        (b - a)^(alpha + beta - 1) * Beta(alpha, beta)
+      %         a
       %
-      % where the integration is from a to b.
+      % However, the computed nodes and weights are for the integrals
+      % of the following form:
       %
-      % NOTE: There is a difference in the exponents between the Jacobi
-      % polynomials (J) and the standard beta distribution (B); to be
-      % specific, we have alpha(J) = alpha(B) - 1, beta(J) = beta(B) - 1.
+      %        1
+      %        /
+      % g(y) = | h(y) * (y - (-1))^(alpha - 1) * (1 - y)^(beta - 1) * dy.
+      %        /
+      %       -1
       %
-      % All in all,
+      % Therefore, we use the following change of variables:
       %
-      nodes = ((nodes + 1) / 2) * (options.b - options.a) + options.a;
-      weights = weights / ((options.b - options.a)^(options.alpha + ...
-        options.beta + 1) * beta(options.alpha + 1, options.beta + 1));
+      %         x - a
+      % y = 2 * ----- - 1,
+      %         b - a
+      %
+      %     y + 1
+      % x = ----- * (b - a) + a, and
+      %       2
+      %
+      %      b - a
+      % dx = ----- * dy.
+      %        2
+      %
+      nodes = ((nodes + 1) / 2) * (b - a) + a;
+      weights = weights / (2^(alpha + beta_ - 1) * beta(alpha, beta_));
     end
   end
 end

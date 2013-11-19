@@ -1,32 +1,22 @@
 classdef Hermite < PolynomialChaos.Base
-  properties (SetAccess = 'private')
-    mu
-    sigma
-  end
-
   methods
     function this = Hermite(varargin)
-      this = this@PolynomialChaos.Base(varargin{:});
+      this = this@PolynomialChaos.Base('distribution', ...
+        ProbabilityDistribution.Gaussian, varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function distribution = configure(this, options)
-      this.mu = options.get('mu', 0);
-      this.sigma = options.get('sigma', 1);
-
+    function basis = constructBasis(this, x, order)
       %
-      % NOTE: Other values are not supported yet.
+      % Reference:
       %
-      assert(this.mu == 0);
-      assert(this.sigma == 1);
+      % http://en.wikipedia.org/wiki/Hermite_polynomials#Recursion_relation
+      %
+      mu = this.distribution.mu;
+      sigma = this.distribution.sigma;
 
-      distribution = ProbabilityDistribution.Gaussian( ...
-        'mu', this.mu, 'sigma', this.sigma);
-    end
-
-    function basis = constructBasis(~, x, order)
-      assert(order >= 0);
+      x = (x - mu) / sigma; % standardize
 
       basis = sym(zeros(1, order + 1));
 
@@ -51,22 +41,38 @@ classdef Hermite < PolynomialChaos.Base
       % the slow-linear growth rule, the level is then (order - 1).
       %
       quadrature = Quadrature.GaussHermite( ...
+        'distribution', this.distribution, ...
         'dimensionCount', this.inputCount, ...
         'level', (polynomialOrder + 1) - 1, ...
         'growth', 'slow-linear', ...
         varargin{:});
     end
 
-    function norm = computeNormalizationConstant(~, i, indexes)
-      n = double(indexes(i, :)) - 1;
-
+    function norm = computeNormalizationConstant(~, index)
       %
-      % NOTE: The original probabilists' Hermite polynomials have
-      % normalization constants equal to sqrt(2 * pi) * factorial(n).
-      % However, all the quadrature rules are assumed to produce purely
-      % probabilists' nodes and weights; in other words, sqrt(2 * pi)
-      % is preserved as it is a part of the Gaussian measure.
+      % The norm of the standard Hermite polynomials is
       %
+      % sqrt(2 * pi) * factorial(n).
+      %
+      % After the standardization
+      %
+      % x = (x - mu) / sigma,
+      %
+      % the norm becomes
+      %
+      % sqrt(2 * pi) * sigma * factorial(n).
+      %
+      % The part before the factorial belongs to the corresponding
+      % Gaussian density and, thus, should be preserved. Therefore,
+      % the norm of the properly weighted Hermite polynomials is
+      %
+      % factorial(n).
+      %
+      % Reference:
+      %
+      % http://en.wikipedia.org/wiki/Hermite_polynomials#Orthogonality
+      %
+      n = double(index);
       norm = prod(factorial(n));
     end
   end

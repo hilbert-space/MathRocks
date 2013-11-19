@@ -1,6 +1,7 @@
 function setup
   use('DataAnalysis');
   use('LinearAlgebra');
+  use('ProbabilityTheory');
   use('Visualization');
 
   use('Vendor', 'DataHash');

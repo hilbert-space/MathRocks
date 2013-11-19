@@ -30,7 +30,7 @@ classdef Base < handle
   methods
     function this = Base(varargin)
       options = Options(varargin{:});
-      this.distribution = this.configure(options);
+      this.distribution = options.distribution;
 
       this.inputCount = options.inputCount;
       this.order = options.order;
@@ -84,10 +84,9 @@ classdef Base < handle
   end
 
   methods (Abstract, Access = 'protected')
-    distribution = configure(this, options)
     basis = constructBasis(this, x, order)
     [ nodes, weights ] = constructQuadrature(this, options)
-    norm = computeNormalizationConstant(this, i, indexes)
+    norm = computeNormalizationConstant(this, index)
   end
 
   methods (Access = 'private')

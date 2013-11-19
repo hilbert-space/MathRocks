@@ -1,37 +1,22 @@
 classdef Legendre < PolynomialChaos.Base
-  properties (SetAccess = 'private')
-    a
-    b
-  end
-
   methods
     function this = Legendre(varargin)
-      this = this@PolynomialChaos.Base(varargin{:});
+      this = this@PolynomialChaos.Base('distribution', ...
+        ProbabilityDistribution.Uniform, varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function distribution = configure(this, options)
-      this.a = options.get('a', -1);
-      this.b = options.get('b', 1);
-
-      distribution = ProbabilityDistribution.Uniform( ...
-        'a', this.a, 'b', this.b);
-    end
-
     function basis = constructBasis(this, x, order)
       %
       % Reference:
       %
-      % http://en.wikipedia.org/wiki/Legendre_polynomials#Recursive_definition
+      % http://en.wikipedia.org/wiki/Legendre_polynomials#Recursion_relation
       %
+      a = this.distribution.a;
+      b = this.distribution.b;
 
-      assert(order >= 0);
-
-      a = this.a;
-      b = this.b;
-
-      x = 2 * (x - a) / (b - a) - 1;
+      x = 2 * (x - a) / (b - a) - 1; % standardize
 
       basis = sym(zeros(1, order + 1));
 
@@ -57,26 +42,52 @@ classdef Legendre < PolynomialChaos.Base
       % the slow-linear growth rule, the level is then (order - 1).
       %
       quadrature = Quadrature.GaussLegendre( ...
+        'distribution', this.distribution, ...
         'dimensionCount', this.inputCount, ...
         'level', (polynomialOrder + 1) - 1, ...
         'growth', 'slow-linear', ...
-        'a', this.a, 'b', this.b, varargin{:});
+        varargin{:});
     end
 
-    function norm = computeNormalizationConstant(this, i, indexes)
+    function norm = computeNormalizationConstant(~, index)
+      %
+      % The norm of the standard Legendre polynomials, defined on
+      % the interval [-1, 1], is
+      %
+      %      2
+      %  ---------.
+      %  2 * n + 1
+      %
+      % After the standardization
+      %
+      %  x = 2 * (x - a) / (b - a) - 1,
+      %
+      % the norm becomes
+      %
+      %  b - a       2         b - a
+      %  ----- * --------- = ---------.
+      %    2     2 * n + 1   2 * n + 1
+      %
+      % The normalization constant of the uniform distribution on
+      % the interval [a, b] is
+      %
+      %    1
+      %  -----.
+      %  b - a
+      %
+      % This weight should be preserved; thus, the norm of the
+      % properly weighted Legendre polynomials is
+      %
+      %      1
+      %  ---------.
+      %  2 * n + 1
       %
       % Reference:
       %
       % http://en.wikipedia.org/wiki/Legendre_polynomials#Orthogonality
       %
-
-      n = double(indexes(i, :)) - 1;
-
-      %
-      % NOTE: Here we also divide by (b - a) to preserve the weight of
-      % the uniform distribution on the interval [a, b].
-      %
-      norm = prod(2 ./ (2 * n + 1) / (this.b - this.a));
+      n = double(index);
+      norm = prod(1 ./ (2 * n + 1));
     end
   end
 end

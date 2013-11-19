@@ -1,12 +1,14 @@
 classdef GaussHermite < Quadrature.Base
   methods
     function this = GaussHermite(varargin)
-      this = this@Quadrature.Base(varargin{:});
+      this = this@Quadrature.Base( ...
+        'distribution', ProbabilityDistribution.Gaussian, ...
+        'growth', 'slow-linear', varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function [ nodes, weights ] = rule(~, level, options)
+    function [ nodes, weights ] = rule(this, level)
       %
       % First, we determine the growth rule.
       %
@@ -14,41 +16,51 @@ classdef GaussHermite < Quadrature.Base
       %
       % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
       %
-      growth = options.get('growth', 'slow-linear');
-      if isa(growth, 'function_handle')
-        order = feval(growth, level);
-      elseif strcmpi(growth, 'slow-linear')
+      if isa(this.growth, 'function_handle')
+        order = feval(this.growth, level);
+      elseif strcmpi(this.growth, 'slow-linear')
         order = level + 1;
-      elseif strcmpi(growth, 'full-exponential')
+      elseif strcmpi(this.growth, 'full-exponential')
         order = 2^(level + 1) - 1;
       else
         assert(false);
       end
 
+      mu = this.distribution.mu;
+      sigma = this.distribution.sigma;
+
       [ nodes, weights ] = hermite_compute(order);
 
       %
-      % The computed nodes and weights can be used to evaluate integrals with
-      % the weight function
+      % We would like to compute integrals with respect to
+      % the densities of Gaussian distributions:
       %
-      % exp(-y^2).
+      %                             +oo
+      %                   1          /               (x - mu)^2
+      %  g(x) = -------------------- | h(x) * exp(- -----------) * dx.
+      %         sqrt(2 * pi) * sigma /              2 * sigma^2
+      %                             -oo
       %
-      % However, we need the standard Gaussian weight, i.e.,
+      % However, the computed nodes and weights are for the integrals
+      % of the following form:
       %
-      %       1            x^2
-      % ------------ exp(- ---).
-      % sqrt(2 * pi)        2
+      %         +oo
+      %          /
+      %  g(y) =  | h(y) * exp(- y^2) * dy.
+      %          /
+      %         -oo
       %
-      % Therefore, we transform the nodes as
+      % Therefore, we use the following change of variables:
       %
-      nodes = sqrt(2) * nodes;
+      %           x - mu
+      %  y = ---------------,
+      %      sqrt(2) * sigma
       %
-      % and the weights as
+      %  x = mu + sqrt(2) * sigma * y,
       %
-      % weights = sqrt(2) * weights / sqrt(2 * pi);
+      %  dx = sqrt(2) * sigma * dy.
       %
-      % which can be simplified to:
-      %
+      nodes = mu + sqrt(2) * sigma * nodes;
       weights = weights / sqrt(pi);
     end
   end

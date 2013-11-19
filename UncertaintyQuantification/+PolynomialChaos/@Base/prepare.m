@@ -4,16 +4,16 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   x = sym('x%d', [ 1, inputCount ]);
   assume(x, 'real');
 
-  indexes = Utils.indexTotalOrderSpace(inputCount, order) + 1;
+  indexes = Utils.indexTotalOrderSpace(inputCount, order);
   termCount = size(indexes, 1);
 
   basis1D = this.constructBasis(x(1), order);
   assert(length(basis1D) == order + 1);
 
-  basisND = basis1D(indexes(:, 1));
+  basisND = basis1D(indexes(:, 1) + 1);
   for i = 2:inputCount
     basis1D = subs(basis1D, x(i - 1), x(i));
-    basisND = basisND .* basis1D(indexes(:, i));
+    basisND = basisND .* basis1D(indexes(:, i) + 1);
   end
 
   quadrature = this.constructQuadrature(order, ...
@@ -38,7 +38,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   end
 
   for i = 1:termCount
-    norm(i) = this.computeNormalizationConstant(i, indexes);
+    norm(i) = this.computeNormalizationConstant(indexes(i, :));
     projection(i, :) = evaluateBasisAtNodes(i) .* weights / norm(i);
   end
 
