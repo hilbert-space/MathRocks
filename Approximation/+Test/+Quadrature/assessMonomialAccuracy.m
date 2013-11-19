@@ -9,10 +9,12 @@ function assessMonomialAccuracy(varargin)
   % code and the one used in the above paper is into account here
   % with (5 - 1).
   %
+  distribution = ProbabilityDistribution.Uniform('a', -1, 'b', 1);
+
   options = Options( ...
     'dimensionCount', 2, ...
     'rule', 'GaussLegendre', ...
-    'a', -1, 'b', 1, ...
+    'distribution', distribution, ...
     'level', 5 - 1, ...
     'order', 8 + 4, ...
     'method', 'sparse', ...
@@ -57,7 +59,7 @@ function assessMonomialAccuracy(varargin)
     'Expected', 'Difference');
   for i = 1:monomialCount
     computed = sum(evaluateMonomialAtNodes(i) .* weights);
-    expected = computeExact(quadrature, indexes(i, :), options);
+    expected = computeExact(quadrature, indexes(i, :));
     error = abs(computed - expected);
     fprintf('%20s%20e%20e%20e', char(monomialND(i)), ...
       computed, expected, error);
@@ -66,7 +68,10 @@ function assessMonomialAccuracy(varargin)
   end
 end
 
-function values = computeExact(quadrature, index, options)
+function values = computeExact(quadrature, index)
+  a = quadrature.distribution.a;
+  b = quadrature.distribution.b;
+
   values = zeros(size(index));
   switch class(quadrature)
   case 'Quadrature.GaussHermite'
@@ -77,7 +82,7 @@ function values = computeExact(quadrature, index, options)
   case 'Quadrature.GaussLegendre'
     for i = 1:numel(index)
       k = double(index(i));
-      values(i) = sum((options.a).^(0:k) .* (options.b).^(k - (0:k))) / (k + 1);
+      values(i) = sum(a.^(0:k) .* b.^(k - (0:k))) / (k + 1);
     end
   otherwise
     assert(false);
