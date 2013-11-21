@@ -41,25 +41,14 @@ function distribution = distribute(parameter, contribution)
       'mu', contribution * parameter.expectation, ...
       'sigma', sqrt(contribution * parameter.variance));
   case 'Beta'
-    a = contribution * min(parameter.range);
-    b = contribution * max(parameter.range);
+    gaussian = ProbabilityDistribution.Gaussian( ...
+      'mu', contribution * parameter.expectation, ...
+      'sigma', sqrt(contribution * parameter.variance));
 
-    %
-    % Assume that the distribution is symmetric; thus, alpha = beta.
-    % These parameters can be computed using
-    %
-    %                alpha * beta * (b - a)^2
-    % Var(X) = ------------------------------------- .
-    %          (alpha + bata)^2 * (alpha + beta + 1)
-    %
-    % Reference:
-    %
-    % http://en.wikipedia.org/wiki/Beta_distribution#Four_parameters_2
-    %
-    param = (b - a)^2 / 8 / (contribution * parameter.variance) - 1 / 2;
-
-    distribution = ProbabilityDistribution.Beta( ...
-      'alpha', param, 'beta', param, 'a', a, 'b', b);
+    distribution = Utils.gaussianToBeta( ...
+      gaussian, 'target', 'variance', ...
+      'a', contribution * min(parameter.range), ...
+      'b', contribution * max(parameter.range));
   otherwise
     assert(false);
   end
