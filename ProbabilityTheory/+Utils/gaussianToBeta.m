@@ -5,9 +5,9 @@ function beta = gaussianToBeta(gaussian, varargin)
   %
   options = Options(varargin{:});
 
-  spread = options.get('spread', 4);
-  a = options.get('a', -spread * gaussian.sigma);
-  b = options.get('b', spread * gaussian.sigma);
+  spread = options.get('spread', 3);
+  a = options.get('a', gaussian.mu - spread * gaussian.sigma);
+  b = options.get('b', gaussian.mu + spread * gaussian.sigma);
 
   switch options.get('target', 'pdf')
   case 'pdf'

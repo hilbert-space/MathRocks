@@ -43,13 +43,32 @@ function options = deterministicAnalysis(varargin)
     parameter = processParameters.(names{i});
     if isempty(parameter), parameter = Options; end
 
+    %
+    % According to the technology requirements published by ITRS 2011,
+    % the critical dimensions (CDs) should be controlled within 12%.
+    %
+    % Since about 99.7% of values drawn from a Gaussian distribution are
+    % within three standard deviatiosn away from the mean, we let
+    %
+    %  3 * sigma = 0.12 * mu, that is,
+    %
+    %  sigma = 0.12 * mu / 3 = 0.04 * mu.
+    %
+    % Reference:
+    %
+    % http://www.itrs.net/Links/2011ITRS/2011Tables/Design_2011Tables.xlsx
+    % (see Table DESN10)
+    %
+    % https://en.wikipedia.org/wiki/Normal_distribution#Standard_deviation_and_tolerance_intervals
+    %
+
     switch names{i}
     case 'L'
       nominal = 50e-9;
-      sigma = 0.05 * (nominal - (50e-9 - 22.5e-9));
+      sigma = 0.04 * (nominal - (50e-9 - 22.5e-9));
     case 'Tox'
       nominal = 1e-9;
-      sigma = 0.05 * nominal;
+      sigma = 0.04 * nominal;
     otherwise
       assert(false);
     end
@@ -57,7 +76,7 @@ function options = deterministicAnalysis(varargin)
     parameter.reference = nominal;
     parameter.nominal = nominal;
     parameter.sigma = sigma;
-    parameter.range = nominal + [ -4, 4 ] * sigma;
+    parameter.range = nominal + [ -3, 3 ] * sigma; % see above
 
     processParameters.(names{i}) = parameter;
   end

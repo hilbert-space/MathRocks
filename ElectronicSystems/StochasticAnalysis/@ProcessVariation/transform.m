@@ -46,9 +46,7 @@ function distribution = distribute(parameter, contribution)
       'sigma', sqrt(contribution * parameter.variance));
 
     distribution = Utils.gaussianToBeta( ...
-      gaussian, 'target', 'variance', ...
-      'a', contribution * min(parameter.range), ...
-      'b', contribution * max(parameter.range));
+      gaussian, 'target', 'variance', 'spread', 3);
   otherwise
     assert(false);
   end
