@@ -30,7 +30,8 @@ classdef MonteCarlo < TemperatureVariation.Base
 
     function output = compute(this, Pdyn)
       filename = sprintf('%s_%s.mat', class(this), DataHash({ ...
-        Pdyn, this.temperature.toString, this.process.toString }));
+        Pdyn, this.temperature.toString, this.process.toString, ...
+        this.surrogate.toString}));
 
       if File.exist(filename)
         fprintf('Monte Carlo: loading %d samples from "%s"...\n', ...

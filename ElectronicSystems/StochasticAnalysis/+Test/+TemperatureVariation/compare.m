@@ -9,13 +9,15 @@ function compare(one, two, varargin)
 
   options = Configure.systemSimulation(varargin{:});
   options = Configure.deterministicAnalysis(options);
-  options = Configure.stochasticAnalysis(options);
 
   timeSlice = options.stepCount * options.samplingInterval / 2;
   k = floor(timeSlice / options.samplingInterval);
 
-  [ ~, oneStats, oneOutput ] = construct(options, one);
-  [ ~, twoStats, twoOutput ] = construct(options, two);
+  options = Configure.stochasticAnalysis(options, one);
+  [ ~, oneStats, oneOutput ] = construct(options);
+
+  options = Configure.stochasticAnalysis(options, two);
+  [ ~, twoStats, twoOutput ] = construct(options);
 
   Plot.temperatureVariation( ...
     { oneStats.expectation, twoStats.expectation }, ...

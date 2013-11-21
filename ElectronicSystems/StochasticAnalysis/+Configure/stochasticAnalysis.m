@@ -33,7 +33,7 @@ function options = stochasticAnalysis(varargin)
     parameter = processParameters.get(i);
 
     parameter.distribution = 'Beta';
-    parameter.transformation = 'Beta';
+    parameter.transformation = 'Uniform';
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };

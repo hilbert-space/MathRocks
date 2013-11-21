@@ -6,12 +6,12 @@ function sweep(varargin)
   options = Configure.stochasticAnalysis(options);
 
   lowerBound = 0;
-  upperBound = 0.05;
+  upperBound = 1;
   errorMetric = 'Inf';
 
   if  options.get('compare', false)
-    fprintf('Surrogate: %s\n', options.surrogate);
     surrogate = TemperatureVariation(options);
+    fprintf('Surrogate: %s\n', class(surrogate));
     fprintf('%s: construction...\n', class(surrogate));
     time = tic;
     surrogateOutput = surrogate.compute(options.dynamicPower);

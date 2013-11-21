@@ -28,17 +28,17 @@ classdef MonteCarlo < handle
       data = output.target(nodes);
     end
 
-    function stats = analyze(this, output)
+    function stats = analyze(~, output)
       stats.expectation = mean(output.data, 1);
       stats.variance = var(output.data, [], 1);
     end
 
     function display(this, varargin)
-      options = Options( ...
-        'inputCount', this.inputCount, ...
-        'sampleCount', this.sampleCount, ...
-        'distribution', this.distribution);
-      display(options, 'Monte Carlo');
+      display(Options(this), 'Monte Carlo');
+    end
+
+    function string = toString(this, varargin)
+      string = Options(this).toString(varargin{:});
     end
   end
 end

@@ -78,13 +78,13 @@ function string = arrayToString(object, varargin)
 end
 
 function string = cellToString(object, varargin)
-  [ rows, cols ] = size(object);
-
-  if ~(rows == 1 || cols == 1)
-    error('Matrices are not supported yet.');
-  end
-
+  object = object(:);
   count = numel(object);
+
+  if count == 0;
+    string = '{}';
+    return;
+  end
 
   string = String(object{1}, varargin{:});
   for i = 2:count

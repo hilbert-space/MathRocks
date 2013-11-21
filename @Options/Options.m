@@ -102,8 +102,12 @@ classdef Options < dynamicprops
           continue;
         end
 
-        if isa(item, 'struct')
-          names = fieldnames(item);
+        if isa(item, 'struct') || isobject(item)
+          if isa(item, 'struct')
+            names = fieldnames(item);
+          else
+            names = properties(item);
+          end
           for j = 1:length(names)
             if numel(item) == 1
               this.set(names{j}, item.(names{j}));
