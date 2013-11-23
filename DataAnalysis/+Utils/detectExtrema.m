@@ -1,27 +1,29 @@
-function [ index, peaks ] = detectPeaks(data, delta)
+function [ index, extrema ] = detectExtrema(data, tolerance)
+  assert(isvector(data));
+
   dataCount = length(data);
-  peakCount = 0;
+  extremumCount = 0;
 
   index = zeros(1, dataCount, 'uint16');
-  peaks = zeros(1, dataCount);
+  extrema = zeros(1, dataCount);
 
-  function append(j, peak)
-    peakCount = peakCount + 1;
-    index(peakCount) = j;
-    peaks(peakCount) = peak;
+  function append(j, extremum)
+    extremumCount = extremumCount + 1;
+    index(extremumCount) = j;
+    extrema(extremumCount) = extremum;
   end
 
   function prepend(j, peak)
-    index(2:(peakCount + 1)) = index(1:peakCount);
-    peaks(2:(peakCount + 1)) = peaks(1:peakCount);
-    peakCount = peakCount + 1;
+    index(2:(extremumCount + 1)) = index(1:extremumCount);
+    extrema(2:(extremumCount + 1)) = extrema(1:extremumCount);
+    extremumCount = extremumCount + 1;
     index(1) = j;
-    peaks(1) = peak;
+    extrema(1) = peak;
   end
 
   function replace(j, k, peak)
     index(j) = k;
-    peaks(j) = peak;
+    extrema(j) = peak;
   end
 
   minValue = Inf;
@@ -42,28 +44,28 @@ function [ index, peaks ] = detectPeaks(data, delta)
     if this <= minValue, minValue = this; minPosition = i; end
 
     if nextType == MAX
-      if this < (maxValue - delta)
+      if this < (maxValue - tolerance)
         append(maxPosition, maxValue);
         minValue = this;
         minPosition = i;
         nextType = MIN;
       end
     elseif nextType == MIN
-      if this > (minValue + delta)
+      if this > (minValue + tolerance)
         append(minPosition, minValue);
         maxValue = this;
         maxPosition = i;
         nextType = MAX;
       end
     else
-      if this < (maxValue - delta)
+      if this < (maxValue - tolerance)
         append(maxPosition, maxValue);
         minValue = this;
         minPosition = i;
         nextType = MIN;
         firstType = MAX;
         firstPosition = i;
-      elseif this > (minValue + delta)
+      elseif this > (minValue + tolerance)
         append(minPosition, minValue);
         maxValue = this;
         maxPosition = i;
@@ -78,7 +80,7 @@ function [ index, peaks ] = detectPeaks(data, delta)
     % Ensure that we start from the very beginning
     if firstPosition > 1
       if firstType == MIN
-        if peaks(1) > maxValue
+        if extrema(1) > maxValue
           % ... if the first minimum is larger than the last maximum, replace!
           replace(1, 1, maxValue);
         else
@@ -87,38 +89,38 @@ function [ index, peaks ] = detectPeaks(data, delta)
         end
       else
         % ... or replace the first one
-        maxValue = max(maxValue, peaks(1));
+        maxValue = max(maxValue, extrema(1));
         replace(1, 1, maxValue);
       end
     end
 
     % Ensure that we end at the end
-    if index(peakCount) ~= dataCount
+    if index(extremumCount) ~= dataCount
       % ... if not, add a point
       append(dataCount, maxValue);
     end
   elseif nextType == MIN
     if firstPosition > 1
       if firstType == MAX
-        if peaks(1) < minValue
+        if extrema(1) < minValue
           replace(1, 1, minValue);
         else
           prepend(1, minValue);
         end
       else
-        minValue = min(minValue, peaks(1));
+        minValue = min(minValue, extrema(1));
         replace(1, 1, minValue);
       end
     end
 
-    if index(peakCount) ~= dataCount
+    if index(extremumCount) ~= dataCount
       append(dataCount, minValue);
     end
   end
 
-  index = index(1:peakCount);
-  peaks = peaks(1:peakCount);
+  index = index(1:extremumCount);
+  extrema = extrema(1:extremumCount);
 
   [ index, I ] = sort(index);
-  peaks = peaks(I);
+  extrema = extrema(I);
 end
