@@ -24,14 +24,17 @@ function compute(varargin)
     P = Pdyn;
   end
 
-  Plot.powerTemperature(Pdyn, P - Pdyn, T, ...
-    'time', options.timeLine);
+  Plot.figure(800, 800);
+  subplot(2, 1, 1);
+  Plot.power(Pdyn, P - Pdyn, 'timeLine', options.timeLine, 'figure', false);
+  subplot(2, 1, 2);
+  Plot.temperature(T, 'timeLine', options.timeLine, 'figure', false);
 
-  Ptot  = mean(P(:));
-  Pdyn  = mean(Pdyn(:));
+  Ptotal = mean(P(:));
+  Pdyn = mean(Pdyn(:));
   Pleak = mean(P(:) - Pdyn(:));
 
-  fprintf('Total power: %.2f W\n', Ptot);
+  fprintf('Total power: %.2f W\n', Ptotal);
   fprintf('Dynamic power: %.2f W\n', Pdyn);
   fprintf('Leakage power: %.2f W\n', Pleak);
   fprintf('Leakage to dynamic ratio: %.2f\n', Pleak / Pdyn);

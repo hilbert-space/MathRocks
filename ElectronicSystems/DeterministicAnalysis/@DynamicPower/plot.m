@@ -1,4 +1,4 @@
-function plot(this, powerProfile, varargin)
-  Plot.powerTemperature(powerProfile, [], [], ...
-    'samplingInterval', this.samplingInterval, varargin{:});
+function plot(this, profile, varargin)
+  Plot.power(profile, [], 'samplingInterval', ...
+    this.samplingInterval, varargin{:});
 end
