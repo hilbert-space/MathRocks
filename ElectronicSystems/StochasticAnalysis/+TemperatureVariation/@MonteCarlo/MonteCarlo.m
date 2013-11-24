@@ -4,9 +4,9 @@ classdef MonteCarlo < TemperatureVariation.Base
       options = Options(varargin{:});
 
       temperatureOptions = options.temperatureOptions.clone; % use a copy
-      if ~isempty(temperatureOptions.get('reduceModelOrder', []))
+      if ~isempty(temperatureOptions.get('modelOrderReduction', []))
         warning('Monte Carlo: turning off the model order reduction.');
-        temperatureOptions.remove('reduceModelOrder');
+        temperatureOptions.remove('modelOrderReduction');
       end
       if temperatureOptions.get('algorithm', 1) >= 3
         warning('Monte Carlo: switching the first version of the algorithm.');

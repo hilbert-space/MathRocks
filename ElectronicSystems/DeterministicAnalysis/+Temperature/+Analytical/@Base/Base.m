@@ -64,9 +64,9 @@ classdef Base < Temperature.Base
       %
       % Model order reduction
       %
-      if ~isempty(options.get('reduceModelOrder', []))
+      if ~isempty(options.get('modelOrderReduction', []))
         [ A, B, C ] = Utils.reduceModelOrder(A, B, C, 0, ...
-          options.reduceModelOrder);
+          options.modelOrderReduction);
       end
 
       [ U, L ] = eig(A);
