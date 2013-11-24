@@ -6,7 +6,7 @@ classdef ScaleInvChi2 < ProbabilityDistribution.Base
 
   methods
     function this = ScaleInvChi2(varargin)
-      this = this@ProbabilityDistribution.Base();
+      this = this@ProbabilityDistribution.Base;
 
       options = Options('nu', 1, 'tau', 1, varargin{:});
 

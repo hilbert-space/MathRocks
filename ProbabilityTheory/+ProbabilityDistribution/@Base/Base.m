@@ -6,7 +6,7 @@ classdef Base < handle
   end
 
   methods
-    function this = Base()
+    function this = Base
     end
 
     function plot(this, varargin)

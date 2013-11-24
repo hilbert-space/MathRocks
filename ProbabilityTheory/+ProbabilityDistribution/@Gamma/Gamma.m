@@ -6,7 +6,7 @@ classdef Gamma < ProbabilityDistribution.Base
 
   methods
     function this = Gamma(varargin)
-      this = this@ProbabilityDistribution.Base();
+      this = this@ProbabilityDistribution.Base;
 
       options = Options('a', 0, 'b', 1, varargin{:});
 

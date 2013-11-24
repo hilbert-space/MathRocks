@@ -6,7 +6,7 @@ classdef Lognormal < ProbabilityDistribution.Base
 
   methods
     function this = Lognormal(varargin)
-      this = this@ProbabilityDistribution.Base();
+      this = this@ProbabilityDistribution.Base;
 
       options = Options('mu', 0, 'sigma', 1, varargin{:});
 

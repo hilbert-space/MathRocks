@@ -1,10 +1,11 @@
-function multiplier = decomposeCorrelation(C, threshold)
-  [ V, L ] = pcacov(C);
+function [ M, I ] = decomposeCorrelation(C, threshold)
+  [ V, L ] = pcacov(C); % sorted
+  M = V * diag(sqrt(L));
+  I = L / sum(L);
 
-  if nargin > 1 && threshold < 1
-    [ ~, L, I ] = Utils.chooseSignificant(L, threshold);
-    V = V(:, I);
-  end
+  if nargin < 2 || threshold >= 1, return; end
 
-  multiplier = V * diag(sqrt(L));
+  count = Utils.countSignificant(L, threshold);
+  M = M(:, 1:count);
+  I = I(1:count);
 end

@@ -2,6 +2,7 @@ classdef Gaussian < ProbabilityTransformation.Base
   properties (SetAccess = 'private')
     gaussianDistribution
     multiplier
+    importance
   end
 
   methods
@@ -79,8 +80,10 @@ classdef Gaussian < ProbabilityTransformation.Base
 
       assert(all(diag(correlation) == 1));
 
-      this.multiplier = transpose(Utils.decomposeCorrelation( ...
-        correlation, options.get('reductionThreshold', 1)));
+      [ this.multiplier, this.importance ] = Utils.decomposeCorrelation( ...
+        correlation, options.get('reductionThreshold', 1));
+      this.multiplier = transpose(this.multiplier);
+
       dimensionCount = size(this.multiplier, 1);
     end
   end
