@@ -472,7 +472,7 @@ function order = level_growth_to_order ( dim_num, level, rule, growth )
         if ( level(dim) == 0 )
           o = 1;
         else
-          o =  2 ^ ( level(dim) + 1;
+          o =  2 ^ level(dim) + 1;
         end
       end
 
