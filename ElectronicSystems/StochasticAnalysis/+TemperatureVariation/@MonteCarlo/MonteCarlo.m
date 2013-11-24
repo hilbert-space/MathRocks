@@ -68,7 +68,7 @@ classdef MonteCarlo < TemperatureVariation.Base
         'distribution', distribution);
     end
 
-    function T = surve(this, Pdyn, rvs)
+    function T = serve(this, Pdyn, rvs)
       sampleCount = size(rvs, 1);
 
       parameters = this.process.partition(rvs);
@@ -80,7 +80,7 @@ classdef MonteCarlo < TemperatureVariation.Base
     end
 
     function output = simulate(this, Pdyn)
-      output = this.surrogate.construct(@(rvs) this.surve(Pdyn, rvs));
+      output = this.surrogate.construct(@(rvs) this.serve(Pdyn, rvs));
       output.data = this.postprocess(output, output.data);
     end
   end

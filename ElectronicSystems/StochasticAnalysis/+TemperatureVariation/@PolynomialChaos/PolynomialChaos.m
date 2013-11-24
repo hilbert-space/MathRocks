@@ -6,7 +6,7 @@ classdef PolynomialChaos < TemperatureVariation.Base
 
     function output = compute(this, Pdyn)
       output = this.surrogate.construct( ...
-        @(rvs) this.surve(Pdyn, rvs));
+        @(rvs) this.serve(Pdyn, rvs));
     end
   end
 
@@ -26,7 +26,7 @@ classdef PolynomialChaos < TemperatureVariation.Base
         'distribution', distribution, options);
     end
 
-    function T = surve(this, Pdyn, rvs)
+    function T = serve(this, Pdyn, rvs)
       sampleCount = size(rvs, 1);
 
       parameters = this.process.partition(rvs);

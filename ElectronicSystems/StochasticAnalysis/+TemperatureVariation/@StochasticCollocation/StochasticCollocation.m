@@ -6,7 +6,7 @@ classdef StochasticCollocation < TemperatureVariation.Base
 
     function output = compute(this, Pdyn)
       output = this.surrogate.construct( ...
-        @(rvs) this.surve(Pdyn, rvs), numel(Pdyn));
+        @(rvs) this.serve(Pdyn, rvs), numel(Pdyn));
     end
   end
 
@@ -35,7 +35,7 @@ classdef StochasticCollocation < TemperatureVariation.Base
         'maximalLevel', 10, options);
     end
 
-    function T = surve(this, Pdyn, rvs)
+    function T = serve(this, Pdyn, rvs)
       sampleCount = size(rvs, 1);
 
       rvs(rvs == 0) = sqrt(eps);
