@@ -41,6 +41,11 @@ classdef Base < handle
     function count = inputCount(this)
       count = this.surrogate.inputCount;
     end
+
+    function string = toString(this)
+      string = String.join('_', class(this), this.temperature.toString, ...
+        this.process.toString, this.surrogate.toString);
+    end
   end
 
   methods (Access = 'protected')

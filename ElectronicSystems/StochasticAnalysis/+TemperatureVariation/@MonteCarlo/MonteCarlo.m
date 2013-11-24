@@ -29,9 +29,8 @@ classdef MonteCarlo < TemperatureVariation.Base
     end
 
     function output = compute(this, Pdyn)
-      filename = sprintf('%s_%s.mat', class(this), DataHash({ ...
-        Pdyn, this.temperature.toString, this.process.toString, ...
-        this.surrogate.toString}));
+      filename = sprintf('%s_%s.mat', class(this), ...
+        DataHash({ Pdyn, this.toString }));
 
       if File.exist(filename)
         fprintf('Monte Carlo: loading %d samples from "%s"...\n', ...
@@ -42,8 +41,7 @@ classdef MonteCarlo < TemperatureVariation.Base
           this.surrogate.sampleCount);
 
         time = tic;
-        output = this.surrogate.construct(@(rvs) this.surve(Pdyn, rvs));
-        output.data = this.postprocess(output, output.data);
+        output = this.simulate(Pdyn);
         time = toc(time);
 
         save(filename, 'output', 'time', '-v7.3');
@@ -79,6 +77,11 @@ classdef MonteCarlo < TemperatureVariation.Base
 
       T = this.temperature.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
+    end
+
+    function output = simulate(this, Pdyn)
+      output = this.surrogate.construct(@(rvs) this.surve(Pdyn, rvs));
+      output.data = this.postprocess(output, output.data);
     end
   end
 end
