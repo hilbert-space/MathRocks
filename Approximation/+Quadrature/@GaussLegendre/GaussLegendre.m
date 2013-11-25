@@ -1,34 +1,13 @@
 classdef GaussLegendre < Quadrature.Base
   methods
     function this = GaussLegendre(varargin)
-      this = this@Quadrature.Base( ...
-        'distribution', ProbabilityDistribution.Uniform, ...
-        'growth', 'slow-linear', varargin{:});
+      this = this@Quadrature.Base('distribution', ...
+        ProbabilityDistribution.Uniform, varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function [ nodes, weights ] = rule(this, level)
-      %
-      % First, we determine the growth rule.
-      %
-      % Reference:
-      %
-      % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
-      %
-      if isa(this.growth, 'function_handle')
-        order = feval(this.growth, level);
-      elseif strcmpi(this.growth, 'slow-linear')
-        order = level + 1;
-      elseif strcmpi(this.growth, 'full-exponential')
-        order = 2^(level + 1) - 1;
-      else
-        assert(false);
-      end
-
-      a = this.distribution.a;
-      b = this.distribution.b;
-
+    function [ nodes, weights ] = rule(this, order)
       [ nodes, weights ] = legendre_compute(order);
 
       %
@@ -64,8 +43,12 @@ classdef GaussLegendre < Quadrature.Base
       %  dx = ----- * dy.
       %         2
       %
+      a = this.distribution.a;
+      b = this.distribution.b;
+
       nodes = ((nodes + 1) / 2) * (b - a) + a;
-      weights = weights / 2;
+      weights = weights / sum(weights);
+      % ... or weights / 2 in 1D.
     end
   end
 end

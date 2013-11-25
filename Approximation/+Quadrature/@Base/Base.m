@@ -13,32 +13,27 @@ classdef Base < handle
 
   methods
     function this = Base(varargin)
-      options = Options(varargin{:});
+      options = Options('dimensionCount', 1, ...
+        'growth', 'slow-linear', varargin{:});
       this.distribution = options.distribution;
 
-      this.dimensionCount = options.get('dimensionCount', 1);
+      this.dimensionCount = options.dimensionCount;
       this.level = options.level;
-      this.growth = options.get('growth', []);
+      this.growth = options.growth;
 
       filename = File.temporal([ String.join('_', ...
         class(this), DataHash(String(options))), '.mat' ]);
 
       if File.exist(filename)
         load(filename);
-      elseif this.dimensionCount == 1
-        [ nodes, weights ] = this.rule(this.level);
-        save(filename, 'nodes', 'weights', '-v7.3');
       else
-        switch lower(options.get('method', 'adaptive'))
-        case 'adaptive'
-          [ nodes, weights ] = this.constructAdaptive( ...
-            this.dimensionCount, this.level);
+        switch lower(options.get('method', 'minimal'))
+        case 'minimal'
+          [ nodes, weights ] = this.constructMinimal(options);
         case 'tensor'
-          [ nodes, weights ] = this.constructTensor( ...
-            this.dimensionCount, this.level);
+          [ nodes, weights ] = this.constructTensor(options);
         case 'sparse'
-          [ nodes, weights ] = this.constructSparse( ...
-            this.dimensionCount, this.level);
+          [ nodes, weights ] = this.constructSparse(options);
         otherwise
           assert('false');
         end
@@ -47,44 +42,52 @@ classdef Base < handle
 
       this.nodes = nodes;
       this.weights = weights;
-      this.nodeCount = length(weights);
+      this.nodeCount = numel(weights);
     end
   end
 
   methods (Abstract, Access = 'protected')
-    [ nodes, weights ] = rule(this, level)
+    [ nodes, weights ] = rule(this, order)
+  end
+
+  methods (Access = 'protected')
+    function order = computeOrder(this, level)
+      %
+      % Reference:
+      %
+      % http://people.sc.fsu.edu/~jburkardt/m_src/sgmga/sgmga.html
+      %
+      if isa(this.growth, 'function_handle')
+        order = feval(this.growth, level);
+      elseif strcmpi(this.growth, 'slow-linear')
+        order = level + 1;
+      elseif strcmpi(this.growth, 'full-exponential')
+        order = 2^(level + 1) - 1;
+      else
+        assert(false);
+      end
+    end
   end
 
   methods (Access = 'private')
-    function [ nodes, weights ] = constructAdaptive( ...
-        this, dimensionCount, level)
+    function [ nodes, weights ] = constructMinimal(this, options)
+      [ nodes, weights ] = this.constructSparse(options);
 
-      [ nodes, weights ] = this.constructSparse(dimensionCount, level);
-      sparseNodeCount = length(weights);
+      tensorNodeCount = this.computeOrder(options.level)^options.dimensionCount;
+      if numel(weights) <= tensorNodeCount, return; end
 
-      order = numel(this.rule(level));
-      tensorNodeCount = order^dimensionCount;
-
-      if sparseNodeCount <= tensorNodeCount, return; end
-
-      [ nodes, weights ] = this.constructTensor(dimensionCount, level);
+      [ nodes, weights ] = this.constructTensor(options);
     end
 
-    function [ nodes, weights ] = constructTensor( ...
-      this, dimensionCount, level)
-
-      [ nodes, weights ] = this.rule(level);
-      nodes = Utils.tensor(repmat({ nodes }, 1, dimensionCount));
-      weights = prod(Utils.tensor( ...
-        repmat({ weights }, 1, dimensionCount)), 2);
+    function [ nodes, weights ] = constructTensor(this, options)
+      [ nodes, weights ] = Quadrature.tensor(options.dimensionCount, ...
+        @(level) this.rule(this.computeOrder(level)), options.level);
     end
 
-    function [ nodes, weights ] = constructSparse( ...
-      this, dimensionCount, level)
-
-      compute = @(level) this.rule(level);
-      [ nodes, weights ] = Utils.smolyak( ...
-        dimensionCount, compute, level);
+    function [ nodes, weights ] = constructSparse(this, options)
+      [ nodes, weights ] = Quadrature.smolyak(options.dimensionCount, ...
+        @(level) this.rule(this.computeOrder(level)), options.level, ...
+        options.get('anisotropy', []));
     end
   end
 end

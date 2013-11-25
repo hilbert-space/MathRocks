@@ -1,30 +1,30 @@
-function indexes = indexTotalOrderSpace(dimensionCount, totalOrder)
-  assert(totalOrder < intmax('uint8'));
+function indexes = totalDegree(dimensionCount, degree)
+  assert(degree < intmax('uint8'));
 
-  maximalIndexCount = nchoosek(dimensionCount + totalOrder, totalOrder);
+  maximalIndexCount = nchoosek(dimensionCount + degree, degree);
   indexes = zeros(maximalIndexCount, dimensionCount, 'uint8');
 
   %
   % Level 0
   %
-  if totalOrder == 0, return; end
+  if degree == 0, return; end
 
   %
   % Level 1
   %
   indexes((1 + 1):(1 + dimensionCount), :) = eye(dimensionCount, 'uint8');
-  if totalOrder == 1, return; end
+  if degree == 1, return; end
 
   indexCount = 1 + dimensionCount;
 
-  p = zeros(totalOrder, dimensionCount, 'uint32');
+  p = zeros(degree, dimensionCount, 'uint32');
   p(1, :) = 1;
 
-  for order = 2:totalOrder
+  for q = 2:degree
     k = indexCount;
     for i = 1:dimensionCount
-      p(order, i) = sum(p(order - 1, i:dimensionCount));
-      for j = (k - p(order, i)):(k - 1)
+      p(q, i) = sum(p(q - 1, i:dimensionCount));
+      for j = (k - p(q, i)):(k - 1)
         sequence = indexes(j + 1, :);
         sequence(i) = sequence(i) + 1;
 

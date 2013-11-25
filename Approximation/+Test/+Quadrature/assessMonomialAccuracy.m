@@ -16,7 +16,7 @@ function assessMonomialAccuracy(varargin)
     'rule', 'GaussLegendre', ...
     'distribution', distribution, ...
     'level', 5 - 1, ...
-    'order', 8 + 4, ...
+    'degree', 8 + 4, ...
     'method', 'sparse', ...
     'growth', @(level) 2^level, ...
     varargin{:});
@@ -24,16 +24,16 @@ function assessMonomialAccuracy(varargin)
   display(options, 'Setup');
 
   dimensionCount = options.dimensionCount;
-  order = options.fetch('order');
+  degree = options.fetch('degree');
 
   x = sym('x%d', [ 1, dimensionCount ]);
   assume(x, 'real');
 
-  indexes = Utils.indexTotalOrderSpace(dimensionCount, order);
+  indexes = MultiIndex.totalDegree(dimensionCount, degree);
   monomialCount = size(indexes, 1);
 
-  monomial1D = sym(zeros(1, order + 1));
-  for i = 0:order
+  monomial1D = sym(zeros(1, degree + 1));
+  for i = 0:degree
     monomial1D(i + 1) = x(1)^i;
   end
 

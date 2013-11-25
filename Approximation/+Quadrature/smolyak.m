@@ -1,6 +1,4 @@
-function [ nodesND, weightsND ] = smolyak( ...
-  dimensionCount, rule, level, varargin)
-
+function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, level, anisotropy)
   %
   % NOTE 1: The level parameter start from zero. Due to the one-based
   % indexation of MATLAB, we need to have +1 in some parts of the code
@@ -14,6 +12,8 @@ function [ nodesND, weightsND ] = smolyak( ...
   %
   % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
   %
+  if nargin < 4, anisotropy = []; end
+  assert(all(anisotropy > 0 & anisotropy <= 1));
 
   epsilon = sqrt(eps);
   maximalNodeCount = 100 * dimensionCount;
@@ -28,16 +28,31 @@ function [ nodesND, weightsND ] = smolyak( ...
 
   for q = 0:level
     i = q + 1;
-    [ nodes1D{i}, weights1D{i} ] = feval(rule, q, varargin{:});
+    [ nodes1D{i}, weights1D{i} ] = feval(rule, q);
     counts1D(i) = length(weights1D{i});
   end
 
   for q = max(0, level - dimensionCount + 1):level
     coefficient = (-1)^(level - q) * nchoosek(dimensionCount - 1, level - q);
 
-    indexes = Utils.indexSmolyakLevel(dimensionCount, q) + 1;
-    counts = prod(counts1D(indexes), 2);
+    %
+    % Find all the indexes of the current level
+    %
+    indexes = MultiIndex.fixedDegree(dimensionCount, q); % zero based
 
+    %
+    % Account for the anisotropy
+    %
+    if ~isempty(anisotropy)
+      indexes = indexes(round(sum(bsxfun(@rdivide, ...
+        double(indexes), anisotropy), 2)) <= level, :);
+    end
+
+    counts = prod(counts1D(indexes + 1), 2);
+
+    %
+    % Allocate more memory when needed
+    %
     addition = nodeCount + sum(counts) - maximalNodeCount;
     if addition > 0
       addition = max(addition, maximalNodeCount);
@@ -46,12 +61,15 @@ function [ nodesND, weightsND ] = smolyak( ...
       maximalNodeCount = maximalNodeCount + addition;
     end
 
+    %
+    % Tensor the one-dimensional rules
+    %
     for i = 1:size(indexes, 1)
       range = (nodeCount + 1):(nodeCount + counts(i));
 
-      nodesND(range, :) = Utils.tensor(nodes1D(indexes(i, :)));
+      nodesND(range, :) = Utils.tensor(nodes1D(indexes(i, :) + 1));
       weightsND(range) = coefficient * ...
-        prod(Utils.tensor(weights1D(indexes(i, :))), 2);
+        prod(Utils.tensor(weights1D(indexes(i, :) + 1)), 2);
 
       nodeCount = nodeCount + counts(i);
     end

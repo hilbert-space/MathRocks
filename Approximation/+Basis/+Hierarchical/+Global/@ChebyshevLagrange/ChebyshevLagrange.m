@@ -29,7 +29,8 @@ classdef ChebyshevLagrange < Basis.Hierarchical.Global.Base
         %
         % NOTE: Observe the difference in the level enumeration.
         %
-        quadrature = Quadrature.ClenshawCurtis('level', i - 1);
+        quadrature = Quadrature.ClenshawCurtis( ...
+          'level', i - 1, 'growth', 'full-exponential');
         this.quadratureNodes{i} = quadrature.nodes;
         this.barycentricWeights{i} = ...
           [ 0.5, ones(1, quadrature.nodeCount - 2), 0.5 ] .* ...

@@ -1,10 +1,12 @@
 function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   prepare(this, inputCount, order, options)
 
+  anisotropy = options.get('anisotropy', []);
+
   x = sym('x%d', [ 1, inputCount ]);
   assume(x, 'real');
 
-  indexes = Utils.indexTotalOrderSpace(inputCount, order);
+  indexes = MultiIndex.smolyakMethod(inputCount, order, anisotropy);
   termCount = size(indexes, 1);
 
   basis1D = this.constructBasis(x(1), order);
@@ -17,7 +19,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   end
 
   quadrature = this.constructQuadrature(order, ...
-    options.get('quadratureOptions', []));
+    'anysotropy', anisotropy, options.get('quadratureOptions', []));
 
   nodes = quadrature.nodes;
   weights = quadrature.weights;

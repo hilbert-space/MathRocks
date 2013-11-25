@@ -12,8 +12,8 @@ function compareTensorSparse(varargin)
   quadrature1 = Quadrature(options, 'method', 'tensor');
   quadrature2 = Quadrature(options, 'method', 'sparse');
 
-  fprintf('Tensor-product nodes: %d\n', quadrature1.nodeCount);
-  fprintf('Sparse-grid nodes:    %d\n', quadrature2.nodeCount);
+  fprintf('Tensor nodes: %d\n', quadrature1.nodeCount);
+  fprintf('Sparse nodes: %d\n', quadrature2.nodeCount);
 
   if options.dimensionCount > 3, return; end
 
@@ -22,9 +22,9 @@ function compareTensorSparse(varargin)
 
   subplot(1, 2, 1);
   plot(quadrature1, 'figure', false);
-  Plot.title('Tensor-product quadrature (%d nodes)', quadrature1.nodeCount);
+  Plot.title('Tensor product (%d nodes)', quadrature1.nodeCount);
 
   subplot(1, 2, 2);
   plot(quadrature2, 'figure', false);
-  Plot.title('Sparse-grid quadrature (%d nodes)', quadrature2.nodeCount);
+  Plot.title('Sparse grid (%d nodes)', quadrature2.nodeCount);
 end

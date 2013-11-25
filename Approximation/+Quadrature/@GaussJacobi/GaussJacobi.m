@@ -1,48 +1,18 @@
 classdef GaussJacobi < Quadrature.Base
   methods
     function this = GaussJacobi(varargin)
-      this = this@Quadrature.Base( ...
-        'distribution', ProbabilityDistribution.Beta, ...
-        'growth', 'slow-linear', varargin{:});
+      this = this@Quadrature.Base('distribution', ...
+        ProbabilityDistribution.Beta, varargin{:});
     end
   end
 
   methods (Access = 'protected')
-    function [ nodes, weights ] = rule(this, level)
-      %
-      % First, we determine the growth rule.
-      %
-      % Reference:
-      %
-      % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
-      %
-      if isa(this.growth, 'function_handle')
-        order = feval(this.growth, level);
-      elseif strcmpi(this.growth, 'slow-linear')
-        order = level + 1;
-      elseif strcmpi(this.growth, 'full-exponential')
-        order = 2^(level + 1) - 1;
-      else
-        assert(false);
-      end
+    function [ nodes, weights ] = rule(this, order)
+      [ alpha, beta ] = Utils.toJacobiExponents( ...
+        this.distribution.alpha, this.distribution.beta);
 
-      alpha = this.distribution.alpha;
-      beta_ = this.distribution.beta; % do not overwrite the beta function
-      a = this.distribution.a;
-      b = this.distribution.b;
-
-      %
-      % Convert beta exponents to Jacobi exponents
-      %
-      [ alpha, beta_ ] = Utils.toJacobiExponents(alpha, beta_);
-
-      [ nodes, weights ] = jacobi_compute(order, alpha, beta_);
+      [ nodes, weights ] = jacobi_compute(order, alpha, beta);
       nodes = nodes(:); % returned as a row vector
-
-      %
-      % Convert Jacobi exponents back to beta exponents
-      %
-      [ alpha, beta_ ] = Utils.toBetaExponents(alpha, beta_);
 
       %
       % We would like to compute integrals with respect to the density
@@ -78,8 +48,12 @@ classdef GaussJacobi < Quadrature.Base
       % dx = ----- * dy.
       %        2
       %
+      a = this.distribution.a;
+      b = this.distribution.b;
+
       nodes = ((nodes + 1) / 2) * (b - a) + a;
-      weights = weights / (2^(alpha + beta_ - 1) * beta(alpha, beta_));
+      weights = weights / sum(weights);
+      % ... or weights / 2^(alpha + beta_ - 1) / beta(alpha, beta_)) in 1D.
     end
   end
 end
