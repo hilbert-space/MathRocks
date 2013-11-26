@@ -1,17 +1,17 @@
-function indexes = fixedDegree(dimensionCount, degree)
-  assert(dimensionCount + degree <= intmax('uint8'));
+function indexes = smolyakLevel(dimensionCount, level)
+  assert(dimensionCount + level <= intmax('uint8'));
 
   maximalIndexCount = 10 * dimensionCount;
   indexes = zeros(maximalIndexCount, dimensionCount, 'uint8');
 
   sequence = zeros(1, dimensionCount, 'uint8');
-  sequence(1) = degree;
+  sequence(1) = level;
 
   indexes(1, :) = sequence;
   indexCount = 1;
 
   c = 1;
-  while sequence(dimensionCount) < degree
+  while sequence(dimensionCount) < level
     if c == dimensionCount
       for i = (c - 1):-1:1
         c = i;
@@ -21,7 +21,7 @@ function indexes = fixedDegree(dimensionCount, degree)
 
     sequence(c) = sequence(c) - 1;
     c = c + 1;
-    sequence(c) = degree - sum(sequence(1:(c - 1)));
+    sequence(c) = level - sum(sequence(1:(c - 1)));
 
     if c < dimensionCount
       sequence((c + 1):dimensionCount) = ...

@@ -29,7 +29,7 @@ function assessMonomialAccuracy(varargin)
   x = sym('x%d', [ 1, dimensionCount ]);
   assume(x, 'real');
 
-  indexes = MultiIndex.totalDegree(dimensionCount, degree);
+  indexes = MultiIndex.totalOrderSpace(dimensionCount, degree);
   monomialCount = size(indexes, 1);
 
   monomial1D = sym(zeros(1, degree + 1));

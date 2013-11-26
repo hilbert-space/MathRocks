@@ -1,4 +1,4 @@
-function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, level, anisotropy)
+function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, level, varargin)
   %
   % NOTE 1: The level parameter start from zero. Due to the one-based
   % indexation of MATLAB, we need to have +1 in some parts of the code
@@ -12,43 +12,37 @@ function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, level, anisotrop
   %
   % http://people.sc.fsu.edu/~jburkardt/cpp_src/sgmg/sgmg.html
   %
-  if nargin < 4, anisotropy = []; end
-  assert(all(anisotropy > 0 & anisotropy <= 1));
-
+  % F. Nobile, R. Tempone, and C. Webster. A Sparse Grid Stochastic
+  % Collocation Method for Partial Differential Equations with Random
+  % Input Data. SIAM Journal on Numerical Analysis, 2008.
+  %
   epsilon = sqrt(eps);
+
+  [ indexes, levels ] =  MultiIndex.smolyakLevels( ...
+    dimensionCount, level, varargin{:});
+
+  maximalLevel = max(levels);
+
+  nodes1D = cell(1, maximalLevel + 1);
+  weights1D = cell(1, maximalLevel + 1);
+  counts1D = zeros(1, maximalLevel + 1);
+
+  for i = 1:(maximalLevel + 1)
+    [ nodes1D{i}, weights1D{i} ] = feval(rule, i - 1);
+    counts1D(i) = length(weights1D{i});
+  end
+
   maximalNodeCount = 100 * dimensionCount;
 
   nodesND = zeros(maximalNodeCount, dimensionCount);
   weightsND = zeros(maximalNodeCount, 1);
   nodeCount = 0;
 
-  nodes1D = cell(1, level + 1);
-  weights1D = cell(1, level + 1);
-  counts1D = zeros(1, level + 1);
+  unity = MultiIndex.tensorProductSpace(dimensionCount, 1);
+  allin = cell2mat(indexes);
 
-  for q = 0:level
-    i = q + 1;
-    [ nodes1D{i}, weights1D{i} ] = feval(rule, q);
-    counts1D(i) = length(weights1D{i});
-  end
-
-  for q = max(0, level - dimensionCount + 1):level
-    coefficient = (-1)^(level - q) * nchoosek(dimensionCount - 1, level - q);
-
-    %
-    % Find all the indexes of the current level
-    %
-    indexes = MultiIndex.fixedDegree(dimensionCount, q); % zero based
-
-    %
-    % Account for the anisotropy
-    %
-    if ~isempty(anisotropy)
-      indexes = indexes(round(sum(bsxfun(@rdivide, ...
-        double(indexes), anisotropy), 2)) <= level, :);
-    end
-
-    counts = prod(counts1D(indexes + 1), 2);
+  for i = 1:length(indexes)
+    counts = prod(counts1D(indexes{i} + 1), 2);
 
     %
     % Allocate more memory when needed
@@ -64,14 +58,21 @@ function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, level, anisotrop
     %
     % Tensor the one-dimensional rules
     %
-    for i = 1:size(indexes, 1)
-      range = (nodeCount + 1):(nodeCount + counts(i));
+    for j = 1:size(indexes{i}, 1)
+      index = indexes{i}(j, :);
 
-      nodesND(range, :) = Utils.tensor(nodes1D(indexes(i, :) + 1));
-      weightsND(range) = coefficient * ...
-        prod(Utils.tensor(weights1D(indexes(i, :) + 1)), 2);
+      I = ismember(bsxfun(@plus, unity, index), allin, 'rows');
 
-      nodeCount = nodeCount + counts(i);
+      coefficient = sum((-1).^(sum(unity(I, :), 2)));
+      if coefficient == 0, continue; end
+
+      range = (nodeCount + 1):(nodeCount + counts(j));
+
+      nodesND(range, :) = Utils.tensor(nodes1D(index + 1));
+      weightsND(range) = coefficient * prod(Utils.tensor( ...
+        weights1D(index + 1)), 2);
+
+      nodeCount = nodeCount + counts(j);
     end
   end
 
@@ -92,12 +93,12 @@ function [ nodesND, weightsND ] = smolyak(dimensionCount, rule, level, anisotrop
   J = false(nodeCount, 1);
   J(1) = true;
 
-  k = 1;
+  j = 1;
   for i = 2:nodeCount
     if I(i - 1)
-      weightsND(k) = weightsND(k) + weightsND(i);
+      weightsND(j) = weightsND(j) + weightsND(i);
     else
-      k = i;
+      j = i;
       J(i) = true;
     end
   end

@@ -16,7 +16,7 @@ classdef Uniform < ProbabilityDistribution.Base
       this.expectation = (this.a + this.b) / 2;
       this.variance = (this.b - this.a)^2 / 12;
 
-      this.support = [ this.a, this. b ];
+      this.support = [ this.a, this.b ];
     end
 
     function data = sample(this, varargin)
