@@ -19,7 +19,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   end
 
   quadrature = this.constructQuadrature(order, ...
-    'anysotropy', anisotropy, options.get('quadratureOptions', []));
+    'anisotropy', anisotropy, options.get('quadratureOptions', []));
 
   nodes = quadrature.nodes;
   weights = quadrature.weights;

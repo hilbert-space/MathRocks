@@ -21,9 +21,18 @@ classdef PolynomialChaos < TemperatureVariation.Base
         assert(distribution == distributions{i});
       end
 
-      surrogate = PolynomialChaos( ...
-        'inputCount', sum(this.process.dimensions), ...
-        'distribution', distribution, options);
+      if options.get('anisotropic', false)
+        anisotropy = this.process.importance;
+        for i = 1:this.process.parameterCount
+          anisotropy{i} = anisotropy{i}(:) / max(anisotropy{i}(:));
+        end
+        anisotropy = transpose(cell2mat(anisotropy(:)));
+      else
+        anisotropy = [];
+      end
+
+      surrogate = PolynomialChaos('inputCount', sum(this.process.dimensions), ...
+        'distribution', distribution, 'anisotropy', anisotropy, options);
     end
 
     function T = serve(this, Pdyn, rvs)

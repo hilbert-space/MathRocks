@@ -43,8 +43,9 @@ classdef Base < handle
     end
 
     function string = toString(this)
-      string = String.join('_', class(this), this.temperature.toString, ...
-        this.process.toString, this.surrogate.toString);
+      string = sprintf('%s(%s)', class(this), String.join('_', ...
+        this.temperature.toString, this.process.toString, ...
+        this.surrogate.toString));
     end
   end
 

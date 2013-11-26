@@ -92,6 +92,13 @@ classdef ProcessVariation < handle
       end
     end
 
+    function importance = importance(this)
+      importance = cell(1, this.parameterCount);
+      for i = 1:this.parameterCount
+        importance{i} = this.transformations{i}.importance;
+      end
+    end
+
     function string = toString(this)
       string = sprintf('%s(%s)', class(this), ...
         String(struct( ...
