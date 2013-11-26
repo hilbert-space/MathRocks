@@ -21,12 +21,12 @@ classdef PolynomialChaos < TemperatureVariation.Base
         assert(distribution == distributions{i});
       end
 
-      if options.get('anisotropic', false)
+      if options.get('anisotropic', 0) > 0
         anisotropy = this.process.importance;
         for i = 1:this.process.parameterCount
           anisotropy{i} = anisotropy{i}(:) / max(anisotropy{i}(:));
         end
-        anisotropy = transpose(cell2mat(anisotropy(:)));
+        anisotropy = transpose(cell2mat(anisotropy(:))).^options.anisotropic;
       else
         anisotropy = [];
       end
