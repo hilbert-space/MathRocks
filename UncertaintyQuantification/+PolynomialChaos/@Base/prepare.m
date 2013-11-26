@@ -6,7 +6,7 @@ function [ nodes, norm, projection, evaluation, rvPower, rvMap ] = ...
   x = sym('x%d', [ 1, inputCount ]);
   assume(x, 'real');
 
-  indexes = MultiIndex.smolyakMethod(inputCount, order, anisotropy);
+  indexes = MultiIndex.smolyakSpace(inputCount, order, anisotropy);
   termCount = size(indexes, 1);
 
   basis1D = this.constructBasis(x(1), order);

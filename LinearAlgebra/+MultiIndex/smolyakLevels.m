@@ -1,16 +1,29 @@
-function [ indexes, levels ] = smolyakLevels(dimensionCount, level, anisotropy)
-  if nargin < 3 || isempty(anisotropy)
-    anisotropy = ones(1, dimensionCount);
+function [ indexes, levels, isAnisotropic ] = smolyakLevels( ...
+  dimensionCount, level, anisotropy)
+
+  isAnisotropic = nargin > 2 && ~isempty(anisotropy) && any(anisotropy ~= 1);
+  if ~isAnisotropic
+    [ indexes, levels ] = isotropic(dimensionCount, level);
   else
     assert(all(anisotropy > 0 & anisotropy <= 1));
+    [ indexes, levels ] = anisotropic(dimensionCount, level, 1 ./ anisotropy);
   end
+end
 
-  alpha = 1 ./ anisotropy;
+function [ indexes, levels ] = isotropic(dimensionCount, level)
+  levels = max(0, level - dimensionCount + 1):level;
+  indexes = cell(length(levels), 1);
+  for i = 1:length(levels)
+    indexes{i} = MultiIndex.smolyakLevel(dimensionCount, levels(i));
+  end
+end
+
+function [ indexes, levels ] = anisotropic(dimensionCount, level, alpha)
   lowerBound = min(alpha) * level - sum(alpha);
   upperBound = min(alpha) * level;
 
   levels = 0:level;
-  indexes = cell(1 + level, 1);
+  indexes = cell(level + 1, 1);
   for i = 1:(level + 1)
     indexes{i} = MultiIndex.smolyakLevel(dimensionCount, i - 1);
     level = sum(bsxfun(@times, double(indexes{i}), alpha), 2);
