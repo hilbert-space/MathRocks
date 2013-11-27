@@ -8,7 +8,7 @@ display(application);
 
 %% Construct a schedule.
 %
-schedule = Schedule.Dense(platform, application);
+schedule = Schedule.Dense('platform', platform, 'application', application);
 
 display(schedule);
 plot(schedule);

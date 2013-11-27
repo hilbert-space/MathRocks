@@ -6,6 +6,6 @@ classdef Dense < Schedule.Base
   end
 
   methods (Access = 'protected')
-    perform(this)
+    construct(this)
   end
 end

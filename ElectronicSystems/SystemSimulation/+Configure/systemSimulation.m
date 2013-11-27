@@ -6,15 +6,11 @@ function options = systemSimulation(varargin)
     paths = [ { options.assetPath }, paths ];
   end
 
-  %
-  % Platform and application
-  %
   processorCount = options.ensure('processorCount', 4);
   taskCount = options.ensure('taskCount', 20 * processorCount);
 
   [ options.platform, options.application ] = Utils.parseTGFF( ...
     File.choose(paths, sprintf('%03d_%03d.tgff', processorCount, taskCount)));
-  options.schedule = Schedule.Dense(options.platform, options.application);
 
   readProcessorCount = length(options.platform.processors);
   assert(readProcessorCount == processorCount);
@@ -28,6 +24,22 @@ function options = systemSimulation(varargin)
     options.taskCount = taskCount;
   end
 
-  options.die = Die('floorplan', ...
-    File.choose(paths, sprintf('%03d.flp', processorCount)));
+  if options.has('mapping')
+    mapping = options.mapping(processorCount, taskCount);
+  else
+    mapping = [];
+  end
+
+  if options.has('priority')
+    priority = options.priority(processorCount, taskCount);
+  else
+    priority = [];
+  end
+
+  options.schedule = Schedule.Dense('platform', options.platform, ...
+    'application', options.application, 'mapping', mapping, ...
+    'priority', priority);
+
+  options.die = Die('floorplan', File.choose(paths, ...
+    sprintf('%03d.flp', processorCount)));
 end
