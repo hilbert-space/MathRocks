@@ -1,5 +1,4 @@
 function compute(varargin)
-  close all;
   setup;
 
   options = Configure.systemSimulation(varargin{:});
@@ -24,7 +23,7 @@ function compute(varargin)
     P = Pdyn;
   end
 
-  Plot.figure(800, 800);
+  Plot.figure(800, 700);
   subplot(2, 1, 1);
   Plot.power(Pdyn, P - Pdyn, 'timeLine', options.timeLine, 'figure', false);
   subplot(2, 1, 2);

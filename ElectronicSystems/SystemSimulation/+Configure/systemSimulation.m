@@ -1,16 +1,18 @@
 function options = systemSimulation(varargin)
   options = Options(varargin{:});
 
-  paths = { File.join(File.trace, '..', 'Assets') };
-  if options.has('assetPath')
-    paths = [ { options.assetPath }, paths ];
-  end
+  options.assetPath = [ options.get('assetPath', {}), ...
+    { File.join(File.trace, '..', 'Assets') } ];
 
+  %
+  % Platform and application
+  %
   processorCount = options.ensure('processorCount', 4);
   taskCount = options.ensure('taskCount', 20 * processorCount);
 
   [ options.platform, options.application ] = Utils.parseTGFF( ...
-    File.choose(paths, sprintf('%03d_%03d.tgff', processorCount, taskCount)));
+    File.choose(options.assetPath, sprintf('%03d_%03d.tgff', ...
+    processorCount, taskCount)));
 
   readProcessorCount = length(options.platform.processors);
   assert(readProcessorCount == processorCount);
@@ -24,6 +26,15 @@ function options = systemSimulation(varargin)
     options.taskCount = taskCount;
   end
 
+  %
+  % Die
+  %
+  options.die = Die('floorplan', File.choose(options.assetPath, ...
+    sprintf('%03d.flp', processorCount)));
+
+  %
+  % Mapping and schedule
+  %
   if options.has('mapping')
     mapping = options.mapping(processorCount, taskCount);
   else
@@ -39,7 +50,4 @@ function options = systemSimulation(varargin)
   options.schedule = Schedule.Dense('platform', options.platform, ...
     'application', options.application, 'mapping', mapping, ...
     'priority', priority);
-
-  options.die = Die('floorplan', File.choose(paths, ...
-    sprintf('%03d.flp', processorCount)));
 end
