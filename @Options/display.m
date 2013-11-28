@@ -8,10 +8,7 @@ function display(this, title, offset)
 
   nameWidth = -Inf;
   for i = 1:nameCount
-    displayNames{i} = regexprep(displayNames{i}, ...
-      '([A-Z])',' ${lower($1)}');
-    displayNames{i} = regexprep(displayNames{i}, ...
-      '^\s*([a-z])', '${upper($1)}');
+    displayNames{i} = String.capitalize(displayNames{i});
     nameWidth = max(nameWidth, length(displayNames{i}));
   end
 

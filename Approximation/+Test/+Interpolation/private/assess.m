@@ -109,7 +109,7 @@ function assess(target, varargin)
   end
 
   fprintf('Integral:\n');
-  printIntegral(names, integral);
+  Print.crossComparison('names', names, 'values', integral);
   fprintf('\n');
 
   fprintf('Pointwise:\n');
@@ -121,40 +121,4 @@ function assess(target, varargin)
     Error.computeNRMSE(mcData, surrogateData));
   fprintf('  Infinity norm:   %e\n', ...
     norm(mcData - surrogateData, Inf));
-end
-
-function printIntegral(names, values)
-  nameCount = length(names);
-
-  nameWidth = -Inf;
-  for i = 1:nameCount
-    nameWidth = max(nameWidth, length(names{i}));
-  end
-  nameWidth = nameWidth + 2;
-
-  nameFormat = [ '%', num2str(nameWidth), 's' ];
-  valueFormat = [ '%', num2str(nameWidth), 'g' ];
-
-  fprintf(nameFormat, '');
-  fprintf(nameFormat, 'Value');
-  fprintf(' | ');
-  for i = 1:nameCount
-    fprintf(nameFormat, names{i});
-  end
-  fprintf('\n');
-
-  for i = 1:nameCount
-    fprintf(nameFormat, names{i});
-    fprintf(valueFormat, mean(values{i}));
-    fprintf(' | ');
-    for j = 1:nameCount
-      if i == j
-        fprintf(nameFormat, '-');
-      else
-        fprintf(valueFormat, ...
-          abs(mean((values{i} - values{j}) ./ values{i})));
-      end
-    end
-    fprintf('\n');
-  end
 end
