@@ -10,6 +10,7 @@ function compute(varargin)
   fatigue = Fatigue(options.fatigueOptions);
 
   T = temperature.compute(options.dynamicPower);
+  plot(temperature, T);
 
   [ expectation, output ] = fatigue.compute(T);
 

@@ -12,7 +12,7 @@ function power(Pdyn, Pleak, varargin)
     timeLabel = 'Time, #';
   end
 
-  if options.get('figure', true), Plot.figure(800, 400); end
+  if options.get('figure', true), Plot.figure(800, 300); end
 
   Plot.title('Power profile');
   Plot.label(timeLabel, 'Power, W');

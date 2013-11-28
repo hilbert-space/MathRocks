@@ -2,30 +2,38 @@ function plot(this, output)
   processorCount = numel(output.eta);
 
   division = 100;
-
-  function drawOne(eta, varargin)
+  function time = drawOne(eta, varargin)
     expectation = eta * gamma(1 + 1 / this.beta);
     time = 3 * (0:(division - 1)) * expectation / division;
-    R = exp(-(time ./ eta).^this.beta);
-    line(Utils.toYears(time), R, varargin{:});
+    line(Utils.toYears(time), wblpdf(time, eta, this.beta), varargin{:});
     Plot.vline(Utils.toYears(eta), 'LineStyle', '--', varargin{:});
   end
 
-  Plot.figure;
-  Plot.label('Time, years', 'Probability');
-  Plot.title('Survival time');
+  Plot.figure(800, 700);
 
-  title = {};
+  subplot(2, 1, 1);
+  Plot.label('Time, years', 'Probability density');
+  Plot.title('Marginal failure distributions');
 
+  timeHorizon = 0;
+
+  legend = {};
   for i = 1:processorCount
-    drawOne(output.eta(i), 'Color', Color.pick(i));
-    title{end + 1} = [ 'Processor ', num2str(i), ': Density' ];
-    title{end + 1} = [ 'Processor ', num2str(i), ': Expectation' ];
+    timeHorizon = max(timeHorizon, ...
+      max(drawOne(output.eta(i), 'Color', Color.pick(i))));
+    legend{end + 1} = [ 'Density ', num2str(i) ];
+    legend{end + 1} = [ 'Expectation ', num2str(i) ];
   end
+  Plot.legend(legend{:});
 
-  drawOne(output.Eta, 'Color', 'k');
-  title{end + 1} = 'Joint: Density';
-  title{end + 1} = 'Joint: MTTF';
+  subplot(2, 1, 2);
+  Plot.label('Time, years', 'Probability density');
+  Plot.title('Joint failure distribution');
 
-  Plot.legend(title{:});
+  timeHorizon = min(timeHorizon, ...
+    3 * max(drawOne(output.Eta, 'Color', 'k')));
+  Plot.legend('Density', 'Expectation');
+
+  subplot(2, 1, 1);
+  xlim([ 0, Utils.toYears(timeHorizon) ]);
 end

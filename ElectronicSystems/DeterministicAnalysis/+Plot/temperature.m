@@ -12,7 +12,7 @@ function temperature(T, varargin)
     timeLabel = 'Time, #';
   end
 
-  if options.get('figure', true), Plot.figure(800, 400); end
+  if options.get('figure', true), Plot.figure(800, 300); end
 
   Plot.title('Temperature profile');
   Plot.label(timeLabel, 'Temperature, C');
