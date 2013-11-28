@@ -1,44 +1,42 @@
 function structComparison(varargin)
   options = Options(varargin{:});
 
-  names = options.names;
   values = options.values;
-  exclude = options.get('exclude', @(varargin) true);
+  valueCount = length(values);
 
   fields = sort(fieldnames(values{1}));
-
-  nameCount = length(names);
   fieldCount = length(fields);
 
-  [ nameFormat, valueFormat ] = format(names);
-  fieldFormat = format(fields);
+  exclude = options.get('exclude', @(varargin) true);
 
-  fprintf(fieldFormat, '');
-  fprintf(nameFormat, names{1});
-  fprintf(' | ');
-  for i = 2:nameCount
-    fprintf(nameFormat, names{i});
-    fprintf(nameFormat, 'Error, %');
+  names = cell(1, 2 * valueCount - 1);
+  names{1} = options.names{1};
+  for i = 2:valueCount
+    names{1 + 2 * (i - 2) + 1} = options.names{i};
+    names{1 + 2 * (i - 2) + 2} = 'Error, %';
   end
-  fprintf('\n');
 
+  I = [];
+  data = zeros(0, 2 * valueCount - 1);
   for i = 1:fieldCount
-    etalon = values{1}.(fields{i}); 
+    etalon = values{1}.(fields{i});
+
     if ~exclude(fields{i}, etalon), continue; end
 
-    fprintf(fieldFormat, String.capitalize(fields{i}));
-
     etalon = mean(etalon(:));
-    fprintf(valueFormat, etalon);
-    fprintf(' | ');
+    data(i, 1) = etalon;
 
-    for j = 2:nameCount
+    for j = 2:valueCount
       value = values{j}.(fields{i});
       value = mean(value(:));
-      fprintf(valueFormat, value);
-      fprintf(nameFormat, sprintf('%.4f', ...
-        100 * abs((etalon - value) / etalon)));
+      error = 100 * abs((etalon - value) / etalon);
+      data(i, 1 + 2 * (j - 2) + 1) = value;
+      data(i, 1 + 2 * (j - 2) + 2) = error;
     end
-    fprintf('\n');
+
+    I = [ I, i ];
   end
+
+  Print.table(options, 'rows', fields(I), ...
+    'columns', names, 'values', data(I, :));
 end

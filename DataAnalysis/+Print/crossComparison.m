@@ -1,33 +1,19 @@
 function crossComparison(varargin)
   options = Options(varargin{:});
 
-  names = options.names;
-  values = options.values;
+  values = cellfun(@(value) value(:), options.values, 'UniformOutput', false);
+  valueCount = length(values);
 
-  nameCount = length(names);
+  data = NaN(valueCount, 1 + valueCount);
 
-  [ nameFormat, valueFormat ] = format(options.names);
-
-  fprintf(nameFormat, '');
-  fprintf(nameFormat, options.get('name', 'Value'));
-  fprintf(' | ');
-  for i = 1:nameCount
-    fprintf(nameFormat, names{i});
-  end
-  fprintf('\n');
-
-  for i = 1:nameCount
-    fprintf(nameFormat, names{i});
-    fprintf(valueFormat, mean(values{i}));
-    fprintf(' | ');
-    for j = 1:nameCount
-      if i == j
-        fprintf(nameFormat, '-');
-      else
-        fprintf(valueFormat, abs(mean( ...
-          (values{i} - values{j}) ./ values{i})));
-      end
+  for i = 1:valueCount
+    data(i, 1) = mean(values{i});
+    for j = 1:valueCount
+      if i == j, continue; end
+      data(i, 1 + j) = abs(mean((values{i} - values{j}) ./ values{i}));
     end
-    fprintf('\n');
   end
+
+  Print.table(options, 'rows', options.names, ...
+    'columns', [ { 'Value' }, options.names ], 'values', data);
 end

@@ -109,7 +109,8 @@ function assess(target, varargin)
   end
 
   fprintf('Integral:\n');
-  Print.crossComparison('names', names, 'values', integral);
+  Print.crossComparison('names', names, ...
+    'values', integral, 'capitalize', false);
   fprintf('\n');
 
   fprintf('Pointwise:\n');
