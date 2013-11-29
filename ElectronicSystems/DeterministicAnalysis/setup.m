@@ -1,7 +1,8 @@
 function setup
+  use('Algebra');
+  use('Approximation');
   use('DataAnalysis');
   use('DataStructure');
-  use('LinearAlgebra');
   use('Visualization');
 
   use('ElectronicSystems', 'CircuitSimulation');

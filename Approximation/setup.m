@@ -1,6 +1,6 @@
 function setup
+  use('Algebra');
   use('DataAnalysis');
-  use('LinearAlgebra');
   use('ProbabilityTheory');
   use('Visualization');
 

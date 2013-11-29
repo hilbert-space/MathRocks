@@ -1,5 +1,5 @@
 function setup
-  use('LinearAlgebra');
+  use('Algebra');
   use('Visualization');
   use('Vendor', 'dace');
 end
