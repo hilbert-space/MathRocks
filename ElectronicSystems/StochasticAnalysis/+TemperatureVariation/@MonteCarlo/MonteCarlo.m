@@ -5,11 +5,11 @@ classdef MonteCarlo < TemperatureVariation.Base
 
       temperatureOptions = options.temperatureOptions.clone; % use a copy
       if ~isempty(temperatureOptions.get('modelOrderReduction', []))
-        warning('Monte Carlo: turning off the model order reduction.');
+        warning('Turning off the model order reduction.');
         temperatureOptions.remove('modelOrderReduction');
       end
       if temperatureOptions.get('algorithm', 1) >= 3
-        warning('Monte Carlo: switching the first version of the algorithm.');
+        warning('Switching the first version of the algorithm.');
         temperatureOptions.algorithm = 1;
       end
       options.temperatureOptions = temperatureOptions;
@@ -18,8 +18,8 @@ classdef MonteCarlo < TemperatureVariation.Base
       names = fieldnames(processOptions.parameters);
       for i = 1:length(names)
         if processOptions.parameters.(names{i}).reductionThreshold < 1
-          warning([ 'Monte Carlo: turning off the process ', ...
-            'dimension reduction for ', names{i}, '.' ]);
+          warning([ 'Turning off the process dimension reduction for ', ...
+            names{i}, '.' ]);
           processOptions.parameters.(names{i}).reductionThreshold = 1;
         end
       end
@@ -33,12 +33,12 @@ classdef MonteCarlo < TemperatureVariation.Base
         DataHash({ Pdyn, this.toString }));
 
       if File.exist(filename)
-        fprintf('Monte Carlo: loading %d samples from "%s"...\n', ...
-          this.surrogate.sampleCount, filename);
+        fprintf('%s: loading %d samples from "%s"...\n', ...
+          class(this), this.surrogate.sampleCount, filename);
         load(filename);
       else
-        fprintf('Monte Carlo: collecting %d samples...\n', ...
-          this.surrogate.sampleCount);
+        fprintf('%s: collecting %d samples...\n', ...
+          class(this), this.surrogate.sampleCount);
 
         time = tic;
         output = this.simulate(Pdyn);
@@ -47,7 +47,7 @@ classdef MonteCarlo < TemperatureVariation.Base
         save(filename, 'output', 'time', '-v7.3');
       end
 
-      fprintf('Monte Carlo: done in %.2f seconds.\n', time);
+      fprintf('%s: done in %.2f seconds.\n', class(this), time);
     end
   end
 
