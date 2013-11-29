@@ -1,10 +1,9 @@
-function [ globalError, localError ] = compare(varargin)
-  [ data, options ] = Options.extract(varargin{:});
-  assert(length(data) == 2, ...
-    'The comparison is supported only for two sets of data.');
+function [ globalError, localError ] = compareDistributions(one, two, varargin)
+  options = Options('draw', nargout == 0, 'layout', 'tiles', 'names', {}, ...
+    'errorMetric', 'RMSE', 'distanceMetric', 'KLD', varargin{:});
 
-  oneSize = size(data{1});
-  twoSize = size(data{2});
+  oneSize = size(one);
+  twoSize = size(two);
 
   dimensions = length(oneSize);
 
@@ -13,15 +12,10 @@ function [ globalError, localError ] = compare(varargin)
   assert(dimensions == 2 || dimensions == 3, ...
     'The given number of dimensions is not supported.');
 
-  options = Options('draw', false, 'layout', 'tiles', 'names', {}, ...
-    'errorMetric', 'RMSE', options);
-
-  options.ensure('distanceMetric', 'KLD');
-
   if dimensions == 2
-    [ globalError, localError ] = compare2D(data{1}, data{2}, options);
+    [ globalError, localError ] = compare2D(one, two, options);
   else
-    [ globalError, localError ] = compare3D(data{1}, data{2}, options);
+    [ globalError, localError ] = compare3D(one, two, options);
   end
 end
 
@@ -53,10 +47,10 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
     one = oneData(:, i);
     two = twoData(:, i);
 
-    x = Utils.constructLinearSpace(one, two, options);
+    x = Utils.constructLinearSpace({ one, two }, options);
 
-    one = Statistic.compute(x, one, options);
-    two = Statistic.compute(x, two, options);
+    one = Utils.computeDistribution(x, one, options);
+    two = Utils.computeDistribution(x, two, options);
 
     localError(i) = Error.compute(options.distanceMetric, one, two);
 
@@ -79,7 +73,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
         { 'Color', Color.pick(2) }};
     end
 
-    Statistic.draw(x, one, two, options, 'styles', styles);
+    Plot.statistic(x, { one, two }, options, 'styles', styles);
 
     switch options.layout
     case 'one'

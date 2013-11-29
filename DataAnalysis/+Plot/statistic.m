@@ -1,31 +1,32 @@
-function draw(x, varargin)
-  [ data, options ] = Options.extract(varargin{:});
-  options = Options('method', 'smooth', options);
+function statistic(x, data, varargin)
+  options = Options('method', 'smooth', varargin{:});
+
+  if ~iscell(data), data = { data }; end
 
   switch options.method
   case { 'smooth', 'piecewise' }
-    drawLines(x, data, options);
+    plotLines(x, data, options);
   case 'histogram'
-    drawHistogram(x, data, options);
+    plotHistogram(x, data, options);
   otherwise
     error('The method is unknown.');
   end
 end
 
-function drawHistogram(x, data, options)
+function plotHistogram(x, data, options)
   hold on;
   for i = 1:length(data)
-    drawBar(x, data{i}, options.get('color', Color.pick(i)));
+    plotBar(x, data{i}, options.get('color', Color.pick(i)));
   end
 end
 
-function drawBar(x, data, color)
-  hbar = bar(x, data, 'FaceColor', color, 'Edgecolor', color);
+function plotBar(x, data, color)
+  bar(x, data, 'FaceColor', color, 'Edgecolor', color);
   hpatch = findobj(gca, 'Type', 'patch');
   set(hpatch, 'FaceAlpha', 0.75);
 end
 
-function drawLines(x, data, options)
+function plotLines(x, data, options)
   count = length(data);
   styles = options.get('styles', {});
 

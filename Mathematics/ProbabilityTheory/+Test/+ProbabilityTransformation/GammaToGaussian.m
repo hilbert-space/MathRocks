@@ -34,4 +34,4 @@ corr(data)
 
 %% Draw the result.
 %
-Statistic.observe(data, 'method', 'histogram', 'draw', true);
+Plot.distribution(data, 'method', 'histogram');

@@ -34,7 +34,7 @@ function assess(target, varargin)
   fprintf('  Expectation: %.4f\n', surrogateStats.expectation);
   fprintf('  Variance:    %.4f\n', surrogateStats.variance);
 
-  Statistic.compare(mcData, surrogateData, 'draw', true);
+  Utils.compareDistributions(mcData, surrogateData);
   Plot.legend('Monte Carlo', 'Polynomial chaos');
 
   if isempty(exact), return; end

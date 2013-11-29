@@ -50,7 +50,7 @@ fprintf('Infinity norm with empirical:    %e\n', norm(C0 - C3, Inf));
 
 %% Draw the result.
 %
-Statistic.compare(data1, data3, 'method', 'histogram', 'draw', true);
+Utils.compareDistributions(data1, data3, 'method', 'histogram');
 Plot.name('Without reduction vs. Empirical');
-Statistic.compare(data2, data3, 'method', 'histogram', 'draw', true);
+Utils.compareDistributions(data2, data3, 'method', 'histogram');
 Plot.name('With reduction vs. Empirical');

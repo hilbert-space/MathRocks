@@ -1,4 +1,4 @@
-function data = compute(x, data, options)
+function data = computeDistribution(x, data, options)
   options = Options('method', 'smooth', 'quantity', 'pdf', options);
 
   switch options.method

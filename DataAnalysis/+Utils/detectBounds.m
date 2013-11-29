@@ -1,5 +1,7 @@
-function [ left, right ] = detectBounds(varargin)
-  [ raw, options ] = Options.extract(varargin{:});
+function [ left, right ] = detectBounds(data, varargin)
+  options = Options(varargin{:});
+
+  if ~iscell(data), data = { data }; end
 
   range = options.get('range', '3sigma');
 
@@ -8,19 +10,18 @@ function [ left, right ] = detectBounds(varargin)
       range = @(~, ~) [ -Inf, Inf ];
     else
       tokens = regexp(range, '^(.+)sigma$', 'tokens');
-      if isempty(tokens), error('The range in unknown.'); end
-      times = str2num(tokens{1}{1});
+      times = str2double(tokens{1}{1});
       range = @(mu, sigma) [ mu - times * sigma, mu + times * sigma ];
     end
   end
 
-  count = length(raw);
+  count = length(data);
 
   left = zeros(count, 1);
   right = zeros(count, 1);
 
   for i = 1:count
-    one = varargin{i};
+    one = data{i};
 
     mn = min(one);
     mx = max(one);

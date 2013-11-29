@@ -55,7 +55,7 @@ function Discontinuity(varargin)
   y = surrogate.evaluate(surrogateOutput, transpose((z + 1) / 2));
   plotSlice(t, z, y, Y(k, :));
 
-  Statistic.observe(surrogateData, 'draw', true, 'method', 'histogram');
+  Plot.distribution(surrogateData, 'method', 'histogram');
   Plot.title('Histogram');
 end
 

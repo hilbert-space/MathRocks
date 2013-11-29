@@ -1,11 +1,6 @@
-function observe(varargin)
-  [ data, options ] = Options.extract(varargin{:});
-  assert(length(data) == 1, ...
-    'The observation is supported only for one set of data.');
-  observe2D(data{1}, options);
-end
+function distribution(data, varargin)
+  options = Options(varargin{:});
 
-function observe2D(data, options)
   [ dataCount, dimensionCount ] = size(data);
 
   if dimensionCount > dataCount
@@ -21,9 +16,9 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      one = Statistic.compute(x, one, options);
+      one = Utils.computeDistribution(x, one, options);
 
-      Statistic.draw(x, one, options, 'color', Color.pick(i));
+      Plot.statistic(x, one, options, 'color', Color.pick(i));
     end
   case 'separate'
     for i = 1:dimensionCount
@@ -32,9 +27,9 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      one = Statistic.compute(x, one, options);
+      one = Utils.computeDistribution(x, one, options);
 
-      Statistic.draw(x, one, options);
+      Plot.statistic(x, one, options);
     end
   case 'tiles'
     if options.get('figure', true), Plot.figure; end
@@ -45,9 +40,9 @@ function observe2D(data, options)
       one = data(:, i);
 
       x = Utils.constructLinearSpace(one, options);
-      one = Statistic.compute(x, one, options);
+      one = Utils.computeDistribution(x, one, options);
 
-      Statistic.draw(x, one, options);
+      Plot.statistic(x, one, options);
     end
   end
 end
