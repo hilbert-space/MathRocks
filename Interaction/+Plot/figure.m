@@ -1,6 +1,6 @@
 function h = figure(varargin)
-  width = 600;
-  height = 400;
+  width = 800;
+  height = 500;
 
   switch length(varargin)
   case 0

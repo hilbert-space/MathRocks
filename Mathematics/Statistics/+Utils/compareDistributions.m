@@ -1,32 +1,25 @@
-function [ globalError, localError ] = compareDistributions(one, two, varargin)
+function [ globalError, localError ] = compareDistributions(Y1, Y2, varargin)
   options = Options('draw', nargout == 0, 'layout', 'tiles', 'names', {}, ...
     'errorMetric', 'RMSE', 'distanceMetric', 'KLD', varargin{:});
 
-  oneSize = size(one);
-  twoSize = size(two);
+  size1 = size(Y1);
+  size2 = size(Y2);
 
-  dimensions = length(oneSize);
+  dimensions = length(size1);
 
-  assert(dimensions == length(twoSize), ...
-    'The dimensions are invalid.');
-  assert(dimensions == 2 || dimensions == 3, ...
-    'The given number of dimensions is not supported.');
+  assert(dimensions == length(size2));
+  assert(dimensions == 2 || dimensions == 3);
 
   if dimensions == 2
-    [ globalError, localError ] = compare2D(one, two, options);
+    [ globalError, localError ] = compare2D(Y1, Y2, options);
   else
-    [ globalError, localError ] = compare3D(one, two, options);
+    [ globalError, localError ] = compare3D(Y1, Y2, options);
   end
 end
 
-function [ globalError, localError ] = compare2D(oneData, twoData, options)
-  [ dataCount, dimensionCount ] = size(oneData);
-  assert(dimensionCount == size(twoData, 2), 'The dimensions are invalid.');
-
-  if dimensionCount > dataCount
-    warning('Suspicious data: %d dimensions > %d data points.', ...
-      dimensionCount, dataCount);
-  end
+function [ globalError, localError ] = compare2D(Y1, Y2, options)
+  dimensionCount = size(Y1, 2);
+  assert(dimensionCount == size(Y2, 2));
 
   if options.draw
     switch options.layout
@@ -44,15 +37,15 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
   localError = zeros(1, dimensionCount);
 
   for i = 1:dimensionCount
-    one = oneData(:, i);
-    two = twoData(:, i);
+    y1 = Y1(:, i);
+    y2 = Y2(:, i);
 
-    x = Utils.constructLinearSpace({ one, two }, options);
+    x = Utils.constructLinearSpace({ y1, y2 }, options);
 
-    one = Utils.computeDistribution(x, one, options);
-    two = Utils.computeDistribution(x, two, options);
+    y1 = Utils.computeDistribution(y1, x, options);
+    y2 = Utils.computeDistribution(y2, x, options);
 
-    localError(i) = Error.compute(options.distanceMetric, one, two);
+    localError(i) = Error.compute(options.distanceMetric, y1, y2);
 
     if ~options.draw, continue; end
 
@@ -73,7 +66,7 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
         { 'Color', Color.pick(2) }};
     end
 
-    Plot.statistic(x, { one, two }, options, 'styles', styles);
+    Plot.statistic(x, { y1, y2 }, options, 'styles', styles);
 
     switch options.layout
     case 'one'
@@ -100,11 +93,9 @@ function [ globalError, localError ] = compare2D(oneData, twoData, options)
   globalError = mean(localError(:));
 end
 
-function [ globalError, localError ] = compare3D(oneData, twoData, options)
-  [ ~, dimensionCount, codimensionCount ] = size(oneData);
-  assert(dimensionCount == size(twoData, 2) && ...
-    codimensionCount == size(twoData, 3), ...
-    'The dimensions are invalid.');
+function [ globalError, localError ] = compare3D(Y1, Y2, options)
+  [ ~, dimensionCount, codimensionCount ] = size(Y1);
+  assert(dimensionCount == size(Y2, 2) && codimensionCount == size(Y2, 3));
 
   draw = options.draw;
   options = Options(options, 'draw', false);
@@ -114,16 +105,14 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
   if matlabpool('size') == 0
     h = Bar('Comparing the distributions at step %d out of %d...', codimensionCount);
     for i = 1:codimensionCount
-      [ ~, localError(:, i) ] = compare2D( ...
-        oneData(:, :, i), twoData(:, :, i), options);
+      [ ~, localError(:, i) ] = compare2D(Y1(:, :, i), Y2(:, :, i), options);
       h.increase;
     end
   else
     h = Bar(sprintf('Comparing the distributions at %d steps in parallel...', ...
       codimensionCount), 100, 50);
     parfor i = 1:codimensionCount
-      [ ~, localError(:, i) ] = compare2D( ...
-        oneData(:, :, i), twoData(:, :, i), options);
+      [ ~, localError(:, i) ] = compare2D(Y1(:, :, i), Y2(:, :, i), options);
     end
     close(h);
   end
@@ -134,12 +123,12 @@ function [ globalError, localError ] = compare3D(oneData, twoData, options)
 
   Plot.figure(1200, 400);
 
-  oneExp = reshape(mean(oneData, 1), dimensionCount, codimensionCount);
-  twoExp = reshape(mean(twoData, 1), dimensionCount, codimensionCount);
+  oneExp = reshape(mean(Y1, 1), dimensionCount, codimensionCount);
+  twoExp = reshape(mean(Y2, 1), dimensionCount, codimensionCount);
   expectationError = abs(oneExp - twoExp);
 
-  oneVar = reshape(var(oneData, [], 1), dimensionCount, codimensionCount);
-  twoVar = reshape(var(twoData, [], 1), dimensionCount, codimensionCount);
+  oneVar = reshape(var(Y1, [], 1), dimensionCount, codimensionCount);
+  twoVar = reshape(var(Y2, [], 1), dimensionCount, codimensionCount);
   varianceError = abs(oneVar - twoVar);
 
   time = 0:(codimensionCount - 1);
