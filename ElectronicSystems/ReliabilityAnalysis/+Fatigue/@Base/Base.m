@@ -3,7 +3,18 @@ classdef Base < handle
     %
     % The shape parameter for the Weibull distribution
     %
-    beta = 2;
+    % A good rule of thumb regarding interpretation of the Weibull beta
+    % value is: a Weibull beta value > ~2.4 is usually indicative of an
+    % intrinsic failure mechanism, while a Weibull beta value < ~0.8 is
+    % usually indicative of a defect-controlled failure mechanism. Good
+    % products (free of defects, suffering only intrinsic failure) will
+    % exhibit large Weibull beta values.
+    %
+    % Reference:
+    %
+    % Failure Mechanisms and Models for Semiconductor Devices, 2010, p.71.
+    %
+    beta = 8;
 
     samplingInterval % s
   end

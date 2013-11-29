@@ -102,23 +102,26 @@ classdef ThermalCycling < Fatigue.Base
       %
       % and producing...
       %
-      cycleCount = 10;
+      cycleCount = 1;
       %
       % equal thermal cycles with the average temperature of...
       %
-      Tavg = Utils.toKelvin(80); % K
+      Tavg = Utils.toKelvin(70); % K
       %
       % and the temperature difference of...
       %
-      dT = 20; % K
+      dT = 40; % K
       %
       % has the mean time to failure of...
       %
       MTTF = 20 * 365 * 24 * 60 * 60; % s
 
       Tmax = Tavg + dT / 2;
-      factor = cycleCount * (dT - this.dT0)^this.q * ...
+      factor = cycleCount * max(0, dT - this.dT0)^this.q * ...
         exp(-this.Eatc / (this.k * Tmax));
+
+      assert(factor > 0);
+
       Atc = MTTF * factor / totalTime;
     end
   end
