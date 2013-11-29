@@ -1,3 +1,3 @@
 function setup
-  use('Visualization');
+  use('Interaction');
 end
