@@ -174,8 +174,4 @@ classdef Options < dynamicprops
       end
     end
   end
-
-  methods (Static)
-    [ data, options ] = extract(varargin)
-  end
 end
