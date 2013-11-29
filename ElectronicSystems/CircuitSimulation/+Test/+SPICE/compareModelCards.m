@@ -1,4 +1,6 @@
 function compareModelCards
+  setup;
+
   nCards = struct;
   pCards = struct;
 
