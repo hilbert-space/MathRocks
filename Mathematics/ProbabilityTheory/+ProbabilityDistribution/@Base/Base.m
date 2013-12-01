@@ -12,7 +12,7 @@ classdef Base < handle
     function plot(this, varargin)
       options = Options(varargin{:});
       data = this.sample(options.get('sampleCount', 1e3), 1);
-      Stats.observe(data, 'draw', true, options);
+      Plot.distribution(data, options);
     end
 
     function result = eq(this, another)
@@ -28,6 +28,11 @@ classdef Base < handle
       end
 
       result = true;
+    end
+
+    function [ total, leftRight ] = isBounded(this)
+      leftRight = isfinite(this.support);
+      total = all(leftRight);
     end
 
     function string = toString(this)

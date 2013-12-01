@@ -1,4 +1,8 @@
 classdef Interpolation < TemperatureVariation.Base
+  properties (SetAccess = 'protected')
+    boundedness
+  end
+
   methods
     function this = Interpolation(varargin)
       this = this@TemperatureVariation.Base(varargin{:});
@@ -6,7 +10,7 @@ classdef Interpolation < TemperatureVariation.Base
 
     function output = compute(this, Pdyn)
       output = this.surrogate.construct( ...
-        @(rvs) this.serve(Pdyn, rvs), numel(Pdyn));
+        @(rvs) this.serve(Pdyn, this.preprocess(rvs)), numel(Pdyn));
     end
 
     function stats = analyze(~, ~)
@@ -24,7 +28,7 @@ classdef Interpolation < TemperatureVariation.Base
     end
 
     function data = evaluate(this, output, rvs, ~)
-      parameters = this.process.partition(rvs);
+      parameters = this.process.partition(this.preprocess(rvs));
       parameters = this.process.evaluate(parameters, true); % uniform
       parameters = this.process.normalize(parameters);
       parameters = cell2mat(parameters);
@@ -44,6 +48,8 @@ classdef Interpolation < TemperatureVariation.Base
       for i = 2:this.process.parameterCount
         assert(distribution == distributions{i});
       end
+
+      [ ~, this.boundedness ] = distribution.isBounded;
 
       surrogate = Utils.instantiate( ...
          String.join('.', 'Interpolation', 'Hierarchical', options.method), ...
@@ -65,6 +71,15 @@ classdef Interpolation < TemperatureVariation.Base
 
       T = this.temperature.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
+    end
+
+    function rvs = preprocess(this, rvs)
+      if ~this.boundedness(1)
+        rvs(rvs == 0) = sqrt(eps);
+      end
+      if ~this.boundedness(2)
+        rvs(rvs == 1) = 1 - sqrt(eps);
+      end
     end
   end
 end
