@@ -37,7 +37,7 @@ classdef Interpolation < TemperatureVariation.Base
   methods (Access = 'protected')
     function surrogate = configure(this, options)
       %
-      % NOTE: For now, only one distribution and only beta.
+      % NOTE: For now, only one distribution.
       %
       distributions = this.process.distributions;
       distribution = distributions{1};
@@ -45,11 +45,10 @@ classdef Interpolation < TemperatureVariation.Base
         assert(distribution == distributions{i});
       end
 
-      assert(isa(distribution, 'ProbabilityDistribution.Beta'));
-
       surrogate = Utils.instantiate( ...
          String.join('.', 'Interpolation', 'Hierarchical', options.method), ...
-        'inputCount', this.process.parameterCount * this.processorCount, ...
+        'inputCount', this.process.parameterCount * ...
+          this.temperature.processorCount, ...
         'relativeTolerance', 1e-2, ...
         'absoluteTolerance', 1e-3, ...
         'maximalLevel', 10, options);
@@ -59,11 +58,12 @@ classdef Interpolation < TemperatureVariation.Base
       sampleCount = size(rvs, 1);
 
       parameters = mat2cell(rvs, sampleCount, ...
-        this.processorCount * ones(1, this.process.parameterCount));
+        this.temperature.processorCount * ...
+        ones(1, this.process.parameterCount));
       parameters = this.process.denormalize(parameters);
       parameters = this.process.assign(parameters);
 
-      T = this.computeWithLeakage(Pdyn, parameters);
+      T = this.temperature.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
     end
   end

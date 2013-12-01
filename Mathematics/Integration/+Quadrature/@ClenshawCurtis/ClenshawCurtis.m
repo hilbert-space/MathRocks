@@ -7,7 +7,7 @@ classdef ClenshawCurtis < Quadrature.Base
   end
 
   methods (Access = 'protected')
-    function order = computeOrder(~, level)
+    function order = computeOrder(this, level)
       %
       % Reference:
       %
@@ -19,7 +19,11 @@ classdef ClenshawCurtis < Quadrature.Base
       %
       assert(strcmpi(this.growth, 'full-exponential'));
 
-      order = 2^level + 1;
+      if level == 0
+        order = 1;
+      else
+        order = 2^level + 1;
+      end
     end
 
     function [ nodes, weights ] = rule(this, order)

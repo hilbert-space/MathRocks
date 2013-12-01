@@ -13,18 +13,12 @@ classdef StochasticCollocation < TemperatureVariation.Base
   methods (Access = 'protected')
     function surrogate = configure(this, options)
       %
-      % NOTE: For now, only one distribution and only beta.
+      % NOTE: For now, only one distribution.
       %
       distributions = this.process.distributions;
       distribution = distributions{1};
       for i = 2:this.process.parameterCount
         assert(distribution == distributions{i});
-      end
-
-      switch class(distribution)
-      case 'ProbabilityDistribution.Beta'
-      otherwise
-        assert(false);
       end
 
       surrogate = Utils.instantiate( ...
@@ -44,7 +38,7 @@ classdef StochasticCollocation < TemperatureVariation.Base
       parameters = this.process.evaluate(parameters, true); % uniform
       parameters = this.process.assign(parameters);
 
-      T =  this.computeWithLeakage(Pdyn, parameters);
+      T =  this.temperature.computeWithLeakage(Pdyn, parameters);
       T = transpose(reshape(T, [], sampleCount));
     end
   end
