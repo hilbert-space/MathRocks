@@ -21,15 +21,19 @@ function sweep(varargin)
     if surrogate.inputCount <= 3, plot(surrogate, surrogateOutput); end
 
     process = surrogate.process;
+
+    if isa(surrogate.surrogate.distribution, 'ProbabilityDistribution.Gaussian')
+      lowerBound = max(sqrt(eps), lowerBound);
+      upperBound = min(1 - sqrt(eps), upperBound);
+    end
   else
     process = ProcessVariation(options.processOptions);
   end
 
   temperature = Temperature(options.temperatureOptions);
 
-  Plot.powerTemperature(options.dynamicPower, [], ...
-    temperature.compute(options.dynamicPower), ...
-    'time', options.timeLine);
+  T = temperature.compute(options.dynamicPower);
+  plot(temperature, T, 'time', options.timeLine);
 
   function Tdata = evaluate(parameters)
     parameters = process.evaluate(parameters, true);
@@ -54,7 +58,8 @@ function sweep(varargin)
 
   Iparameter = 1;
   Ivariable = 1;
-  Istep = round(options.stepCount / 2);
+  [ ~, Istep ] = max(max(T, [], 1));
+  Istep = Istep(1);
 
   while true
     Iparameter = askParameter(names, Iparameter);

@@ -79,7 +79,7 @@ classdef Base < handle
         'polynomialOrder', this.order, ...
         'polynomialTermCount', this.termCount, ...
         'quadratureNodeCount', this.nodeCount);
-      display(options, 'Polynomial chaos');
+      display(options, class(this));
     end
   end
 

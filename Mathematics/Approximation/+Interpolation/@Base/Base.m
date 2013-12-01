@@ -39,7 +39,7 @@ classdef Base < handle
         'inputCount', this.inputCount, ...
         'outputCount', size(output.surpluses, 2), ...
         'nodeCount', output.nodeCount);
-      display(options, 'Interpolant');
+      display(options, class(this));
     end
   end
 

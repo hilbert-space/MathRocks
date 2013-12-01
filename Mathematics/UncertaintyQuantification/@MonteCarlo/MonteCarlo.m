@@ -34,7 +34,7 @@ classdef MonteCarlo < handle
     end
 
     function display(this, varargin)
-      display(Options(this), 'Monte Carlo');
+      display(Options(this), class(this));
     end
 
     function string = toString(this, varargin)
