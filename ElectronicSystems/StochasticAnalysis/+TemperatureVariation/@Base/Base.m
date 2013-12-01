@@ -15,8 +15,12 @@ classdef Base < handle
 
     function stats = analyze(this, output)
       stats = this.surrogate.analyze(output);
-      stats.expectation = this.postprocess(output, stats.expectation);
-      stats.variance = this.postprocess(output, stats.variance);
+      if ~isempty(stats.expectation)
+        stats.expectation = this.postprocess(output, stats.expectation);
+      end
+      if ~isempty(stats.variance)
+        stats.variance = this.postprocess(output, stats.variance);
+      end
     end
 
     function data = sample(this, output, varargin)
@@ -51,12 +55,12 @@ classdef Base < handle
 
   methods (Access = 'protected')
     function data = postprocess(this, ~, data)
+      processorCount = this.temperature.processorCount;
       sampleCount = size(data, 1);
       if sampleCount == 1
-        data = reshape(data, this.temperature.processorCount, []);
+        data = reshape(data, processorCount, []);
       else
-        data = reshape(data, sampleCount, ...
-          this.temperature.processorCount, []);
+        data = reshape(data, sampleCount, processorCount, []);
       end
     end
   end

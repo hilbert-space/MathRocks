@@ -10,8 +10,8 @@ classdef Interpolation < TemperatureVariation.Base
     end
 
     function stats = analyze(~, ~)
-      stats.expectation = NaN;
-      stats.variance = NaN;
+      stats.expectation = [];
+      stats.variance = [];
     end
 
     function data = sample(this, output, sampleCount)

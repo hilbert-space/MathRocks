@@ -21,13 +21,8 @@ function [ surrogate, stats, output ] = construct(varargin)
   stats = surrogate.analyze(output);
   fprintf('%s: done in %.2f seconds.\n', name, toc(time));
 
-  computeExpectation = ~isfield(stats, 'expectation') || ...
-    isempty(stats.expectation) || any(isnan(stats.expectation(:)));
-  computeVariance = ~isfield(stats, 'variance') || ...
-    isempty(stats.variance) || any(isnan(stats.variance(:)));
-
   if ~isfield(output, 'data') && ...
-    (nargout > 2 || computeExpectation || computeVariance)
+    (nargout > 2 || isempty(stats.expectation) || isempty(stats.variance))
  
     time = tic;
     fprintf('%s: collecting %d samples...\n', name, sampleCount);
@@ -35,12 +30,12 @@ function [ surrogate, stats, output ] = construct(varargin)
     fprintf('%s: done in %.2f seconds.\n', name, toc(time));
   end
 
-  if computeExpectation
+  if isempty(stats.expectation)
     stats.expectation = reshape(mean(output.data, 1), ...
       options.processorCount, []);
   end
 
-  if computeVariance
+  if isempty(stats.variance)
     stats.variance = reshape(var(output.data, [], 1), ...
       options.processorCount, []);
   end

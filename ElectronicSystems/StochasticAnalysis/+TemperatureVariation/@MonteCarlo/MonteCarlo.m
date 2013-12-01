@@ -81,7 +81,12 @@ classdef MonteCarlo < TemperatureVariation.Base
 
     function output = simulate(this, Pdyn)
       output = this.surrogate.construct(@(rvs) this.serve(Pdyn, rvs));
-      output.data = this.postprocess(output, output.data);
+    end
+
+    function data = postprocess(~, ~, data)
+      %
+      % Do nothing
+      %
     end
   end
 end

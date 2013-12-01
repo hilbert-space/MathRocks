@@ -20,7 +20,7 @@ classdef Base < handle
 
     function stats = analyze(this, output)
       stats.expectation = this.interpolant.integrate(output);
-      stats.variance = NaN(size(stats.expectation));
+      stats.variance = [];
     end
 
     function values = evaluate(this, output, nodes, varargin)
