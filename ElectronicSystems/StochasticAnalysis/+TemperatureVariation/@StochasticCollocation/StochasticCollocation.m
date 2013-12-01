@@ -1,8 +1,4 @@
 classdef StochasticCollocation < TemperatureVariation.Base
-  properties (SetAccess = 'protected')
-    boundedness
-  end
-
   methods
     function this = StochasticCollocation(varargin)
       this = this@TemperatureVariation.Base(varargin{:});
@@ -25,8 +21,6 @@ classdef StochasticCollocation < TemperatureVariation.Base
         assert(distribution == distributions{i});
       end
 
-      [ ~, this.boundedness ] = distribution.isBounded;
-
       surrogate = Utils.instantiate( ...
          String.join('.', 'StochasticCollocation', options.method), ...
         'inputCount', sum(this.process.dimensions), ...
@@ -46,13 +40,9 @@ classdef StochasticCollocation < TemperatureVariation.Base
       T = transpose(reshape(T, [], sampleCount));
     end
 
-    function rvs = preprocess(this, rvs)
-      if ~this.boundedness(1)
-        rvs(rvs == 0) = sqrt(eps);
-      end
-      if ~this.boundedness(2)
-        rvs(rvs == 1) = 1 - sqrt(eps);
-      end
+    function rvs = preprocess(~, rvs)
+      rvs(rvs == 0) = sqrt(eps);
+      rvs(rvs == 1) = 1 - sqrt(eps);
     end
   end
 end
