@@ -43,9 +43,8 @@ function sweep(varargin)
   end
 
   parameters = options.processOptions.parameters;
+  parameterCount = length(parameters);
   dimensions = process.dimensions;
-  parameterCount = length(dimensions);
-  names = fieldnames(parameters);
 
   sweeps = cell(1, parameterCount);
   nominals = cell(1, parameterCount);
@@ -56,33 +55,41 @@ function sweep(varargin)
     nominals{i} = 0.5 * ones(length(sweeps{i}), dimensions(i));
   end
 
+  parameterLine = sweeps{1}; % for simplicity
+
+  [ ~, Imax ] = max(max(T, [], 1)); Imax = Imax(1);
+
   Iparameter = 1;
-  Ivariable = 1;
-  [ ~, Istep ] = max(max(T, [], 1));
-  Istep = Istep(1);
+  Ivariable = num2cell(ones(1, parameterCount));
+  Istep = Imax;
 
   while true
-    Iparameter = askParameter(names, Iparameter);
+    Iparameter = askInteger('parameters', parameterCount, Iparameter);
     if isempty(Iparameter)
       Iparameter = 1;
       continue;
     end
 
-    Ivariable = askVariable(dimensions(Iparameter), Ivariable);
-    if isempty(Ivariable)
-      Ivariable = 1;
-      continue;
+    for i = Iparameter
+      Ivariable{i} = askInteger([ 'variables for Parameter ', ...
+        num2str(i) ], dimensions(i), Ivariable{i});
+      if isempty(Ivariable{i})
+        Ivariable{i} = 1;
+        continue;
+      end
     end
 
-    Istep = askStep(options.stepCount, options.samplingInterval, Istep);
-    if isempty(Istep)
-      Istep = round(options.stepCount / 2);
+    Istep = askInteger('time step', options.stepCount, Istep);
+    if isempty(Istep) || ~isscalar(Istep)
+      Istep = Imax;
       continue;
     end
 
     parameters = nominals;
-    for i = Ivariable
-      parameters{Iparameter}(:, i) = sweeps{Iparameter};
+    for i = Iparameter
+      for j = Ivariable{i}
+        parameters{i}(:, j) = sweeps{i};
+      end
     end
 
     fprintf('Monte Carlo: evaluation...\n');
@@ -96,7 +103,7 @@ function sweep(varargin)
 
     if ~exist('surrogate', 'var')
       for i = 1:options.processorCount
-        Plot.line(sweeps{Iparameter}, data(:, i), 'number', i);
+        Plot.line(parameterLine, data(:, i), 'number', i);
       end
     else
       fprintf('Surrogate: evaluation...\n');
@@ -108,7 +115,7 @@ function sweep(varargin)
 
       legend = {};
       for i = 1:options.processorCount
-        Plot.line(sweeps{Iparameter}, ...
+        Plot.line(parameterLine, ...
           abs(data(:, i) - surrogateData(:, i)), 'number', i);
         legend{end + 1} = sprintf('%s %.4f', errorMetric, ...
           Error.compute(errorMetric, data(:, i), surrogateData(:, i)));
@@ -116,8 +123,9 @@ function sweep(varargin)
 
       Plot.title('Absolute error at %.3f s', ...
         Istep * options.samplingInterval);
-      Plot.label(sprintf('%s(%s)', names{Iparameter}, ...
-        String(Ivariable)), 'log(Absolute error, C)');
+      Plot.label(sprintf('Parameters: %s, Variables: %s', ...
+        String(Iparameter), String(Ivariable(Iparameter))), ...
+        'log(Absolute error, C)');
       Plot.legend(legend{:});
 
       set(gca, 'YScale', 'log');
@@ -125,62 +133,31 @@ function sweep(varargin)
       Plot.figure(800, 400);
 
       for i = 1:options.processorCount
-        Plot.line(sweeps{Iparameter}, data(:, i), 'number', i);
-        Plot.line(sweeps{Iparameter}, surrogateData(:, i), ...
+        Plot.line(parameterLine, data(:, i), 'number', i);
+        Plot.line(parameterLine, surrogateData(:, i), ...
           'auxiliary', true, 'style', { 'Color', 'k' });
       end
     end
 
     Plot.title('Temperature variation at %.3f s', ...
       Istep * options.samplingInterval);
-    Plot.label(sprintf('%s(%s)', names{Iparameter}, ...
-      String(Ivariable)), 'Temperature, C');
+    Plot.label(sprintf('Paramters: %s, Variables: %s', ...
+      String(Iparameter), String(Ivariable(Iparameter))), ...
+      'Temperature, C');
 
     if ~Console.question('Sweep more? '), break; end
   end
 end
 
-function index = askParameter(names, index)
-  if length(names) == 1
-    index = 1;
-    return;
-  end
-
-  name = Console.request( ...
-    'prompt', sprintf('Which parameter (%s)? [%s] ', ...
-    String.join(', ', names), names{index}), ...
-    'type', 'char', 'default', names{index});
-
-  index = [];
-
-  for i = 1:length(names)
-    if strcmpi(names{i}, name)
-      index = i;
-      return;
-    end
-  end
-end
-
-function index = askVariable(dimensionCount, index)
-  if dimensionCount == 1
+function index = askInteger(name, maximum, index)
+  if maximum == 1
     index = 1;
     return;
   end
 
   index = Console.request( ...
-    'prompt', sprintf('Which random variable (up to %d)? [%s] ', ...
-    dimensionCount, String(index)), 'default', index);
+    'prompt', sprintf('Which %s (up to %d)? [%s] ', name, ...
+    maximum, String(index)), 'default', index);
 
-  if any(index > dimensionCount), index = []; end
-end
-
-function index = askStep(stepCount, samplingInterval, index)
-  time = Console.request( ...
-    'prompt', sprintf('What moment of time (up to %.2f s)? [%s] ', ...
-    stepCount * samplingInterval, String(index * samplingInterval)), ...
-    'default', index * samplingInterval);
-
-  index = floor(time / samplingInterval);
-
-  if index < 1 || index > stepCount, index = []; end
+  if any(index < 1) || any(index > maximum), index = []; end
 end
