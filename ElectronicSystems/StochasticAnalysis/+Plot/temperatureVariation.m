@@ -71,7 +71,7 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
       if ~isempty(legend{end})
         legend{end} = [ legend{end}, ': ' ];
       end
-      legend{end} = [ legend{end}, 'Expectation' ];
+      legend{end} = [ legend{end}, 'Expectation ', num2str(i) ];
 
       Plot.line(time(I), Utils.toCelsius( ...
         expectationSet{j}(i, I) + sqrt(varianceSet{j}(i, I))), ...
@@ -81,7 +81,7 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
       if ~isempty(legend{end})
         legend{end} = [ legend{end}, ': ' ];
       end
-      legend{end} = [ legend{end}, 'Deviation' ];
+      legend{end} = [ legend{end}, '+ Deviation', num2str(i) ];
     end
 
     switch layout

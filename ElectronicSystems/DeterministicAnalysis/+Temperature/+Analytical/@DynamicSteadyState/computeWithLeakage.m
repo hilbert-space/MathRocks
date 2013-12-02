@@ -21,7 +21,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   param = cell(1, leakage.parameterCount);
   Pindex = setdiff(1:leakage.parameterCount, Tindex);
 
-  iterationCount = zeros(1, sampleCount);
+  iterationCount = NaN(1, sampleCount);
 
   switch this.algorithm
   case 1 % Slower but more memory efficient
@@ -57,25 +57,23 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         Tcurrent = C * X + Tamb;
         T(:, :, i) = Tcurrent;
 
-        if max(max(Tcurrent)) > temperatureLimit
+        if max(Tcurrent(:)) > temperatureLimit
           %
           % Thermal runaway
           %
-          j = NaN;
           break;
-       end
+        end
 
-        if max(max(abs(Tcurrent - Tlast))) < convergenceTolerance
+        if max(abs(Tcurrent(:) - Tlast(:))) < convergenceTolerance
           %
           % Successful convergence
           %
+          iterationCount(i) = j;
           break;
         end
 
         Tlast = Tcurrent;
       end
-
-      iterationCount(i) = j;
     end
   case 2 % Faster but less memory efficient
     for i = Pindex
@@ -121,7 +119,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       % Thermal runaway
       %
       J = max(max(Tcurrent, [], 1), [], 3) > temperatureLimit;
-      iterationCount(I(J)) = NaN;
 
       %
       % Successful convergence
@@ -191,7 +188,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       % Thermal runaway
       %
       J = max(max(T(:, I, :), [], 1), [], 3) > temperatureLimit;
-      iterationCount(I(J)) = NaN;
 
       %
       % Successful convergence
@@ -216,4 +212,9 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   output.P = P;
   output.iterationCount = iterationCount;
+
+  runawayCount = sum(I);
+  if runawayCount > 0
+    warning([ 'Detected ', num2str(runawayCount), ' thermal runaways.' ]);
+  end
 end
