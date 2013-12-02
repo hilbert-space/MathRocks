@@ -6,10 +6,11 @@ classdef Base < handle
 
   properties
     %
-    % About individual tasks.
+    % About individual tasks
     %
     taskStartTime
     taskExecutionTime
+    taskDynamicPower
 
     taskASAP
     taskALAP
@@ -17,21 +18,24 @@ classdef Base < handle
     taskMobility
 
     %
-    % About the whole application.
+    % About the whole application
     %
     applicationExecutionTime
   end
 
   methods
-    function this = Base(platform, application)
-      this.platform = platform;
-      this.application = application;
+    function this = Base(varargin)
+      options = Options(varargin{:});
 
-      zero = zeros(1, length(application));
-      infinity = ones(1, length(application)) * Inf;
+      this.platform = options.platform;
+      this.application = options.application;
+
+      zero = zeros(1, length(this.application));
+      infinity = Inf(1, length(this.application));
 
       this.taskStartTime = zero;
       this.taskExecutionTime = zero;
+      this.taskDynamicPower = zero;
 
       this.taskASAP = -infinity;
       this.taskALAP = infinity;
@@ -40,14 +44,14 @@ classdef Base < handle
 
       this.applicationExecutionTime = 0;
 
-      this.assignTaskExecutionTime();
-      this.assignTaskASAP();
-      this.assignTaskALAP();
+      this.configure;
+      this.assignTaskASAP;
+      this.assignTaskALAP;
     end
   end
 
   methods (Static, Access = 'protected')
-    assignTaskExecutionTime(this)
+    configure(this)
   end
 
   methods (Access = 'protected')

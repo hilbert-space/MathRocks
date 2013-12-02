@@ -1,4 +1,4 @@
-function perform(this)
+function construct(this)
   %
   % Some shortcuts.
   %
@@ -21,10 +21,7 @@ function perform(this)
   %
   % Ensure that we have a vector of priorities.
   %
-  if any(isnan(priority))
-    profile = SystemProfile.Average(this.platform, this.application);
-    priority = profile.taskMobility;
-  end
+  assert(~any(isnan(priority)));
 
   %
   % Obtain roots and sort them according to their priority,

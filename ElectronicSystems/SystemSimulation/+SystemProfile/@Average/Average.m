@@ -6,7 +6,7 @@ classdef Average < SystemProfile.Base
   end
 
   methods (Access = 'protected')
-    function assignTaskExecutionTime(this)
+    function configure(this)
       processors = this.platform.processors;
       tasks = this.application.tasks;
 
@@ -17,11 +17,16 @@ classdef Average < SystemProfile.Base
       % Calculate average execution times of the tasks.
       %
       for i = 1:taskCount
-        total = 0;
+        executionTime = 0;
+        dynamicPower = 0;
         for j = 1:processorCount
-          total = total + processors{j}.executionTime(tasks{i}.type);
+          executionTime = executionTime + ...
+            processors{j}.executionTime(tasks{i}.type);
+          dynamicPower = dynamicPower + ...
+            processors{j}.dynamicPower(tasks{i}.type);
         end
-        this.taskExecutionTime(i) = total / processorCount;
+        this.taskExecutionTime(i) = executionTime / processorCount;
+        this.taskDynamicPower(i) = dynamicPower / processorCount;
       end
     end
   end
