@@ -6,7 +6,7 @@
 .param Vdd = 1
 
 .data dataset mer
-+ file = 'parameters_T_Leff_Tox.txt' T = 1 Leff = 2 Tox = 3
++ file = 'ring_nangate_VTL_T_Leff_Tox.param' T = 1 Leff = 2 Tox = 3
 .enddata
 
 .end
