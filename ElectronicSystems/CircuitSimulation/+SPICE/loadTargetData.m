@@ -1,19 +1,19 @@
-function targetData = loadTargetData(targetName, filename)
-  x = loadsig(filename);
+function data = loadTargetData(circuit, varargin)
+  x = loadsig(circuit.targetFilename);
 
-  switch File.extension(filename)
+  switch File.extension(circuit.targetFilename)
   case '.sw0'
     for i = 1:length(x)
-      if ~strcmpi(x(i).name, targetName), continue; end
-      targetData = x(i).data(:);
+      if ~strcmpi(x(i).name, circuit.targetName), continue; end
+      data = x(i).data(:);
       return;
     end
   case '.tr0'
     for i = 1:length(x)
-      if strcmpi(x(i).name, targetName) == 0, continue; end
-      targetData = x(i).data;
-      targetData = targetData(floor(size(targetData, 1) / 3):end, :);
-      targetData = mean(targetData, 1)';
+      if strcmpi(x(i).name, circuit.targetName) == 0, continue; end
+      data = x(i).data;
+      data = data(floor(size(data, 1) / 3):end, :);
+      data = mean(data, 1)';
       return;
     end
   otherwise

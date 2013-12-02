@@ -1,18 +1,16 @@
-function parameterData = generateParameterData(parameters)
-  names = fieldnames(parameters);
-  dimensionCount = length(names);
+function data = generateParameterData(circuit, varargin)
+  options = Options(varargin{:});
 
-  sweeps = cell(1, dimensionCount);
+  pointCount = options.get('pointCount', 50);
 
-  pointCount = 50;
+  sweeps = cell(1, circuit.parameterCount);
 
-  for i = 1:dimensionCount
-    range = parameters.(names{i}).range;
-    sigma = parameters.(names{i}).sigma;
-    sweeps{i} = linspace(min(range) - sigma, max(range) + sigma, pointCount);
+  for i = 1:circuit.parameterCount
+    range = circuit.parameterRanges{i};
+    sweeps{i} = linspace(min(range), max(range), pointCount);
   end
 
-  parameterData = cell(1, dimensionCount);
-  [ parameterData{:} ] = ndgrid(sweeps{:});
-  parameterData = cellfun(@(x) x(:), parameterData, 'UniformOutput', false);
+  data = cell(1, circuit.parameterCount);
+  [ data{:} ] = ndgrid(sweeps{:});
+  data = cellfun(@(x) x(:), data, 'UniformOutput', false);
 end

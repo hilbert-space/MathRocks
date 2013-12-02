@@ -1,4 +1,12 @@
-.param L = 50n
+* Input parameters
+.param Leff = 22.5n
+
+* Constants
+.param Leffnom = 22.5n
+.param Lnom = 50n
+
+* Derived paramters
+.param L = 'Lnom + Leff - Leffnom' $ 50n
 
 .subckt inverter in out dd ss bn bp
 M1 out in dd bp pmos

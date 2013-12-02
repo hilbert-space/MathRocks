@@ -41,9 +41,9 @@ function loadDumpModelCards
 end
 
 function name = getSource(name)
-  name = File.join('Circuits', 'sources', name);
+  name = File.join('Assets', 'sources', name);
 end
 
 function name = getDestination(name)
-  name = File.join('Circuits', 'include', 'models', name);
+  name = File.join('Assets', 'include', 'models', name);
 end

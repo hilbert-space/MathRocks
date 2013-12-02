@@ -1,33 +1,24 @@
-function dumpParameterData(parameters, parameterData, filename)
+function dumpParameterData(circuit, data, varargin)
   %
   % Preprocessing
   %
-  names = fieldnames(parameters);
-  dimensionCount = length(names);
-
-  units = cell(1, dimensionCount);
-
-  for i = 1:dimensionCount
-    switch names{i}
+  for i = 1:circuit.parameterCount
+    switch circuit.parameterNames{i}
     case 'T'
-      parameterData{i} = Utils.toCelsius(parameterData{i});
-      units{i} = '';
-    otherwise
-      parameterData{i} = parameterData{i} * 1e9;
-      units{i} = 'n';
+      data{i} = Utils.toCelsius(data{i});
     end
   end
 
   %
   % Dumping
   %
-  file = fopen(filename, 'w');
+  file = fopen(circuit.parameterFilename, 'w');
 
-  pointCount = length(parameterData{1});
+  pointCount = length(data{1});
   for i = 1:pointCount
-    for j = 1:dimensionCount
+    for j = 1:circuit.parameterCount
       if j > 1, fprintf(file, '\t'); end
-      fprintf(file, '%.2f%s', parameterData{j}(i), units{j});
+      fprintf(file, '%e', data{j}(i));
     end
     fprintf(file, '\n');
   end

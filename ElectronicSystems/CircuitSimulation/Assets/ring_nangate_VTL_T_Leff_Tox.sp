@@ -1,4 +1,4 @@
-* A ring with two inverters.
+* A ring with two inverters
 
 .include 'include/components/inverter_nangate.sp'
 .include 'include/circuits/ring.sp'
@@ -6,7 +6,7 @@
 .param Vdd = 1
 
 .data dataset mer
-+ file = 'parameters_T_L_Tox.txt' T = 1 L = 2 Tox = 3
++ file = 'parameters_T_Leff_Tox.txt' T = 1 Leff = 2 Tox = 3
 .enddata
 
 .end

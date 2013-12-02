@@ -1,6 +1,12 @@
-.param L = 50n
+* Input parameters
+.param Leff = 22.5n
 
+* Constants
+.param Leffnom = 22.5n
 .param Lnom = 50n
+
+* Derived paramters
+.param L = 'Lnom + Leff - Leffnom' $ 50n
 .param Wp = '1.67 * 8 * Lnom'
 .param Wn = '8 * Lnom'
 .param Lambda = '0.5 * Lnom'

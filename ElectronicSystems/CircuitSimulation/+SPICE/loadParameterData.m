@@ -1,15 +1,14 @@
-function parameterData = loadParameterData(parameters, filename)
+function data = loadParameterData(circuit, varargin)
   %
   % Loading
   %
-  file = fopen(filename, 'r');
+  file = fopen(circuit.parameterFilename, 'r');
 
   initialized = false;
   maximalDataCount = 1e4;
 
-  dimensionCount = NaN;
-  data = NaN;
-  units = NaN;
+  parameterCount = NaN;
+  buffer = NaN;
 
   i = 0;
   line = fgetl(file);
@@ -19,65 +18,42 @@ function parameterData = loadParameterData(parameters, filename)
 
     if ~initialized
       initialized = true;
-      dimensionCount = length(chunks);
-      data = zeros(maximalDataCount, dimensionCount);
-      units = cell(1, dimensionCount);
+      parameterCount = length(chunks);
+      buffer = zeros(maximalDataCount, parameterCount);
     else
-      assert(length(chunks) == dimensionCount);
+      assert(length(chunks) == parameterCount);
     end
 
     i = i + 1;
     if i > maximalDataCount
-      data = [ data; zeros(maximalDataCount, dimensionCount) ];
+      buffer = [ buffer; zeros(maximalDataCount, parameterCount) ];
       maximalDataCount = 2 * maximalDataCount;
     end
 
-    for j = 1:dimensionCount
-      chunk = chunks{j};
-
-      if isletter(chunk(end))
-        unit = chunk(end);
-        chunk = chunk(1:(end - 1));
-
-        if ischar(units{j})
-          assert(strcmp(units{j}, unit));
-        else
-          units{j} = unit;
-        end
-      end
-
-      value = str2double(chunk);
+    for j = 1:parameterCount
+      value = str2double(chunks{j});
       assert(~isempty(value));
-
-      data(i, j) = value;
+      buffer(i, j) = value;
     end
   end
 
   fclose(file);
 
-  data = data(1:i, :);
+  buffer = buffer(1:i, :);
 
   %
   % Post-processing
   %
-  names = fieldnames(parameters);
-  assert(dimensionCount == length(names));
+  assert(parameterCount == circuit.parameterCount);
 
-  parameterData = cell(1, dimensionCount);
+  data = cell(1, circuit.parameterCount);
 
-  for i = 1:dimensionCount
-    switch names{i}
+  for i = 1:circuit.parameterCount
+    switch circuit.parameterNames{i}
     case 'T'
-      parameterData{i} = Utils.toKelvin(data(:, i));
+      data{i} = Utils.toKelvin(buffer(:, i));
     otherwise
-      parameterData{i} = data(:, i);
-    end
-    if isempty(units{i}), continue; end
-    switch units{i}
-    case 'n'
-      parameterData{i} = parameterData{i} * 1e-9;
-    otherwise
-      assert(false);
+      data{i} = buffer(:, i);
     end
   end
 end

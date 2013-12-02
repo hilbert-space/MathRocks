@@ -15,7 +15,7 @@ classdef LeakagePower < handle
 
   methods
     function this = LeakagePower(varargin)
-      options = Options(varargin{:}, 'targetName', 'Ileak');
+      options = Options(varargin{:});
 
       referencePower = options.fetch('referencePower', NaN); % do not cache
 
@@ -30,7 +30,9 @@ classdef LeakagePower < handle
       if File.exist(filename)
         load(filename);
       else
-        surrogate = Fitting(options);
+        circuit = options.circuit;
+        surrogate = Fitting('filename', circuit.dataFilename, ...
+          'targetName', circuit.targetName, options);
         save(filename, 'surrogate', '-v7.3');
       end
 
@@ -44,8 +46,8 @@ classdef LeakagePower < handle
       %
       this.reference = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
-        this.reference{i} = ...
-          options.parameters.(this.parameterNames{i}).reference;
+        name = this.parameterNames{i};
+        this.reference{i} = options.parameters.(name).reference;
       end
 
       %

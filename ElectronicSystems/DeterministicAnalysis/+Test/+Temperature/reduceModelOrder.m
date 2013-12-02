@@ -16,7 +16,7 @@ function reduceModelOrder(varargin)
   fprintf('%15s%15s%15s\n', 'Reduction', 'Nodes', errorMetric);
   for limit = reductionLimit
     two = Temperature(options.temperatureOptions, ...
-      'reduceModelOrder', Options('threshold', 0, 'limit', limit));
+      'modelOrderReduction', Options('threshold', 0, 'limit', limit));
     Ttwo = Utils.toCelsius(two.compute(options.dynamicPower));
 
     error = Error.compute(errorMetric, Tone, Ttwo);

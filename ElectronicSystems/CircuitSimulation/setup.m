@@ -1,6 +1,6 @@
 function setup
   use('ElectronicSystems', 'SystemSimulation');
-  use('ElectronicSystems', 'StochasticAnalysis');
+  use('ElectronicSystems', 'DeterministicAnalysis');
 
   use('Vendor', 'cprintf');
   use('Vendor', 'HspiceToolbox');

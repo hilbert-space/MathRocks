@@ -1,20 +1,12 @@
 function generateDumpParameterData(varargin)
   setup;
 
-  options = Options(varargin{:});
+  options = Configure.systemSimulation(varargin{:});
+  options = Configure.deterministicAnalysis(options);
 
-  filename = options.fetch('filename', []);
+  circuit = options.leakageOptions.circuit;
+  display(circuit);
 
-  options = Configure.systemSimulation(options);
-  options = Configure.processVariation(options);
-
-  parameters = options.leakageParameters;
-
-  if isempty(filename)
-    filename = Name.leakageParameterDataFile(options);
-  end
-  fprintf('Parameter data filename: %s\n', File.name(filename));
-
-  parameterData = SPICE.generateParameterData(parameters);
-  SPICE.dumpParameterData(parameters, parameterData, filename);
+  parameterData = SPICE.generateParameterData(circuit, varargin{:});
+  SPICE.dumpParameterData(circuit, parameterData, varargin{:});
 end

@@ -1,58 +1,34 @@
 function loadDumpData(varargin)
   setup;
 
-  options = Options(varargin{:});
+  options = Configure.systemSimulation(varargin{:});
+  options = Configure.deterministicAnalysis(options);
 
-  targetName = options.fetch('targetName', 'Ileak');
-  targetDataFilename = options.fetch('targetDataFilename', []);
-  parameterDataFilename = options.fetch('parameterDataFilename', []);
-  outputFilename = options.fetch('outputFilename', []);
-
-  options = Configure.systemSimulation(options);
-  options = Configure.processVariation(options);
-
-  parameters = options.leakageParameters;
-  parameterNames = fieldnames(parameters);
-  dimensionCount = length(parameterNames);
-
-  referenceCircuit = options.referenceCircuit;
+  circuit = options.leakageOptions.circuit;
+  display(circuit);
 
   %
   % Loading
   %
-  if isempty(targetDataFilename)
-    targetDataFilename = Name.leakageTargetDataFile(options);
-  end
-  fprintf('Target data filename: %s\n', File.name(targetDataFilename));
+  targetData = SPICE.loadTargetData(circuit, varargin{:});
+  parameterData = SPICE.loadParameterData(circuit, varargin{:});
 
-  if isempty(parameterDataFilename)
-    parameterDataFilename = Name.leakageParameterDataFile(options);
-  end
-  fprintf('Parameter data filename: %s\n', File.name(parameterDataFilename));
-
-  targetData = SPICE.loadTargetData(targetName, targetDataFilename);
-  parameterData = SPICE.loadParameterData(parameters, parameterDataFilename);
-  assert(length(parameterData) == dimensionCount);
+  assert(length(parameterData) == circuit.parameterCount);
 
   %
   % Dumping
   %
-  if isempty(outputFilename)
-    outputFilename = Name.leakageDataFile(options);
-  end
-  fprintf('Output filename: %s\n', File.name(outputFilename));
+  file = fopen(circuit.dataFilename, 'w');
 
-  file = fopen(outputFilename, 'w');
-
-  fprintf(file, targetName);
-  for i = 1:dimensionCount
-    fprintf(file, '\t%s', parameterNames{i});
+  fprintf(file, circuit.targetName);
+  for i = 1:circuit.parameterCount
+    fprintf(file, '\t%s', circuit.parameterNames{i});
   end
   fprintf(file, '\n');
 
   for i = 1:length(targetData)
     fprintf(file, '%e', targetData(i));
-    for j = 1:dimensionCount
+    for j = 1:circuit.parameterCount
       fprintf(file, '\t%e', parameterData{j}(i));
     end
     fprintf(file, '\n');
