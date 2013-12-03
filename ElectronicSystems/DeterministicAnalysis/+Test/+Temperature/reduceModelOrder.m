@@ -5,12 +5,12 @@ function reduceModelOrder(varargin)
   options = Configure.systemSimulation(varargin{:});
   options = Configure.deterministicAnalysis(options);
 
-  errorMetric = 'RMSE';
+  errorMetric = 'NRMSE';
+  errorThreshold = 0.001;
 
   one = Temperature(options.temperatureOptions);
   Tone = Utils.toCelsius(one.compute(options.dynamicPower));
 
-  minimalError = 0.1;
   reductionLimit = 0.4:0.05:1;
 
   fprintf('%15s%15s%15s\n', 'Reduction', 'Nodes', errorMetric);
@@ -23,7 +23,7 @@ function reduceModelOrder(varargin)
     fprintf('%15.2f%15s%15.4f\n', limit, ...
       sprintf('%3d /%3d', two.nodeCount, one.nodeCount), error);
 
-    if error < minimalError, break; end
+    if error < errorThreshold, break; end
   end
 
   time = options.timeLine;

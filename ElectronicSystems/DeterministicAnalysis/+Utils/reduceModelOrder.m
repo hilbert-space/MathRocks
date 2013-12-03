@@ -7,14 +7,15 @@ function [ A, B, C, D ] = reduceModelOrder(A, B, C, D, varargin)
 
   s = ss(A, B, C, D);
 
-  [ L, baldata ] = hsvd(s);
+  options = hsvdOptions('Offset', 1e-8);
+  [ L, baldata ] = hsvd(s, options);
 
   dimensionCount = size(A, 1);
   dimensionCount = max(Utils.countSignificant(L, threshold), ...
     floor(dimensionCount * limit));
 
-  r = balred(s, dimensionCount, 'Elimination', 'Truncate', ...
-    'Balancing', baldata);
+  options = balredOptions('Offset', 1e-8, 'StateElimMethod', 'Truncate');
+  r = balred(s, dimensionCount, options, baldata);
 
   A = r.a;
   B = r.b;
