@@ -65,15 +65,21 @@ function distribution = distribute(parameter, contribution)
     % [ a, b ] = contribution * parameter.range,
     %
     % the shape of the resulting PDF will be substantially different
-    % from Gaussian bell shapes.
+    % from Gaussian bell shapes. However, it is not a problem since
+    % when several of such "non-Gaussian" betas are summed up (with
+    % the total contribution equal to one), the resulting PDF resables
+    % Gaussian bells pretty well. It should be noted that this PDF
+    % is neither Gaussian nor beta.
     %
-    % Also, if the target parameter is set to "pdf," the resulting
-    % variance will not match the desired one, i.e.,
+    % Another observation: if the target parameter is set to "pdf,"
+    % the resulting variance will not match the desired one, i.e.,
     %
-    % contribution * parameter.variance
+    % contribution * parameter.variance.
     %
     distribution = Utils.gaussianToBeta( ...
-      gaussian, 'target', 'variance', 'spread', 3);
+      gaussian, 'target', 'variance', ...
+      'a', contribution * parameter.range(1), ...
+      'b', contribution * parameter.range(2));
   otherwise
     assert(false);
   end

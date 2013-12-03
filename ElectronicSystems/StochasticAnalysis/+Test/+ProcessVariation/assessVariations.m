@@ -46,5 +46,26 @@ function assessVariations(varargin)
     end
 
     fprintf('\n');
+
+    if ~options.get('draw', false), continue; end
+
+    Plot.figure(1000, 400);
+    Plot.name('%d processors', processorCount);
+
+    for i = 1:parameterCount
+      name = parameterNames{i};
+      parameter = parameters.(name);
+
+      subplot(1, parameterCount, i);
+      Plot.label(name, 'Probability density');
+
+      x = linspace(parameter.range(1), parameter.range(2), 50);
+      y = normpdf(x, parameter.nominal, sqrt(parameter.variance));
+      Plot.line(x, y, 'style', { 'Color', 'k' });
+
+      for j = 1:processorCount
+        Plot.distribution(samples{i}(:, j), 'layout', 'one', 'figure', false);
+      end
+    end
   end
 end
