@@ -1,17 +1,17 @@
-function assess(options, secondTemperatureOptions)
+function assess(one, two, varargin)
   close all;
   setup;
 
-  options = Configure.systemSimulation(options);
+  options = Configure.systemSimulation(varargin{:});
   options = Configure.deterministicAnalysis(options);
 
   errorMetric = 'RMSE';
 
-  one = Temperature(options.temperatureOptions);
+  one = Temperature(options.temperatureOptions, one);
   T0 = Utils.toCelsius(one.computeWithoutLeakage(options.dynamicPower));
   T1 = Utils.toCelsius(one.compute(options.dynamicPower));
 
-  two = Temperature(options.temperatureOptions, secondTemperatureOptions);
+  two = Temperature(options.temperatureOptions, two);
   T2 = Utils.toCelsius(two.compute(options.dynamicPower));
 
   error = Error.compute(errorMetric, T1, T2);

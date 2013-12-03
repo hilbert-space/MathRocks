@@ -1,9 +1,10 @@
 classdef DynamicSteadyState < Temperature.Analytical.Base
   properties (SetAccess = 'protected')
-    iterationLimit
-    temperatureLimit
-    convergenceTolerance
     algorithm
+    maximalTemperature
+    convergenceMetric
+    convergenceTolerance
+    iterationLimit
   end
 
   methods
@@ -11,14 +12,12 @@ classdef DynamicSteadyState < Temperature.Analytical.Base
       options = Options(varargin{:});
       this = this@Temperature.Analytical.Base(options);
 
-      this.iterationLimit = ...
-        options.get('iterationLimit', 20);
-      this.temperatureLimit = ...
-        options.get('temperatureLimit', Utils.toKelvin(1e3));
-      this.convergenceTolerance = ...
-        options.get('convergenceTolerance', 0.5);
-      this.algorithm = ...
-        options.get('algorithm', 1);
+      this.algorithm = options.get('algorithm', 1);
+      this.maximalTemperature = options.get( ...
+        'maximalTemperature', Utils.toKelvin(450));
+      this.convergenceMetric = options.get('convergenceMetric', 'NRMSE');
+      this.convergenceTolerance = options.get('convergenceTolerance', 0.01);
+      this.iterationLimit = options.get('iterationLimit', 20);
     end
   end
 end

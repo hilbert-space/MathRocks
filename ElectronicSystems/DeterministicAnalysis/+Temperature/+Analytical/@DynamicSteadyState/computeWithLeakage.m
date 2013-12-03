@@ -6,9 +6,10 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   E = this.E;
   F = this.F;
   Tamb = this.ambientTemperature;
-  iterationLimit = this.iterationLimit;
-  temperatureLimit = this.temperatureLimit;
+  Tmax = this.maximalTemperature;
+  convergenceMetric = this.convergenceMetric;
   convergenceTolerance = this.convergenceTolerance;
+  iterationLimit = this.iterationLimit;
 
   Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
     stepCount * this.L))) * this.U';
@@ -57,14 +58,15 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         Tcurrent = C * X + Tamb;
         T(:, :, i) = Tcurrent;
 
-        if max(Tcurrent(:)) > temperatureLimit
+        if max(Tcurrent(:)) > Tmax
           %
           % Thermal runaway
           %
           break;
         end
 
-        if max(abs(Tcurrent(:) - Tlast(:))) < convergenceTolerance
+        if Error.compute(convergenceMetric, ...
+          Tcurrent, Tlast) < convergenceTolerance
           %
           % Successful convergence
           %
@@ -88,8 +90,10 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     Q = zeros(nodeCount, sampleCount, stepCount);
 
-    Tlast = Tamb;
+    Tlast = Tamb * ones(sampleCount, processorCount * stepCount);
+
     I = 1:sampleCount;
+    leftCount = sampleCount;
 
     for i = 1:iterationLimit
       for j = Pindex
@@ -113,95 +117,32 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         T(:, I, j) = C * X + Tamb;
       end
 
-      Tcurrent = T(:, I, :);
+      Tcurrent = reshape(shiftdim(T(:, I, :), 1), leftCount, []);
 
       %
       % Thermal runaway
       %
-      J = max(max(Tcurrent, [], 1), [], 3) > temperatureLimit;
+      J = max(Tcurrent, [], 2) > Tmax;
 
       %
       % Successful convergence
       %
-      K = max(max(abs(Tcurrent - Tlast), [], 1), [], 3) < convergenceTolerance;
+      K = Error.compute(convergenceMetric, ...
+        Tcurrent, Tlast, 2) < convergenceTolerance;
       iterationCount(I(K)) = i;
 
       M = J | K;
       I(M) = [];
 
-      if isempty(I), break; end
+      leftCount = length(I);
+      if leftCount == 0, break; end
 
       Tlast = Tcurrent;
-      Tlast(:, M, :) = [];
+      Tlast(M, :) = [];
     end
 
     T = permute(T, [ 1, 3, 2 ]);
     P = permute(P, [ 1, 3, 2 ]);
-  case 3 % A fast and memory-efficient approximation
-    X = zeros(nodeCount, stepCount);
-    G = zeros(nodeCount, nodeCount, stepCount + 1);
-
-    Q = F * Pdyn;
-    W = Q(:, 1);
-
-    G(:, :, 2) = eye(nodeCount);
-
-    for i = 2:stepCount
-      W = E * W + Q(:, i);
-      G(:, :, i + 1) = E * G(:, :, i);
-    end
-
-    X(:, 1) = Z * W;
-
-    G = cumsum(G, 3);
-    W = Z * G(:, :, end);
-    G(1:processorCount, 1:processorCount, 1) = C * W * F;
-
-    for i = 2:stepCount
-      X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
-      W = E * W;
-      G(1:processorCount, 1:processorCount, i) = C * (W + G(:, :, i)) * F;
-    end
-
-    G = G(1:processorCount, 1:processorCount, :);
-
-    Tdyn = permute(repmat(C * X + Tamb, [ 1, 1, sampleCount ]), [ 1, 3, 2 ]);
-
-    T = Tdyn;
-
-    I = 1:sampleCount;
-
-    for i = 1:iterationLimit
-      for j = Pindex
-        param{j} = parameters{j}(:, I);
-      end
-
-      Tlast = T(:, I, :);
-
-      for j = 1:stepCount
-        param{Tindex} = T(:, I, j);
-        T(:, I, j) = Tdyn(:, I, j) + ...
-          G(:, :, j) * leak(param{:});
-      end
-
-      %
-      % Thermal runaway
-      %
-      J = max(max(T(:, I, :), [], 1), [], 3) > temperatureLimit;
-
-      %
-      % Successful convergence
-      %
-      K = max(max(abs(T(:, I, :) - Tlast), [], 1), [], 3) < convergenceTolerance;
-      iterationCount(I(K)) = i;
-
-      M = J | K;
-      I(M) = [];
-
-      if isempty(I), break; end
-    end
-
-    T = permute(T, [ 1, 3, 2 ]);
   otherwise
     assert(false);
   end
