@@ -7,8 +7,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   F = this.F;
   Tamb = this.ambientTemperature;
   Tmax = this.maximalTemperature;
-  convergenceMetric = this.convergenceMetric;
-  convergenceTolerance = this.convergenceTolerance;
+  errorMetric = this.errorMetric;
+  errorThreshold = this.errorThreshold;
   iterationLimit = this.iterationLimit;
 
   Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
@@ -65,8 +65,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
           break;
         end
 
-        if Error.compute(convergenceMetric, ...
-          Tcurrent, Tlast) < convergenceTolerance
+        if Error.compute(errorMetric, Tcurrent, Tlast) < errorThreshold
           %
           % Successful convergence
           %
@@ -127,8 +126,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       %
       % Successful convergence
       %
-      K = Error.compute(convergenceMetric, ...
-        Tcurrent, Tlast, 2) < convergenceTolerance;
+      K = Error.compute(errorMetric, Tcurrent, Tlast, 2) < errorThreshold;
       iterationCount(I(K)) = i;
 
       M = J | K;
