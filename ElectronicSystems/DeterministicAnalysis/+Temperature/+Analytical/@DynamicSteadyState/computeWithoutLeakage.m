@@ -3,13 +3,11 @@ function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
   stepCount = size(Pdyn, 2);
 
   E = this.E;
-  F = this.F;
-
-  Q = F * Pdyn;
-  W = Q(:, 1);
+  FP = this.F * Pdyn;
+  W = FP(:, 1);
 
   for i = 2:stepCount
-    W = E * W + Q(:, i);
+    W = E * W + FP(:, i);
   end
 
   X = zeros(nodeCount, stepCount);
@@ -17,10 +15,10 @@ function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
     stepCount * this.L))) * this.V * W;
 
   for i = 2:stepCount
-    X(:, i) = E * X(:, i - 1) + Q(:, i - 1);
+    X(:, i) = E * X(:, i - 1) + FP(:, i - 1);
   end
 
-  T = this.C * X + this.ambientTemperature;
+  T = this.C * X + this.D * Pdyn + this.ambientTemperature;
 
   output = struct;
 end

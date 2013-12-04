@@ -1,8 +1,8 @@
 function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   [ processorCount, stepCount ] = size(Pdyn);
-  assert(processorCount == this.processorCount);
 
   C = this.C;
+  D = this.D;
   E = this.E;
   F = this.F;
   Tamb = this.ambientTemperature;
@@ -18,7 +18,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   parameters{Tindex} = Tamb * ones(processorCount, sampleCount);
   P_ = bsxfun(@plus, Pdyn(:, 1), leak(parameters{:}));
   X_ = F * P_;
-  T_ = C * X_ + Tamb;
+  T_ = C * X_ + D * P_ + Tamb;
 
   T(:, 1, :) = T_;
   P(:, 1, :) = P_;
@@ -27,7 +27,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     parameters{Tindex} = T_;
     P_ = bsxfun(@plus, Pdyn(:, i), leak(parameters{:}));
     X_ = E * X_ + F * P_;
-    T_ = C * X_ + Tamb;
+    T_ = C * X_ + D * P_ + Tamb;
 
     T(:, i, :) = T_;
     P(:, i, :) = P_;

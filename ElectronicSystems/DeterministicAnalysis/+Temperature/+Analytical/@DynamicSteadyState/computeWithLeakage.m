@@ -3,6 +3,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   [ processorCount, stepCount ] = size(Pdyn);
 
   C = this.C;
+  D = this.D;
   E = this.E;
   F = this.F;
   Tamb = this.ambientTemperature;
@@ -44,18 +45,18 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
         P(:, :, i) = Pdyn + leak(param{:});
 
-        Q = F * P(:, :, i);
-        W = Q(:, 1);
+        FP = F * P(:, :, i);
+        W = FP(:, 1);
         for k = 2:stepCount
-          W = E * W + Q(:, k);
+          W = E * W + FP(:, k);
         end
 
         X(:, 1) = Z * W;
         for k = 2:stepCount
-          X(:, k) = E * X(:, k - 1) + Q(:, k - 1);
+          X(:, k) = E * X(:, k - 1) + FP(:, k - 1);
         end
 
-        Tcurrent = C * X + Tamb;
+        Tcurrent = C * X + D * P(:, :, i) + Tamb;
         T(:, :, i) = Tcurrent;
 
         if max(Tcurrent(:)) > Tmax
@@ -87,7 +88,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     T = Tamb * ones(processorCount, sampleCount, stepCount);
     P = zeros(processorCount, sampleCount, stepCount);
 
-    Q = zeros(nodeCount, sampleCount, stepCount);
+    FP = zeros(nodeCount, sampleCount, stepCount);
 
     Tlast = Tamb * ones(sampleCount, processorCount * stepCount);
 
@@ -102,18 +103,18 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
       P(:, I, :) = Pdyn(:, I, :) + leak(param{:});
 
-      Q(:, I, 1) = F * P(:, I, 1);
-      W = Q(:, I, 1);
+      FP(:, I, 1) = F * P(:, I, 1);
+      W = FP(:, I, 1);
       for j = 2:stepCount
-        Q(:, I, j) = F * P(:, I, j);
-        W = E * W + Q(:, I, j);
+        FP(:, I, j) = F * P(:, I, j);
+        W = E * W + FP(:, I, j);
       end
 
       X = Z * W;
-      T(:, I, 1) = C * X + Tamb;
+      T(:, I, 1) = C * X + D * P(:, I, 1) + Tamb;
       for j = 2:stepCount
-        X = E * X + Q(:, I, j - 1);
-        T(:, I, j) = C * X + Tamb;
+        X = E * X + FP(:, I, j - 1);
+        T(:, I, j) = C * X + D * P(:, I, j) + Tamb;
       end
 
       Tcurrent = reshape(shiftdim(T(:, I, :), 1), leftCount, []);

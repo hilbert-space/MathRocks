@@ -1,22 +1,17 @@
 function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
-  [ processorCount, stepCount ] = size(Pdyn);
-  assert(processorCount == this.processorCount);
+  stepCount = size(Pdyn, 2);
 
-  C = this.C;
+  X = zeros(this.nodeCount, stepCount);
+
   E = this.E;
-  F = this.F;
-  Tamb = this.ambientTemperature;
+  FP = this.F * Pdyn;
 
-  Q = F * Pdyn;
-  X = Q(:, 1);
-
-  T = zeros(processorCount, stepCount);
-  T(:, 1) = C * X + Tamb;
-
+  X(:, 1) = FP(:, 1);
   for i = 2:stepCount
-    X = E * X + Q(:, i);
-    T(:, i) = C * X + Tamb;
+    X(:, i) = E * X(:, i - 1) + FP(:, i);
   end
+
+  T = this.C * X + this.D * Pdyn + this.ambientTemperature;
 
   output = struct;
 end

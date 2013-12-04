@@ -26,6 +26,18 @@ classdef Base < Temperature.Base
     C
 
     %
+    % NOTE: If the model order reduction is turned on,
+    % the system becomes
+    %
+    %   dX / dt = A * X + B * P
+    %   Q = C * X + D * P + Qamb
+    %
+    % where D is generally a non-zero matrix, and the other
+    % coefficient matrices get altered.
+    %
+    D
+
+    %
     % The eigenvalue decomposition of A:
     %
     %   A = U * L * U^(-1) = U * L * V
@@ -75,28 +87,45 @@ classdef Base < Temperature.Base
 
       B = T * M;
       C = transpose(B);
+      D = 0;
 
       %
       % Model order reduction
       %
       if ~isempty(options.get('modelOrderReduction', []))
-        [ A, B, C ] = Utils.reduceModelOrder(A, B, C, 0, ...
-          options.modelOrderReduction);
+        [ A, B, C, D ] = Utils.reduceModelOrder( ...
+          A, B, C, D, options.modelOrderReduction);
+
+        %
+        % NOTE: A is not necessarily a symmetric matrix; hence,
+        % the eigenvectors might not be orthogonal.
+        %
+        [ U, L ] = eig(A);
+        V = inv(U);
+        L = diag(L);
+
+        if any(~isreal(L))
+          warning('Detected eigenvalues with non-zero imaginary parts.');
+          L = real(L);
+          U = real(U);
+          V = real(V);
+        end
+
+        assert(all(L < 0));
+      else
+        [ U, L ] = eig(A);
+        V = transpose(U); % due to the symmetry
+        L = diag(L);
       end
 
-      [ U, L ] = eig(A);
-
-      V = transpose(U); % as U is orthogonal
-      L = diag(L);
-      assert(all(isreal(L)) && all(L < 0));
-
-      E = U * diag( exp(this.samplingInterval * L)          ) * V;
+      E = U * diag(exp(this.samplingInterval * L)) * V;
       F = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * V * B;
 
       this.nodeCount = length(L);
 
       this.A = A;
       this.C = C;
+      this.D = D;
       this.L = L;
       this.U = U;
       this.V = V;
