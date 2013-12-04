@@ -29,16 +29,23 @@ function options = stochasticAnalysis(varargin)
   %
   processParameters = options.processParameters;
 
+  parameterOptions = Options( ...
+    'distribution', 'Beta', ...
+    'transformation', 'Gaussian', ...
+    'globalContribution', 0.5, ...
+    'reductionThreshold', 0.96, ...
+    options.get('parameterOptions', []));
+
   for i = 1:length(processParameters)
     parameter = processParameters.get(i);
 
-    parameter.distribution = 'Beta';
-    parameter.transformation = 'Gaussian';
+    parameter.distribution = parameterOptions.distribution;
+    parameter.transformation = parameterOptions.transformation;
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
     parameter.correlation = { @correlate, eta, lse, lou };
-    parameter.globalContribution = 0.5;
-    parameter.reductionThreshold = 0.96;
+    parameter.globalContribution = parameterOptions.globalContribution;
+    parameter.reductionThreshold = parameterOptions.reductionThreshold;
 
     processParameters.set(i, parameter);
   end
