@@ -12,7 +12,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   iterationLimit = this.iterationLimit;
 
   Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
-    stepCount * this.L))) * this.U';
+    stepCount * this.L))) * this.V;
 
   leakage = this.leakage;
   leak = leakage.evaluate;

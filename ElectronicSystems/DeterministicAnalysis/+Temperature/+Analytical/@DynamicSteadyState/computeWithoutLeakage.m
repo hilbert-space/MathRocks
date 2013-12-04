@@ -14,7 +14,7 @@ function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
 
   X = zeros(nodeCount, stepCount);
   X(:, 1) = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
-    stepCount * this.L))) * this.U' * W;
+    stepCount * this.L))) * this.V * W;
 
   for i = 2:stepCount
     X(:, i) = E * X(:, i - 1) + Q(:, i - 1);

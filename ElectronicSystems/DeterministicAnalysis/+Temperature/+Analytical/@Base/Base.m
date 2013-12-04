@@ -1,41 +1,56 @@
 classdef Base < Temperature.Base
   properties (Access = 'protected')
     %
-    % Original
+    % The original system is
     %
-    %   Cth * dT/dt + Gth * (T - Tamb) = M * P
+    %   Cth * dQth / dt + Gth * (Qth - Qamb) = M * P
+    %   Q = M^T * Qth
     %
-    % Transformed
+    % where Qth is the temperature of all the thermal node
+    % while Q is the temperature of those that represent
+    % processing elements.
     %
-    %   dX/dt = A * X + B * P
-    %   T = C * X + D = B^T * X + Tamb
+    % The transformed system is
     %
-
+    %   dX / dt = A * X + B * P
+    %   Q = C * X + Qamb
     %
-    % A = Cth^(-1/2) * (-Gth) * Cth^(-1/2)
+    % where
+    %
+    %   X = Cth^(1/2) * (Qth - Qamb),
+    %   A = Cth^(-1/2) * (-Gth) * Cth^(-1/2),
+    %   B = Cth^(-1/2) * M, and
+    %   C = B^T.
     %
     A
-
-    %
-    % C = B^T = (Cth^(-1/2) * M)^T
-    %
     C
 
     %
-    % A = U * L * U^T
+    % The eigenvalue decomposition of A:
+    %
+    %   A = U * L * U^(-1) = U * L * V
     %
     L
     U
+    V
 
     %
-    % E = exp(A * dt) = U * diag(exp(li * dt)) * U^T
+    % The solution of the system for a short time interval
+    % [ 0, t ] is based on the following recurrence:
+    %
+    %   X(t) = E * X(0) + F * P(0).
+    %
+    % The first coefficient of the recurrence:
+    %
+    %   E = exp(A * dt) = U * diag(exp(li * dt)) * V
+    %
+    %
+    % The second coefficient of the recurrence:
+    %
+    %   F = A^(-1) * (exp(A * dt) - I) * B
+    %     = U * diag((exp(li * dt) - 1) / li) * V * B
     %
     E
-
-    %
-    % F = A^(-1) * (exp(A * dt) - I) * B
-    %   = U * diag((exp(li * dt) - 1) / li) * U^T * B
-    %
     F
   end
 
@@ -59,7 +74,7 @@ classdef Base < Temperature.Base
       A = triu(A) + transpose(triu(A, 1)); % ensure symmetry
 
       B = T * M;
-      C = B';
+      C = transpose(B);
 
       %
       % Model order reduction
@@ -70,10 +85,13 @@ classdef Base < Temperature.Base
       end
 
       [ U, L ] = eig(A);
-      L = diag(L);
 
-      E = U * diag( exp(this.samplingInterval * L)          ) * U';
-      F = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * U' * B;
+      V = transpose(U); % as U is orthogonal
+      L = diag(L);
+      assert(all(isreal(L)) && all(L < 0));
+
+      E = U * diag( exp(this.samplingInterval * L)          ) * V;
+      F = U * diag((exp(this.samplingInterval * L) - 1) ./ L) * V * B;
 
       this.nodeCount = length(L);
 
@@ -81,6 +99,7 @@ classdef Base < Temperature.Base
       this.C = C;
       this.L = L;
       this.U = U;
+      this.V = V;
       this.E = E;
       this.F = F;
     end
