@@ -26,10 +26,6 @@ function options = systemSimulation(varargin)
     options.taskCount = taskCount;
   end
 
-  options.profile = SystemProfile.Average( ...
-    'platform', options.platform, ...
-    'application', options.application);
-
   %
   % Die
   %
@@ -48,10 +44,10 @@ function options = systemSimulation(varargin)
   if options.has('priority')
     priority = options.priority(processorCount, taskCount);
   else
-    priority = options.profile.taskMobility;
+    priority = [];
   end
 
-  options.schedule = Schedule.Dense('platform', options.platform, ...
-    'application', options.application, 'mapping', mapping, ...
-    'priority', priority);
+  options.scheduler = Scheduler.Dense('platform', options.platform, ...
+    'application', options.application);
+  options.schedule = options.scheduler.compute(mapping, priority);
 end

@@ -1,67 +1,54 @@
-function construct(this)
-  %
-  % Some shortcuts.
-  %
-  tasks = this.application.tasks;
+function [ mapping, priority, order, startTime, executionTime ] = ...
+  construct(this, mapping, priority, order)
+
   processors = this.platform.processors;
+  processorCount = length(processors);
+
+  tasks = this.application.tasks;
+  taskCount = length(tasks);
 
   links = this.application.links;
 
-  processorCount = length(processors);
-  taskCount = length(tasks);
-
-  priority = this.priority;
-
-  mapping = this.mapping;
-  order = this.order;
-
-  startTime = this.startTime;
-  executionTime = this.executionTime;
-
-  %
-  % Ensure that we have a vector of priorities.
-  %
-  assert(~any(isnan(priority)));
+  startTime = NaN(1, taskCount);
+  executionTime = NaN(1, taskCount);
 
   %
   % Obtain roots and sort them according to their priority,
-  % and these tasks initialize the schedulig pool.
+  % and these tasks initialize the schedulig pool
   %
   pool = this.application.roots;
   [ ~, I ] = sort(priority(pool));
   pool = pool(I);
 
-  zero = zeros(1, taskCount);
+  processed = false(1, taskCount);
+  ordered = zeros(1, taskCount);
 
-  processed = zero;
-  ordered = zero;
-
-  taskTime = zero;
+  taskTime = zeros(1, taskCount);
   processorTime = zeros(1, processorCount);
 
   position = 0;
-  processed(pool) = 1;
+  processed(pool) = true;
 
   while ~isempty(pool)
     %
-    % The pool is always sorted according to the priority.
+    % NOTE: The pool is always sorted according to the priority.
     %
     id = pool(1);
 
     %
-    % Exclude the task.
+    % Pull the task from the pool
     %
     pool(1) = [];
 
     %
-    % Append to the schedule.
+    % Append the task to the schedule
     %
     position = position + 1;
     order(id) = position;
     ordered(id) = 1;
 
     %
-    % Find the earliest processor if needed.
+    % Decide on the processor for the task
     %
     pid = mapping(id);
     if pid == 0
@@ -87,22 +74,21 @@ function construct(this)
     processorTime(pid) = finish;
 
     %
-    % Append new tasks that are ready, and ensure that
-    % there are no repetitions.
+    % Append the new tasks that are ready
     %
     for childId = find(links(id, :)) % children
       taskTime(childId) = max(taskTime(childId), finish);
 
       %
-      % Do not do it twice.
+      % Avoid doing it twice
       %
       if processed(childId), continue; end
 
       %
-      % All the parents should be ordered.
+      % NOTE: All the parents should be ordered.
       %
       ready = true;
-      for parentId = find(links(:, childId)).' % parents
+      for parentId = transpose(find(links(:, childId))) % parents
         if ~ordered(parentId)
           ready = false;
           break;
@@ -115,7 +101,7 @@ function construct(this)
       if ~ready, continue; end
 
       %
-      % We need to insert it in the right place in order
+      % NOTE: We need to insert it in the right place in order
       % to keep the pool sorted by the priority.
       %
       index = 1;
@@ -127,28 +113,14 @@ function construct(this)
         index = index + 1;
       end
       if index > length(pool)
-          pool(end + 1) = childId;
+        pool = [ pool, childId ];
       elseif index == 1
-        pool = [ childId pool ];
+        pool = [ childId, pool ];
       else
-        pool = [ pool(1:index - 1) childId pool(index:end) ];
+        pool = [ pool(1:(index - 1)), childId, pool(index:end) ];
       end
 
-      %
-      % We are done with this one.
-      %
-      processed(childId) = 1;
+      processed(childId) = true;
     end
   end
-
-  %
-  % Save our achievements.
-  %
-  this.priority = priority;
-
-  this.mapping = mapping;
-  this.order = order;
-
-  this.startTime = startTime;
-  this.executionTime = executionTime;
 end

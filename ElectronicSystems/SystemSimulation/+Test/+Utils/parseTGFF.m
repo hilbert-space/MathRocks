@@ -1,14 +1,17 @@
-%% Load a platform and an application.
-%
-[ platform, application ] = Utils.parseTGFF( ...
-  File.join('Assets', '002_040.tgff'));
+function parseTGFF
+  setup;
 
-display(platform);
-display(application);
+  [ platform, application ] = Utils.parseTGFF( ...
+    File.join('Assets', '002_040.tgff'));
 
-%% Construct a schedule.
-%
-schedule = Schedule.Dense('platform', platform, 'application', application);
+  display(platform);
+  display(application);
 
-display(schedule);
-plot(schedule);
+  scheduler = Scheduler.Dense( ...
+    'platform', platform, 'application', application);
+
+  output = scheduler.compute;
+
+  display(scheduler, output);
+  plot(scheduler, output);
+end

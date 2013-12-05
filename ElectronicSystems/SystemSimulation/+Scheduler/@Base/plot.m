@@ -1,21 +1,22 @@
-function plot(this)
-  figure;
-
+function plot(this, output)
   processors = this.platform.processors;
   tasks = this.application.tasks;
 
   processorCount = length(processors);
   taskCount = length(tasks);
 
+  output = this.decode(output);
+
+  Plot.figure;
   Plot.title('Schedule');
   Plot.label('Time, s');
   set(gca,'YTick', [], 'YTickLabel', []);
 
-  last = max(this.startTime + this.executionTime);
+  last = max(output.startTime + output.executionTime);
 
   taskPower = zeros(taskCount, 1);
   for i = 1:taskCount
-    taskPower(i) = processors{this.mapping(i)}.dynamicPower(tasks{i}.type);
+    taskPower(i) = processors{output.mapping(i)}.dynamicPower(tasks{i}.type);
   end
   taskPower = taskPower ./ max(taskPower);
 
@@ -25,15 +26,15 @@ function plot(this)
   for i = 1:processorCount
     y0 = i;
 
-    ids = find(this.mapping == i);
-    [ ~, I ] = sort(this.order(ids));
+    ids = find(output.mapping == i);
+    [ ~, I ] = sort(output.order(ids));
     ids = ids(I);
 
     x = [ 0 ];
     y = [ y0 ];
     for j = ids
-      startTime = this.startTime(j);
-      executionTime = this.executionTime(j);
+      startTime = output.startTime(j);
+      executionTime = output.executionTime(j);
 
       height = maxHeight;
       height = height * taskPower(j);
