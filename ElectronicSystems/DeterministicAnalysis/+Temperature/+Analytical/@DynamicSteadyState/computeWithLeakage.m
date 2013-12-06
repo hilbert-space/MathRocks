@@ -188,10 +188,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   function blockCirculantSingle
     A = cat(3, E, -eye(nodeCount));
     A = conj(fft(A, stepCount, 3));
-
-    invA = cell(1, stepCount);
     for i = 1:stepCount
-      invA{i} = inv(A(:, :, i));
+      A(:, :, i) = inv(A(:, :, i));
     end
 
     T = Tamb * ones(processorCount, stepCount, sampleCount);
@@ -214,7 +212,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         B = -fft(F * P(:, :, i), stepCount, 2);
 
         for k = 1:stepCount
-          X(:, k) = invA{k} * B(:, k);
+          X(:, k) = A(:, :, k) * B(:, k);
         end
 
         if hasD
@@ -248,10 +246,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   function blockCirculantMultiple
     A = cat(3, E, -eye(nodeCount));
     A = conj(fft(A, stepCount, 3));
-
-    invA = cell(1, stepCount);
     for i = 1:stepCount
-      invA{i} = inv(A(:, :, i));
+      A(:, :, i) = inv(A(:, :, i));
     end
 
     for i = Pindex
@@ -286,7 +282,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       B(:, I, :) = -fft(X(:, I, :), stepCount, 3);
 
       for j = 1:stepCount
-        X(:, I, j) = invA{j} * B(:, I, j);
+        X(:, I, j) = A(:, :, j) * B(:, I, j);
       end
 
       X(:, I, :) = ifft(X(:, I, :), stepCount, 3);
@@ -327,5 +323,110 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     T = permute(T, [ 1, 3, 2 ]);
     P = permute(P, [ 1, 3, 2 ]);
+  end
+
+  function blockCirculantMeteor
+    %
+    % We are to solve the following system of linear equations:
+    %
+    %   A * X = B
+    %
+    % where
+    %
+    %       |   E  -I ... ...   0 |
+    %       |   0   E  -I ...   0 |
+    %   A = | ... ... ... ... ... | and
+    %       |   0   0 ...   E  -I |
+    %       |  -I   0   0 ...   E |
+    %
+    %       | -F * P1 |
+    %   B = |   ...   |.
+    %       | -F * Pn |
+    %
+    % The solution is
+    %
+    %   X = A^(-1) * B = (redefine A) = A * B.
+    %
+    % First, we compute the inverse of A, which we shall store
+    % in the place of A.
+    %
+    A = conj(fft(cat(3, E, -eye(nodeCount)), stepCount, 3));
+    for i = 1:stepCount
+      A(:, :, i) = inv(A(:, :, i));
+    end
+    A = ifft(A, stepCount, 3);
+    %
+    % At this point, A is the transpose of what we actually want.
+    % The following two lines perform a matrix transpose.
+    %
+    A = permute(A, [ 2, 1, 3 ]);
+    A = reshape(A(:, :, [ 1, end:-1:2 ]), nodeCount, nodeCount * stepCount);
+
+    for i = Pindex
+      parameters{i} = repmat(permute(parameters{i}, ...
+        [ 1, 3, 2 ]), [ 1, stepCount, 1 ]);
+    end
+
+    T = Tamb * ones(processorCount, stepCount, sampleCount);
+    P = zeros(processorCount, stepCount, sampleCount);
+
+    B = zeros(nodeCount * stepCount, sampleCount);
+    X = zeros(nodeCount, stepCount, sampleCount);
+
+    Tlast = Tamb;
+
+    I = 1:sampleCount;
+    leftCount = sampleCount;
+
+    for i = 1:iterationLimit
+      parameters{Tindex} = T(:, :, I);
+      P(:, :, I) = repmat(Pdyn, [ 1, 1, leftCount ]) + leak(parameters{:});
+
+      B(:, I) = reshape( ...
+        -F * reshape(P(:, :, I), processorCount, []), ...
+        [ nodeCount * stepCount, leftCount ]);
+
+      for j = 1:stepCount
+        X(:, j, I) = A * B(:, I);
+        B(:, I) = [ B((nodeCount + 1):end, I); B(1:nodeCount, I) ];
+      end
+
+      if hasD
+        T(:, :, I) = reshape( ...
+          C * reshape(X(:, :, I), nodeCount, []) + ...
+          D * reshape(P(:, :, I), processorCount, []) + Tamb, ...
+          [ processorCount, stepCount, leftCount ]);
+      else
+        T(:, :, I) = reshape( ...
+          C * reshape(X(:, :, I), nodeCount, []) + Tamb, ...
+          [ processorCount, stepCount, leftCount ]);
+      end
+
+      Tcurrent = reshape(shiftdim(T(:, :, I), 2), leftCount, []);
+
+      %
+      % Thermal runaway
+      %
+      J = max(Tcurrent, [], 2) > Tmax;
+
+      %
+      % Successful convergence
+      %
+      K = Error.compute(errorMetric, Tcurrent, Tlast, 2) < errorThreshold;
+      iterationCount(I(K)) = i;
+
+      M = J | K;
+      I(M) = [];
+
+      leftCount = length(I);
+      if leftCount == 0, break; end
+
+      for j = Pindex
+        parameters{j}(:, :, M) = [];
+      end
+
+      Tcurrent(M, :) = [];
+      Tlast = Tcurrent;
+    end
   end
 end
