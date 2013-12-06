@@ -103,14 +103,15 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         parameters{i}, [ 1, 1, stepCount ]);
     end
 
-    Pdyn = permute(repmat(Pdyn, [ 1, 1, sampleCount ]), [ 1, 3, 2 ]);
+    Pdyn = reshape(Pdyn, [ processorCount, 1, stepCount ]);
 
     T = Tamb * ones(processorCount, sampleCount, stepCount);
     P = zeros(processorCount, sampleCount, stepCount);
 
     FP = zeros(nodeCount, sampleCount, stepCount);
+    X = zeros(nodeCount, sampleCount, stepCount);
 
-    Tlast = Tamb * ones(sampleCount, processorCount * stepCount);
+    Tlast = Tamb;
 
     I = 1:sampleCount;
     leftCount = sampleCount;
@@ -121,21 +122,26 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       end
       param{Tindex} = T(:, I, :);
 
-      P(:, I, :) = Pdyn(:, I, :) + leak(param{:});
+      P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(param{:});
 
-      FP(:, I, 1) = F * P(:, I, 1);
+      FP(:, I, :) = reshape( ...
+        F * reshape(P(:, I, :), processorCount, []), ...
+        [ nodeCount, leftCount, stepCount ]);
+
       W = FP(:, I, 1);
       for j = 2:stepCount
-        FP(:, I, j) = F * P(:, I, j);
         W = E * W + FP(:, I, j);
       end
 
-      X = Z * W;
-      T(:, I, 1) = C * X + D * P(:, I, 1) + Tamb;
+      X(:, I, 1) = Z * W;
       for j = 2:stepCount
-        X = E * X + FP(:, I, j - 1);
-        T(:, I, j) = C * X + D * P(:, I, j) + Tamb;
+        X(:, I, j) = E * X(:, I, j - 1) + FP(:, I, j - 1);
       end
+
+      T(:, I, :) = reshape( ...
+        C * reshape(X(:, I, :), nodeCount, []) + ...
+        D * reshape(P(:, I, :), processorCount, []) + Tamb, ...
+        [ processorCount, leftCount, stepCount ]);
 
       Tcurrent = reshape(shiftdim(T(:, I, :), 1), leftCount, []);
 
@@ -156,8 +162,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       leftCount = length(I);
       if leftCount == 0, break; end
 
+      Tcurrent(M, :) = [];
       Tlast = Tcurrent;
-      Tlast(M, :) = [];
     end
 
     T = permute(T, [ 1, 3, 2 ]);
@@ -230,14 +236,17 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     end
 
     for i = Pindex
-      parameters{i} = permute(repmat( ...
-        parameters{i}, [ 1, 1, stepCount ]), [ 1, 3, 2 ]);
+      parameters{i} = repmat( ...
+        parameters{i}, [ 1, 1, stepCount ]);
     end
 
-    T = Tamb * ones(processorCount, stepCount, sampleCount);
-    P = zeros(processorCount, stepCount, sampleCount);
+    Pdyn = reshape(Pdyn, [ processorCount, 1, stepCount ]);
 
-    X = zeros(nodeCount, stepCount, sampleCount);
+    T = Tamb * ones(processorCount, sampleCount, stepCount);
+    P = zeros(processorCount, sampleCount, stepCount);
+
+    B = zeros(nodeCount, sampleCount, stepCount);
+    X = zeros(nodeCount, sampleCount, stepCount);
 
     Tlast = Tamb;
 
@@ -246,30 +255,30 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     for i = 1:iterationLimit
       for j = Pindex
-        param{j} = parameters{j}(:, :, I);
+        param{j} = parameters{j}(:, I, :);
       end
-      param{Tindex} = T(:, :, I);
+      param{Tindex} = T(:, I, :);
 
-      P(:, :, I) = repmat(Pdyn, [ 1, 1, leftCount ]) + leak(param{:});
+      P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(param{:});
 
-      X(:, :, I) = reshape( ...
-        F * reshape(P(:, :, I), processorCount, []), ...
-        [ nodeCount, stepCount, leftCount ]);
+      X(:, I, :) = reshape( ...
+        F * reshape(P(:, I, :), processorCount, []), ...
+        [ nodeCount, leftCount, stepCount ]);
 
-      B = -permute(fft(X(:, :, I), stepCount, 2), [ 1, 3, 2 ]);
+      B(:, I, :) = -fft(X(:, I, :), stepCount, 3);
 
       for j = 1:stepCount
-        X(:, j, I) = invA{j} * B(:, :, j);
+        X(:, I, j) = invA{j} * B(:, I, j);
       end
 
-      X(:, :, I) = ifft(X(:, :, I), stepCount, 2);
+      X(:, I, :) = ifft(X(:, I, :), stepCount, 3);
 
-      T(:, :, I) = reshape( ...
-        C * reshape(X(:, :, I), nodeCount, []) + ...
-        D * reshape(P(:, :, I), processorCount, []) + Tamb, ...
-        [ processorCount, stepCount, leftCount ]);
+      T(:, I, :) = reshape( ...
+        C * reshape(X(:, I, :), nodeCount, []) + ...
+        D * reshape(P(:, I, :), processorCount, []) + Tamb, ...
+        [ processorCount, leftCount, stepCount ]);
 
-      Tcurrent = reshape(shiftdim(T(:, :, I), 2), leftCount, []);
+      Tcurrent = reshape(shiftdim(T(:, I, :), 1), leftCount, []);
 
       %
       % Thermal runaway
@@ -291,5 +300,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       Tcurrent(M, :) = [];
       Tlast = Tcurrent;
     end
+
+    T = permute(T, [ 1, 3, 2 ]);
+    P = permute(P, [ 1, 3, 2 ]);
   end
 end

@@ -15,7 +15,9 @@ function compute(varargin)
   for i = 1:iterationCount
     [ T, output ] = temperature.compute(Pdyn);
   end
-  fprintf('Average computational time: %.2f s\n', toc(time) / iterationCount);
+  time = toc(time);
+  fprintf('%s: done in %.2f seconds (average is %.2f seconds).\n', ...
+    class(temperature), time, time / iterationCount);
 
   if isfield(output, 'P') && ~isempty(output.P)
     P = output.P;
