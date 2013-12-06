@@ -50,8 +50,10 @@ classdef Base < handle
 
       if options.has('leakage')
         this.leakage = options.leakage;
-      else
+      elseif options.has('leakageOptions')
         this.leakage = LeakagePower(options.leakageOptions);
+      else
+        this.leakage = [];
       end
 
       this.circuit = this.constructCircuit(options);
@@ -59,11 +61,11 @@ classdef Base < handle
       this.nodeCount = this.circuit.nodeCount;
     end
 
-    function [ T, output ] = compute(this, Pdyn, varargin)
+    function [ T, output ] = compute(this, varargin)
       if isempty(this.leakage)
-        [ T, output ] = this.computeWithoutLeakage(Pdyn, varargin{:});
+        [ T, output ] = this.computeWithoutLeakage(varargin{:});
       else
-        [ T, output ] = this.computeWithLeakage(Pdyn, varargin{:});
+        [ T, output ] = this.computeWithLeakage(varargin{:});
       end
     end
 
@@ -79,8 +81,8 @@ classdef Base < handle
   end
 
   methods (Abstract)
-    [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
-    [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
+    [ T, output ] = computeWithoutLeakage(this, varargin)
+    [ T, output ] = computeWithLeakage(this, varargin)
   end
 
   methods (Access = 'protected')
