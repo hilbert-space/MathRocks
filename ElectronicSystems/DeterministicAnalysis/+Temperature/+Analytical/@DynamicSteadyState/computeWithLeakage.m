@@ -23,7 +23,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
 
-  param = cell(1, parameterCount);
   Pindex = [ 1:(Tindex - 1), (Tindex + 1):parameterCount ];
 
   iterationCount = NaN(1, sampleCount);
@@ -53,6 +52,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     X = zeros(nodeCount, stepCount);
 
+    param = cell(1, parameterCount);
     for i = 1:sampleCount
       for j = Pindex
         param{j} = repmat(parameters{j}(:, i), [ 1, stepCount ]);
@@ -126,12 +126,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     leftCount = sampleCount;
 
     for i = 1:iterationLimit
-      for j = Pindex
-        param{j} = parameters{j}(:, I, :);
-      end
-      param{Tindex} = T(:, I, :);
-
-      P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(param{:});
+      parameters{Tindex} = T(:, I, :);
+      P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(parameters{:});
 
       FP(:, I, :) = reshape( ...
         F * reshape(P(:, I, :), processorCount, []), ...
@@ -177,6 +173,10 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       leftCount = length(I);
       if leftCount == 0, break; end
 
+      for j = Pindex
+        parameters{j}(:, M, :) = [];
+      end
+
       Tcurrent(M, :) = [];
       Tlast = Tcurrent;
     end
@@ -197,6 +197,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     X = zeros(nodeCount, stepCount);
 
+    param = cell(1, parameterCount);
     for i = 1:sampleCount
       for j = Pindex
         param{j} = repmat(parameters{j}(:, i), [ 1, stepCount ]);
@@ -268,12 +269,8 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     leftCount = sampleCount;
 
     for i = 1:iterationLimit
-      for j = Pindex
-        param{j} = parameters{j}(:, I, :);
-      end
-      param{Tindex} = T(:, I, :);
-
-      P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(param{:});
+      parameters{Tindex} = T(:, I, :);
+      P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(parameters{:});
 
       X(:, I, :) = reshape( ...
         F * reshape(P(:, I, :), processorCount, []), ...
@@ -316,6 +313,10 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
       leftCount = length(I);
       if leftCount == 0, break; end
+
+      for j = Pindex
+        parameters{j}(:, M, :) = [];
+      end
 
       Tcurrent(M, :) = [];
       Tlast = Tcurrent;
