@@ -5,8 +5,8 @@ function compute(varargin)
   options = Configure.deterministicAnalysis(options);
 
   Pdyn = options.dynamicPower;
-  sampleCount = options.get('sampleCount', 100);
-  iterationCount = options.get('iterationCount', 10);
+  sampleCount = options.get('sampleCount', 1);
+  iterationCount = options.get('iterationCount', 1);
 
   parameters = options.processParameters;
   names = fieldnames(parameters);

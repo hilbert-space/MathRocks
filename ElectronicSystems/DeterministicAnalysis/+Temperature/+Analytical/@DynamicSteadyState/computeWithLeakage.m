@@ -12,6 +12,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   errorThreshold = this.errorThreshold;
   iterationLimit = this.iterationLimit;
 
+  %
+  % NOTE: If the model-order reduction is not performed, or
+  % it is performed but based on truncation, D is zero.
+  %
+  hasD = nnz(D) > 0;
+
   leak = this.leakage.evaluate;
   parameterCount = this.leakage.parameterCount;
 
@@ -49,8 +55,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     for i = 1:sampleCount
       for j = Pindex
-        param{j} = repmat( ...
-          parameters{j}(:, i), [ 1, stepCount ]);
+        param{j} = repmat(parameters{j}(:, i), [ 1, stepCount ]);
       end
 
       Tlast = Tamb;
@@ -71,7 +76,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
           X(:, k) = E * X(:, k - 1) + FP(:, k - 1);
         end
 
-        Tcurrent = C * X + D * P(:, :, i) + Tamb;
+        if hasD
+          Tcurrent = C * X + D * P(:, :, i) + Tamb;
+        else
+          Tcurrent = C * X + Tamb;
+        end
+
         T(:, :, i) = Tcurrent;
 
         if max(Tcurrent(:)) > Tmax
@@ -99,8 +109,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       stepCount * this.L))) * this.V;
 
     for i = Pindex
-      parameters{i} = repmat( ...
-        parameters{i}, [ 1, 1, stepCount ]);
+      parameters{i} = repmat(parameters{i}, [ 1, 1, stepCount ]);
     end
 
     Pdyn = reshape(Pdyn, [ processorCount, 1, stepCount ]);
@@ -138,10 +147,16 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         X(:, I, j) = E * X(:, I, j - 1) + FP(:, I, j - 1);
       end
 
-      T(:, I, :) = reshape( ...
-        C * reshape(X(:, I, :), nodeCount, []) + ...
-        D * reshape(P(:, I, :), processorCount, []) + Tamb, ...
-        [ processorCount, leftCount, stepCount ]);
+      if hasD
+        T(:, I, :) = reshape( ...
+          C * reshape(X(:, I, :), nodeCount, []) + ...
+          D * reshape(P(:, I, :), processorCount, []) + Tamb, ...
+          [ processorCount, leftCount, stepCount ]);
+      else
+        T(:, I, :) = reshape( ...
+          C * reshape(X(:, I, :), nodeCount, []) + Tamb, ...
+          [ processorCount, leftCount, stepCount ]);
+      end
 
       Tcurrent = reshape(shiftdim(T(:, I, :), 1), leftCount, []);
 
@@ -186,8 +201,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     for i = 1:sampleCount
       for j = Pindex
-        param{j} = repmat( ...
-          parameters{j}(:, i), [ 1, stepCount ]);
+        param{j} = repmat(parameters{j}(:, i), [ 1, stepCount ]);
       end
 
       Tlast = Tamb;
@@ -203,7 +217,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
           X(:, k) = invA{k} * B(:, k);
         end
 
-        Tcurrent = C * ifft(X, stepCount, 2) + D * P(:, :, i) + Tamb;
+        if hasD
+          Tcurrent = C * ifft(X, stepCount, 2) + D * P(:, :, i) + Tamb;
+        else
+          Tcurrent = C * ifft(X, stepCount, 2) + Tamb;
+        end
+
         T(:, :, i) = Tcurrent;
 
         if max(Tcurrent(:)) > Tmax
@@ -236,8 +255,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     end
 
     for i = Pindex
-      parameters{i} = repmat( ...
-        parameters{i}, [ 1, 1, stepCount ]);
+      parameters{i} = repmat(parameters{i}, [ 1, 1, stepCount ]);
     end
 
     Pdyn = reshape(Pdyn, [ processorCount, 1, stepCount ]);
@@ -273,10 +291,16 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
       X(:, I, :) = ifft(X(:, I, :), stepCount, 3);
 
-      T(:, I, :) = reshape( ...
-        C * reshape(X(:, I, :), nodeCount, []) + ...
-        D * reshape(P(:, I, :), processorCount, []) + Tamb, ...
-        [ processorCount, leftCount, stepCount ]);
+      if hasD
+        T(:, I, :) = reshape( ...
+          C * reshape(X(:, I, :), nodeCount, []) + ...
+          D * reshape(P(:, I, :), processorCount, []) + Tamb, ...
+          [ processorCount, leftCount, stepCount ]);
+      else
+        T(:, I, :) = reshape( ...
+          C * reshape(X(:, I, :), nodeCount, []) + Tamb, ...
+          [ processorCount, leftCount, stepCount ]);
+      end
 
       Tcurrent = reshape(shiftdim(T(:, I, :), 1), leftCount, []);
 
