@@ -5,15 +5,26 @@ function compute(varargin)
   options = Configure.deterministicAnalysis(options);
 
   Pdyn = options.dynamicPower;
-  iterationCount = options.fetch('iterationCount', 10);
+  sampleCount = options.get('sampleCount', 100);
+  iterationCount = options.get('iterationCount', 10);
+
+  parameters = options.processParameters;
+  names = fieldnames(parameters);
+  parameterCount = length(parameters);
+
+  assignments = struct;
+  for i = 1:parameterCount
+    assignments.(names{i}) = parameters.(names{i}).nominal * ...
+      ones(sampleCount, options.processorCount);
+  end
 
   temperature = Temperature(options.temperatureOptions);
 
-  fprintf('%s: running %d iterations...\n', ...
-    class(temperature), iterationCount);
+  fprintf('%s: running %d iterations with %d samples each...\n', ...
+    class(temperature), iterationCount, sampleCount);
   time = tic;
   for i = 1:iterationCount
-    [ T, output ] = temperature.compute(Pdyn);
+    [ T, output ] = temperature.compute(Pdyn, assignments);
   end
   time = toc(time);
   fprintf('%s: done in %.2f seconds (average is %.2f seconds).\n', ...
@@ -24,6 +35,9 @@ function compute(varargin)
   else
     P = Pdyn;
   end
+
+  T = T(:, :, 1);
+  P = P(:, :, 1);
 
   Plot.figure(800, 700);
   subplot(2, 1, 1);

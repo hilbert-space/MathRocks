@@ -13,7 +13,7 @@ classdef DynamicSteadyState < Temperature.Analytical.Base
       this = this@Temperature.Analytical.Base(options);
 
       this.solverName = String.hungarianize(options.get( ...
-        'algorithm', 'condensed-equation-memory'));
+        'algorithm', 'condensed-equation-single'));
       this.maximalTemperature = options.get( ...
         'maximalTemperature', Utils.toKelvin(450));
       this.errorMetric = options.get('errorMetric', 'NRMSE');

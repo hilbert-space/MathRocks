@@ -38,7 +38,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   return;
 
-  function condensedEquationMemory
+  function condensedEquationSingle
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
@@ -94,7 +94,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     end
   end
 
-  function condensedEquationSpeed
+  function condensedEquationMultiple
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
@@ -170,7 +170,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     P = permute(P, [ 1, 3, 2 ]);
   end
 
-  function blockCirculantMemory
+  function blockCirculantSingle
     A = cat(3, E, -eye(nodeCount));
     A = conj(fft(A, stepCount, 3));
 
@@ -226,7 +226,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     end
   end
 
-  function blockCirculantSpeed
+  function blockCirculantMultiple
     A = cat(3, E, -eye(nodeCount));
     A = conj(fft(A, stepCount, 3));
 
