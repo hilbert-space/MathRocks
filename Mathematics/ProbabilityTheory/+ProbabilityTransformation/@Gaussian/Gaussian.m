@@ -91,6 +91,7 @@ classdef Gaussian < ProbabilityTransformation.Base
       [ multiplier, this.importance ] = Utils.decorrelate( ...
         D * correlation * D, options.get('reductionThreshold', 1));
 
+      %
       % However, we want the variances to stay with the random variables and
       % the computed multiplier to be responsible only for imposing
       % the needed correlations.

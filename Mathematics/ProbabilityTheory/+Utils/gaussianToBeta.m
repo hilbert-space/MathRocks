@@ -11,7 +11,7 @@ function beta = gaussianToBeta(gaussian, varargin)
 
   switch options.get('target', 'pdf')
   case 'pdf'
-    range = options.get('range', [ 1, 20 ]);
+    range = options.get('range', [ sqrt(eps), 20 ]);
 
     options = optimoptions('fmincon');
     options.Algorithm = 'active-set';
@@ -30,13 +30,13 @@ function beta = gaussianToBeta(gaussian, varargin)
     %
     %                alpha * beta * (b - a)^2
     % Var(X) = ------------------------------------- .
-    %          (alpha + bata)^2 * (alpha + beta + 1)
+    %          (alpha + beta)^2 * (alpha + beta + 1)
     %
     % Reference:
     %
     % http://en.wikipedia.org/wiki/Beta_distribution#Four_parameters_2
     %
-    param = (b - a)^2 / 8 / (gaussian.variance) - 1 / 2;
+    param = (b - a)^2 / 8 / gaussian.variance - 1 / 2;
   otherwise
     assert(false);
   end

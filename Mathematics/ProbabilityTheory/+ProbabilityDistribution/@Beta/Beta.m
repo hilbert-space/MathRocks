@@ -18,6 +18,10 @@ classdef Beta < ProbabilityDistribution.Base
       this.a = options.a;
       this.b = options.b;
 
+      assert(this.a < this.b);
+      assert(this.alpha > 0);
+      assert(this.beta > 0);
+
       this.expectation = this.alpha / (this.alpha + this.beta);
       this.expectation = this.expectation * (this.b - this.a) + this.a;
 
