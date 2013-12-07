@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example fun/AudibleChebfuns.m)
+% [Tags: #sound, #fun]
 
 %%
 % NOTE: THIS EXAMPLE PRODUCES NOISE (provided your sound card is properly

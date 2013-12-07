@@ -276,8 +276,7 @@
 % The first segment of f' is linear, since f is quadratic here. Then comes
 % a segment with f' = 0, since f is constant. And the end of this second
 % segment appears a delta function of amplitude 1, corresponding to the
-% jump of f by 1.  (Currently delta functions are not shown on Chebfun
-% plots.)  The third segment has constant value f' = -1. Finally another
+% jump of f by 1. The third segment has constant value f' = -1. Finally another
 % delta function, this time with amplitude 1/3, takes us to the final
 % segment.
 
@@ -414,9 +413,8 @@ toc
 %%
 % Traditionally, numerical analysts have computed Gauss quadrature nodes
 % and weights by the eigenvalue algorithm of Golub and Welsch [Golub &
-% Welsch 1969]. However, Chebfun uses the different algorithm of Glaser,
-% Liu and Rokhlin [Glaser, Liu & Rokhlin 2007] with enhancements due to
-% Hale and Sheehan Olver (unpublished).
+% Welsch 1969]. However, Chebfun uses the different algorithm of Hale and
+% Townsend [Hale & Townsend 2013].
 
 %%
 % For Legendre polynomials, Legendre points, and Gauss quadrature, use
@@ -454,6 +452,10 @@ toc
 %
 % [Gonnet 2009] P. Gonnet, Adaptive Quadrature Re-Revisited, ETH
 % dissertation no. 18347, Swiss Federal Institute of Technology, 2009.
+%
+% [Hale & Townsend 2013], N. Hale and A. Townsend, Fast and accurate computation
+% of Gauss-Legendre and Gauss-Jacobi quadrature nodes and weights, SIAM Journal
+% on Scientific Computing, Vol. 35, No. 2, (2013) A652-A674.
 %
 % [Hale & Trefethen 2012] N. Hale and L. N. Trefethen,
 % Chebfun and numerical quadrature, Science in China, submitted, 2012.

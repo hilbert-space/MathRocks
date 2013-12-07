@@ -16,7 +16,9 @@ function g1 = minus(g1,g2)
 if isa(g1,'double') 
     if ~any(g2.exps)
         g2.vals = g1-g2.vals; g2.scl.v = max(g2.scl.v,norm(g2.vals,inf)); 
-        g2.coeffs = -g2.coeffs; g2.coeffs(end) = g2.coeffs(end) + g1;
+        if ~isempty(g2.coeffs)
+            g2.coeffs = -g2.coeffs; g2.coeffs(end) = g2.coeffs(end) + g1;
+        end
         g1 = g2;
         return
     else
@@ -26,7 +28,9 @@ if isa(g1,'double')
 elseif isa(g2,'double') 
     if ~any(g1.exps)
         g1.vals = g1.vals-g2; g1.scl.v = max(g1.scl.v,norm(g1.vals,inf));
-        g1.coeffs(end) = g1.coeffs(end)-g2;
+        if ~isempty(g1.coeffs)
+            g1.coeffs(end) = g1.coeffs(end)-g2;
+        end
         return
     else
         if g2 == 0; return, end

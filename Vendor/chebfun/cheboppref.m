@@ -107,7 +107,7 @@ end
 
 
 function prefs = initPrefs()
-prefs.maxdegree = 1024;
+prefs.maxdegree = 1449;
 prefs.storage = true;
 prefs.maxstorage = 50e6;
 prefs.display = 'none';

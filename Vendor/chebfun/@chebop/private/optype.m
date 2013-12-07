@@ -1,7 +1,7 @@
 function type = optype(A)
 % OPTYPE   Operator type of a chebop
 %  OPTYPE(A) returns:
-%       0 if A.op isemty
+%       0 if A.op isempty
 %       1 if A.op is a function_handle
 %       2 if A.op is a linop
 

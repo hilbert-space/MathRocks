@@ -105,3 +105,5 @@ if kind == 2 && numel(out) > 1
     out = .5*[out(1:2) out(3:end)-out(1:end-2)];
 end
 
+% chebpoly should always return a column vector. 
+out = out(:); 

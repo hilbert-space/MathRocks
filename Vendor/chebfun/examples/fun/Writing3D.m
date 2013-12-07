@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example fun/Writing3D.m)
+% [Tags: #complex, #3D, #camorbit]
 
 %%
 % The SCRIBBLE command produces a chebfun defined on the 

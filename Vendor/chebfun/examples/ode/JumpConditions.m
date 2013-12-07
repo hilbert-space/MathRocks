@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun Example ode/JumpConditions.m)
+% [Tags: #linearODE, #jumpconditions]
 
 %%
 % Chebfun has recently added support for jump conditions in solutions to

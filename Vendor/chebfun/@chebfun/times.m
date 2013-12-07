@@ -42,11 +42,16 @@ end
 % -------------------------------
 function h = timescol(f,g)
 
+%make copies of original f and g in F and G
+F = f;
+G = g;
+
 funreturn = f.funreturn || g.funreturn;
 f.funreturn = 0; g.funreturn = 0;
 
 % product of two chebfuns
 [f,g] = overlap(f,g);
+
 ffuns = [];
 scl = 0;
 for k = 1:length(f.ends)-1
@@ -57,32 +62,77 @@ end
 
 % Deal with impulse matrix:
 %------------------------------------------------
-% Look for deltas in f
-hfimps = zeros(size(f.imps));
-deg_delta = find(sum(abs(f.imps),2)>eps*f.scl , 1, 'last')-1;
-dg = g;
-for j = 2:deg_delta+1
-    hfimps(j,:) = (-1)^j * feval(dg,f.ends) .* f.imps(j,:) + hfimps(j-1,:);
-    if j<deg_delta+1, dg = diff(dg); end
+% The variables degf_delta and degg_delta used below denote the order of
+% derivative of delta functions in f and g respectively. Note that 
+% degf_delta = 0 would mean the zeroth derivative of the delta function
+% in f and so on.
+degf_delta = find(sum(abs(f.imps), 2) > eps*f.scl, 1, 'last') - 2;
+degg_delta = find(sum(abs(g.imps), 2) > eps*g.scl, 1, 'last') - 2;
+if(isempty(degg_delta)), degg_delta = -1; end
+if(isempty(degf_delta)), degf_delta = -1; end
+
+% if both f and g have deltas at a common point, then the multiplication
+% f.*g is undefined
+deltaIdxf = zeros(1,length(f.ends));
+deltaIdxg = zeros(1,length(g.ends));
+
+if(degf_delta >= 0)
+    % indices with deltas or its derivatives
+    deltaIdxf = (abs(f.imps(2:end,:))>eps*f.scl);
+    % merge the indices columnwise
+    deltaIdxf = sum(deltaIdxf,1) ~= 0;
 end
 
-% Look for deltas in g
-hgimps = zeros(size(g.imps));
-deg_delta = find(sum(abs(g.imps),2)>eps*g.scl , 1, 'last')-1;
-df = f;
-for j = 2:deg_delta+1
-    hgimps(j,:) = (-1)^j * feval(df,g.ends) .* g.imps(j,:) + hgimps(j-1,:);
-    if j<deg_delta+1, df = diff(df); end
+if(degg_delta >= 0)
+    % indices with deltas or its derivatives
+    deltaIdxg = (abs(g.imps(2:end,:))>eps*g.scl);
+    % merge the indices columnwise
+    deltaIdxg = sum(deltaIdxg,1) ~= 0;
 end
 
-% Contributions of both f and g.
-imps = hfimps + hgimps;
+if(any(deltaIdxf & deltaIdxg))
+    error( 'CHEBFUN:times:Delta functions at a common point can not be multiplied with each other' );
+end
 
-% INF if deltas at a common point
-indf = find(f.imps); indg = find(g.imps);
-if any(indg(2:end,:))
-     [indboth,trash] = intersect(indf,indg);
-     imps(indboth) = inf*sign(f.imps(indboth).*g.imps(indboth));
+% f.imps and g.imps are of same size now
+% due to overlap
+Hgimps = zeros(size(g.imps));
+Hfimps = zeros(size(f.imps));
+% if g has delta functions
+if( degg_delta >= 0 )
+    for j = degg_delta+2:-1:2
+        df = F; % notice that this is not f
+        hgimps = zeros(size(g.imps));
+        % f and g can not have deltas at a common break point by
+        % now, so do not evaluate f at a point where it has a
+        % delta function, otherwise the corresponding impulse in
+        % g with a zero magnitude multiplied with the delta in f
+        % will result in a NaN
+        if(any(~deltaIdxf))
+            for k = j-2:-1:0
+                hgimps(k+2, ~deltaIdxf) = nchoosek(j-2, k)*((-1)^k)* ...
+                       feval(df, g.ends(~deltaIdxf)).*g.imps(j,~deltaIdxf);
+                df = diff(df);            
+            end
+        end
+        Hgimps = Hgimps + (-1)^(j-2)*hgimps;
+    end
+end
+
+% if f has delta functions
+if( degf_delta >= 0 )    
+    for j = degf_delta+2:-1:2
+        dg = G; % note that this is not g
+        hfimps = zeros(size(f.imps));
+        if(any(~deltaIdxg))
+            for k = j-2:-1:0
+                hfimps(k+2, ~deltaIdxg) = nchoosek(j-2,k)*((-1)^k)* ...
+                     feval(dg, f.ends(~deltaIdxg)).*f.imps(j, ~deltaIdxg);
+                dg = diff(dg);            
+            end
+        end
+        Hfimps = Hfimps + (-1)^(j-2)*hfimps;
+    end
 end
 
 % Update first row of h.imps (function values)
@@ -94,23 +144,15 @@ tmp = f.imps(1,:).*g.imps(1,:);
 tol = 10*f.scl.*chebfunpref('eps');
 if any(isinf(tmp))
     for k = 1:length(tmp)
-        if isinf(tmp(k)) && (f.imps(1,k)<tol || g.imps(1,k)<tol)
+        if isinf(tmp(k)) && ( (abs( f.imps(1,k) ) < tol ) || ( abs(g.imps(1,k))< tol ) )
             tmp(k) = NaN;
         end
     end   
 end
+
+% update the final imps matrix
+imps = Hgimps + Hfimps; % delta functions
 imps(1,:) = tmp;
-    
-% % If there are deltas, then function value is + or - inf. (or should it
-% be nan in some cases?)
-% if size(imps,1)>1
-%     for k = 1:f.nfuns+1
-%         ind = find(imps(2:end,k),1,'first');
-%         if ~isempty(ind)            
-%             imps(1,k) = inf*sign(imps(ind+1,k));
-%         end
-%     end
-% end
 
 % update scales in funs:
 for k = 1:f.nfuns-1
@@ -125,16 +167,16 @@ end
 h = f;
 % Promote jacobian info for chebconsts
 if isa(f,'chebconst') && ~isa(g,'chebconst')
-    f.jacobian = anon('[der nonConst] = diff(f,u,''linop''); der = promote(der);',{'f'},{f},1,'promote');
+    f.jacobian = anon('[der nonConst] = diff(f,u,''linop''); if ~isnumeric(der), der = promote(der); end',{'f'},{f},1,'promote');
     f.ID = newIDnum();
     h = g;
 elseif isa(g,'chebconst') && ~isa(f,'chebconst')
-    g.jacobian = anon('[der nonConst] = diff(f,u,''linop''); der = promote(der);',{'f'},{g},1,'promote');
+    g.jacobian = anon('[der nonConst] = diff(f,u,''linop''); if ~isnumeric(der),der = promote(der); end',{'f'},{g},1,'promote');
     g.ID = newIDnum();
 end
 
 % Set the jacobian
-h.jacobian = anon('[Jfu nonConstJfu] = diff(f,u,''linop''); [Jgu nonConstJgu] = diff(g,u,''linop''); der = diag(f)*Jgu + diag(g)*Jfu; nonConst = (nonConstJgu | nonConstJfu) | ((~all(Jfu.iszero) && ~all(Jgu.iszero)) & (~Jfu.iszero | ~Jgu.iszero));',{'f' 'g'},{f g},1,'times');
+h.jacobian = anon('[Jfu nonConstJfu] = diff(f,u,''linop''); [Jgu nonConstJgu] = diff(g,u,''linop''); der = diag(f)*Jgu + diag(g)*Jfu; nonConst = (nonConstJgu | nonConstJfu) | ((~all(iszero(Jfu)) && ~all(iszero(Jgu))) & (~iszero(Jfu) | ~iszero(Jgu)));',{'f' 'g'},{f g},1,'times');
 h.ID = newIDnum();
 
 % Assign the funs, scale, etc

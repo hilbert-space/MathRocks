@@ -1,5 +1,5 @@
 function C = ldivide(A,B)
-% .\  Elementwise left divison of varmats, with scalar expansion.
+% .\  Elementwise left division of varmats, with scalar expansion.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.

@@ -16,7 +16,7 @@ if isa(g,'chebfun') && f(1).trans ~= g(1).trans
 end
 
 if numel(g) == 1
-    % Avoid composing with independant variable.
+    % Avoid composing with independent variable.
     if isa(g,'chebfun')
         xg = chebfun('x',g.ends,2);
         if norm(g-xg,2) == 0,h = f; return, end
@@ -34,7 +34,7 @@ if numel(g) == 1
     end
 elseif numel(f) == 1
     
-    % Avoid composing with independant variable.
+    % Avoid composing with independent variable.
     if isa(f,'chebfun')
         x = chebfun('x',f.ends,2);
         if norm(f-x,2) == 0,h = g; return, end

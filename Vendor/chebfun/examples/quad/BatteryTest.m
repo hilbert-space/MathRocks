@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example quad/BatteryTest.m)
+% [Tags: #quadrature, #minsamples, #spike, #blowup]
 
 %%
 % This Example gives an idea of how Chebfun performs as a general-purpose

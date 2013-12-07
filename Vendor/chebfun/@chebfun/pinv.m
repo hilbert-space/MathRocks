@@ -20,7 +20,7 @@ n = min(size(A));
 if nargin==1
    m = 0;
    for i = 1:n
-      m = max(m,length(A(:,i)));
+      m = max(m,length(A(i)));
    end
    tol = m*eps(max(s)); 
 end

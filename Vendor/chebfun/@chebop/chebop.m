@@ -21,7 +21,7 @@
 % CHEBOP(OP,D), for a domain or 2-vector D, gives a different domain.
 % [N X] = CHEBOP(OP,D) returns also the linear function X on the domain D.
 %
-% CHEBOP(OP,D,LBC,RBC) or CHEBOP(OP,LBC,RBC) specifies boundary condtions
+% CHEBOP(OP,D,LBC,RBC) or CHEBOP(OP,LBC,RBC) specifies boundary conditions
 % for functions at the left and right endpoints of the domain. Possible
 % values for LBC and RBC are:
 %
@@ -50,9 +50,9 @@
 %   'periodic'  : Impose periodicity on all dependent variables.
 %   function    : See below.
 %
-% The 'dirichlet' and 'neumann' keywords impose behavior that may not be
-% identical to the common understanding of Dirichlet or Neumann conditions
-% in every problem.
+% Note that the 'dirichlet' and 'neumann' keywords impose behavior that may
+% not be identical to the common understanding of Dirichlet or Neumann
+% conditions in every problem.
 %
 % When BC is passed in the CHEBOP call, the more specialized fields LBC and
 % RBC are ignored. Note that CHEBOP(OP,0) is not the same as
@@ -92,7 +92,7 @@
 % something like @(x,y,p) diff(p*diff(y)) will require a second equation
 % explicitly enforcing that diff(p) = 0.
 %
-% See also chebop/mtimes, chebop/mldivide.
+% See also chebop/mtimes, chebop/mldivide, cheboppref.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers.
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
@@ -129,13 +129,13 @@ end
 
 function [N dom] = ctor(N, varargin)
 
-% Return an empty chebop.
-if isempty(varargin), return, end
-
 % Initialise
 op = [];
 dom = chebfunpref('domain');
 havedomain = false;
+
+% Return an empty chebop.
+if isempty(varargin), return, end
 
 % Find the first function_handle. This will be the op.
 if isa(varargin{1},'function_handle')

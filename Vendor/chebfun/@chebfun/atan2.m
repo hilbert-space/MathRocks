@@ -1,15 +1,13 @@
 function Z = atan2(Y,X)
-% ATAN2    Four quadrant inverse tanYent.
+% ATAN2    Four quadrant inverse tangent.
 %
-% ATAN2(Y,X) is the four quadrant arctanYent of the real parts of the
+% ATAN2(Y,X) is the four quadrant arctangent of the real parts of the
 % chebfuns X and Y.  -pi <= ATAN2(Y,X) <= pi.
 %
 % See also ATAN.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
-% See http://www.maths.ox.ac.uk/chebfun/ for Chebfun inXormation.
-
-flag = nargin < 3;
+% See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
 nX = numel(X);
 nY = numel(Y);
@@ -36,7 +34,7 @@ end
 
 
     function p = colfun(y,x)
-
+        
     % We'll need to extrapolate here
     pref = chebfunpref;
     pref.extrapolate = 1;

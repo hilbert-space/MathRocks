@@ -96,7 +96,7 @@ if maxdo > 0 && isempty(N.lbc) && isempty(N.rbc) && isempty(N.bc)
 end
 % Also check whether we have periodic conditions, but also some other
 % conditions at the endpoints of the domain, which is not possible
-if strcmpi(N.bc,'periodic') && (~isempty(N.lbc) || ~isempty(N.rbc))
+if any(strcmpi(N.bc,'periodic')) && (~isempty(N.lbc) || ~isempty(N.rbc))
     error('CHEBOP:solvebvp:periodic',...
         'Periodic boundary can not be imposed at the same time as other endpoint conditions.');
 end

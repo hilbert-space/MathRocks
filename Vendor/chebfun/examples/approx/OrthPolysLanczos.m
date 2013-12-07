@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/OrthPolysLanczos.m)
+% [Tags: #orthogonal, #Lanczos]
 
 format short e
 

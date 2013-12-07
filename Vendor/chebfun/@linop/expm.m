@@ -79,18 +79,39 @@ if n > maxdegree+1
     error('LINOP:expm:NoConverge',msg)
 end
 
+%% oldschool
 [L,B,c,rowrep] = feval(A,n,'oldschool',map,breaks);
 elim = false(n*m,1);  elim(rowrep) = true;
 % Use algebra with the BCs to remove degrees of freedom.
 R = -L(elim,elim)\L(elim,~elim);  % maps interior to removed values
 L = L(~elim,~elim) + L(~elim,elim)*R;  % reduced to interior DOF
-
 E1 = expm(L);
-
 % Return to full-size operator.
 E = zeros(n*m);
 E(~elim,~elim) = E1;
 E(elim,~elim) = R*E1;
+
+% %% rectangular
+% [ignored,B,c,rowrep,P,L] = feval(A,n,'bc',map,breaks);
+% m = size(B,1);
+% if iscell(P), P = blkdiag(P{:}); end
+% 
+% Z = zeros(n);
+% Z1 = Z(2:end-1,:);
+% Z2 = Z;
+% 
+% x1 = chebpts(n);
+% x2 = chebpts(n-2,1);
+% x3 = chebpts(n,1);
+% P1 = barymat(x2,x1);
+% P2 = barymat(x3,x1);
+% P = [P1 Z1 ; Z2 P2];
+% size(P)
+% size(B)
+% R = inv([P ; B]);
+% R = R(:,1:size(R,2)-m);
+% E = R*expm(P*L*R)*P;
+
 end
 
 function v = expm_op(F,u)

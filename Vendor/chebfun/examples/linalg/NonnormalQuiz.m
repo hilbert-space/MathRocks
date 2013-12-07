@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example linalg/NonnormalQuiz.m)
+% [Tags: #linearalgebra, #nonnormality, #norm, #fun]
 
 %%
 % The frontispiece of the book Spectra and Pseudospctra presents a quiz

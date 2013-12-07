@@ -43,4 +43,9 @@ pass(3) = err < 2e-15;
 cp = chebpoly(p);
 pass(4) = cp(end)-17/46 < 1e-13;
 
-
+f = chebfun('exp(x)');
+[p q r] = chebpade(f,2,3);
+[p2 q2 r2] = chebpade(1i*f,2,3);
+ratio1 = p2(.3)/p(.3);
+ratio2 = r2(-.4)/r(-.4);
+pass(5) = norm([ratio1 ratio2]-[1i 1i],inf)<1e-13;

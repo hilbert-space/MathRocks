@@ -1,8 +1,9 @@
-%% Singular Value Decomposition of Compact Operators: A Tool for Computing Frequency Responses of PDEs 
+%% Singular value decomposition of compact operators: A tool for computing frequency responses of PDEs 
 % Binh K. Lieu and Mihailo R. Jovanovic, 6th January 2012
 
 %%
 % (Chebfun example pde/SVDFrequencyResponse.m)
+% [Tags: #SVD, #compact, #linearalgebra]
 
 %% Introduction
 % In many physical systems there is a need to examine the effects of

@@ -43,16 +43,19 @@ end %conv()
 function h = convcol(f,g)
 
     % Note: f and g may be defined on different domains!
-    
-    if isempty(f) || isempty(g), h=chebfun; return, end
-
-    fimps = f.imps(2:end,:);
-    gimps = g.imps(2:end,:);
-    if any(fimps(:)~=0) || any(gimps(:)~=0)
-      error('CHEBFUN:conv:nodeltas','Impulses not implemented for convolution.')
-    end
-
     h = chebfun;
+    if isempty(f) || isempty(g), return, end
+
+    % if there are delta functions in f or g
+    fimps = []; gimps = [];
+    if( size(f.imps,1) >= 2 )
+        fimps = f.imps(2:end,:);  % store the deltas
+        f.imps = f.imps(1,:);     % remove deltas from f
+    end
+    if( size(g.imps,1) >= 2 )
+        gimps = g.imps(2:end,:);  % store the deltas
+        g.imps = g.imps(1,:);     % remove deltas from g
+    end
 
     % Find all breakpoints in the convolution.
     [A,B] = meshgrid(f.ends,g.ends);
@@ -69,22 +72,41 @@ function h = convcol(f,g)
     scl.v = 2*max(g.scl,f.scl);
 
     % Avoid resampling for speed up!
-    %res = chebfunpref('resampling');
     pref = chebfunpref;
     pref.sampletest = false;
     pref.resampling = false;
     pref.splitting = false;
     pref.blowup = false;
-    pref.extrapolate = true;
+    pref.extrapolate = false;
     
-    % Flip g around
-    gflip = flipud( g );
+    if ( ~any(isinf(domain(g))) )
+        
+        % Flip g around
+        gflip = flipud( g );
+        gflip = newdomain(gflip,-domain(g));
+    
+        % Construct funs
+        for k = 1:length(ends)-1  
 
-    % Construct funs
-    for k = 1:length(ends)-1  
-        newfun = fun( @(x) integral(x,f,gflip) , ends(k:k+1) , pref , scl );
-        scl.v = max(newfun.scl.v, scl.v); newfun.scl = scl;
-        funs = [ funs , newfun ];
+            % note that deg(H(x)) = deg(gflip)+deg(f)+1 where deg(gflip) =
+            % length(gflip)-1 and deg(f) = length(f)-1. Hence, length(H(x)) =
+            % deg(gflip)+deg(f)+2 = length(gflip)+length(f). The adaptive 
+            % construction process with fun of increasing length is avoided.
+            pref.n = length(gflip)+length(f);
+            newfun = fun( @(x) integral(x,f,gflip) , ends(k:k+1) , pref);
+            scl.v = max(newfun.scl.v, scl.v); newfun.scl = scl;
+            funs = [ funs , newfun ];
+        end
+    else
+        % Unbounded domains must be treated differently. This may be much slower.
+        
+        % Construct funs
+        for k = 1:length(ends)-1 
+            newfun = fun(@(x) integral_old(x,a,b,c,d,f,g,pref,scl), ends(k:k+1), pref, scl);
+            scl.v = max(newfun.scl.v, scl.v); newfun.scl = scl;
+            funs = [funs simplify(newfun)];
+        end
+
     end
 
     % Construct chebfun
@@ -102,9 +124,76 @@ function h = convcol(f,g)
     h.imps = imps; 
     h = update_vscl(h);
     h.trans = f.trans;
-
+    
+    %% 
+    % CONVOLUTION OF DELTA FUNCTIONS
+    % convolution if f or g has dirac delta functions.
+    % Note: delta functions of f and g are already cleaned
+    % up and are stored in the variables fimps and gimps
+    
+    % if f has delta functions
+    isfimps = any(any(abs(fimps)>100*eps));
+    if(isfimps)
+        [m n] = size(fimps);
+        % loop through the imps matrix
+        for i = 1:m
+            for j = 1:n
+                if(abs(fimps(i,j)) > 100*eps)
+                    % take appropriate derivative and shift the function
+                    gshift = newdomain(diff(g,i-1),[g.ends(1)+f.ends(j) g.ends(end)+f.ends(j)]);
+                    % pad with zero chebfuns on either side
+                    l = chebfun( 0, [h.ends(1) gshift.ends(1) ] );
+                    r = chebfun( 0, [gshift.ends(end) h.ends(end) ] );
+                    gshift = chebfun( [ l; gshift; r ], [ h.ends(1) gshift.ends(1) gshift.ends(end) h.ends(end) ] );
+                    % scale by the impulse value and add
+                    h = h + fimps(i,j)*gshift;
+                end                     
+            end
+        end
+    end
+    
+    % if g has delta funtions, do the same as above 
+    isgimps = any(any(abs(gimps)>100*eps));
+    if(isgimps)
+        [m n] = size(gimps);
+        for i = 1:m
+           for j = 1:n
+               if(abs(gimps(i,j)) > 100*eps)
+                   fshift = newdomain(diff(f,i-1),[f.ends(1)+g.ends(j) f.ends(end)+g.ends(j)]);
+                   l = chebfun( 0, [h.ends(1) fshift.ends(1) ] );
+                   r = chebfun( 0, [fshift.ends(end) h.ends(end) ] );
+                   fshift = chebfun( [ l; fshift; r ], [ h.ends(1) fshift.ends(1) fshift.ends(end) h.ends(end) ] );
+                   h = h + gimps(i,j)*fshift;
+               end
+           end
+        end
+    end
+         
+    % if both f and g have delta functions
+    if(isfimps && isgimps)
+        [m n] = size(fimps);
+        [p q] = size(gimps);
+        himps = zeros(m+p-1,length(h.ends));
+        for i=1:m
+            for j=1:n
+                if(abs(fimps(i,j))>100*eps)
+                    % find the locations of shifted ends in h.ends
+                    [xx yy] = meshgrid(h.ends,f.ends(j)+g.ends);
+                    idx = find(sum(~(abs(xx-yy)>100*eps)));
+                    % place the scaled and shifted impulses in himps
+                    himps(i:i+p-1,idx) = ...
+                    himps(i:i+p-1,idx) + fimps(i,j)*gimps;
+                end
+            end
+        end
+        % append delta functions to the imps of h
+        h.imps = [ h.imps; himps ];    
+    end
+    %%
+    
 end   % conv()
 
+%%
 function out = integral( x , f , g )
 % Assume that g has been flipped!
 
@@ -136,13 +225,18 @@ function out = integral( x , f , g )
         % while we're at it)
         hasexps = false; nonlinmaps = false;
         sizes = zeros( nfuns , 1 );
+        
         for j=1:nfuns
             m = (ends(j)+ends(j+1))/2;
             fn = f.funs( find( f.ends > m , 1 ) - 1 );
             hasexps = hasexps || any( fn.exps ~= 0 );
             nonlinmaps = nonlinmaps || ~strcmp( fn.map.name , 'linear' );
             sizes(j) = fn.n;
-            fn = g.funs( find( g.ends + x(k) > m , 1 ) - 1 );
+            idx = find( g.ends + x(k) > m , 1 ) - 1;
+            if ( isempty(idx) ) % Sometimes we miss the final interval.
+                idx = numel(g.funs);
+            end
+            fn = g.funs(idx);
             hasexps = hasexps || any( fn.exps ~= 0 );
             nonlinmaps = nonlinmaps || ~strcmp( fn.map.name , 'linear' );
             sizes(j) = sizes(j) + fn.n - 1;
@@ -160,7 +254,11 @@ function out = integral( x , f , g )
             for j=1:nfuns
                 m = (ends(j)+ends(j+1))/2;
                 df( inds(j)+1:inds(j+1) ) = feval( f.funs( find( f.ends > m , 1 ) - 1 ) , pts( inds(j)+1:inds(j+1) ) );
-                dg( inds(j)+1:inds(j+1) ) = feval( g.funs( find( g.ends + x(k) > m , 1 ) - 1 ) , pts( inds(j)+1:inds(j+1) ) - x(k) );
+                idx = find( g.ends + x(k) > m , 1 ) - 1;
+                if ( isempty(idx) ) % Sometimes we miss the final interval.
+                    idx = numel(g.funs);
+                end
+                dg( inds(j)+1:inds(j+1) ) = feval( g.funs( idx ) , pts( inds(j)+1:inds(j+1) ) - x(k) );
             end
 
             % Compute the integral
@@ -180,3 +278,19 @@ function out = integral( x , f , g )
     end % loop over input values
 
 end % integral
+
+function out = integral_old(x,a,b,c,d,f,g,pref,scl)
+    out = 0.*x;
+    for k = 1:length(x)
+        A = max(a,x(k)-d); B = min(b,x(k)-c);
+        if A < B      
+            ends = union(x(k)-g.ends,f.ends);
+            ee = [A ends(A<ends & ends< B)  B];
+            for j = 1:length(ee)-1
+                F = @(t) feval(f,t).*feval(g,x(k)-t);
+                tol = max(100*eps('double'), scl.h*scl.v*eps);
+                out(k) = out(k) + quadgk(F, ee(j), ee(j+1), 'AbsTol', tol , 'RelTol', tol); 
+            end
+        end
+    end
+end % integral_old()

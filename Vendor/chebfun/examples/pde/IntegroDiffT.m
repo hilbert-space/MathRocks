@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example pde/IntegroDiffT.m)
+% [Tags: #integrodifferential]
 
 %%
 % Here we demonstrate how to solve the time-dependent integro-differential

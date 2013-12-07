@@ -5,7 +5,7 @@ function Fout = exp(F)
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
 for k = 1:numel(F)
-    if any(F(:,k).imps(1,:) == inf), error('CHEBFUN:exp:inf',...
+    if any(F(k).imps(1,:) == inf), error('CHEBFUN:exp:inf',...
         'Chebfun cannot handle exponential blowups.'); end
 end
 

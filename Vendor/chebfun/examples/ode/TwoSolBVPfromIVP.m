@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/TwoSolBVPfromIVP.m)
+% [Tags: #nonlinearODE, #IVP]
 
 %%
 % It is well known that nonlinear boundary-value problems (BVPs) can have
@@ -53,7 +54,6 @@ disp(['Residual, first solution: ' num2str(norm(Nbvp(bvpSol1)))])
 %
 % Setup a IVP chebop and solve (the system will automatically construct an
 % initial guess for this problem):
-ca, clc
 cheboppref('display','iter','plotting','on','damped','on')
 Nivp = chebop(0,5);
 x = chebfun('x',domain(Nivp));

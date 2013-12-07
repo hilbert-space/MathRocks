@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example pde/Maxwell.m)
+% [Tags: #Maxwell, #linearPDE]
 
 %%
 % In one dimension in a simple medium, Maxwell's equations can be written as

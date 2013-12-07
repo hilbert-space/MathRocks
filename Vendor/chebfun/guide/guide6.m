@@ -414,7 +414,7 @@ cond(chebpoly(0:10))
 % [Stewart 1998] G. W. Stewart, Afternotes Goes to Graduate School:
 % Lectures on Advanced Numerical Analysis, SIAM, 1998.
 %
-% [Trefethen 2008] L. N. Trefethen, "Householder triangularization of
+% [Trefethen 2010] L. N. Trefethen, "Householder triangularization of
 % a quasimatrix", IMA Journal on Numerical Analysis 30 (2010), 887-897.
 %
 % [Trefethen & Bau 1997] L. N. Trefethen and D. Bau, III, Numerical Linear

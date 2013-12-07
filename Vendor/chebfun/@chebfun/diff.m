@@ -52,6 +52,9 @@ if isa(n,'chebfun')
     end
     J = set(J,'opshow',s);
     F = J;
+    if isa(n,'chebconst') && ~isnumeric(F)
+        F = diag(F);
+    end
 elseif round(n)~=n      
     % Fractional derivatives
     if strcmpi(RL,'Caputo')

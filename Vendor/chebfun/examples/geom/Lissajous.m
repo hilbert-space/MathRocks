@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example geom/Lissajous.m)
+% [Tags: #complex, #sinewaves, #geometry]
 
 %%
 % Lissajous figures or Lissajous curves are the

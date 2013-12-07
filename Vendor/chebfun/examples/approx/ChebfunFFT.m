@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/ChebfunFFT.m)
+% [Tags: #FFT, #Chebyshevpolynomial, #CHEBPOLY]
 
 %%
 % One of the most frequently used computations in Chebfun is the one-to-one

@@ -8,7 +8,7 @@ var = {};
 dd = {[-1,1] [-1 sqrt(2)]};
 
 l = -1;
-for k = 1:2
+% for k = 1:2
     for j = 1:2
         for i = 1:2
             l = l+2;
@@ -31,4 +31,4 @@ for k = 1:2
         end
     end
     var = {'map',{'kte',.99}};
-end
+% end

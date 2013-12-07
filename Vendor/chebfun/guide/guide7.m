@@ -424,7 +424,7 @@ norm(u-v)
 % Here is how long it took to execute this chapter:
 fprintf('Time to execute this chapter: %3.1f seconds',toc)
 
-%% 7.10 BVP Systems with Unknown Paramters
+%% 7.10 BVP Systems with Unknown Parameters
 % It is sometimes the case that ODEs or systems of ODEs contain unknown
 % parameter values which must be computed for as part of the solution. An
 % example of this is Matlab's builti-in MAT4BVP example. These parameters

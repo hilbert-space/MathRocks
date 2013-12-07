@@ -3,6 +3,8 @@
 
 %%
 % (Chebfun example complex/Arguments.m)
+% [Tags: #complex, #angle]
+
 
 %%
 % A complex number z has a modulus or

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/SolarFields.m)
+% [Tags: #nonlinearODE, #continuation, #astrophysics]
 
 %%
 % This code demonstrates how to solve the nonlinear boundary value problem 

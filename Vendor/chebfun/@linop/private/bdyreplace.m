@@ -75,10 +75,10 @@ end
 
 for k = 1:length(A.bc)
   op = A.bc(k).op;
-  if size(op,2)~=m && ~isa(op,'varmat')
-    error('LINOP:bdyreplace:systemsize',...
-      'Boundary conditions not consistent with system size.')
-  end
+%   if size(op,2)~=m && ~isa(op,'varmat')
+%     error('LINOP:bdyreplace:systemsize',...
+%       'Boundary conditions not consistent with system size.')
+%   end
   if isa(op,'function_handle')
       T = NaN(1,n*m);
   else

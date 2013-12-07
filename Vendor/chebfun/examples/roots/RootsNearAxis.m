@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example roots/RootsNearAxis.m)
+% [Tags: #roots, #complex, #CHEBELLIPSEPLOT]
 
 %%
 % Here's a wiggly chebfun defined on [0,30]:

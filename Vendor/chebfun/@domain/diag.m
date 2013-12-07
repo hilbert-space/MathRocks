@@ -18,10 +18,11 @@ if isa(f,'domain')
 end
 
 % Unset funreturn flag, as we want to evaluate f and get back doubles
-f = set(f,'funreturn',0);
+% f = set(f,'funreturn',0);
 
 % Sort out the domain
 fends = f.ends; fends(fends<d.ends(1) | fends>d.ends(end)) = [];
+f.funreturn = 0;
 d = domain(union(d.ends,fends));
 
 % Define the oparray
@@ -87,6 +88,7 @@ else
 end
 a = f.ends(1); b = f.ends(end);
 fx(xpts<a | xpts>b) = 0; % Zero out entries outside domain of f.
+fx = trim(fx);           % Replace infs by big numbers to avoid NaNs.
 m = spdiags(fx,0,sum(n),sum(n)); % Construct the diagonal matrix.
 end
 

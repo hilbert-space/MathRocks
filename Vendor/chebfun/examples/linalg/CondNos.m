@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example linalg/CondNos.m)
+% [Tags: #linearalgebra, #polynomials, #qrdecomposition, #conditionnumber]
 
 %%
 % Chebfun can compute the condition number of a

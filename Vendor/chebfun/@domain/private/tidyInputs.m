@@ -2,7 +2,7 @@ function [n map breaks numints] = tidyInputs(n,d,filename)
 % TIDYINPUTS - tidy the inputs to varmat constructors
 %      [n map breaks numints] = tidyInputs(n,d,filename)
 % Ensures that breakpoints are inherited/disregarded correctly and that the
-% lenght of n is right for the given domain/breaks. 
+% length of n is right for the given domain/breaks. 
 
 breaks = []; map = [];
 if iscell(n)

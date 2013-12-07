@@ -1,8 +1,9 @@
-%% The Nullspace of Linear Operators
+%% The nullspace of a linear operator
 % Nick Hale & Stefan Güttel, 12th December 2011
 
 %%
 % (Chebfun example ode-eig/NullSpace.m)
+% [Tags: #linear, #eigenvalues, #optimization, #bvp, #nonstandard]
 
 %%
 % We've recently introduced some new functionality in Chebfun for computing

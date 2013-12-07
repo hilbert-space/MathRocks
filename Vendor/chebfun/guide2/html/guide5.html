@@ -1,0 +1,349 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>CHEBFUN2 GUIDE 5: VECTOR CALCULUS</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide5.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>CHEBFUN2 GUIDE 5: VECTOR CALCULUS</h1><!--introduction--><p>A. Townsend, March 2013</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">5.1 WHAT IS A CHEBFUN2V?</a></li><li><a href="#4">5.2 ALGEBRAIC OPERATIONS</a></li><li><a href="#9">5.3 DIFFERENTIAL OPERATIONS</a></li><li><a href="#15">5.4 LINE INTEGRALS</a></li><li><a href="#17">5.5 PHASE PORTRAIT</a></li><li><a href="#18">5.6 MORE INFORMATION</a></li><li><a href="#19">5.7 REFERENCES</a></li></ul></div><h2>5.1 WHAT IS A CHEBFUN2V?<a name="1"></a></h2><p>Chebfun2v objects represent vector valued functions. We use a lower case letter, <img src="guide5_eq85998.png" alt="$f$">, for a chebfun2 object and an upper case letter, <img src="guide5_eq86924.png" alt="$F$">, for a chebfun2v object.</p><p>Chebfun2v represents a vector-valued function <img src="guide5_eq77984.png" alt="$F(x,y) = (f(x,y);g(x,y))$"> by approximating each component by a low rank approximant. There are two ways to form a chebfun2v object: either by explicitly calling the constructor or by vertical concatenation of two chebfun2 objects. Here are these two alternatives:</p><pre class="codeinput">d = [0 1 0 2];
+F = chebfun2v(@(x,y) sin(x.*y), @(x,y) cos(y),d); <span class="comment">% calling the constructor</span>
+f = chebfun2(@(x,y) sin(x.*y),d); g = chebfun2(@(x,y) cos(y),d);
+G = [f;g]                                         <span class="comment">% vertical concatenation</span>
+</pre><pre class="codeoutput">G = 
+chebfun2v object (Column vector)
+x_component = 
+chebfun2 object: (1 smooth surface)
+       domain                 rank       corner values
+[   0,   1] x [   0,   2]        7     [8.6e-24 9.3e-17 5.2e-17 0.91]
+vertical scale =   1 
+y_component = 
+chebfun2 object: (1 smooth surface)
+       domain                 rank       corner values
+[   0,   1] x [   0,   2]        1     [   1    1 -0.42 -0.42]
+vertical scale =   1 
+</pre><p>Displaying a chebfun2v shows that it is a vector of two chebfun2 objects.</p><h2>5.2 ALGEBRAIC OPERATIONS<a name="4"></a></h2><p>Chebfun2v objects are useful for performing 2D vector calculus. The basic algebraic operations are scalar multiplication, vector addition, dot product and cross product.</p><p>Scalar multiplication is the product of a scalar function with a vector function:</p><pre class="codeinput">f = chebfun2(@(x,y) exp( -(x.*y).^2/20 ) ,d);
+f.*F
+</pre><pre class="codeoutput">ans = 
+chebfun2v object (Column vector)
+x_component = 
+chebfun2 object: (1 smooth surface)
+       domain                 rank       corner values
+[   0,   1] x [   0,   2]        8     [-8e-24 9.3e-17 7.3e-17 0.74]
+vertical scale =   1 
+y_component = 
+chebfun2 object: (1 smooth surface)
+       domain                 rank       corner values
+[   0,   1] x [   0,   2]        7     [   1    1 -0.42 -0.34]
+vertical scale =   1 
+</pre><p>Vector addition yields another chebfun2v and satisfies the parallelogram law:</p><pre class="codeinput">plaw = abs((2*norm(F)^2 + 2*norm(G)^2) - (norm(F+G)^2 + norm(F-G)^2));
+fprintf(<span class="string">'Parallelogram law holds with error = %10.5e\n'</span>,plaw)
+</pre><pre class="codeoutput">Parallelogram law holds with error = 0.00000e+00
+</pre><p>The dot product combines two vector functions into a scalar function. If the dot product of two chebfun2v objects takes the value zero at some (x,y) then the vector valued functions are orthogonal at (x,y).  For example, the following code segment determines a curve along which two vector-valued functions are orthogonal:</p><pre class="codeinput">F = chebfun2v(@(x,y) sin(x.*y), @(x,y) cos(y),d);
+G = chebfun2v(@(x,y) cos(4*x.*y), @(x,y) x + x.*y.^2,d);
+plot(roots(dot(F,G))), axis <span class="string">equal</span>, axis(d)
+</pre><img vspace="5" hspace="5" src="guide5_01.png" alt=""> <p>The cross product for 2D vector fields is</p><pre class="codeinput">help <span class="string">chebfun2v/cross</span>
+</pre><pre class="codeoutput"> CROSS  Vector cross product.
+ 
+  f = cross(F,G) returns the cross product of the chebfun2v objects
+  F and G. If F and G both have two components then it returns the chebfun2 
+  representing
+  
+    CROSS(F,G) = F(1)*G(2) - F(2)*G(1)
+  
+  where F = (F(1);F(2)) and G = (G(1); G(2)).  If F and G have three
+  components then it returns the chebfun2v representing the 3D cross
+  product. 
+
+</pre><h2>5.3 DIFFERENTIAL OPERATIONS<a name="9"></a></h2><p>Vector calculus also involves various differential operators defined on scalar or vector valued functions such as gradient, curl, divergence, and Laplacian.</p><p>The gradient of a chebfun2 is, geometrically, the direction and magnitude of steepest ascent of f. If the gradient of f is 0 at (x,y) then f has a critical point at (x,y). Here are the critical points of a sum of Gaussian bumps:</p><pre class="codeinput">f = chebfun2(0);
+<span class="keyword">for</span> k = 1:10
+    x0 = 2*rand-1; y0=2*rand-1;
+    f = f + chebfun2(@(x,y) exp(-10*((x-x0).^2 + (y-y0).^2)));
+<span class="keyword">end</span>
+plot(f), hold <span class="string">on</span>
+r = roots(gradient(f));
+plot3(r(:,1),r(:,2),f(r(:,1),r(:,2)),<span class="string">'k.'</span>,<span class="string">'markersize'</span>,20)
+zlim([0 4]), hold <span class="string">off</span>
+</pre><img vspace="5" hspace="5" src="guide5_02.png" alt=""> <p>The curl of 2D vector function is a scalar function defined by</p><pre class="codeinput">help <span class="string">chebfun2v/curl</span>
+</pre><pre class="codeoutput"> CURL curl of a chebfun2v
+  
+  S = CURL(F) returns the chebfun2 of the curl of F. If F is a chebfun2v 
+  with two components then it returns the chebfun2 representing 
+ 
+          CURL(F) = F(2)_x - F(1)_y,
+ 
+  where F = (F(1),F(2)).  If F is a chebfun2v with three components then it
+  returns the chebfun2v representing the 3D curl operation. 
+
+</pre><p>If the chebfun2v F describes a vector velocity field of fluid flow, for example, then curl(F) is the scalar function equal to twice the angular speed of a particle in the flow at each point. A particle moving in a gradient field has zero angular speed and hence, the curl of the gradient is zero.  We can check this numerically:</p><pre class="codeinput">norm(curl(gradient(f)))
+</pre><pre class="codeoutput">ans =
+     0
+</pre><p>The divergence of a chebfun2v is defined as</p><pre class="codeinput">help <span class="string">chebfun2v/divergence</span>
+</pre><pre class="codeoutput"> DIVERGENCE the divergence of a chebfun2v.
+ 
+  F = DIVERGENCE(F) returns the divergence of the chebfun2v i.e. 
+  
+   divergence(F) = F_x + F_y
+
+</pre><p>This measures a vector field's distribution of sources or sinks. The Laplacian is closely related and is the divergence of the gradient,</p><pre class="codeinput">norm(laplacian(f) - divergence(gradient(f)))
+</pre><pre class="codeoutput">ans =
+     0
+</pre><h2>5.4 LINE INTEGRALS<a name="15"></a></h2><p>Given a vector field F we can compute the line integral along a curve with the command integral, as defined as</p><pre class="codeinput">help <span class="string">chebfun2v/integral</span>
+</pre><pre class="codeoutput"> INTEGRAL line integration of a chebfun2v
+ 
+  INTEGRAL(F,C) computes the line integral of F along the curve C, that is
+ 
+                    
+                   /
+  INTEGRAL(F,C) =  |  &lt; F(r), dr &gt; 
+                  /
+                  C 
+ 
+  where the curve C is parameterised by the complex curve r(t).  
+
+</pre><p>The gradient theorem says that if F is a gradient field then the line integral along a smooth curve only depends on the end points of that curve. We can check this numerically:</p><pre class="codeinput">f = chebfun2(@(x,y) cos(10*x.*y.^2) + exp(-x.^2));<span class="comment">% chebfun2 object</span>
+F = gradient(f);                                  <span class="comment">% gradient (chebfun2v)</span>
+C = chebfun(@(t) t.*exp(10i*t),[0 1]);            <span class="comment">% spiral curve</span>
+v = integral(F,C);ends = f(cos(10),sin(10))-f(0,0);<span class="comment">% line integral</span>
+abs(v-ends)                                       <span class="comment">% gradient theorem</span>
+</pre><pre class="codeoutput">ans =
+     4.440892098500626e-16
+</pre><h2>5.5 PHASE PORTRAIT<a name="17"></a></h2><p>A phase portrait is a graphical representation of a system of trajectories for a two variable autonomous dynamical system. Note there is an unfortunate double meaning to "phase portrait" it can either mean a phase portrait of a complex-valued function (see chapter 4 of the guide) or a graphical representation of an autonomous system. In this section we are talking about autonomous systems. In Chebfun2 we can plot phase portraits by using the quiver command, which has been overloaded to plot the vector field.</p><p>In addition, Chebfun2 makes it easy to compute and plot individual trajectories of a vector field. If F is a chebfun2v, then ode45(F,tspan,y0) solves the autonomous system dx/dt=f(x,y), dy/dt=g(x,y), where f and g are the first and second components of F. Given a prescribed time interval and initial conditions, this command returns a complex valued chebfun representing the trajectory in the form <img src="guide5_eq99746.png" alt="$x(t) + iy(t)$">. For example:</p><pre class="codeinput">d = 0.04; a=1; b=-.75;
+F = chebfun2v(@(x,y)y, @(x,y)-d*y - b*x - a*x.^3, [-2 2 -2 2]);
+[t y]=ode45(F,[0 40],[0,.5]);
+plot(y,<span class="string">'r'</span>), hold <span class="string">on</span>,
+quiver(F,<span class="string">'b'</span>), axis <span class="string">equal</span>
+title(<span class="string">'The Duffing oscillator'</span>,<span class="string">'FontSize'</span>,16), hold <span class="string">off</span>
+</pre><img vspace="5" hspace="5" src="guide5_03.png" alt=""> <h2>5.6 MORE INFORMATION<a name="18"></a></h2><p>More information on vector calculus in Chebfun2 is available in the Chebfun2 Examples.  Vector calculus is also described in [Townsend &amp; Trefethen 2013]. For more details about particular commands type, for instance,</p><pre class="codeinput">help <span class="string">chebfun2v/plus</span>
+</pre><pre class="codeoutput">  + PLUS of two chebfun2v objects. 
+  
+  F + G if F and G are chebfun2v objects does componentwise addition. 
+  
+  F + G if F is a double and G is a chebfun2v does componentwise addition. 
+  
+  F + G if F is a chebfun2v and G is a double does componentwise addition. 
+  
+  plus(F,G) is called for the syntax F + G. 
+
+</pre><h2>5.7 REFERENCES<a name="19"></a></h2><p>[Townsend &amp; Trefethen 2013] A. Townsend and L. N. Trefethen, An extension of Chebfun to two dimensions, submitted.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% CHEBFUN2 GUIDE 5: VECTOR CALCULUS
+% A. Townsend, March 2013
+
+%% 5.1 WHAT IS A CHEBFUN2V? 
+% Chebfun2v objects represent vector valued functions. We use a lower case
+% letter, $f$, for a chebfun2 object and an upper case letter, $F$, for a
+% chebfun2v object. 
+
+%%
+% Chebfun2v represents a vector-valued function $F(x,y) = (f(x,y);g(x,y))$ 
+% by approximating each component by a low rank approximant. 
+% There are two ways to form a chebfun2v object: either by explicitly 
+% calling the constructor or by vertical concatenation of two chebfun2 objects. 
+% Here are these two alternatives:
+
+d = [0 1 0 2];
+F = chebfun2v(@(x,y) sin(x.*y), @(x,y) cos(y),d); % calling the constructor
+f = chebfun2(@(x,y) sin(x.*y),d); g = chebfun2(@(x,y) cos(y),d);
+G = [f;g]                                         % vertical concatenation
+
+%% 
+% Displaying a chebfun2v shows that it is a vector of two chebfun2
+% objects.
+
+%% 5.2 ALGEBRAIC OPERATIONS 
+% Chebfun2v objects are useful for performing 2D vector
+% calculus. The basic algebraic operations are scalar multiplication, 
+% vector addition, dot product and cross product. 
+
+%%
+% Scalar multiplication is the product of a scalar function with a 
+% vector function:
+
+f = chebfun2(@(x,y) exp( -(x.*y).^2/20 ) ,d);
+f.*F
+
+%%  
+% Vector addition yields another chebfun2v and satisfies the 
+% parallelogram law:
+
+plaw = abs((2*norm(F)^2 + 2*norm(G)^2) - (norm(F+G)^2 + norm(F-G)^2));
+fprintf('Parallelogram law holds with error = %10.5e\n',plaw)
+
+
+%%
+% The dot product combines two vector functions into a scalar function. 
+% If the dot product of two chebfun2v objects takes the value 
+% zero at some (x,y) then the vector valued functions are orthogonal at 
+% (x,y).  For example, the following code segment determines a curve along
+% which two vector-valued functions are orthogonal:
+
+F = chebfun2v(@(x,y) sin(x.*y), @(x,y) cos(y),d);
+G = chebfun2v(@(x,y) cos(4*x.*y), @(x,y) x + x.*y.^2,d);
+plot(roots(dot(F,G))), axis equal, axis(d)
+
+%% 
+% The cross product for 2D vector fields is
+
+help chebfun2v/cross 
+
+%% 5.3 DIFFERENTIAL OPERATIONS
+% Vector calculus also involves various differential operators defined 
+% on scalar or vector valued functions such as gradient, 
+% curl, divergence, and Laplacian.
+
+%%
+% The gradient of a chebfun2 is, geometrically, the direction and magnitude 
+% of steepest ascent of f. If the gradient of f is 0 at (x,y) then f has a 
+% critical point at (x,y). Here are the
+% critical points of a sum of Gaussian bumps:
+
+f = chebfun2(0);
+for k = 1:10 
+    x0 = 2*rand-1; y0=2*rand-1;
+    f = f + chebfun2(@(x,y) exp(-10*((x-x0).^2 + (y-y0).^2)));
+end
+plot(f), hold on 
+r = roots(gradient(f));
+plot3(r(:,1),r(:,2),f(r(:,1),r(:,2)),'k.','markersize',20)
+zlim([0 4]), hold off
+
+%%
+% The curl of 2D vector function is a scalar function defined by
+
+help chebfun2v/curl 
+
+%%
+% If the chebfun2v F describes a vector velocity field of fluid flow, 
+% for example, then curl(F) is the scalar function equal
+% to twice the angular speed of a particle in the flow at each point. 
+% A particle moving in a gradient field has zero angular speed and hence,
+% the curl of the gradient is zero.  We can check this numerically:
+
+norm(curl(gradient(f)))
+
+%% 
+% The divergence of a chebfun2v is defined as 
+
+help chebfun2v/divergence
+
+%%
+% This measures a vector field's distribution of sources or sinks.  
+% The Laplacian is closely related and is the divergence of the gradient,
+
+norm(laplacian(f) - divergence(gradient(f)))
+
+%% 5.4 LINE INTEGRALS 
+% Given a vector field F we can compute the line integral along a curve
+% with the command integral, as defined as
+
+help chebfun2v/integral
+
+%%
+% The gradient theorem says that if F is a gradient field then the 
+% line integral along a smooth curve only depends on the end points of that
+% curve. We can check this numerically:
+
+f = chebfun2(@(x,y) cos(10*x.*y.^2) + exp(-x.^2));% chebfun2 object
+F = gradient(f);                                  % gradient (chebfun2v)
+C = chebfun(@(t) t.*exp(10i*t),[0 1]);            % spiral curve
+v = integral(F,C);ends = f(cos(10),sin(10))-f(0,0);% line integral
+abs(v-ends)                                       % gradient theorem
+
+%% 5.5 PHASE PORTRAIT
+% A phase portrait is a graphical representation of a system of 
+% trajectories for a two variable autonomous dynamical system. Note there is 
+% an unfortunate double meaning to "phase portrait" it can either mean a phase portrait 
+% of a complex-valued function (see chapter 4 of the guide) or a graphical
+% representation of an autonomous system. In this section we are talking 
+% about autonomous systems. In Chebfun2 we can plot phase 
+% portraits by using the quiver command, which has been overloaded to 
+% plot the vector field. 
+% 
+% In addition, Chebfun2 makes it easy to compute and plot individual 
+% trajectories of a vector field. If F is a chebfun2v, then 
+% ode45(F,tspan,y0) solves the autonomous system dx/dt=f(x,y), dy/dt=g(x,y),
+% where f and g are the first and second components of F. Given a 
+% prescribed time interval and initial conditions, this command returns a 
+% complex valued chebfun representing the trajectory in the form 
+% $x(t) + iy(t)$. For example:
+
+d = 0.04; a=1; b=-.75;
+F = chebfun2v(@(x,y)y, @(x,y)-d*y - b*x - a*x.^3, [-2 2 -2 2]);
+[t y]=ode45(F,[0 40],[0,.5]);
+plot(y,'r'), hold on,
+quiver(F,'b'), axis equal
+title('The Duffing oscillator','FontSize',16), hold off
+
+%% 5.6 MORE INFORMATION 
+% More information on vector calculus in Chebfun2 is available in the
+% Chebfun2 Examples.  Vector calculus is also described in [Townsend & Trefethen
+% 2013]. For more details about particular commands type, for instance, 
+
+help chebfun2v/plus
+
+%% 5.7 REFERENCES
+%%
+% [Townsend & Trefethen 2013] A. Townsend and L. N. Trefethen, An extension
+% of Chebfun to two dimensions, submitted. 
+##### SOURCE END #####
+--></body></html>

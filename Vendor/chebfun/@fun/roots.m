@@ -227,13 +227,13 @@ end
             % get the coefficients on the left
             cleft = v(1:n);
             cleft = [ cleft(n:-1:2) ; cleft(1:n-1) ];
-            cleft = real( fft( cleft ) / (n-1) );
+            cleft = fft( cleft ) / (n-1);
             cleft = [ 0.5*cleft(1) ; cleft(2:n-1) ; 0.5*cleft(n) ];
 
             % get the coefficients on the right
             cright = v(n+1:end);
             cright = [ cright(n:-1:2) ; cright(1:n-1) ];
-            cright = real( fft( cright ) / (n-1) );
+            cright = fft( cright ) / (n-1);
             cright = [ 0.5*cright(1) ; cright(2:n-1) ; 0.5*cright(n) ];
 
             % recurse

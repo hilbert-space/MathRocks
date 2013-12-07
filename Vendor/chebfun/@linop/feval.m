@@ -75,7 +75,6 @@ breaks = sort(breaks);
 if ~isempty(breaks) && (breaks(1) < A.domain(1) || breaks(end) > A.domain(end))
     error('CHEBFUN:linop:breaksdomain','Breaks must be within domain of linop');
 end
-% breaks = union(breaks,A.domain.endsandbreaks);
 if ( isempty(breaks) )
     breaks = A.domain.endsandbreaks;
 else
@@ -153,7 +152,7 @@ else
   % No boundary conditions
   if ~usebc, return, end
   
-  % Oldschool rowreplacement
+  % Old school row replacement
   if usebc == 1.5
       if ~isempty(breaks)
           % We force rectangular matrices in this case.

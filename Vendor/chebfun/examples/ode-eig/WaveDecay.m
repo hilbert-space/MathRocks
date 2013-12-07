@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode-eig/WaveDecay.m)
+% [Tags: #eigenvalues, #piecewise, #waves]
 
 %%
 % Here are eigenmodes 1, 2, 10, 20 of the wave equation on [-pi/2,pi/2]:

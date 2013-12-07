@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/Halphen.m)
+% [Tags: #Halphen, #rational, #9.28903, #exponential]
 
 %%
 % A well-known problem in approximation theory is, how well can exp(x) be

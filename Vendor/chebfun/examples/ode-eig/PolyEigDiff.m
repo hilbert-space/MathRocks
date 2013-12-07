@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode-eig/PolyEigDiff.m)
+% [Tags: #eigenvalues, #specialfunctions]
 
 %% Bessel functions as eigenvectors of polynomial eigenvalue problems
 % The eigenfunctions of polynomial eigenvalue problems with differential

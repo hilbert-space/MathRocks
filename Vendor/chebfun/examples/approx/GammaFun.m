@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/GammaFun.m)
+% [Tags: #gamma, #exponents, #pole, #squareroot]
 
 %%
 % This script displays some of the features introduced in version 3 for

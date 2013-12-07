@@ -82,7 +82,7 @@ if nargin == 4 && force == 1
     return
 end
 
-Tlen = min(g.n,max(4,round((gn-1)/8))); % Length of tail to test
+Tlen = min(g.n,max(5,round((gn-1)/8))); % Length of tail to test
 % Which basically is the same as:
 %  Tlen = n,             for n = 1:3
 %  Tlen = 3,             for n = 4:25

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun Example linalg/FieldOfValues.m)
+% [Tags: #linearalgebra, #fieldofvalues]
 
 %%
 % If A is a matrix, the field of values F(A) is

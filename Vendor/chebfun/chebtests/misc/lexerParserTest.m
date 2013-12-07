@@ -23,15 +23,20 @@ str = { 'u(0) = 1'
 n = numel(str);
     
 curdir = pwd;
-cd(fullfile(fileparts(which('chebgui')),'private'))
-c = chebgui('type','bvp');
-an = cell(n,1);
-for k = 1:n
-    try
-        an{k} = convertToAnon(c,str{k});
+try
+    cd(fullfile(fileparts(which('chebgui')),'private'))
+    c = chebgui('type','bvp');
+    an = cell(n,1);
+    for k = 1:n
+        try
+            an{k} = convertToAnon(c,str{k});
+        end
     end
+    cd(curdir);
+catch ME   
+    cd(curdir);
+    rethrow(ME);
 end
-cd(curdir);
 
 true = {'@(u) feval(u,0)-1'
         '@(u) feval(u,-1)-1'
@@ -60,15 +65,20 @@ str = {'u''''-lambda*u = 0'
 n2 = numel(str);
     
 curdir = pwd;
-cd(fullfile(fileparts(which('chebgui')),'private'))
-c = chebgui('type','eig');
-an = cell(n2,1);
-for k = 1:n2
-    try
-        an{k} = convertToAnon(c,str{k});
+try
+    cd(fullfile(fileparts(which('chebgui')),'private'))
+    c = chebgui('type','eig');
+    an = cell(n2,1);
+    for k = 1:n2
+        try
+            an{k} = convertToAnon(c,str{k});
+        end
     end
+    cd(curdir);
+catch ME
+    cd(curdir);
+    rethrow(ME)
 end
-cd(curdir);
 
 true = {{'@(u) diff(u,2)'
         '@(u) u'}
@@ -87,15 +97,20 @@ str = {'u_t+x*u'''' = u'''};
 n3 = numel(str);
     
 curdir = pwd;
-cd(fullfile(fileparts(which('chebgui')),'private'))
-c = chebgui('type','pde');
-an = cell(n3,1);
-for k = 1:n3
-    try
-        an{k} = convertToAnon(c,str{k});
+try
+    cd(fullfile(fileparts(which('chebgui')),'private'))
+    c = chebgui('type','pde');
+    an = cell(n3,1);
+    for k = 1:n3
+        try
+            an{k} = convertToAnon(c,str{k});
+        end
     end
+    cd(curdir);
+catch ME
+    cd(curdir);
+    rethrow(ME)
 end
-cd(curdir);
 
 true = {'@(u) -x.*diff(u,2)+diff(u)'};
     

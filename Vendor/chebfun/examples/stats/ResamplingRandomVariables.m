@@ -1,4 +1,4 @@
-%% Resampling of random variables
+%% Sampling from a Probability Distribution
 % Toby Driscoll, 8th December 2011
 
 %%

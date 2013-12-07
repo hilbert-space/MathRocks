@@ -14,6 +14,7 @@ while length(propertyArgIn) >= 2,
             if ~isa(val,'domain'), val = domain(val); end
             N.domain = val;
         case 'bc'
+            N.bc = [];  N.bcshow = [];
             if isa(val,'struct')  % given .left and .right
                 if isfield(val,'left')
                     N = set(N,'lbc',val.left);
@@ -24,24 +25,20 @@ while length(propertyArgIn) >= 2,
                 if isfield(val,'bc')
                     N = set(N,'bc',val.bc);
                 end                
-            elseif isa(val,'function_handle')  
-                N.bc = createbc(val,N.numvar);
+            elseif isa(val,'function_handle') || isa(val,'cell')
+                N.bc = val;
                 N.bcshow = val;
-            else% given same for both sides
+            elseif strcmpi(val,'periodic')
+                N.bc = createbc('periodic',N.numvar);
+                N.bcshow = 'periodic';
+                N.lbc = []; N.lbcshow = [];
+                N.rbc = []; N.rbcshow = [];
+            else % given same for both sides
                 bc = createbc(val,N.numvar);
-                if strcmpi(val,'periodic')
-                    N.bc = createbc('periodic',N.numvar);
-                    N.bcshow = 'periodic';
-                    N.lbc = []; N.lbcshow = [];
-                    N.rbc = []; N.rbcshow = [];
-                else
-                    N.lbc = bc;
-                    N.lbcshow = val;
-                    N.rbc = bc;
-                    N.rbcshow = val;
-                    N.bc = [];
-                    N.bcshow = [];  
-                end
+                N.lbc = bc;
+                N.lbcshow = val;
+                N.rbc = bc;
+                N.rbcshow = val; 
             end
         case 'lbc'
             if strcmpi(val,'periodic')

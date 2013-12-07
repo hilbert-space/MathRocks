@@ -3,7 +3,8 @@
 
 %%
 % (Chebfun example opt/ExtremeExtrema.m)
-
+% [Tags: #optimization, #localextrema, #piecewise, #rootfinding]
+  
 %%
 % Here is the function cos(x)*sin(exp(x)) on the interval [0,6]:
 tic, x = chebfun('x',[0 6]);

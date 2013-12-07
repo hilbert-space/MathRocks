@@ -13,12 +13,15 @@ classdef chebconst < chebfun
 %                 if ~isfinite(length(L)) % L is inf x inf
 %                     L = full(diag(feval(L,1)));
 %                 end
+                if isa(varargin{1},'chebconst') && isa(varargin{2},'chebconst')
+                    L = full(L(1));
+                end
             else
                 f = varargin{1}; 
                 N = 1; dim = 1;
                 if nargin > 1 && ~isempty(varargin{2}), N = varargin{2}; end
                 if nargin > 2 && dim == varargin{2}; end
-                if numel(f) == 1, L = constfun(0,domain(f)); return, end
+                if numel(f) == 1, L = chebconst(0,domain(f)); return, end
                 L = f;
                 for j = 1:N 
                    for k = 1:numel(L)-j
@@ -95,7 +98,7 @@ classdef chebconst < chebfun
 %                 error('CHEBFUN:chebconst:mtimes:outerp',...
 %                     'Outer products not yet implemented for chebconsts.');
 %             end
-            if (mf == 1 || ng == 1) && (f(1).funreturn || g(1).funreturn)
+            if (mf == 1 || ng == 1) && (get(f,'funreturn') || get(g,'funreturn'))
                 h = chebconst;
                 for j = 1:numel(f)
                     for k = 1:numel(g)
@@ -103,11 +106,22 @@ classdef chebconst < chebfun
                     end
                 end
             else
-                if isa(f,'chebconst'), f = double(f); end
-                if isa(g,'chebconst'), g = double(g); end
-                h = mtimes(f,g);
+%                 if isa(f,'chebconst'), f = double(f); end
+%                 if isa(g,'chebconst'), g = double(g); end
+%                 h = mtimes(f,g);
+                h = times(f,g);
             end
         end
+        
+        function g = mpower(f,a)
+            if isnumeric(a)
+                g = power(f,a);
+            else
+                error('CHEBFUN:chebconst:mpower:undef',...
+                    'Undefined function ''mpower'' for input arguments of type ''chebfun''.');
+            end
+        end
+                
         
         function g = feval(f,varargin)
             g = zeros(1,numel(f));

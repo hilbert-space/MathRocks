@@ -2,6 +2,7 @@
 % Alex Townsend, 6th May 2011
 %
 % (Chebfun example ode/LaneEmden.m)
+% [Tags: #nonlinearODE, #astrophysics]
 
 %% 
 % This example is motivated by discussions with the astronomer Alfred

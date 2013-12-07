@@ -3,7 +3,7 @@
 
 %%
 % (Chebfun example roots/WhiteCurves.m)
-
+% [Tags: #roots, #whitecurves]
 
 %%
 % In their article ``Another Look at the Chebyshev Polynomials'' [1] from

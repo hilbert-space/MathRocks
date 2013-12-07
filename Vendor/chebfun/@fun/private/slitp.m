@@ -101,8 +101,8 @@ end
 % solve system of nonlinear equations
 if paramflag
     fdat = {wk(1:ns),ns,tol,cmax};                  % package data
-    [y ignored ierr]= nsold(y,@(x)pfun(x,fdat),[1e-2*tol,tol]); % nonlinear system solver
-%     if ierr, warning('FUN:slitp','Nonlinear equation solver did not terminate normally'); end
+    opts = optimset('tolfun',tol,'tolx',tol,'display','off');
+    y = fsolve(@(x)pfun(x,fdat),y,opts); % nonlinear system solver
 end
 
 % recover unconstrained data

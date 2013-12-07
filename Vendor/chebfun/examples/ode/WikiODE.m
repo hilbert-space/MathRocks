@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/WikiODE.m)
+% [Tags: #linearODE, #wikipedia]
 
 %%
 % Here, we solve three simple problems 

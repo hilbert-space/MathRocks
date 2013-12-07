@@ -109,13 +109,12 @@ end
 
 
 %% Boundary conditions part
-
 % Check whether we have a mismatch between periodic BCs
-if strcmpi(N.bc,'periodic') && (~isempty(N.lbc) || ~isempty(N.rbc))
+if any(strcmpi(N.bc,'periodic')) && (~isempty(N.lbc) || ~isempty(N.rbc))
     error('CHEBOP:linearise:periodic', 'Mixed periodic and other BC types.');
 end
 
-if strcmpi(N.bc,'periodic')
+if all(strcmpi(N.bc,'periodic'))
     % Need to treat periodic BCs specially
     linBC = 'periodic';
 else
@@ -126,11 +125,11 @@ else
     [linBC.right domR jumpinfoR isLin(3)] = lineariseBC(N.rbc,'right',linCheck);
     if linCheck && ~isLin(3), return, end % Bail if linearity check and nonlinear
     % Other BCs
-    [linBC.other domO jumpinfoO isLin(4)] = lineariseBC(N.bc,'other',linCheck);
+    [linBC.other domO jumpinfoO isLin(4)] = lineariseBC(N.bc,'other',linCheck,L.difforder, L.blocksize(2));
     if linCheck && ~isLin(4), return, end % Bail if linearity check and nonlinear
     
     % Combine recovered domains and jumplocs
-    dom = unique([dom domL domR domO]);
+    dom = unique([dom(:) ; domL(:) ; domR(:) ; domO(:)]).';
     jumpinfo = unique([jumpinfoL ; jumpinfoR ; jumpinfoO].','rows');
 end
 
@@ -177,7 +176,7 @@ end
 
 %% LineariseBC
 
-    function [linBC dom jumpinfo isLin] = lineariseBC(bc,bctype,linCheck)
+    function [linBC dom jumpinfo isLin] = lineariseBC(bc,bctype,linCheck,difforder,syssize)
         % Attempt to linearise the boundary conditions
         % BCTYPE = 0 is a .LBC or .RBC, BCTYPE = 1 is a .BC
         
@@ -222,6 +221,36 @@ end
                 l = l+(1:numbcj);
                 continue
                 
+            elseif ischar(bc{j}) && strcmp(bc{j},'periodic')
+                  % mixed periodic and interior conditions                  
+                  I = eye(domu);
+                  D = diff(domu);
+                  if syssize == 1 % Single system case
+                      B = get(I,'varmat');
+                      for k = 1:difforder
+                        func = @(u) feval(diff(u,k-1),domu(1))-feval(diff(u,k-1),domu(end));
+                        linBC(l) = struct('op',linop(B(1,:) - B(end,:),func,domu),'val',0);
+                        l = l+1;
+                        B = get(D,'varmat')*B;
+                      end
+                  else      % Systems case
+                      order = max(difforder,[],1);
+                      Z = zeros(A.domain); Z = Z.varmat;
+                      for jj = 1:numel(order)
+                          B = I.varmat;
+                          Zl = repmat(Z,1,jj-1);
+                          if jj > 1, Zl = Zl(1,:); end
+                          Zr = repmat(Z,1,m-j);
+                          if jj < m, Zr = Zr(1,:); end
+                          for k = 1:order(jj)
+                            linBC(l) = struct('op',linop([Zl B(1,:)-B(end,:) Zr],func,domu),'val',0);
+                            l = l+1;
+                            B = D.varmat*B;
+                          end
+                      end
+                  end
+                  continue
+                  
             elseif nargin(bc{j}) > 1 + strcmp(bctype,'other')
                 % @(x,u,v,w,...) format. Need to expand uCell to evaluate
 
@@ -237,7 +266,14 @@ end
                 end
                 
                 % Recover info from FEVAL and reset.
-                [ignored jumpinfoj] = feval(dummy,[],'reset'); %#ok<ASGLU>
+                [ignored jumpinfoj] = feval(dummy,[],'reset'); %#ok<ASGLU>                
+                
+                if strcmp(bctype,'other') && ~isa(guj,'chebconst')
+                    error('CHEBFUN:chebop:linearise:funhandleBCs',...
+                    ['Incorrect form of .BC: N.bc = %s.\n',...
+                    'Function handles in .bc field should evaluate to scalars.\n',...
+                    'See ''help chebop'' for details of allowed BC syntax.'],func2str(bc{j}));
+                end
 
                 % If the user assigns BCs of the form
                 %   L.lbc = @(u,v) [u-1 ; v]; 
@@ -250,8 +286,8 @@ end
                 if abs(endsu(1) - domguj(1))>=tol || ...
                         abs(endsu(end) - domguj(end))>=tol                   
                     error('CHEBFUN:chebop:linearise:semicolonBCs',...
-                        ['Incorrect form of %s BCs. Try @(u,v)[u;v] rather than @(u,v)[u,v]?\n',...
-                        'See ''help chebop'' for details of allowed BC syntax.'],bctype);
+                        ['Incorrect form of %s BCs: %s\nTry @(u,v)[u;v] rather than @(u,v)[u,v]?\n',...
+                        'See ''help chebop'' for details of allowed BC syntax.'],bctype,func2str(bc{j}));
                 end
                 
                 % Deal with jump info.
@@ -285,6 +321,13 @@ end
                 % Recover info from FEVAL and reset.
                 [ignored jumpinfoj] = feval(dummy,[],'reset'); %#ok<ASGLU>
                 
+                if strcmp(bctype,'other') && ~isa(guj,'chebconst')
+                    error('CHEBFUN:chebop:linearise:funhandleBCs',...
+                    ['Incorrect form of .BC: N.bc = %s.\n',...
+                    'Function handles in .bc field should evaluate to scalars.\n',...
+                    'See ''help chebop'' for details of allowed BC syntax.'],func2str(bc{j}));
+                end
+                
                 % Deal with jump info.
                 if strcmp(bctype,'other') && ~isempty(jumpinfoj)
                     jumplocs = [jumpinfoj.loc];
@@ -315,12 +358,14 @@ end
                 linBC(l) = struct('op',Dgujk,'val',-gujvals(k));%#ok<AGROW>
                 l = l+1;
                 domk = get(Dgujk,'domain');
-                dom = union(dom, domk.endsandbreaks); dom = dom(:).';
+                dom = union(dom, domk.endsandbreaks);
+                dom = dom(:).';
             end
             
             % Include jumplocs in the domain
-            if ( ~isempty(jumplocs) )
-                dom = union(dom, jumpinfo(1,:)); dom = dom(:).';
+            if ~isempty(jumplocs)
+                dom = union(dom,jumpinfo(1,:));
+                dom = dom(:).';
             end
 
         end

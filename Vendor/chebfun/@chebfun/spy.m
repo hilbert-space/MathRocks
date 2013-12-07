@@ -13,7 +13,7 @@ ee = (b-a)/100;
       
 if isinf(m) && ~isinf(n)            % column quasimatrix
    for j = 1:n
-      endsj = A(:,j).ends; 
+      endsj = A(j).ends; 
       ss = repmat(endsj,3,1) + repmat([-ee ; NaN ; ee],1,length(endsj)); 
       ss = ss(:);
       ss([2:3 end-1:end]) = []; 
@@ -35,7 +35,7 @@ end
 
 if ~isinf(m) && isinf(n)            % row quasimatrix
    for j = 1:m
-      endsj = A(j,:).ends; 
+      endsj = A(j).ends; 
       ss = repmat(endsj,3,1) + repmat([-ee ; NaN ; ee],1,length(endsj)); 
       ss = ss(:);
       ss([2:3 end-1:end]) = []; 

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example linalg/ResolventNorm.m)
+% [Tags: #linearalgebra, #norm, #resolvent]
 
 %%
 % If A is a square matrix, the resolvent of A for a particular complex

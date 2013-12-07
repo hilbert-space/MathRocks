@@ -61,7 +61,7 @@ end
 % Grab the main function string
 funcStr = A.func;
 
-% Clean out 'linop' flags and break at semicolons for prettyprint
+% Clean out 'linop' flags and break at semicolons for pretty print
 idx = [0 strfind(funcStr,';')];
 idx = sort([idx [strfind(funcStr,'&&') strfind(funcStr,'||')]+1]);
 funcStrClean = {};

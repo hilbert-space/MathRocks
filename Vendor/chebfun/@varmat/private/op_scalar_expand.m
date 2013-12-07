@@ -1,7 +1,7 @@
 function C = op_scalar_expand(op,A,B)
 
 % Apply a function of two matrices, expanding one of the arguments if it
-% happens to be scalar. Expansion is the usual matlab sense of copying a
+% happens to be scalar. Expansion is the usual Matlab sense of copying a
 % scalar to every position in the array.
 
 % Copyright 2008 by Toby Driscoll.

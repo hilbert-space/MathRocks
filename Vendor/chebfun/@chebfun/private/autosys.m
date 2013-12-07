@@ -5,11 +5,11 @@ function [funs,ends,scl] = autosys(op,ends,pref)
 % representation of the function handle OP. 
 %
 % The input vector ENDS must initially consist of two values and 
-% corresponds to the global interval [a,b]. The ouput vector ends may 
-% contain adional breakpoints if the splitting mode is on. 
+% corresponds to the global interval [a,b]. The output vector ends may 
+% contain addtional breakpoints if the splitting mode is on. 
 %
 % SCL is a structure with two fields: SCL.H and SCL.V corresponding to 
-% the horizonatal and veritcal global scales. This vector is update 
+% the horizontal and vertical global scales. This vector is update 
 % within AUTO and is returned as output. 
 % 
 % PREF is the chebfun preference structure (see chebfunpref).

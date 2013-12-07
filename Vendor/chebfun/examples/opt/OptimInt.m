@@ -3,7 +3,8 @@
 
 %%
 % (Chebfun example opt/OptimInt.m)
-
+% [Tags: #optimization, #integration, #rootfinding, #parameter]
+  
 %%
 % This example serves to show how easy it is to solve one of the example
 % problems from the Oxford MSc in Mathematical Modelling and Scientific

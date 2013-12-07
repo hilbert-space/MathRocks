@@ -8,8 +8,12 @@
 %
 % If F is a doubles array, A = [A1,A2,...,An]', the numbers A1,...,An are 
 % used as function values at n Chebyshev points of the 2nd kind, i.e. 
-% chebpts(n). If F is a matrix CHEBFUN(F) returns a chebfun 'quasimatrix', 
-% taking each column of F as function values in the same way as above.
+% chebpts(n). CHEBFUN(F,'equi') is similar, but here the data is assumed to 
+% come from an equispaced grid linspace(-1,1,n); in this case a smooth 
+% polynomial interpolant is constructed that is derived from adaptive 
+% Floater-Hormann interpolation [Numer. Math. 107, 315-331 (2007)]. If F is 
+% a matrix CHEBFUN(F) returns a chebfun 'quasimatrix', taking each column 
+% of F as function values in the same way as above.
 %
 % CHEBFUN(F,[A B]) specifies an interval [A B] where the function is
 % defined. A and/or B may be infinite.
@@ -72,6 +76,8 @@
 %
 % CHEBFUN(F,...,'map',{MAPNAME,MAPPARS}) allows the use of mapped Chebyshev
 % expansions. See help chebfun/maps for more information.
+%
+% See also chebfunpref.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
@@ -83,7 +89,7 @@ classdef chebfun
         nfuns = 0;         % Number of funs 
         ends = [];         % List of breakpoints
         scl = 0;           % Indication of the vertical scale
-        imps = [];         % Impulse (delta funciton) info
+        imps = [];         % Impulse (delta function) info
         trans = false;     % Row-chebfun flag
         jacobian = anon('[]','',[],1); % AD (i.e., jacobian) information
         ID = [];           % Individual ID number of chebfun - for AD

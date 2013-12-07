@@ -3,7 +3,8 @@
 
 %%
 % (Chebfun example complex/SCToolbox.m)
-
+% [Tags: #complex, #conformalmap]
+  
 %%
 % Chebfun's SCRIBBLE command is good for illustrating conformal maps in the
 % complex plane. These maps can distort distances greatly but preserve all

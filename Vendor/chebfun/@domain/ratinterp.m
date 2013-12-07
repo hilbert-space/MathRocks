@@ -39,7 +39,7 @@ function [p,q,r,mu,nu,poles,residues] = ratinterp( d , f , m , n , NN , xi_type 
 %   See also CHEBFUN/RATINTERP, CHEBFUN/INTERP1, DOMAIN/INTERP1.
 
 %   Based on P. Gonnet,  R. Pachon, and L. N. Trefethen, "ROBUST RATIONAL
-%   INTERPOLATION AND LEAST-SQUARES", Electronic Transations on Numerical
+%   INTERPOLATION AND LEAST-SQUARES", Electronic Transactions on Numerical
 %   Analysis (ETNA), 38:146-167, 2011,
 %
 %   and R. Pachon, P. Gonnet and J. van Deun, "FAST AND STABLE RATIONAL
@@ -253,31 +253,53 @@ function [p,q,r,mu,nu,poles,residues] = ratinterp( d , f , m , n , NN , xi_type 
     md = 0.5 * sum(d); ihd = 2.0 / diff(d);
     if strncmpi( xi_type , 'type' , 4 )
         if xi_type(5) == '0'
-            % For speed, compute px and qx using Horner's scheme and convert
-            % to a chebfun.
-            px = a(end) * ones( mu+1 , 1 ); x = chebpts( mu+1 );
-            for k=mu:-1:1, px = a(k) + x .* px; end;
-            p = chebfun( px , d );
-            qx = b(end) * ones( nu+1 , 1 ); x = chebpts( nu+1 );
-            for k=nu:-1:1, qx = b(k) + x .* qx; end;
-            q = chebfun( qx , d );
-            r = @(x) polyval( a(mu+1:-1:1) , ihd*(x-md) ) ./ polyval( b(nu+1:-1:1) , ihd*(x-md) );
+            if nu > 0
+                % For speed, compute px and qx using Horner's scheme and convert
+                % to a chebfun.
+                px = a(end) * ones( mu+1 , 1 ); x = chebpts( mu+1 );
+                for k=mu:-1:1, px = a(k) + x .* px; end;
+                p = chebfun( px , d );
+                qx = b(end) * ones( nu+1 , 1 ); x = chebpts( nu+1 );
+                for k=nu:-1:1, qx = b(k) + x .* qx; end;
+                q = chebfun( qx , d );
+                r = @(x) polyval( a(mu+1:-1:1) , ihd*(x-md) ) ./ polyval( b(nu+1:-1:1) , ihd*(x-md) );
+            else
+                px = a(end) * ones( mu+1 , 1 ); x = chebpts( mu+1 );
+                for k=mu:-1:1, px = a(k) + x .* px; end;
+                p = chebfun( px , d );
+                q = chebfun( b , d );
+                r = @(x) polyval( a(mu+1:-1:1) , ihd*(x-md) ) / b;
+            end
         elseif xi_type(5) == '1'
-            px = idct1( a ); qx = idct1( b );
-            wp = sin((2*(0:mu)+1)*pi/(2*(mu+1))); wp(2:2:end) = -wp(2:2:end);
-            wq = sin((2*(0:nu)+1)*pi/(2*(nu+1))); wq(2:2:end) = -wq(2:2:end);
-            wp = wp * 2^(mu-nu)/(mu+1)*(nu+1);
-            p = chebfun( px , d , 'chebkind' , 1 );
-            q = chebfun( qx , d , 'chebkind' , 1 );
-            r = @(x) bary( ihd*(x-md) , px , qx , chebpts(mu+1,1) , chebpts(nu+1,1) , wp , wq );
+            if nu > 0
+                px = idct1( a ); qx = idct1( b );
+                wp = sin((2*(0:mu)+1)*pi/(2*(mu+1))); wp(2:2:end) = -wp(2:2:end);
+                wq = sin((2*(0:nu)+1)*pi/(2*(nu+1))); wq(2:2:end) = -wq(2:2:end);
+                wp = wp * 2^(mu-nu)/(mu+1)*(nu+1);
+                p = chebfun( px , d , 'chebkind' , 1 );
+                q = chebfun( qx , d , 'chebkind' , 1 );
+                r = @(x) bary( ihd*(x-md) , px , qx , chebpts(mu+1,1) , chebpts(nu+1,1) , wp , wq );
+            else
+                px = idct1( a );
+                p = chebfun( px , d , 'chebkind' , 1 );
+                q = chebfun( b , d , 'chebkind' , 1 );
+                r = @(x) p(x)/b;
+            end
         else
-            p = chebfun( a(end:-1:1) , 'coeffs' , d );
-            q = chebfun( b(end:-1:1) , 'coeffs' , d );
-            px = idct2( a ); qx = idct2( b );
-            wp = ones(1,mu+1); wp(2:2:end) = -1; wp(1) = 0.5; wp(end) = 0.5*wp(end);
-            wq = ones(1,nu+1); wq(2:2:end) = -1; wq(1) = 0.5; wq(end) = 0.5*wq(end);
-            wp = wp * (-2)^(mu-nu) / mu * nu;
-            r = @(x) bary( ihd*(x-md) , px , qx , chebpts(mu+1,2) , chebpts(nu+1,2) , wp , wq );
+            if nu > 0
+                p = chebfun( a(end:-1:1) , 'coeffs' , d );
+                q = chebfun( b(end:-1:1) , 'coeffs' , d );
+                px = idct2( a ); qx = idct2( b );
+                wp = ones(1,mu+1); wp(2:2:end) = -1; wp(1) = 0.5; wp(end) = 0.5*wp(end);
+                wq = ones(1,nu+1); wq(2:2:end) = -1; wq(1) = 0.5; wq(end) = 0.5*wq(end);
+                wp = wp * (-2)^(mu-nu) / mu * nu;
+                r = @(x) ratbary2( ihd*(x-md) , px , qx , chebpts(mu+1,2) , chebpts(nu+1,2) , wp , wq );
+            else
+                p = chebfun( a(end:-1:1) , 'coeffs' , d );
+                q = chebfun( b , d );
+                px = idct2( a );
+                r = @(x) p(x)/b;
+            end
         end
     else
         % Compute the basis C at the mu+1 and nu+1 Chebyshev points and
@@ -285,12 +307,18 @@ function [p,q,r,mu,nu,poles,residues] = ratinterp( d , f , m , n , NN , xi_type 
         Cf = ones(mu+1); Cf(:,2) = chebpts( mu+1 );
         for k=3:mu+1, Cf(:,k) = 2 * Cf(:,2) .* Cf(:,k-1) - Cf(:,k-2); end;
         Cf = Cf / R( 1:mu+1 , 1:mu+1 );
-        p = chebfun( Cf(:,1:mu+1) * a , d );
-        Cf = ones(nu+1); Cf(:,2) = chebpts( nu+1 );
-        for k=3:nu+1, Cf(:,k) = 2 * Cf(:,2) .* Cf(:,k-1) - Cf(:,k-2); end;
-        Cf = Cf / R( 1:nu+1 , 1:nu+1 );
-        q = chebfun( Cf(:,1:nu+1) * b , d );
-        r = @(x) p(x) ./ q(x);
+        if nu > 0
+            p = chebfun( Cf(:,1:mu+1) * a , d );
+            Cf = ones(nu+1); Cf(:,2) = chebpts( nu+1 );
+            for k=3:nu+1, Cf(:,k) = 2 * Cf(:,2) .* Cf(:,k-1) - Cf(:,k-2); end;
+            Cf = Cf / R( 1:nu+1 , 1:nu+1 );
+            q = chebfun( Cf(:,1:nu+1) * b , d );
+            r = @(x) p(x) ./ q(x);
+        else
+            p = chebfun( Cf(:,1:mu+1) * a , d );
+            q = chebfun( b , d );
+            r = @(x) p(x)/b;
+        end
     end
 
     % Does the user want the poles?
@@ -303,12 +331,12 @@ function [p,q,r,mu,nu,poles,residues] = ratinterp( d , f , m , n , NN , xi_type 
             [residues, poles] = residue(p,q);
 
             % prune out the spurious roots of q
-            rho_roots = ihd*(poles-md);
-            rho_roots = abs(rho_roots+sqrt(rho_roots.^2-1));
-            rho_roots(rho_roots<1) = 1./rho_roots(rho_roots<1);
-            rho = sqrt(eps)^(-1/length(q));
-            poles = poles(rho_roots<=rho);
-            residues = residues(rho_roots<=rho);
+%             rho_roots = ihd*(poles-md);
+%             rho_roots = abs(rho_roots+sqrt(rho_roots.^2-1));
+%             rho_roots(rho_roots<1) = 1./rho_roots(rho_roots<1);
+%             rho = sqrt(eps)^(-1/length(q));
+%             poles = poles(rho_roots<=rho);
+%             residues = residues(rho_roots<=rho);
             [poles,ind] = sort(poles);
             residues = residues(ind);
               
@@ -321,7 +349,8 @@ function [p,q,r,mu,nu,poles,residues] = ratinterp( d , f , m , n , NN , xi_type 
            
         % Nope, poles only.
         else
-            poles = roots( q , 'complex' );
+%             poles = roots( q , 'complex' );
+              poles = roots( q , 'all' );
         end
 
     end
@@ -330,7 +359,13 @@ end
 
 % Compact implementation of the barycentric interpolation formula
 % of the first type.
-function y = bary ( x , px , qx , xp , xq , wp , wq )
+function y = ratbary2 ( x , px , qx , xp , xq , wp , wq )
+    if size(x,1) > 1 && size(x,2) > 1
+        for k=1:size(x,2)
+            y(:,k) = ratbary2( x(:,k) , px , qx , xp , xq , wp , wq );
+        end
+        return;
+    end
     np = length(px); nq = length(qx);
     pxw = px.' .* wp; qxw = qx.' .* wq;
     y = zeros(size(x));
@@ -346,11 +381,12 @@ function y = bary ( x , px , qx , xp , xq , wp , wq )
     lp = prod( llp , 2 ); if ~isfinite(lp), lp = exp( sum( log( llp ) , 2 ) ); end;
     llq = repmat( x(:) , 1 , nq ) - repmat( xq' , length(x) , 1 );
     lq = prod( llq , 2 ); if ~isfinite(lq), lq = exp( sum( log( llq ) , 2 ) ); end;
+    lp( lp == 0 ) = 1; lq( lq == 0 ) = 1;
     y = reshape( y(:) .* lp ./ lq , size(x) );
 end
 
 % Rational barycentric formula, stable.
-function y = ratbary ( x , fp , fq , xi )
+function y = ratbary1 ( x , fp , fq , xi )
     n = length(fp);
     w = ones(n,1); w(2:2:end) = -1; w(1) = 0.5; w(end) = 0.5*w(end);
     y = zeros(size(x));

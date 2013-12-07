@@ -17,8 +17,9 @@ function A = setbc(A,bc)
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
-I = eye(A.domain);
-D = diff(A.domain);
+dom = A.domain;
+I = eye(dom);
+D = diff(dom);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % First, turn a mnemonic call into a bc struct.
@@ -61,18 +62,14 @@ if ~isstruct(bc)
       if m == 1 % Single system case
           B = I.varmat;
           for k = 1:A.difforder
-            if rem(k,2)==1
-              bc.left(end+1).op = B(1,:) - B(end,:);
-              bc.left(end).val = 0;
-            else
-              bc.right(end+1).op = B(1,:) - B(end,:);
-              bc.right(end).val = 0;
-            end
+            func = @(u) feval(diff(u,k-1),dom(1))-feval(diff(u,k-1),dom(end));
+            bc.other(end+1).op = linop(B(1,:) - B(end,:),func,dom);
+            bc.other(end).val = 0;
             B = D.varmat*B;
           end
       else      % Systems case
           order = max(A.difforder,[],1);
-           Z = zeros(A.domain); Z = Z.varmat;
+          Z = zeros(A.domain); Z = Z.varmat;
           for j = 1:numel(order)
               B = I.varmat;
               Zl = repmat(Z,1,j-1);
@@ -80,13 +77,8 @@ if ~isstruct(bc)
               Zr = repmat(Z,1,m-j);
               if j < m, Zr = Zr(1,:); end
               for k = 1:order(j)
-                if rem(k,2)==1
-                  bc.left(end+1).op = [Zl B(1,:)-B(end,:) Zr];
-                  bc.left(end).val = 0;
-                else
-                  bc.right(end+1).op = [Zl B(1,:)-B(end,:) Zr];
-                  bc.right(end).val = 0;
-                end
+                bc.other(end+1).op = linop([Zl B(1,:)-B(end,:) Zr],[],dom);
+                bc.other(end).val = 0;
                 B = D.varmat*B;
               end
           end

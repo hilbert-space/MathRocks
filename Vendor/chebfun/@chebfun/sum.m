@@ -117,8 +117,10 @@ else
     end
 
     % Deal with impulses
-    if not(isempty(f.imps(2:end,:)))
-        out = out + sum(f.imps(end,:));
+    if (size(f.imps,1) >= 2)
+        % only add the delta functions, since the integral of 
+        % derivatives of delta functions is always zero.
+        out = out + sum(f.imps(2,:));
     end
     
 end
@@ -145,13 +147,11 @@ if isnumeric(a) && isnumeric(b)
     out = cumsum(F);
     out = feval(out,b)-feval(out,a);
     if F.funreturn
-        out.jacobian = anon(['[der1,nonConst] = diff(f,u,''linop''); '...
-            'der = sum(domain(a,b))*restrict(domain(f),domain(a,b))*der1;'],...
-            {'f','a','b'},{F,a,b},1,'sum');
         % There's actually no need to introduce a breakpoint.
 %         out.jacobian = anon(['[der1,nonConst] = diff(f,u,''linop''); '...
 %             'der = sum(domain(a,b))*restrict(domain(f),domain(a,b))*der1;'],...
 %             {'f','a','b'},{F,a,b},1,'sum');
+        out.funreturn = 1;
      end
 elseif isa(a,'chebfun') && isa(b,'chebfun')
     out = cumsum(F);

@@ -46,13 +46,13 @@ if any(isnum)
     end
 end
 
-% Check size compatability.
+% Check size compatibility.
 bs1 = cellfun( @(A) A.blocksize(1), varargin );
 if any(bs1~=bs1(1))
   error('LINOP:horzcat:badsize','Each block must have the same number of rows.')
 end
 
-% Check domain compatability.
+% Check domain compatibility.
 dom = domaincheck( varargin{:} );
 
 % Cat the varmats.

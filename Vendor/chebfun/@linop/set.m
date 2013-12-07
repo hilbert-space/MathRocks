@@ -21,6 +21,8 @@ function L = set(L,propName,val)
             L.scale = val;
         case 'blocksize'
             L.blocksize = val;
+        case 'decoeffs'
+            L.decoeffs = val;
         case 'ID'
             L.ID = val;
         case 'jumpinfo'

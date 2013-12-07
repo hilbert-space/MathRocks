@@ -48,7 +48,7 @@ elseif ~isempty(bcArg) && isnumeric(bcArg)
         argString(end) = []; % Delete the last ,
         funString(end) = []; % Delete the last ,
         
-        % Evaluate to an anonymous funtion
+        % Evaluate to an anonymous function
         bcOut = eval(['@(',argString,')[',funString,']']);
     else
         error('CHEBFUN:chebop:createbc','Boundary condition do not have the correct dimension.')

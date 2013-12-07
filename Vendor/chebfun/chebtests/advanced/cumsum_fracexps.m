@@ -3,7 +3,7 @@ function pass = cumsum_fracexps
 % arises when a user wanyts to compute the indefinite integral of an 
 % unbounded, yet integrable function such as x.^(-0.5). 
 
-tol = 5e2*chebfunpref('eps');
+tol = 2e3*chebfunpref('eps');
 
 a = -.99; b = 1.99;
 xx = linspace(a,b,100);
@@ -101,7 +101,7 @@ if dotest
     clc, display(f), display(g),plot(g,'b',h,'.r');
 end
 err(9) = norm(g(xx) - h(xx),inf);
-pass(9) = err(8)< tol;
+pass(9) = err(9)< tol;
 
 %%
 

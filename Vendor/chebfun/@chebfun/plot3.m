@@ -106,7 +106,8 @@ while ~isempty(varargin)
     linedata = [linedata, lines, s];
     jumpdata = [jumpdata, jumps];
     jvaldata = [jvaldata, jumpval];
-    dummydata = [dummydata, lines{1}(1), NaN, NaN, s];
+    m = max(size(lines{1},2),max(size(lines{2},2),size(lines{3},2)));
+    dummydata = [dummydata, repmat({lines{1}(1), NaN, NaN}, 1, m), s];
 end
 markdata = [markdata, s];
 

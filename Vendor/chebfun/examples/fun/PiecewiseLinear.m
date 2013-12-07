@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example fun/PiecewiseLinear.m)
+% [Tags: #piecewise, #game, #interpolation, #rational]
 
 %% 
 % One ingredient that makes Chebyshev interpolation so powerful

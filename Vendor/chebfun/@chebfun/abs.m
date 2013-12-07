@@ -12,7 +12,7 @@ function Fout = abs(F)
         Fout(k).ID = newIDnum;
     end
 
-end
+end % abs()
 
 function Fout = abscol(F)
 
@@ -23,21 +23,35 @@ function Fout = abscol(F)
     elseif isreal(F)             % Real case
 
         r = roots(F,'nozerofun');% Abs is singular at roots 
-%         r = setdiff(r,F.ends).'; % ignore if already an endpoint
         
         % Avoid adding new breaks where not needed
         if ~isempty(r)           
             tol = 100*chebfunpref('eps').*max(min(diff(F.ends)),1);
             % Remove if sufficiently close to an existing break points
-            [rem ignored] = find(abs(bsxfun(@minus,r,F.ends))<tol);
+            [rem, ignored] = find(abs(bsxfun(@minus,r,F.ends))<tol);
             r(rem) = [];
         end
         if ~isempty(r) 
-            tol = 10*tol;
             % Remove if no sign change over small perturbation on either
             % side of the break
-            Fbks = feval(F,repmat(r,1,2)+repmat([-1 1]*tol,length(r),1));
-            r(logical(sum(sign(Fbks),2))) = [];
+            
+            % NH removed this AUg 2013 as it breaks when f is very small.
+            % We are better off introducing unneccessary breaks than missing
+            % necessary ones!
+            
+            % Choose a perturbation that involves:
+            %  * The vertical scale of F
+            %  * The size of the values in F
+            %  * The distance between roots
+            % [TODO]: This should be more systematic.
+%             r = unique(r);
+%             mdr = min(diff(r));
+%             if isempty(mdr), mdr = 1; end
+%             pert = F.scl.*min(sqrt(eps), eps+max(abs(get(F, 'vals'))))/eps*tol*mdr
+%             % Evaluate F on either side of proposed roots:
+%             Fbks = feval(F, repmat(r,1,2) + repmat([-1 1]*pert, length(r), 1))
+%             % Check for sign changes:
+%             r(logical(sum(sign(Fbks), 2))) = [];
         end
         
         % Deal with exponents and nontrivial maps separately
@@ -51,7 +65,7 @@ function Fout = abscol(F)
         % Linear maps can be treated much more efficiently!
         
         % Get the ends with the new breakpoints
-        ends = union( F.ends , r ); 
+        ends = union( F.ends , r );
         ends = ends(:).';
         m = length(ends)-1;
 
@@ -99,9 +113,17 @@ function Fout = abscol(F)
         Fout = F;
         Fout.nfuns = m;
         Fout.ends = ends;
-        Fout.imps = abs( feval( F , ends ) );
-        Fout.funs = simplify( fun( f ) );
-
+        % if there are delta functions
+        if(size(F.imps,1)>=2) 
+            % overlap to get the values of F
+            % at all the ends
+            [Fout F] = overlap(chebfun(0,ends),F);
+            % copy the impulses
+            Fout.imps = abs(F.imps);
+        else
+            Fout.imps = abs(feval(F,ends));
+        end
+        Fout.funs = simplify(fun(f));
 
     elseif isreal(1i*F)          % Imaginary case
 
@@ -113,7 +135,8 @@ function Fout = abscol(F)
         Fout = sqrt(conj(Fout).*Fout);
 
     end
-
+    
+    % take the absolute value of all impulses
     Fout.imps = abs(Fout.imps);
 
 end
@@ -140,5 +163,6 @@ function Fout = abscol_nontrivial(F,r)
         % We simply take the abs of the values
         Fout.funs(k).vals = abs(Fout.funs(k).vals);
     end
-
+    Fout.imps = abs(Fout.imps);
+    
 end

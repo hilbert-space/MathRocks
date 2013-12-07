@@ -3,7 +3,8 @@
 
 %%
 % (Chebfun example opt/DixonSzego.m)
-
+% [Tags: #optimization, #2D]
+  
 %%
 % The Chebfun example opt/Rosenbrock.m
 % shows how Chebfun can be used to minimize a function of two variables

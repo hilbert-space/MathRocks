@@ -15,11 +15,11 @@ if nargin==1
    m = 0;
    if A(1).trans
       for i = 1:n
-         m = max(m,length(A(i,:)));   
+         m = max(m,length(A(i)));   
       end
    else
       for i = 1:n
-         m = max(m,length(A(:,i)));   
+         m = max(m,length(A(i)));   
       end
    end
    tol = m*eps(max(s));

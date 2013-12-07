@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example quad/GaussQuad.m)
+% [Tags: #quadrature, #Gauss_quadrature, #quadrature_nodes, #quadrature_weights]
 
 %% Guass quadrature
 % Gauss (or more specifically "Gauss-Legendre") quadrature [1] provides an

@@ -3,7 +3,7 @@
 
 %%
 % (Chebfun example quad/GaussClenCurt.m)
-
+% [Tags: #quadrature, #Clenshaw_Curtis_quadrature, #Gauss_quadrature]
 %%
 % Suppose you have a function f on an interval:
 x = chebfun('x');

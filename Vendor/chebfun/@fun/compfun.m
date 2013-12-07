@@ -1,6 +1,6 @@
 function [gout flag] = compfun(g1,op,g2,pref)
 %COMPFUN  Compostition of two funs
-% GOUT = COMPFUN(G1,OP,G2) returns GOUT = OP(G1) or GOUT = OG(G1,G2) where
+% GOUT = COMPFUN(G1,OP,G2) returns GOUT = OP(G1) or GOUT = OP(G1,G2) where
 % GOUT, G1, and G2 are funs, and OP is a function handle. This function is
 % called at the chebfun level (CHEBFUN/PRIVATE/COMP.M)
 %

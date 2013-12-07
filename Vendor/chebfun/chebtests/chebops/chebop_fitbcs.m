@@ -19,7 +19,8 @@ pass(2) = compAbs(u(-1),1) && compAbs(u(1),2) && all(u.ends == [-1 0 1]);
 
 %% Scalar case, interior point condition
 N = chebop(@(u) diff(u,2));
-N.lbc = 1; N.bc = @(u) u(.5)-3;
+N.lbc = 1; 
+N.bc = @(u) u(.5)-3;
 L = linop(N);
 u = fitBCs(L);
 pass(3) = compAbs(u(-1),1) && compAbs(u(.5),3);

@@ -19,6 +19,8 @@ function B = barymat(M,N,map,w) %BARYMAT(Y,X,W)
 %  Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 %  See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
+warning('off', 'MATLAB:divideByZero'); % TODO: Delete this.
+
 if length(M) == 1 && length(M) == length(N) 
 % Size of matrix is given.
     if M == N    % Nothing to do here.
@@ -63,7 +65,7 @@ end
 if M >= 500 && N >= 1000         % <-- Experimentally determined.
 % Testing shows BSXFUN is faster in this regime    
     B = bsxfun(@minus,y,x');     % Repmat(Y-X')
-    B = bsxfun(@rdivide,w',B);  % w(k)/(y(j)-x(k))
+    B = bsxfun(@rdivide,w',B);   % w(k)/(y(j)-x(k))
     c = 1./sum(B,2);             % Normalisation ('denom' in bary-speak).
     B = bsxfun(@times,B,c);
 else    
@@ -78,7 +80,7 @@ else
     end
 end
 
-% Where points conincide there will be division by zeros (as with bary.m). 
+% Where points coincide there will be division by zeros (as with bary.m). 
 % Replace these entries with the identity.
 B(isnan(B)) = 1;
 

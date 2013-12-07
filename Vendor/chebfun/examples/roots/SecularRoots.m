@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example roots/SecularRoots.m)
+% [Tags: #roots, #pole]
 
 %%
 % Sometimes one needs to find the roots

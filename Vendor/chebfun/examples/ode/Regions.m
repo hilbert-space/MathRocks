@@ -1,18 +1,18 @@
-%% Stability Regions of ODE Formulas
+%% Stability regions of ODE formulas
 % Nick Trefethen, February 2011
 
 %%
 % (Chebfun example ode/Regions.m)
+% [Tags: #stabilityregions]
 
 %%
-% Stability regions are a standard tool in the analysis of numerical formulas for
-% ODE initial-value problems.
-% Given a formula -- 2nd-order Adams-Bashforth, say, or 3rd-order
-% backward differentiation -- the stability region is
-% the region of the complex lambda*dt - plane where the associated
-% scalar constant-coefficient recurrence relation is stable.
-% Here dt is the time step size, and lambda is the parameter
-% in the scalar constant-coefficient linear model problem du/dt = lambda*u.
+% Stability regions are a standard tool in the analysis of numerical
+% formulas for ODE initial-value problems. Given a formula -- 2nd-order
+% Adams-Bashforth, say, or 3rd-order backward differentiation -- the
+% stability region is the region of the complex lambda*dt - plane where the
+% associated scalar constant-coefficient recurrence relation is stable.
+% Here dt is the time step size, and lambda is the parameter in the scalar
+% constant-coefficient linear model problem du/dt = lambda*u.
 
 %%
 % Small stability regions indicate that you might need very small
@@ -96,6 +96,5 @@ title('Backward differentiation close-up',FS,16)
 %%
 % References:
 % 
-% E. Hairer and G. Wanner,
-% Solving Ordinary Differential Equatins II, Stiff and Differential-Algebraic Problems,
-% Springer, 1996.
+% E. Hairer and G. Wanner, Solving Ordinary Differential Equatins II, Stiff
+% and Differential-Algebraic Problems, Springer, 1996.

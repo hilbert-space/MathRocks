@@ -28,7 +28,10 @@ function rts = roots(f,varargin)
 % ROOTS(chebfun(0,[A,B])) will return by default a zero at the midpoint of 
 % the interval [A B], i.e., (A+B)/2. ROOTS(chebfun(0,[A,B]),'nozerofun') 
 % will prevent this.
-
+%
+% ROOTS(F) will return by default points where F changes sign due
+% to a jump discontinuity. ROOTS(F,'nojump') will prevent this.
+%
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
@@ -43,6 +46,7 @@ f = set(f,'funreturn',0);
 % Default preferences
 rootspref = struct('all', 0, 'recurse', 1, 'prune', 0, 'polish', chebfunpref('polishroots') , 'old' , false );
 zerofun = 1;
+jumproot = 1;
 recursehasbeenset = 0;
 for k = 1:nargin-1
     argin = varargin{k};
@@ -62,6 +66,10 @@ for k = 1:nargin-1
             zerofun = 1;  
         case 'nozerofun'
             zerofun = 0;              
+        case 'jump'
+            jumproot = 1;  
+        case 'nojump'
+            jumproot = 0;              
         case 'old'
             rootspref.old = true;              
         otherwise
@@ -82,7 +90,9 @@ rs = [];
 % rts = []; % All roots will be stored here
 rts = f.ends(abs(f.imps(1,:))<tol*hs*f.scl).'; % Zero imps are roots.
 % But don't include if function is zero anyway (prevents double counting).
-rts(feval(f,rts,'left')<tol*hs*f.scl | feval(f,rts,'right')<tol*hs*f.scl) = [];
+if ~isempty(rts)
+    rts(feval(f,rts,'left')<tol*hs*f.scl | feval(f,rts,'right')<tol*hs*f.scl) = [];
+end
 realf = isreal(f);
 for i = 1:f.nfuns
     b = ends(i+1);
@@ -110,14 +120,16 @@ for i = 1:f.nfuns
         end       
     end
     rts = [rts; rs];
-    % We add roots at jumps if the sign of the function changes across them.
-    if realf && i<f.nfuns && (isempty(rts) || abs(rts(end)-b)>tol*hs )
-        rfun = f.funs(i+1);
-        if lfun.vals(end)*rfun.vals(1) <= 0,
-%             % but not if the function blows up there.
-%             if ~(lfun.exps(2) < 0) && ~(rfun.exps(1) < 0)
-                rts = [rts; b];
-%             end
+    if jumproot
+        % We add roots at jumps if the sign of the function changes across them.
+        if realf && i<f.nfuns && (isempty(rts) || abs(rts(end)-b)>tol*hs )
+            rfun = f.funs(i+1);
+            if lfun.vals(end)*rfun.vals(1) <= 0,
+    %             % but not if the function blows up there.
+    %             if ~(lfun.exps(2) < 0) && ~(rfun.exps(1) < 0)
+                    rts = [rts; b];
+    %             end
+            end
         end
     end
     rts = sort(rts);

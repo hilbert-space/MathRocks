@@ -5,6 +5,7 @@ function Local()
 
 %%
 % (Chebfun example approx/Local.m)
+% [Tags: #complexity]
 
 %%
 % Sometimes a function f is more complex in some regions than others.

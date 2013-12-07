@@ -1,8 +1,9 @@
-%% Computing The Complex Singularities Of The Three Body Problem
+%% Three body problem complex singularities
 % Marcus Webb, 23rd August 2011
 
 %%
 % (Chebfun example ode/ThreeBodyProblem.m)
+% [Tags: #nonlinearODE, #ODEsystem, #astrophysics, #rational]
 
 %% 
 % This example is motivated by a correspondence with Divakar Viswanath,

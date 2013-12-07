@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example fun/ValentinesDay.m)
+% [Tags: #gift, #heart]
 
 %%
 % Happy Valentine's Day to all Chebfun users!

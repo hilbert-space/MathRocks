@@ -2,7 +2,7 @@ function [u nrmDeltaRelvec isLin] = solvebvp_nonlin(N,rhs,u,pref,handles)
 % SOLVE_BVP_ROUTINES Private function of the chebop class.
 %
 % This function gets called by nonlinear backslash and solvebvp. It both
-% treates the cases where the user requests damped Newton iteration and
+% treats the cases where the user requests damped Newton iteration and
 % pure Newton iteration.
 %
 % We can safely assume we have a u0 when we enter this method -- solvebvp.m
@@ -330,8 +330,7 @@ end
         % have periodic BCs (i.e. we check for example whether u(0) = u(1),
         % u'(0) = u'(1) etc.).
         if strcmpi(bcFunOther,'periodic')
-            sA = struct(A);
-            diffOrderA =  sA.difforder;
+            diffOrderA =  get(A,'difforder');
             for orderCounter = 0:diffOrderA - 1
                 sn(2) = sn(2) + norm(feval(diff(u,orderCounter),b)-feval(diff(u,orderCounter),a))^2;
             end
@@ -451,6 +450,8 @@ end
         % order to allow evaluation, we need to create a cell array with
         % entries equal to each column of the quasimatrix representing the
         % current solution.
+        
+        currentGuess = jacreset(currentGuess);
         
         if numberOfInputVariables == 1
             switch type

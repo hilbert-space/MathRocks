@@ -77,23 +77,28 @@ function g = ctor(g,op,ends,varargin)
                     ' input argument. Other arguments are not used.'])
             end
             vals = op(:);
-            g.n = length(op); g.vals = vals;
-            if pref.chebkind == 1
-                % Place values back in chebpoints of second kind.
-                coeffs = chebpoly(g,1); 
-                g.vals = chebpolyval(coeffs);
+            if isfield(pref,'equi')
+                op = funqui(vals,ends);
+                pref.minsamples = length(vals);
             else
-                coeffs = chebpoly(g,2);   
+                g.n = length(op); g.vals = vals;
+                if pref.chebkind == 1
+                    % Place values back in chebpoints of second kind.
+                    coeffs = chebpoly(g,1); 
+                    g.vals = chebpolyval(coeffs);
+                else
+                    coeffs = chebpoly(g,2);   
+                end
+                % Assign data to the fun.
+                g.coeffs = coeffs; g.scl.v = max(g.scl.v, norm(op,inf));
+                if isfield(pref,'exps') && ~any(isnan(pref.exps)) && ~any(isinf(pref.exps)),
+                    g.exps = pref.exps;
+                else
+                    g.exps = [0 0];
+                end
+                g.ish = true;
+                return
             end
-            % Assign data to the fun.
-            g.coeffs = coeffs; g.scl.v = max(g.scl.v, norm(op,inf));
-            if isfield(pref,'exps') && ~any(isnan(pref.exps)) && ~any(isinf(pref.exps)),
-                g.exps = pref.exps;
-            else
-                g.exps = [0 0];
-            end
-            g.ish = true;
-            return
         case 'char'
             % Convert string input to anonymous function.
             op = str2op(op);

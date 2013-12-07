@@ -79,7 +79,7 @@ function P = mat(d,s,lr,n)
     elseif isempty(breaks)
         % Map / no breaks
         if isstruct(map), map = map.for; end
-        P = barymat(x,map(chebpts(n)));
+        P = barymat(map(x),map(chebpts(n)));
     elseif isempty(map)
         % Breaks / no map
         P = barymatp(s,n,breaks,[],lr);

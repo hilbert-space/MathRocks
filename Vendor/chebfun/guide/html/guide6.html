@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHEBFUN GUIDE 6: QUASIMATRICES AND LEAST-SQUARES</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="guide6.m"><style type="text/css">
+      --><title>CHEBFUN GUIDE 6: QUASIMATRICES AND LEAST-SQUARES</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide6.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -54,6 +54,16 @@ span.syscmd { color:#B28C00 }
 
 .footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
 .footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
 
   </style></head><body><div class="content"><h1>CHEBFUN GUIDE 6: QUASIMATRICES AND LEAST-SQUARES</h1><!--introduction--><p>Lloyd N. Trefethen, November 2009, revised Feburary 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">6.1  Quasimatrices and "spy"</a></li><li><a href="#10">6.2 Backslash and least-squares</a></li><li><a href="#17">6.3 QR factorization</a></li><li><a href="#26">6.4 SVD, norm, cond</a></li><li><a href="#45">6.5 Other norms</a></li><li><a href="#50">6.6 rank, null, orth, pinv</a></li><li><a href="#56">6.7  References</a></li></ul></div><h2>6.1  Quasimatrices and "spy"<a name="1"></a></h2><p>A chebfun can have more than one column, or if it is transposed, it can have more than one row.  In these cases we get a <b>quasimatrix</b>, a "matrix" in which one of the dimensions is discrete as usual but the other is continuous.  Our default choice will be that of an "infinity by n" quasimatrix consisting of n columns, each of which is a chebfun.  When it is important to specify the orientation we use the term <b>column quasimatrix</b> or <b>row quasimatrix</b>.</p><p>Here for example is the quasimatrix consisting of the first six powers of x on the interval [-1,1].  The command "size" can be used to identify the continuous dimension, and to find the numbers of rows or columns:</p><pre class="codeinput">  x = chebfun(<span class="string">'x'</span>);
   A = [1 x x.^2 x.^3 x.^4 x.^5];
@@ -75,23 +85,23 @@ ans =
    0.285714285714286
 </pre><p>More generally, if A and B are column quasimatrices with m and n columns, respectively, then A'*B is the m x n matrix of inner products of those columns.  Here is the 6x6 example corresponding to B=A:</p><pre class="codeinput">  format <span class="string">short</span>, A'*A, format <span class="string">long</span>
 </pre><pre class="codeoutput">ans =
-    2.0000   -0.0000    0.6667    0.0000    0.4000    0.0000
-   -0.0000    0.6667    0.0000    0.4000   -0.0000    0.2857
-    0.6667    0.0000    0.4000    0.0000    0.2857   -0.0000
-    0.0000    0.4000    0.0000    0.2857   -0.0000    0.2222
-    0.4000   -0.0000    0.2857   -0.0000    0.2222   -0.0000
-    0.0000    0.2857   -0.0000    0.2222   -0.0000    0.1818
+    2.0000   -0.0000    0.6667   -0.0000    0.4000    0.0000
+   -0.0000    0.6667         0    0.4000   -0.0000    0.2857
+    0.6667   -0.0000    0.4000   -0.0000    0.2857    0.0000
+   -0.0000    0.4000         0    0.2857   -0.0000    0.2222
+    0.4000   -0.0000    0.2857   -0.0000    0.2222    0.0000
+    0.0000    0.2857   -0.0000    0.2222    0.0000    0.1818
 </pre><p>You can get an idea of the shape of a quasimatrix with the overloaded SPY command</p><pre class="codeinput">  subplot(1,2,1), spy(A), title <span class="string">A</span>
   subplot(1,2,2), spy(A'), title(<span class="string">'A'''</span>)
 </pre><img vspace="5" hspace="5" src="guide6_02.png" alt=""> <h2>6.2 Backslash and least-squares<a name="10"></a></h2><p>In Matlab, the command c = A\b computes the solution to the system of equations Ac = b if A is a square matrix, whereas if A is rectangular, with more rows than columns, it computes the least squares solution, the vector c that minimizes norm(A*c-b).  A quasimatrix is always rectangular, and "\" has accordingly been overloaded to carry out the appropriate continuous least-squares computation. (The actual Matlab command that handles backslash is called mldivide.)</p><p>For example, continuing with the same chebfun x and quasimatrix A as above, consider the following sequence:</p><pre class="codeinput">  f = exp(x).*sin(6*x);
   c = A\f
 </pre><pre class="codeoutput">c =
-   0.309654988398407
-   4.640757102742477
-  -2.157249816336411
- -20.041645425109216
-   1.073963006923387
-  15.477982292828056
+   0.309654988398406
+   4.640757102742475
+  -2.157249816336403
+ -20.041645425109184
+   1.073963006923376
+  15.477982292828040
 </pre><p>The vector c can be interpreted as the vector of coefficients of the least-squares fit to f by a linear combination of the functions 1, x,..., x^5.  Here is a plot of f (in blue) and the least-squares approximation (in red), which we label ffit.</p><pre class="codeinput">  ffit = A*c;
   clf, plot(f), grid <span class="string">on</span>, hold <span class="string">on</span>
   plot(ffit,<span class="string">'r'</span>), hold <span class="string">off</span>
@@ -125,10 +135,10 @@ ans =
   clf, plot(Q), grid <span class="string">on</span>
 </pre><img vspace="5" hspace="5" src="guide6_08.png" alt=""> <p>(A slicker way to produce this plot in Chebfun would be simply to type plot(legpoly(0:5)).)</p><p>If A=QR, then A*inv (R) = Q, and here is inv (R):</p><pre class="codeinput">  format <span class="string">short</span>, inv(R), format <span class="string">long</span>
 </pre><pre class="codeoutput">ans =
-    1.0000    0.0000   -0.5000   -0.0000    0.3750    0.0000
-         0    1.0000    0.0000   -1.5000    0.0000    1.8750
-         0         0    1.5000    0.0000   -3.7500    0.0000
-         0         0         0    2.5000   -0.0000   -8.7500
+    1.0000    0.0000   -0.5000    0.0000    0.3750   -0.0000
+         0    1.0000    0.0000   -1.5000   -0.0000    1.8750
+         0         0    1.5000   -0.0000   -3.7500    0.0000
+         0         0         0    2.5000    0.0000   -8.7500
          0         0         0         0    4.3750   -0.0000
          0         0         0         0         0    7.8750
 </pre><p>The kth column of inv (R) is the vector of coefficients for the expansion of the kth column of Q as a linear combination of the columns of A, that is, the monomials 1, x, x^2,....  In other words, the kth column of inv (R) is the vector of coefficients of the kth Legendre polynomial.  For example, we see from the matrix that P_3(x) = 2.5x^3 - 1.5x.</p><p>Here is what the hat functions look like after orthonormalization:</p><pre class="codeinput">  [Q2,R2] = qr(A2);
@@ -136,7 +146,7 @@ ans =
 </pre><img vspace="5" hspace="5" src="guide6_09.png" alt=""> <h2>6.4 SVD, norm, cond<a name="26"></a></h2><p>An m x n matrix A defines a map from R^n to R^m, and in particular, A maps the unit ball in R^n to a hyperellipsoid of dimension &lt;=n in R^m.  The (reduced, skinny, condensed,...) <b>SVD</b> or <b>singular value decomposition</b> exhibits this map by providing a factorization  AV = US or equivalently A = USV', where U is m x n with orthonormal columns, S is diagonal with nonincreasing nonnegative diagonal entries known as the <b>singular values</b>, and V is n x n and orthogonal. A maps v_j, the jth column of V or jth <b>right singular vector</b>, to s_j times u_j, the jth column of U or jth <b>left singular vector</b>, which is the vector defining the jth largest semiaxis of the hyperellipsoid.  See Chapters 4 and 5 of [Trefethen &amp; Bau 1997].</p><p>If A is an inf x n quasimatrix, everything is analogous:</p><pre>    A = USV',  where A is inf x n,  U is inf x n,  S is n x n,  V is n x n.</pre><p>The image of the unit ball in R^n under A is still a hyperellipsoid of dimension &lt;=n, which now lies within an infinite-dimensional function space. The columns of Q are orthonormal functions and S and V have the same properties as in the matrix case.</p><p>For example, here are the singular values of the matrix A defined earlier with columns 1,x,...,x^5:</p><pre class="codeinput">  s = svd(A,0)
 </pre><pre class="codeoutput">s =
    1.532062889375340
-   1.032551897396699
+   1.032551897396700
    0.518125864967968
    0.258419769500035
    0.080938947808205
@@ -152,39 +162,39 @@ ans =
   v1 = V(:,1)
 </pre><pre class="codeoutput">v1 =
    0.913034433780914
-  -0.000000000000000
+                   0
    0.344611116356111
   -0.000000000000000
    0.218200140270717
-  -0.000000000000000
+   0.000000000000000
 </pre><img vspace="5" hspace="5" src="guide6_10.png" alt=""> <p>Next we confirm that the norm of v1 is 1:</p><pre class="codeinput">  norm(v1)
 </pre><pre class="codeoutput">ans =
-   1.000000000000000
+     1
 </pre><p>This vector is mapped by A to the chebfun s1*u1:</p><pre class="codeinput">  u1 = U(:,1);
   norm(u1)
 </pre><pre class="codeoutput">ans =
-   1.000000000000000
+     1
 </pre><pre class="codeinput">  s1 = S(1,1)
 </pre><pre class="codeoutput">s1 =
    1.532062889375340
 </pre><pre class="codeinput">  norm(A*v1)
 </pre><pre class="codeoutput">ans =
-   1.532062889375340
+   1.532062889375341
 </pre><pre class="codeinput">  norm(A*v1-s1*u1)
 </pre><pre class="codeoutput">ans =
-     8.763429766539204e-16
+     5.698507466194077e-16
 </pre><p>Similarly, the minimal singular value and corresponding singular vectors describe the minimum amount that A can enlarge an input.  The following commands plot the extreme functions A*v1 (blue) and A*vn (red).  We can interpret these as the largest and smallest degree-5 polynomials, as measured in the 2-norm over [-1,1], whose coefficient vectors have 2-norm equal to 1.</p><pre class="codeinput">  clf, plot(A*v1), grid <span class="string">on</span>, hold <span class="string">on</span>
   vn = V(:,end);
   plot(A*vn,<span class="string">'r'</span>), hold <span class="string">off</span>
 </pre><img vspace="5" hspace="5" src="guide6_11.png" alt=""> <p>The ratio of the largest and smallest singular values -- the eccentricity of the hyperellipsoid -- is the condition number of A:</p><pre class="codeinput">  max(s)/min(s)
 </pre><pre class="codeoutput">ans =
-  43.247975704139805
+  43.247975704139762
 </pre><pre class="codeinput">  cond(A)
 </pre><pre class="codeoutput">ans =
-  43.247975704139805
+  43.247975704139762
 </pre><p>The fact that cond(A) is a good deal greater than 1 reflects the ill-conditioning of the monomials 1,x,...,x^5 as a basis for polynomials in [-1,1].  The effect becomes rapidly stronger as we take more terms in the sequence:</p><pre class="codeinput">  cond([1 x x.^2 x.^3 x.^4 x.^5 x.^6 x.^7 x.^8 x.^9 x.^10])
 </pre><pre class="codeoutput">ans =
-     3.072959852624408e+03
+     3.072959852624494e+03
 </pre><p>By contrast a quasimatrix formed of suitably normalized Legendre polynomials has condition number 1, since they are orthonormal:</p><pre class="codeinput">cond(legpoly(0:10,<span class="string">'norm'</span>))
 </pre><pre class="codeoutput">ans =
    1.000000000000001
@@ -222,8 +232,7 @@ vertical scale = 1.4
 </pre><p>If A is an inf x n column quasimatrix, the command pinv(A) computes the pseudoinverse of A, an n x inf row quasimatrix such that pinv(A)*c = A\c.</p><p>Here is a summary of the dimensions of these objects:</p><pre class="codeinput">  subplot(1,3,1), spy(null(B)), title <span class="string">null(B)</span>
   subplot(1,3,2), spy(orth(B)), title <span class="string">orth(B)</span>
   subplot(1,3,3), spy(pinv(A)), title <span class="string">pinv(A)</span>
-</pre><img vspace="5" hspace="5" src="guide6_12.png" alt=""> <h2>6.7  References<a name="56"></a></h2><p>[Abramowitz &amp; Stegun 1972] M. A. Abramowitz and I. A. Stegun, eds., Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables, 9th printing, Dover, 1972.</p><p>[Battles 2006] Z. Battles, Numerical Linear Algebra for Continuous Functions, DPhil thesis, Oxford University Computing Laboratory, 2006.</p><p>[Battles &amp; Trefethen 2004] Z. Battles and L. N. Trefethen, "An extension of Matlab to continuous functions and operators", SIAM Journal on Scientific Computing 25 (2004), 1743-1770.</p><p>[de Boor 1991] C. de Boor, "An alternative approach to (the teaching of) rank, basis, and dimension", Linear Algebra and its Applications 146 (1991), 221-229.</p><p>[Stewart 1998] G. W. Stewart, Afternotes Goes to Graduate School: Lectures on Advanced Numerical Analysis, SIAM, 1998.</p><p>[Trefethen 2008] L. N. Trefethen, "Householder triangularization of a quasimatrix", IMA Journal on Numerical Analysis 30 (2010), 887-897.</p><p>[Trefethen &amp; Bau 1997] L. N. Trefethen and D. Bau, III, Numerical Linear Algebra, SIAM, 1997.</p><p class="footer"><br>
-      Published with MATLAB&reg; 7.14<br></p></div><!--
+</pre><img vspace="5" hspace="5" src="guide6_12.png" alt=""> <h2>6.7  References<a name="56"></a></h2><p>[Abramowitz &amp; Stegun 1972] M. A. Abramowitz and I. A. Stegun, eds., Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables, 9th printing, Dover, 1972.</p><p>[Battles 2006] Z. Battles, Numerical Linear Algebra for Continuous Functions, DPhil thesis, Oxford University Computing Laboratory, 2006.</p><p>[Battles &amp; Trefethen 2004] Z. Battles and L. N. Trefethen, "An extension of Matlab to continuous functions and operators", SIAM Journal on Scientific Computing 25 (2004), 1743-1770.</p><p>[de Boor 1991] C. de Boor, "An alternative approach to (the teaching of) rank, basis, and dimension", Linear Algebra and its Applications 146 (1991), 221-229.</p><p>[Stewart 1998] G. W. Stewart, Afternotes Goes to Graduate School: Lectures on Advanced Numerical Analysis, SIAM, 1998.</p><p>[Trefethen 2010] L. N. Trefethen, "Householder triangularization of a quasimatrix", IMA Journal on Numerical Analysis 30 (2010), 887-897.</p><p>[Trefethen &amp; Bau 1997] L. N. Trefethen and D. Bau, III, Numerical Linear Algebra, SIAM, 1997.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CHEBFUN GUIDE 6: QUASIMATRICES AND LEAST-SQUARES
 % Lloyd N. Trefethen, November 2009, revised Feburary 2011
@@ -641,7 +650,7 @@ cond(chebpoly(0:10))
 % [Stewart 1998] G. W. Stewart, Afternotes Goes to Graduate School:
 % Lectures on Advanced Numerical Analysis, SIAM, 1998.
 %
-% [Trefethen 2008] L. N. Trefethen, "Householder triangularization of
+% [Trefethen 2010] L. N. Trefethen, "Householder triangularization of
 % a quasimatrix", IMA Journal on Numerical Analysis 30 (2010), 887-897.
 %
 % [Trefethen & Bau 1997] L. N. Trefethen and D. Bau, III, Numerical Linear

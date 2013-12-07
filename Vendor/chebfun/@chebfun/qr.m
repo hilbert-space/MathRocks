@@ -49,13 +49,13 @@ function [Q,R] = qr(A,econ)
 
     % Check for exponents
     hasexps = false;
-    for k=1:numel(A), f = A(:,k); for j=1:f.nfuns
+    for k=1:numel(A), f = A(k); for j=1:f.nfuns
       hasexps = hasexps || any( f.funs(j).exps ~= 0 );
     end, end
 
     % Check for non-linear maps
     nonlinmap = false;
-    for k=1:numel(A), f = A(:,k); for j=1:f.nfuns
+    for k=1:numel(A), f = A(k); for j=1:f.nfuns
       nonlinmap = nonlinmap || ~strcmp( f.funs(j).map.name , 'linear' );
     end, end
 
@@ -68,7 +68,8 @@ function [Q,R] = qr(A,econ)
 
         % Get the set of breakpoints for all funs in A
         ends = [];
-        for k=1:n, ends = union( ends , A(:,k).ends ); ends = ends(:).'; end
+        for k=1:n, ends = union( ends , A(k).ends ); end
+        ends = ends(:).';
         iends = ends(2:end-1)';
         m = length(ends)-1;
 
@@ -76,7 +77,7 @@ function [Q,R] = qr(A,econ)
         % will have to multiply with the columns of E and the norm of A's columns
         sizes = zeros( m , n );
         for k=1:n
-            f = A(:,k); ef = f.ends;
+            f = A(k); ef = f.ends;
             for j=1:m
                 sizes(j,k) = f.funs( find( ef > (ends(j)+ends(j+1))/2 , 1 ) - 1 ).n;
             end
@@ -91,7 +92,7 @@ function [Q,R] = qr(A,econ)
         dA = zeros( inds(end) , n );
         if m > 1
             for k=1:n
-                f = A(:,k); ef = f.ends;
+                f = A(k); ef = f.ends;
                 for j=1:m
                     ind = find( ef > (ends(j)+ends(j+1))/2 , 1 ) - 1;
                     dA( inds(j)+1:inds(j+1) , k ) = feval( f.funs(ind) , pts( inds(j)+1:inds(j+1) ) );
@@ -99,7 +100,7 @@ function [Q,R] = qr(A,econ)
             end
         else
             for k=1:n
-                dA( : , k ) = chebpolyval( [ zeros( sizes(1) - A(:,k).funs.n , 1 ) ; A(:,k).funs.coeffs ] );
+                dA( : , k ) = chebpolyval( [ zeros( sizes(1) - A(k).funs.n , 1 ) ; A(k).funs.coeffs ] );
             end
         end
         
@@ -234,7 +235,7 @@ function [Q,R] = qr(A,econ)
 
         Q = E;
         for k = n:-1:1
-          v = V(:,k);
+          v = V(k);
           J = k:n;
           w = v'*Q(J);
           Q(J) = Q(J) - 2*v*w;

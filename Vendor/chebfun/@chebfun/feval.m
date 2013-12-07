@@ -175,7 +175,7 @@ if (size(f.imps,1) == 1 || ~any(any(f.imps(2:end,:)))) %&& any(f.imps(1,:))
             fx( x==ends(k) ) = f.imps(1,k);
         end
     else
-        [ignored,ignored,pos] = intersect(x,ends); %#ok<ASGLU>
+        [ignored,ignored,pos] = intersect(x(:),ends); %#ok<ASGLU>
         for k = 1:length(pos)
             fx( x == ends(pos(k)) ) = f.imps(1,pos(k));
         end

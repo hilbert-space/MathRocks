@@ -1,7 +1,7 @@
 classdef anon < handle
 % ANON constructor for the anon class, which is used to work with AD
-% information (and oparrays) in Chebfun. . Anons function in a similar way
-% to anonymous functions in Matlab, but avois memory overheads and
+% information (and oparrays) in Chebfun. Anons function in a similar way
+% to anonymous functions in Matlab, but avoids memory overheads and
 % inefficienies associated with anonymous functions.
 %
 % A = ANON(FUNC,VARIABLESNAME,WORKSPACE,TYPE,DEPTH, PARENT) returns an

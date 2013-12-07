@@ -8,7 +8,8 @@ function u = pde15s(N, t, varargin)
 %
 % Example 1: Nonlinear Advection
 %   d = [-1 1];
-%   [N x] = chebop(d);
+%   N = chebop(d);
+%   x = chebfun(@(x) x,d);
 %   N.op = @(u,t,x,D) -(1+0.6*sin(pi*x)).*D(u);
 %   N.init = exp(3*sin(pi*x));
 %   N.bc = 'periodic';
@@ -17,7 +18,8 @@ function u = pde15s(N, t, varargin)
 %
 % Example 2: Kuramoto-Sivashinsky
 %   d = [-1 1];
-%   [N x] = chebop(d);
+%   N = chebop(d);
+%   x = chebfun(@(x) x,d);
 %   N.op = @(u,D) u.*D(u)-D(u,2)-0.006*D(u,4);
 %   N.init = 1 + 0.5*exp(-40*x.^2);
 %   N.lbc = struct('op',{'dirichlet','neumann'},'val',{1,2});
@@ -27,13 +29,14 @@ function u = pde15s(N, t, varargin)
 %
 % Example 3: Chemical reaction (system)
 %   d = [-1 1];
-%   [N x] = chebop(d);
+%   N = chebop(d);
+%   x = chebfun(@(x) x,d);
 %   N.init = [ 1-erf(10*(x+0.7)) , 1 + erf(10*(x-0.7)) , chebfun(0,d) ];
 %   N.op = @(u,v,w,diff)  [ 0.1*diff(u,2) - 100*u.*v , ...
 %                      0.2*diff(v,2) - 100*u.*v , ...
 %                     .001*diff(w,2) + 2*100*u.*v ];
-%   N.lbc = 'neumann';     
-%   N.rbc = 'neumann';     
+%   N.lbc = @(u,v,w,diff) [diff(u), diff(v), diff(w)];
+%   N.rbc = @(u,v,w,diff) [diff(u), diff(v), diff(w)];
 %   uu = pde15s(N,0:.1:3);
 %   mesh(uu{3})
 %
@@ -42,7 +45,7 @@ function u = pde15s(N, t, varargin)
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
-if strcmpi(N.lbc,'periodic') || strcmpi(N.rbc,'periodic'), 
+if strcmpi(N.bc,'periodic')
     bc = 'periodic';
 else
     if strcmpi(N.lbcshow,'dirichlet') || strcmpi(N.lbcshow,'neumann')

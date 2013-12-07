@@ -1,4 +1,4 @@
-function [g gsing] = cumsum(g)
+function [g gsing Cm] = cumsum(g)
 % CUMSUM	Indefinite integral
 % CUMSUM(G) is the indefinite integral of the fun G.
 % If the fun G of length n is represented as
@@ -41,6 +41,7 @@ function [g gsing] = cumsum(g)
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
 ends = g.map.par(1:2);
+Cm = 0;
 
 % linear map (simplest case)
 if strcmp(g.map.name,'linear')
@@ -51,16 +52,17 @@ if strcmp(g.map.name,'linear')
         g.vals = g.vals*g.map.der(0); % From change of variables to [-1,1]
         g.coeffs = g.coeffs*g.map.der(0);
         g = cumsum_unit_interval(g);
+        g = g - g.vals(1);
         gsing = fun(0,g.map.par(1:2));
     elseif any(g.exps<=-1)
         if nargout > 1
-            [g gsing] = unbdnd(g);
+            [g gsing Cm] = unbdnd(g);
         else
             g = unbdnd(g);
         end
     else
         if nargout > 1
-            [g gsing] = jacsum(g);
+            [g gsing Cm] = jacsum(g);
         else
             g = jacsum(g);
         end
@@ -285,7 +287,7 @@ g.n = n+1;
 
 end
 
-function [f G] = jacsum(f)
+function [f G const] = jacsum(f)
 % for testing - delete this eventually
 % h = f; h.exps = [0 0];
 
@@ -317,6 +319,7 @@ f.scl.v = max(f.scl.v, norm(f.vals,inf));
 % Deal with the constant part
 if j(end) == 0
     G = 0;
+    const = 0;
 elseif exps(2)
     const = j(end)*2^(a+b+1)*beta(b+1,a+1)*(diff(ends)/2);
     
@@ -377,7 +380,7 @@ end
 
 
 
-function [u M] = unbdnd(f)
+function [u M Cm] = unbdnd(f)
 % If only one output is asked for, u is the whole function.
 % For two outputs, u is the smooth part, and M contains the log singularity
 

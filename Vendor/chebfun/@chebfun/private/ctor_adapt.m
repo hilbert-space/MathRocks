@@ -68,15 +68,35 @@ if length(ops) == 1 && isnumeric(ops{1}) && min(size(ops{1})) > 1
             map = maps(fun,'unbounded',ends);
         end
     end
-    fcell = cell(size(ops{1},2),1);
-    ftmp = chebfun(0,ends);
+    vals = ops{1};
+    scl = max(abs(vals));
+    fcell = cell(size(vals,2),1);
+    if isfield(pref,'equi')
+        for k = 1:size(ops{1},2)
+            fcell{k} = chebfun(vals(:,k),'equi',ends);
+        end
+        f = builtin('horzcat',fcell{:});
+        return
+    end
+    ftmp = chebfun([],ends);
+    funtmp = fun(0,map,pref);
+    funtmp.n = size(vals,1); 
+    funtmp.coeffs = [];
     for k = 1:size(ops{1},2)
-%         fcell{k} = chebfun(ops{1}(:,k),pref);
-%         fcell{k} = ctor_adapt(f,{ops{1}(:,k)},ends,pref);
-        ftmp.funs(1) = fun(ops{1}(:,k),map,pref);
+        funtmp.vals = vals(:,k);
+        if pref.chebkind == 1
+            funtmp.coeffs = chebpoly(funtmp,1,'force'); 
+            funtmp.vals = chebpolyval(funtmp.coeffs);
+        else
+            funtmp.coeffs = chebpoly(funtmp,2,'force'); 
+        end
+        funtmp.scl.v = scl(k);
+        ftmp.funs(1) = funtmp;
+        ftmp.imps = vals([1 end],k).';
+        ftmp.scl = scl(k);
         fcell{k} = ftmp;
     end
-    f = horzcat(fcell{:});
+    f = builtin('horzcat',fcell{:});
     return
 end
 
@@ -99,6 +119,7 @@ while ii < length(ops)
                     if  N > 2,        c(1) = .5*(op(1) + c(3)); end
                     op = c(end:-1:1);
                 end
+                c = op;
                 op = chebpolyval(op,pref.chebkind);
             end
             if ~isfield(pref,'map')
@@ -106,6 +127,7 @@ while ii < length(ops)
             else
                 fs = fun(op,maps(pref.map,es),pref);
             end
+            if isfield(pref,'coeffs'), fs.coeffs = c; end % put given coeffs back
             scl.v = max(scl.v, fs.scl.v);
         case 'fun'
             if numel(op) > 1
@@ -139,10 +161,12 @@ while ii < length(ops)
             [fs,es,scl] = auto(op,es,scl,pref);
         case {'chebfun','chebconst'}
             if numel(op) > 1
-                error('CHEBFUN:ctor_adapt:onechebfun','Cannot construct from quasimatrices in this way.');
+                error('CHEBFUN:ctor_adapt:onechebfun',...
+                    'Cannot construct from quasimatrices in this way.');
             end
             if op.ends(1) > ends(1) || op.ends(end) < ends(end)
-                 warning('CHEBFUN:ctor_adapt:domain','chebfun is not defined in the domain')
+                 warning('CHEBFUN:ctor_adapt:domain',...
+                     'chebfun is not defined in the domain')
             end
             if isfield(pref,'exps'), pref.exps = exps(2*ii+(-1:0)); end
             if ~isfield(pref,'trunc') && isempty(map)
@@ -152,10 +176,12 @@ while ii < length(ops)
                 [fs,es,scl] = auto(@(x) feval(op,x),es,scl,pref);
             end
         case 'cell'
-            error('CHEBFUN:ctor_adapt:inputcell',['Unrecognized input sequence: Attempted to use '...
+            error('CHEBFUN:ctor_adapt:inputcell',...
+                ['Unrecognized input sequence: Attempted to use '...
                 'more than one cell array to define the chebfun.'])
         otherwise
-            error('CHEBFUN:ctor_adapt:inputclass',['The input argument of class ' class(op) ...
+            error('CHEBFUN:ctor_adapt:inputclass',...
+                ['The input argument of class ' class(op) ...
                 ' cannot be used to construct a chebfun object.'])
     end
     % Concatenate funs, ends and handles (or ops)   

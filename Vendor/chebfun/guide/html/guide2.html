@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHEBFUN GUIDE 2: INTEGRATION AND DIFFERENTIATION</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="guide2.m"><style type="text/css">
+      --><title>CHEBFUN GUIDE 2: INTEGRATION AND DIFFERENTIATION</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide2.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -54,6 +54,16 @@ span.syscmd { color:#B28C00 }
 
 .footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
 .footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
 
   </style></head><body><div class="content"><h1>CHEBFUN GUIDE 2: INTEGRATION AND DIFFERENTIATION</h1><!--introduction--><p>Lloyd N. Trefethen, November 2009, revised February 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">2.1 sum</a></li><li><a href="#22">2.2 norm, mean, std, var</a></li><li><a href="#26">2.3 cumsum</a></li><li><a href="#36">2.4 diff</a></li><li><a href="#49">2.5 Integrals in two dimensions</a></li><li><a href="#53">2.6 Gauss and Gauss-Jacobi quadrature</a></li><li><a href="#60">2.7 References</a></li></ul></div><h2>2.1 sum<a name="1"></a></h2><p>We have seen that the "sum" command returns the definite integral of a chebfun over its range of definition.  The integral is normally calculated by an FFT-based variant of Clenshaw-Curtis quadrature, as described first in [Gentleman 1972]. This formula is applied on each fun (i.e., each smooth piece of the chebfun), and then the results are added up.</p><p>Here is an example whose answer is known exactly:</p><pre class="codeinput">  f = chebfun(<span class="string">'log(1+tan(x))'</span>,[0 pi/4]);
   format <span class="string">long</span>
@@ -78,7 +88,7 @@ Iexact =
 </pre><p>It is interesting to compare the times involved in evaluating this number in various ways.  Matlab's specialized erf code is the fastest:</p><pre class="codeinput">  tic, erf(1), toc
 </pre><pre class="codeoutput">ans =
    0.842700792949715
-Elapsed time is 0.000066 seconds.
+Elapsed time is 0.000040 seconds.
 </pre><p>Using Matlab's various quadrature commands is understandably slower:</p><pre class="codeinput">  tol = 3e-14;
   tic, I = quad(F,0,1,tol); t = toc;
     fprintf(<span class="string">'  QUAD:  I = %17.15f  time = %6.4f secs\n'</span>,I,t)
@@ -86,12 +96,12 @@ Elapsed time is 0.000066 seconds.
     fprintf(<span class="string">' QUADL:  I = %17.15f  time = %6.4f secs\n'</span>,I,t)
   tic, I = quadgk(F,0,1,<span class="string">'abstol'</span>,tol,<span class="string">'reltol'</span>,tol); t = toc;
     fprintf(<span class="string">'QUADGK:  I = %17.15f  time = %6.4f secs\n'</span>,I,t)
-</pre><pre class="codeoutput">  QUAD:  I = 0.842700792949715  time = 0.0109 secs
- QUADL:  I = 0.842700792949715  time = 0.0030 secs
-QUADGK:  I = 0.842700792949715  time = 0.0036 secs
+</pre><pre class="codeoutput">  QUAD:  I = 0.842700792949715  time = 0.0446 secs
+ QUADL:  I = 0.842700792949715  time = 0.0218 secs
+QUADGK:  I = 0.842700792949715  time = 0.0465 secs
 </pre><p>The timing for Chebfun comes out very competitive:</p><pre class="codeinput">  tic, I = sum(chebfun(F,[0,1])); t = toc;
     fprintf(<span class="string">'CHEBFUN:  I = %17.15f  time = %6.4f secs\n'</span>,I,t)
-</pre><pre class="codeoutput">CHEBFUN:  I = 0.842700792949715  time = 0.0101 secs
+</pre><pre class="codeoutput">CHEBFUN:  I = 0.842700792949715  time = 0.0073 secs
 </pre><p>Here is a similar comparison for a function that is more difficult, because of the absolute value, which leads with "splitting on" to a chebfun consisting of a number of funs.</p><pre class="codeinput">  F = @(x) abs(besselj(0,x));
   f = chebfun(@(x) abs(besselj(0,x)),[0 20],<span class="string">'splitting'</span>,<span class="string">'on'</span>);
   plot(f)
@@ -104,10 +114,10 @@ QUADGK:  I = 0.842700792949715  time = 0.0036 secs
     fprintf(<span class="string">' QUADGK:  I = %17.15f  time = %5.3f secs\n'</span>,I,t)
   tic, I = sum(chebfun(@(x) abs(besselj(0,x)),[0,20],<span class="string">'splitting'</span>,<span class="string">'on'</span>)); t = toc;
     fprintf(<span class="string">'CHEBFUN:  I = %17.15f  time = %5.3f secs\n'</span>,I,t)
-</pre><pre class="codeoutput">   QUAD:  I = 4.445031603001505  time = 0.337 secs
-  QUADL:  I = 4.445031603001576  time = 0.168 secs
- QUADGK:  I = 4.445031603001578  time = 0.021 secs
-CHEBFUN:  I = 4.445031603001566  time = 0.304 secs
+</pre><pre class="codeoutput">   QUAD:  I = 4.445031603001505  time = 0.129 secs
+  QUADL:  I = 4.445031603001576  time = 0.072 secs
+ QUADGK:  I = 4.445031603001578  time = 0.016 secs
+CHEBFUN:  I = 4.445031603001567  time = 0.181 secs
 </pre><p>This last example highlights the piecewise-smooth aspect of Chebfun integration.  Here is another example of a piecewise smooth problem.</p><pre class="codeinput">  x = chebfun(<span class="string">'x'</span>);
   f = sech(3*sin(10*x));
   g = sin(9*x);
@@ -116,7 +126,7 @@ CHEBFUN:  I = 4.445031603001566  time = 0.304 secs
 </pre><img vspace="5" hspace="5" src="guide2_02.png" alt=""> <p>Here is the integral:</p><pre class="codeinput">  tic, sum(h), toc
 </pre><pre class="codeoutput">ans =
   -0.381556448850250
-Elapsed time is 0.005054 seconds.
+Elapsed time is 0.003923 seconds.
 </pre><p>For another example of a definite integral we turn to an integrand given as example F21F in [Kahaner 1971].  We treat it first in the default mode of splitting off:</p><pre class="codeinput">  x = chebfun(<span class="string">'x'</span>,[0 1]);
   f = sech(10*(x-0.2)).^2 + sech(100*(x-0.4)).^4 + sech(1000*(x-0.6)).^6;
 </pre><p>The function has three spikes, each ten times narrower than the last:</p><pre class="codeinput">  plot(f)
@@ -132,17 +142,17 @@ ans =
   length(f)
   sum(f)
 </pre><pre class="codeoutput">ans =
-   405
+   407
 ans =
    0.210802735500549
 </pre><p>Incidentally, if you are dealing with functions with narrow spikes like this, it is a good idea to increase the value of "minsamples" as described in Section 8.6.</p><p>As mentioned in Chapter 1 and described in more detail in Chapter 9, Chebfun has some capability of dealing with functions that blow up to infinity.  Here for example is a familiar integral:</p><pre class="codeinput">  f = chebfun(@(x) 1./sqrt(x),[0 1],<span class="string">'blowup'</span>,2);
   sum(f)
 </pre><pre class="codeoutput">ans =
-   2.000000000000000
+   2.000000000000001
 </pre><p>Certain integrals over infinite domains can also be computed, though the error is often large:</p><pre class="codeinput">  f = chebfun(@(x) 1./x.^2.5,[1 inf]);
   sum(f)
 </pre><pre class="codeoutput">ans =
-   0.666666582757373
+   0.666666582757184
 </pre><p>Chebfun is not a specialized item of quadrature software; it is a general system for manipulating functions in which quadrature is just one of many capabilities. Nevertheless Chebfun compares reasonably well as a quadrature engine against specialized software.  This was the conclusion of the Oxford MSc thesis by Phil Assheton [Assheton 2008], which compared Chebfun experimentally to quadrature codes including Matlab's quad and quadl, Gander and Gautschi's adaptsim and adaptlob, Espelid's modsim, modlob, coteda, and coteglob, QUADPACK's QAG and QAGS, and the NAG Library's d01ah.  In both reliability and speed, Chebfun was found to be competitive with these alternatives.  The overall winner was coteda [Espelid 2003], which was typically about twice as fast as Chebfun. For further comparisons of quadrature codes, together with the development of some improved codes based on a philosophy that has something in common with Chebfun, see [Gonnet 2009].  See also "Using Chebfun as an integrator" in the Quadrature section of the online Chebfun Examples collection.</p><h2>2.2 norm, mean, std, var<a name="22"></a></h2><p>A special case of an integral is the "norm" command, which for a chebfun returns by default the 2-norm, i.e., the square root of the integral of the square of the absolute value over the region of definition.  Here is a well-known example:</p><pre class="codeinput">  norm(chebfun(<span class="string">'sin(pi*theta)'</span>))
 </pre><pre class="codeoutput">ans =
      1
@@ -174,8 +184,8 @@ ans =
 </pre><pre class="codeoutput">ans =
    0.842700792949715   0.842700792949715
    0.995322265018953   0.995322265018953
-   0.999977909503001   0.999977909503001
-   0.999999984582742   0.999999984582742
+   0.999977909503002   0.999977909503001
+   0.999999984582743   0.999999984582742
    0.999999999998463   0.999999999998463
 </pre><p>Here is the integral of an oscillatory step function:</p><pre class="codeinput">  x = chebfun(<span class="string">'x'</span>,[0 6]);
   f = x.*sign(sin(x.^2)); subplot(1,2,1), plot(f)
@@ -186,9 +196,9 @@ ans =
   lengthLi = length(Li)
   Li2 = Li(2)
 </pre><pre class="codeoutput">lengthLi =
-   498
+   501
 Li2 =
-   1.045163780117491
+   1.045163780117500
 </pre><p>(Chebfun has no trouble if xmax is increased to 10^5 or 10^10.)  Here is a plot comparing Li(x) with pi(x):</p><pre class="codeinput">  clf, plot(Li,<span class="string">'m'</span>)
   p = primes(xmax);
   hold <span class="string">on</span>, plot(p,1:length(p),<span class="string">'.k'</span>)
@@ -209,14 +219,14 @@ ans =
   hold <span class="string">off</span>, plot(f)
 </pre><img vspace="5" hspace="5" src="guide2_10.png" alt=""> <p>Here is the derivative:</p><pre class="codeinput">  fprime = diff(f);
   plot(fprime,<span class="string">'r'</span>), ylim([-2,3])
-</pre><img vspace="5" hspace="5" src="guide2_11.png" alt=""> <p>The first segment of f' is linear, since f is quadratic here. Then comes a segment with f' = 0, since f is constant. And the end of this second segment appears a delta function of amplitude 1, corresponding to the jump of f by 1.  (Currently delta functions are not shown on Chebfun plots.)  The third segment has constant value f' = -1. Finally another delta function, this time with amplitude 1/3, takes us to the final segment.</p><p>Thanks to the delta functions, cumsum and diff are essentially inverse operations.  It is no surprise that differentiating an indefinite integral returns us to the original function:</p><pre class="codeinput">  norm(f-diff(cumsum(f)))
+</pre><img vspace="5" hspace="5" src="guide2_11.png" alt=""> <p>The first segment of f' is linear, since f is quadratic here. Then comes a segment with f' = 0, since f is constant. And the end of this second segment appears a delta function of amplitude 1, corresponding to the jump of f by 1. The third segment has constant value f' = -1. Finally another delta function, this time with amplitude 1/3, takes us to the final segment.</p><p>Thanks to the delta functions, cumsum and diff are essentially inverse operations.  It is no surprise that differentiating an indefinite integral returns us to the original function:</p><pre class="codeinput">  norm(f-diff(cumsum(f)))
 </pre><pre class="codeoutput">ans =
-     2.384759296696501e-15
+     2.384759296696500e-15
 </pre><p>More surprising is that integrating a derivative does the same, so long as we add in the value at the left endpoint:</p><pre class="codeinput">  d = domain(f);
   f2 = f(d(1)) + cumsum(diff(f));
   norm(f-f2)
 </pre><pre class="codeoutput">ans =
-     9.113148969974502e-16
+     7.018255697433338e-16
 </pre><p>Multiple derivatives can be obtained by adding a second argument to "diff".  Thus for example,</p><pre class="codeinput">  f = chebfun(<span class="string">'1./(1+x.^2)'</span>);
   g = diff(f,4); plot(g)
 </pre><img vspace="5" hspace="5" src="guide2_12.png" alt=""> <p>However, one should be cautious about the potential loss of information in repeated differentiation.  For example, if we evaluate this fourth derivative at x=0 we get an answer that matches the correct value 24 only to 11 places:</p><pre class="codeinput">  g(0)
@@ -233,18 +243,18 @@ ans =
 </pre><pre class="codeoutput">     0      2.718281828459
      1      2.718281828459
      2      2.718281828457
-     3      2.718281828383
-     4      2.718281826455
-     5      2.718281786871
-     6      2.718281132921
-     7      2.718272328888
-     8      2.718175329055
-     9      2.717303458798
-    10      2.710978859256
-    11      2.674699013359
-    12      2.515714356525
-    13      2.014161265242
-    14      0.997296814603
+     3      2.718281828379
+     4      2.718281826383
+     5      2.718281785870
+     6      2.718281122034
+     7      2.718272238310
+     8      2.718174786355
+     9      2.717301523565
+    10      2.710979242538
+    11      2.674750232753
+    12      2.516027683728
+    13      2.015092022067
+    14      0.998485849302
     15      0.000000000000
 </pre><p>Is such behavior "wrong"?  Well, that is an interesting question. Chebfun is behaving correctly in the sense mentioned in the second paragraph of Section 1.1: the operations are individually stable in that each differentiation returns the exact derivative of a function very close to the right one. The trouble is that because of the intrinsically ill-posed nature of differentiation, the errors in these stable operations accumulate exponentially as successive derivatives are taken.</p><p>Section 10.3 describes an alternative method of differentiating functions via automatic differentiation.  Here is an example:</p><pre class="codeinput">x = chebfun(<span class="string">'x'</span>);
 f = sin(30*exp(x));
@@ -260,13 +270,13 @@ axis([-2 2 0.5 2.5]), colorbar, grid <span class="string">on</span>
 </pre><img vspace="5" hspace="5" src="guide2_14.png" alt=""> <p>We can compute the integral over the box like this.  Notice the use of the flag 'vectorize' to construct a chebfun from a function only defined for scalar arguments.</p><pre class="codeinput">Iy = @(y) sum(chebfun(@(x) f(x,y),[-2 2]));
 tic; I = sum(chebfun(@(y) Iy(y),[0.5 2.5],<span class="string">'vectorize'</span>)); t = toc;
 fprintf(<span class="string">'CHEBFUN:  I = %16.14f  time = %5.3f secs\n'</span>,I,t)
-</pre><pre class="codeoutput">CHEBFUN:  I = 0.02041246545700  time = 0.482 secs
+</pre><pre class="codeoutput">CHEBFUN:  I = 0.02041246545700  time = 0.311 secs
 </pre><p>Here for comparison is Matlab's dblquad/quadl with a tolerance of 1e-11:</p><pre class="codeinput">tic; I = dblquad(f,-2,2,0.5,2.5,1e-11,@quadl); t = toc;
 fprintf(<span class="string">'DBLQUAD/QUADL:  I = %16.14f  time = %5.3f secs\n'</span>,I,t)
-</pre><pre class="codeoutput">DBLQUAD/QUADL:  I = 0.02041246545700  time = 5.242 secs
+</pre><pre class="codeoutput">DBLQUAD/QUADL:  I = 0.02041246545700  time = 4.121 secs
 </pre><p>This example of a 2D integrand is smooth, so both Chebfun and dblquad can handle it to high accuracy.  The results will be quite different for less smooth integrands, and typically one will need to lower the tolerance. In Chebfun, this can be done by the chebfunpref command, as described in Chapter 8.  For this example, however, there is not much speedup:</p><pre class="codeinput">tic; I = sum(chebfun(@(y) Iy(y),[0.5 2.5],<span class="string">'vectorize'</span>,<span class="string">'eps'</span>,1e-6)); t = toc;
 fprintf(<span class="string">'CHEBFUN:  I = %16.14f  time = %5.3f secs\n'</span>,I,t)
-</pre><pre class="codeoutput">CHEBFUN:  I = 0.02041246390472  time = 0.481 secs
+</pre><pre class="codeoutput">CHEBFUN:  I = 0.02041246390472  time = 0.311 secs
 </pre><h2>2.6 Gauss and Gauss-Jacobi quadrature<a name="53"></a></h2><p>For quadrature experts, Chebfun contains some powerful capabilities implemented by Nick Hale.   To start with, suppose we wish to carry out 4-point Gauss quadrature over [-1,1].  The quadrature nodes are the zeros of the degree 4 Legendre polynomial LEGPOLY(4), which can be obtained from the Chebfun command LEGPTS, and if two output arguments are requested, LEGPTS provides weights also:</p><pre class="codeinput">[s,w] = legpts(4)
 </pre><pre class="codeoutput">s =
   -0.861136311594053
@@ -290,16 +300,15 @@ Iexact =
 [s,w] = legpts(1000); Igauss = w*f(s)
 toc
 </pre><pre class="codeoutput">Igauss =
-   2.350402387287593
-Elapsed time is 0.041324 seconds.
+   2.350402387287603
+Elapsed time is 0.088230 seconds.
 </pre><p>Even 100,000 points doesn't take too long:</p><pre class="codeinput">tic
 [s,w] = legpts(100000); Igauss = w*f(s)
 toc
 </pre><pre class="codeoutput">Igauss =
-   2.350402387288065
-Elapsed time is 3.809291 seconds.
-</pre><p>Traditionally, numerical analysts have computed Gauss quadrature nodes and weights by the eigenvalue algorithm of Golub and Welsch [Golub &amp; Welsch 1969]. However, Chebfun uses the different algorithm of Glaser, Liu and Rokhlin [Glaser, Liu &amp; Rokhlin 2007] with enhancements due to Hale and Sheehan Olver (unpublished).</p><p>For Legendre polynomials, Legendre points, and Gauss quadrature, use LEGPOLY and LEGPTS. For Chebyshev polynomials, Chebyshev points, and Clenshaw-Curtis quadrature, use CHEBPOLY and CHEBPTS and the built-in Chebfun commands such as SUM. A third variant is also available: for Jacobi polynomials, Gauss-Jacobi points, and Gauss-Jacobi quadrature, see JACPOLY and JACPTS. These arise in integration of functions with singularities at one or both endpoints, and are used internally by Chebfun for integration of chebfuns with singularities (Chapter 9).</p><p>As explained in the help texts, all of these operators work on general intervals [a,b], not just on [-1,1].</p><h2>2.7 References<a name="60"></a></h2><p>[Assheton 2008] P. Assheton, Comparing Chebfun to Adaptive Quadrature Software, dissertation, MSc in Mathematical Modelling and Scientific Computing, Oxford University, 2008.</p><p>[Espelid 2003] Terje O. Espelid, "Doubly adaptive quadrature routines based on Newton-Cotes rules," BIT Numerical Mathematics 43 (2003), 319-337.</p><p>[Gentleman 1972] W. M. Gentleman, "Implementing Clenshaw-Curtis quadrature I and II", Journal of the ACM 15 (1972), 337-346 and 353.</p><p>[Glaser, Liu &amp; Rokhlin 2007] A. Glaser, X. Liu and V. Rokhlin, "A fast algorithm for the calculation of the roots of special functions", SIAM Journal on Scientific Computing 29 (2007), 1420-1438.</p><p>[Golub &amp; Welsch 1969] G. H. Golub and J. H. Welsch, "Calculation of Gauss quadrature rules," Mathematics of Computation 23 (1969), 221-230.</p><p>[Gonnet 2009] P. Gonnet, Adaptive Quadrature Re-Revisited, ETH dissertation no. 18347, Swiss Federal Institute of Technology, 2009.</p><p>[Hale &amp; Trefethen 2012] N. Hale and L. N. Trefethen, Chebfun and numerical quadrature, Science in China, submitted, 2012.</p><p>[Kahaner 1971] D. K. Kahaner, "Comparison of numerical quadrature formulas", in J. R. Rice, ed., Mathematical Software, Academic Press, 1971, 229-259.</p><p>[Kotnik 2008] T. Kotnik, "The prime-counting function and its analytic approximations", Advances in Computational Mathematics 29 (2008), 55-70.</p><p>[Wolfram 2003] S. Wolfram, The Mathematica Book, 5th ed., Wolfram Media, 2003.</p><p class="footer"><br>
-      Published with MATLAB&reg; 7.14<br></p></div><!--
+   2.350402387287597
+Elapsed time is 0.317556 seconds.
+</pre><p>Traditionally, numerical analysts have computed Gauss quadrature nodes and weights by the eigenvalue algorithm of Golub and Welsch [Golub &amp; Welsch 1969]. However, Chebfun uses the different algorithm of Hale and Townsend [Hale &amp; Townsend 2013].</p><p>For Legendre polynomials, Legendre points, and Gauss quadrature, use LEGPOLY and LEGPTS. For Chebyshev polynomials, Chebyshev points, and Clenshaw-Curtis quadrature, use CHEBPOLY and CHEBPTS and the built-in Chebfun commands such as SUM. A third variant is also available: for Jacobi polynomials, Gauss-Jacobi points, and Gauss-Jacobi quadrature, see JACPOLY and JACPTS. These arise in integration of functions with singularities at one or both endpoints, and are used internally by Chebfun for integration of chebfuns with singularities (Chapter 9).</p><p>As explained in the help texts, all of these operators work on general intervals [a,b], not just on [-1,1].</p><h2>2.7 References<a name="60"></a></h2><p>[Assheton 2008] P. Assheton, Comparing Chebfun to Adaptive Quadrature Software, dissertation, MSc in Mathematical Modelling and Scientific Computing, Oxford University, 2008.</p><p>[Espelid 2003] Terje O. Espelid, "Doubly adaptive quadrature routines based on Newton-Cotes rules," BIT Numerical Mathematics 43 (2003), 319-337.</p><p>[Gentleman 1972] W. M. Gentleman, "Implementing Clenshaw-Curtis quadrature I and II", Journal of the ACM 15 (1972), 337-346 and 353.</p><p>[Glaser, Liu &amp; Rokhlin 2007] A. Glaser, X. Liu and V. Rokhlin, "A fast algorithm for the calculation of the roots of special functions", SIAM Journal on Scientific Computing 29 (2007), 1420-1438.</p><p>[Golub &amp; Welsch 1969] G. H. Golub and J. H. Welsch, "Calculation of Gauss quadrature rules," Mathematics of Computation 23 (1969), 221-230.</p><p>[Gonnet 2009] P. Gonnet, Adaptive Quadrature Re-Revisited, ETH dissertation no. 18347, Swiss Federal Institute of Technology, 2009.</p><p>[Hale &amp; Townsend 2013], N. Hale and A. Townsend, Fast and accurate computation of Gauss-Legendre and Gauss-Jacobi quadrature nodes and weights, SIAM Journal on Scientific Computing, Vol. 35, No. 2, (2013) A652-A674.</p><p>[Hale &amp; Trefethen 2012] N. Hale and L. N. Trefethen, Chebfun and numerical quadrature, Science in China, submitted, 2012.</p><p>[Kahaner 1971] D. K. Kahaner, "Comparison of numerical quadrature formulas", in J. R. Rice, ed., Mathematical Software, Academic Press, 1971, 229-259.</p><p>[Kotnik 2008] T. Kotnik, "The prime-counting function and its analytic approximations", Advances in Computational Mathematics 29 (2008), 55-70.</p><p>[Wolfram 2003] S. Wolfram, The Mathematica Book, 5th ed., Wolfram Media, 2003.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CHEBFUN GUIDE 2: INTEGRATION AND DIFFERENTIATION
 % Lloyd N. Trefethen, November 2009, revised February 2011
@@ -579,8 +588,7 @@ Elapsed time is 3.809291 seconds.
 % The first segment of f' is linear, since f is quadratic here. Then comes
 % a segment with f' = 0, since f is constant. And the end of this second
 % segment appears a delta function of amplitude 1, corresponding to the
-% jump of f by 1.  (Currently delta functions are not shown on Chebfun
-% plots.)  The third segment has constant value f' = -1. Finally another
+% jump of f by 1. The third segment has constant value f' = -1. Finally another
 % delta function, this time with amplitude 1/3, takes us to the final
 % segment.
 
@@ -717,9 +725,8 @@ toc
 %%
 % Traditionally, numerical analysts have computed Gauss quadrature nodes
 % and weights by the eigenvalue algorithm of Golub and Welsch [Golub &
-% Welsch 1969]. However, Chebfun uses the different algorithm of Glaser,
-% Liu and Rokhlin [Glaser, Liu & Rokhlin 2007] with enhancements due to
-% Hale and Sheehan Olver (unpublished).
+% Welsch 1969]. However, Chebfun uses the different algorithm of Hale and
+% Townsend [Hale & Townsend 2013].
 
 %%
 % For Legendre polynomials, Legendre points, and Gauss quadrature, use
@@ -757,6 +764,10 @@ toc
 %
 % [Gonnet 2009] P. Gonnet, Adaptive Quadrature Re-Revisited, ETH
 % dissertation no. 18347, Swiss Federal Institute of Technology, 2009.
+%
+% [Hale & Townsend 2013], N. Hale and A. Townsend, Fast and accurate computation
+% of Gauss-Legendre and Gauss-Jacobi quadrature nodes and weights, SIAM Journal
+% on Scientific Computing, Vol. 35, No. 2, (2013) A652-A674.
 %
 % [Hale & Trefethen 2012] N. Hale and L. N. Trefethen,
 % Chebfun and numerical quadrature, Science in China, submitted, 2012.

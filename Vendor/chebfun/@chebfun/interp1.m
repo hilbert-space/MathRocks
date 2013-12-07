@@ -1,7 +1,7 @@
-function p = interp1(xk,f)
+function p = interp1(xk,f,varargin)
 % INTERP1   Chebfun polynomial interpolant at any distribution of points.
 % 
-%  P = INTERP1(X,F), where X is a vector and F is a chebfun, returns the
+% P = INTERP1(X,F), where X is a vector and F is a chebfun, returns the
 % chebfun P defined on domain(F) corresponding to the polynomial
 % interpolant through F(X(j)) at points X(j).
 %
@@ -22,6 +22,16 @@ function p = interp1(xk,f)
 %   x = linspace(-1,1,11);
 %   p = interp1(x,f)
 %   plot(f,'k',p,'r',x,f(x),'.r'), grid on
+%
+% P = interp1(X,F,METHOD) or P = interp1(X,Y,D,METHOD) specifies alternate
+% methods. The default is as described above. (Use an empty matrix [] to
+% specify the default.) Available methods are:
+%   'linear'   - linear interpolation
+%   'spline'   - piecewise cubic spline interpolation (SPLINE)
+%   'pchip'    - shape-preserving piecewise cubic interpolation
+%   'cubic'    - same as 'pchip'
+%
+% See also INTERP1, DOMAIN/INTERP1, CHEBFUN/SPLINE, CHEBFUN/PCHIP
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
@@ -29,4 +39,4 @@ function p = interp1(xk,f)
 % This is simply a wrapper for @DOMAIN/INTERP1.
 
 yk = feval(f,xk);
-p = interp1(xk,yk,domain(f));
+p = interp1(xk,yk,domain(f),varargin{:});

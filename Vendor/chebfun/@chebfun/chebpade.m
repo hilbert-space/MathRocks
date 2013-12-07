@@ -85,11 +85,10 @@ if  strcmp(type,'clenshawlord')
       'For a function with multiple funs, the number of coefficients to be considered should be specified.');
     end
         
-    c = fliplr( chebpoly(F) )';                       % Chebyshev coeffs
+    c = fliplr( chebpoly(F) ).';                       % Chebyshev coeffs
     if length(F) < m+2*n+1, 
-        seed = rng(1);
         c = [c ; eps*randn(m + 2*n+1 - length(F),1)]; % this is more stable than zeros?
-        rng(seed)
+        rng('default')
     end    
     c(1) = 2*c(1);
     top = c(abs([m-n+1:m]) + 1);                      % top row of Hankel system
@@ -102,7 +101,7 @@ if  strcmp(type,'clenshawlord')
     c(1) = c(1)/2;
     alpha = conv( c(1:l+1), beta );                   % numerator of Laurent-Pade
     alpha = alpha(1:l+1);
-    beta = beta';
+    beta = beta.';
     D = zeros(l+1,l+1);                               % temporary matrix
     D(1:l+1,1:n+1) = alpha(:,ones(n+1,1)).*...
          beta(ones(l+1,1),:);
@@ -112,7 +111,7 @@ if  strcmp(type,'clenshawlord')
     end
     for k = 1:n+1
         u = beta(1:n+2-k); v = beta(k:end);
-        qk(k) = u*v';                                % denominator of Cheb-Pade
+        qk(k) = u*v.';                               % denominator of Cheb-Pade
     end
     pk = pk/qk(1); qk = 2*qk/qk(1); qk(1) = 1;
     p = chebfun(chebpolyval(fliplr(pk)), F.ends([1 end]) );            % chebfun of numerator
@@ -145,9 +144,8 @@ elseif strcmp(type,'maehly')
         warning('CHEBFUN:chebpade:coeffs', ...
             ['Not enough coefficients given for [',int2str(m),'/',int2str(n),'] approx.', ...])
             ' Assumming remainder are noise.']); 
-        seed = rng(1);
         a = [a ; eps*randn(m + 2*n+1 - length(F),1)]; % this is more stable than zeros?
-        rng(seed)
+        rng('default')
     end
     % denominator
     row = (1:n);

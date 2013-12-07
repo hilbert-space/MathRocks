@@ -54,33 +54,7 @@ for k = 1:length(A.lbc)
   end
   q = q+1;
 end
-
-for k = 1:length(A.bc)
-  op = A.bc(k).op;
-  if size(op,2)~=m && ~isa(op,'varmat')
-    error('LINOP:bdyreplace:systemsize',...
-      'Boundary conditions not consistent with system size.')
-  end
-  if isa(op,'function_handle')
-      T = NaN(1,n*m);
-  else
-      if isa(op,'varmat')
-          T = feval(op,{n,map,breaks});
-      else
-          T = feval(op,n,0,map,breaks);
-      end
-      if size(T,1)>1, T = T(end,:); end   % at right end only
-  end
-  B(q,:) = T;
-  c(q) = A.bc(k).val;
-  if numel(breaks) < 3
-      nz = any( reshape(T,n,m)~=0 );    % nontrivial variables 
-      j = find(full(nz),1,'last');      % eliminate from the last
-      rowidx(q) = elimnext(j);
-      elimnext(j) = elimnext(j)-1;
-  end
-  q = q+1;
-end
+elimnextleft = elimnext;
 
 elimnext = n:n:n*m;  % in each variable, next row to eliminate
 for k = 1:length(A.rbc)
@@ -102,13 +76,50 @@ for k = 1:length(A.rbc)
   B(q,:) = T;
   c(q) = A.rbc(k).val;
   if numel(breaks) < 3
-      nz = any( reshape(T,n,m)~=0 );    % nontrivial variables 
-      j = find(full(nz),1,'last');      % eliminate from the last
+      nz = any( reshape(T,n,m)~=0 );      % nontrivial variables 
+      j = find(full(nz),1,'last');        % eliminate from the last
       rowidx(q) = elimnext(j);
       elimnext(j) = elimnext(j)-1;
   end
   q = q+1;
 end
+elimnextright = elimnext;
 
+% Deal with the rmailing bcs. Alternate from left to right.
+leftright = length(elimnextleft)<=length(elimnextright);
+for k = 1:length(A.bc)
+  op = A.bc(k).op;
+  if size(op,2)~=m && ~isa(op,'varmat')
+    error('LINOP:bdyreplace:systemsize',...
+      'Boundary conditions not consistent with system size.')
+  end
+  if isa(op,'function_handle')
+      T = NaN(1,n*m);
+  else
+      if isa(op,'varmat')
+          T = feval(op,{n,map,breaks});
+      else
+          T = feval(op,n,0,map,breaks);
+      end
+      if size(T,1)>1, T = T(end,:); end    % at right end only
+  end
+  B(q,:) = T;
+  c(q) = A.bc(k).val;
+  if numel(breaks) < 3
+      nz = any( reshape(T,n,m)~=0 );       % nontrivial variables 
+      if leftright
+          j = find(full(nz),1,'first');    % eliminate from the first
+          rowidx(q) = elimnextleft(j);
+          elimnextleft(j) = elimnextleft(j)+1;
+          leftright = false;
+      else
+          j = find(full(nz),1,'last');     % eliminate from the last
+          rowidx(q) = elimnextright(j);
+          elimnextright(j) = elimnextright(j)-1;
+          leftright = true;
+      end
+  end
+  q = q+1;
+end
 
 end

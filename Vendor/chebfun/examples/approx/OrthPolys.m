@@ -3,33 +3,34 @@
 
 %%
 % (Chebfun example approx/OrthPolys.m)
+% [Tags: #orthogonal, #GramSchmidt, #LAGPOLY, #HERMPOLY, #LEGPOLY, #CHEBPOLY]
 
 function OrthPolys
 
 %%
 % Orthogonal polynomials are, as the name might suggest, polynomials which
-% are orthogonal to each other in some weighted L^2 inner product, i.e., 
+% are orthogonal to each other in some weighted $L^2$ inner product, i.e., 
 %
 %      b
 %      /
-%      | w(x) P_j(x) P_k(x) dx = < P_j, P_k > = 0 for all j not equal k
+%      | w(x) P_j(x) P_k(x) dx = < P_j, P_k > = 0 for all j not equal to k
 %      /
 %     a
 
 %%
-% If we normalise so that < P_j, P_j > = 1, the polynomials are called
-% "orthonormal".
+% If we normalise so that $$ \langle P_j, P_j \rangle = 1 $$, the polynomials
+% are called "orthonormal".
 
 %%
 % Chebfun has commands built-in for some of the standard orthogonal
 % polynomials. Below is a table of the polynomial, the weight function, the 
-% standard domain [a b], and the Chebfun routine name.
+% standard domain $[a, b]$, and the Chebfun routine name.
 %
 %      Name       |       w(x)     |   domain   | Chebfun routine
 % -------------------------------------------------------------------
 %     Legendre    |        1       |   [-1 1]   | LEGPOLY(N)
-% Chebyshev(1st) |  1/sqrt(1-x^2) |   [-1 1]   | CHEBPOLY(N)
-% Chebyshev(2nd) |   sqrt(1-x^2)  |   [-1 1]   | CHEBPOLY(N,2)
+% Chebyshev(1st)  |  1/sqrt(1-x^2) |   [-1 1]   | CHEBPOLY(N)
+% Chebyshev(2nd)  |   sqrt(1-x^2)  |   [-1 1]   | CHEBPOLY(N,2)
 %     Laguerre    |     exp(-x)    |   [0 inf]  | LAGPOLY(N)
 %     Hermite     |    exp(-x^2)   | [-inf inf] | HERMPOLY(N)
 
@@ -48,12 +49,12 @@ function OrthPolys
 %
 %         P_{k+1} = x^{k+1} - SUM(< x^{k+1},P_j >/< P_j,P_j > * P_j).
 %%
-% In practice one usually replaces x^{k+1} by x*P_k or the k+1th Chebyshev
+% In practice one usually replaces $x^{k+1}$ by $x P_k$ or the k+1 st Chebyshev
 % polynomial to improve stability.
 
 %%
 % The short code below demonstrates these ideas by computing the first 5
-% orthonormal polynomials with respect to the weight function w = exp(pi*x).
+% orthonormal polynomials with respect to the weight function w = $e^{\pi x}$.
 
 x = chebfun('x',[-1 1]);
 w = exp(pi*x);

@@ -3,6 +3,7 @@
 %
 %%
 % (Chebfun example approx/Entire.m)
+% [Tags: #entire, #interpolation, #ellipse, #resolution]
 % 
 LW = 'LineWidth'; lw = 2; 
 MS = 'MarkerSize'; ms = 14;

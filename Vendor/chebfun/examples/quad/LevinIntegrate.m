@@ -1,9 +1,10 @@
-
 %% An oscillatory integral
 % Sheehan Olver, December 2010
 
 %%
 % (Chebfun example quad/LevinIntegrate.m)
+% [Tags: #quadrature, #ODE]
+
 %
 % This example computes the highly oscillatory integral of
 %
@@ -26,7 +27,8 @@
 %       g = cos( x - 2 );
 %       w = 100000;
 
-[d x] = domain(0,1);
+d = domain(0,1);
+x = chebfun(@(x) x, d);
 f = 1./(x+2);
 g = cos(x-2);
 D = diff(d);
@@ -54,6 +56,11 @@ tic
 %%
 % Construct the operator L
 L = D + 1i*w*diag(diff(g));
+
+%%
+% Since we have no boundary conditions, we fake that the derivative order
+% is zero.
+L = set(L, 'difforder', 0);
 
 %%
 % From asymptotic analysis, we know that there exists a solution to the

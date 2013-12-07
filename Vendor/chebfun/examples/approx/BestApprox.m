@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/BestApprox.m)
+% [Tags: #REMEZ, #Pachon, #bestapproximation, #rational, #Caratheodory]
 
 %%
 % Chebfun's REMEZ command, written by Ricardo Pachon, can compute best

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example fun/Birthday.m)
+% [Tags: #complex, #gift]
 
 %%
 % Chebfun's SCRIBBLE command was introduced for

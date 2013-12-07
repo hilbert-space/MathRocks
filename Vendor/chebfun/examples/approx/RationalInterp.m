@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/RationalInterp.m)
+% [Tags: #rational, #interpolation, #RATINTERP, #least-squares]
 
 %%
 % A rational function is a quotient of two polynomials. Many numerical

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example geom/Ellipse.m)
+% [Tags: #perimeter, #geometry]
 
 %%
 % The ellipse we use is the one used by Poisson in his paper of 1827 [1], 

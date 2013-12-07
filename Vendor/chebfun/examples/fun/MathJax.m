@@ -1,8 +1,9 @@
-%% MathJax Introduction
+%% MathJax introduction
 % Nick Hale, 5th March 2012
 
 %%
 % (Chebfun example fun/MathJax.m)
+% [Tags: #mathjax]
 
 %% 
 % Chebfun Examples now support LaTeX equations via MathJax 

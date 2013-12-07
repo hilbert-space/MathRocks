@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/ParamODEs.m)
+% [Tags: #linearODE, #nonlinearODE, #parameter]
 
 %%
 % There are many examples of parameter-dependent ODEs such as simple

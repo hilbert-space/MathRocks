@@ -37,15 +37,15 @@ L = set(L,'lbcshow',N.lbcshow);
 L = set(L,'rbcshow',N.rbcshow);
 L = set(L,'bcshow',N.bcshow);
 
-% Maintain anon function from chebop if possible. (Faster than oparrays?) 
-op = N.op;
-if isa(op,'function_handle') && nargin(op) <= 2
-    if nargin(op) == 2
-        x = chebfun(@(x) x, L.domain);
-        op = @(u) op(x,u);
-    end
-    L = set(L,'oparray',op);
-elseif isa(op,'linop')
-    L = set(L,'oparray',get(op,'oparray'));
-end
+% % Maintain anon function from chebop if possible. (Faster than oparrays?) 
+% op = N.op;
+% if isa(op,'function_handle') && nargin(op) <= 2
+%     if nargin(op) == 2
+%         x = chebfun(@(x) x, L.domain);
+%         op = @(u) op(x,u);
+%     end
+%     L = set(L,'oparray',op);
+% elseif isa(op,'linop')
+%     L = set(L,'oparray',get(op,'oparray'));
+% end
     

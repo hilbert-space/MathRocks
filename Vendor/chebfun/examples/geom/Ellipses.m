@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example geom/Ellipses.m)
+% [Tags: #complex, #ode, #trajectory, #geometry]
 
 %%
 % Here's a problem from Oxford's Numerical Analysis Group Problem Solving
@@ -38,7 +39,7 @@
 
 %%
 % Here is a Chebfun computation of the two ellipses from
-% from time 0 to tmax=7.5.  The functions z1(t) and z2(t)
+% time 0 to tmax=7.5.  The functions z1(t) and z2(t)
 % trace out the ellipses.
 tic
 L1 = 3; theta1 = @(z1) atan2(imag(z1),real(z1)/L1);

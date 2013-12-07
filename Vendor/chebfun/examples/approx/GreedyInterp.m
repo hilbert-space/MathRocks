@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/GreedyInterp.m)
+% [Tags: #greedy, #interpolation, #Leja, #Chebyshevpoints]
 
 %%
 % In the theory of polynomial interpolation, an important issue is the

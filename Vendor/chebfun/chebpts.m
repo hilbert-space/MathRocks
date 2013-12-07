@@ -22,7 +22,7 @@ function [x w v] = chebpts(n,d,kind)
 %
 %   [X W V] = CHEBPTS(N,KIND) or CHEBPTS(N,D,KIND) returns Chebyshev points
 %   and weights of the 1st-kind if KIND = 1 and 2nd-kind if KIND = 2
-%   (default). (Note that if KIND is not suplpied, chebpts will always
+%   (default). (Note that if KIND is not supplied, chebpts will always
 %   return 2nd-kind points, regardless of the value of 'chebkind' in
 %   chebfunpref.).
 %
@@ -172,6 +172,9 @@ if scale
     if ~any(isinf(d))   % Finite interval
         dab05 = .5*diff(d);
         x = x*dab05 + (d(1) + dab05);
+        if ( kind == 2 ) 
+            x([1,end]) = d([1,end]);
+        end
         w = dab05*w;
     else                % Infinite interval
         m = maps(fun,{'unbounded'},d); % Use default map
@@ -190,25 +193,38 @@ end
 function w = weights1(n) % 1st-kind Chebyshev weights
 % Jörg Waldvogel, "Fast construction of the Fejér and Clenshaw-Curtis
 % quadrature rules", BIT Numerical Mathematics 43 (1), p. 001-018 (2004).
+% http://www2.maths.ox.ac.uk/chebfun/and_beyond/programme/slides/wald.pdf
 if n == 1
     w = 2;
 else
-    l = floor(n/2)+1;
-    K = 0:n-l;   
-    v = [2*exp(1i*pi*K/n)./(1-4*K.^2)  zeros(1,l)];
-    w = real(ifft(v(1:n) + conj(v(n+1:-1:2))));
+    % new
+    L = 0:n-1; r = 2./(1-4*min(L,n-L).^2); s1 = sign(n/2-L); % Aux vecs
+    w = real(ifft(s1.*r.*exp(1i*pi/n*L)));  % Fejer weights
+    
+%     % old
+%     l = floor(n/2)+1;
+%     K = 0:n-l;   
+%     v = [2*exp(1i*pi*K/n)./(1-4*K.^2)  zeros(1,l)];
+%     w = real(ifft(v(1:n) + conj(v(n+1:-1:2))));
 end
 
 function w = weights2(n) % 2nd-kind Chebyshev wieghts
 % Jörg Waldvogel, "Fast construction of the Fejér and Clenshaw-Curtis 
 % quadrature rules", BIT Numerical Mathematics 43 (1), p. 001-018 (2004).
+% http://www2.maths.ox.ac.uk/chebfun/and_beyond/programme/slides/wald.pdf
 if n == 1
     w = 2;
 else
-    m = n-1;  
-    c = zeros(1,n);
-    c(1:2:n) = 2./[1 1-(2:2:m).^2 ]; 
-    f = real(ifft([c(1:n) c(m:-1:2)]));
-    w = [f(1) 2*f(2:m) f(n)];
+    % new
+    n = n-1;
+    u0 = 1/(n^2-1+mod(n,2));                      % Boundary weights
+    L = 0:n-1; r = 2./(1-4*min(L,n-L).^2);        % Auxiliary vectors
+    w = [ifft(r-u0) u0];                          % C-C weights
+    
+%     % old
+%     m = n-1;  
+%     c = zeros(1,n);
+%     c(1:2:n) = 2./[1 1-(2:2:m).^2 ]; 
+%     f = real(ifft([c(1:n) c(m:-1:2)]));
+%     w = [f(1) 2*f(2:m) f(n)];  
 end
-

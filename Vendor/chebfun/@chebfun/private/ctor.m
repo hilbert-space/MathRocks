@@ -80,6 +80,9 @@ else
                 pref.coeffs = 1; 
                 if ~isfield(pref,'coeffkind'), pref.coeffkind = 1; end
                 k = k+1; 
+            elseif strncmpi('equi',varargin{k},4)
+                pref.equi = 1;   
+                k = k+1;     
             elseif strncmpi('trunc',varargin{k},5)
                 pref.trunc = value;
                 if pref.trunc, pref.splitting = true; end

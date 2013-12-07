@@ -3,7 +3,8 @@
 
 %%
 % (Chebfun example opt/Rosenbrock.m)
-
+% [Tags: #optimization, #2D]
+  
 %% 1. The Rosenbrock function
 % Chebfun can often do quite a good job of minimizing
 % or maximizing a function defined on a 2D rectangle.

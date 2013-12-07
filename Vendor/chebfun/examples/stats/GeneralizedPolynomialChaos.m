@@ -1,4 +1,4 @@
-%% Generalized Polynomial Chaos
+%% Generalized polynomial chaos
 % Toby Driscoll, 16th December 2011
 
 %%

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHEBFUN GUIDE 8: CHEBFUN PREFERENCES</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="guide8.m"><style type="text/css">
+      --><title>CHEBFUN GUIDE 8: CHEBFUN PREFERENCES</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide8.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -54,6 +54,16 @@ span.syscmd { color:#B28C00 }
 
 .footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
 .footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
 
   </style></head><body><div class="content"><h1>CHEBFUN GUIDE 8: CHEBFUN PREFERENCES</h1><!--introduction--><p>Lloyd N. Trefethen, November 2009, revised February 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">8.1  Introduction</a></li><li><a href="#5">8.2  domain: the default domain</a></li><li><a href="#6">8.3  splitting: splitting on/off</a></li><li><a href="#20">8.4  splitdegree: degree limit in splitting on mode</a></li><li><a href="#22">8.5  maxdegree: maximum degree</a></li><li><a href="#28">8.6  minsamples: minimum number of sample points</a></li><li><a href="#37">8.7  resampling: resampling on/off</a></li><li><a href="#47">8.8 eps: Chebfun constructor tolerance</a></li><li><a href="#50">8.9 Additional preferences</a></li></ul></div><h2>8.1  Introduction<a name="1"></a></h2><p>Like any software package, Chebfun is based on certain design decisions.  Some of these are fixed, like the principle of representing functions by Chebyshev expansions.  Others are adjustable, like the maximum number of points at which a function will be sampled before Chebfun gives up trying to resolve it.  A starting point in exploring these matters is to type the command help chebfunpref. (For chebops, there is help cheboppref.) Or just to see the list of preferences, you can simply execute chebfunpref. Here we execute it with the argument 'factory' to ensure that all preferences are set to their factory values:</p><pre class="codeinput">  chebfunpref(<span class="string">'factory'</span>)
 </pre><p>In this chapter of the Chebfun Guide we explore some of these adjustable preferences, showing how special effects can be achieved by modifying them.  Besides showing off some useful techniques, this review will also serve to deepen the user's understanding of Chebfun by poking about a bit at its edges.</p><p>A general point to be emphasized is the distinction between creating a chebfun directly from the constructor and creating one by operating on previous chebfuns.  In the former case we can include preferences directly in the constructor command, and we recommend this as good practice:</p><pre class="codeinput">f = chebfun(<span class="string">'x.^x'</span>,[0,1],<span class="string">'splitting'</span>,<span class="string">'on'</span>);
@@ -110,7 +120,7 @@ ans =
   length(f)
   format <span class="string">short</span>, f.ends
 </pre><pre class="codeoutput">ans =
-   819
+   821
 ans =
   Columns 1 through 7
    -1.0000   -0.7500   -0.5000   -0.2500         0    0.2500    0.3750
@@ -124,7 +134,7 @@ ans =
 </pre><img vspace="5" hspace="5" src="guide8_04.png" alt=""> <p>With splitting on the representation is much more compact:</p><pre class="codeinput">  f3 = chebfun(ff,[-3 3],<span class="string">'splitting'</span>,<span class="string">'on'</span>);
   length(f3)
 </pre><pre class="codeoutput">ans =
-        2779
+        2778
 </pre><p>On the other hand, splitting off mode has advantages of robustness.  In particular, operations involving derivatives generally work better when functions are represented by global polynomials, and chebops for the most part requires this.  Also, for educational purposes, it is very convenient that Chebfun can be used so easily to study the properties of pure polynomial representations.</p><h2>8.4  splitdegree: degree limit in splitting on mode<a name="20"></a></h2><p>When intervals are subdivided in splitting on mode, as just illustrated, the parameter splitdegree determines where this will happen.  With the factory value splitdegree=128, splitting will take place if a polynomial of degree 128 proves insufficient to resolve a fun. Let us confirm for the chebfun f constructed a moment ago that the degrees of the individual funs are all less or equal than 128:</p><pre class="codeinput">  f.funs
 </pre><pre class="codeoutput">ans = vector of funs
 length of fun1: 66
@@ -133,7 +143,7 @@ length of fun3: 88
 length of fun4: 87
 length of fun5: 120
 length of fun6: 30
-length of fun7: 95
+length of fun7: 97
 length of fun8: 59
 length of fun9: 84
 length of fun10: 76
@@ -167,7 +177,7 @@ length of fun4: 277
       127163
 sumf =
    0.799999999999964
-Elapsed time is 0.617150 seconds.
+Elapsed time is 1.742891 seconds.
 </pre><img vspace="5" hspace="5" src="guide8_06.png" alt=""> <p>(Much more efficient ways of resolving this function, by eliminating the singularity, are described in Chapter 9.)</p><h2>8.6  minsamples: minimum number of sample points<a name="28"></a></h2><p>At the other end of the spectrum, the parameter minsamples determines the minimum number of points at which a function is sampled during the chebfun construction process, and the factory value of this parameter is 9.  This does not mean that all chebfuns have length at least 9.  For example, if f is a cubic, then it will be sampled at 9 points, Chebyshev expansion coefficients will be computed, and 5 of these will be found to be of negligible size and discarded.  So the resulting chebfun is a cubic, even though the constructor never sampled at fewer than 9 points.</p><pre class="codeinput">  chebfunpref(<span class="string">'factory'</span>);
   f = chebfun(<span class="string">'x.^3'</span>);
   lengthf = length(f)
@@ -203,12 +213,12 @@ Elapsed time is 0.617150 seconds.
   length(f)
 </pre><pre class="codeoutput">ff = 
     @(x)besselj(x,exp(x))
-Elapsed time is 0.057835 seconds.
+Elapsed time is 0.031130 seconds.
 ans =
         3790
 </pre><p>Let us see what happens if we set 'resampling on', so that previously computed values are not reused:</p><pre class="codeinput">  tic, f = chebfun(ff,[0 8],<span class="string">'resampling'</span>,<span class="string">'on'</span>); toc
   length(f)
-</pre><pre class="codeoutput">Elapsed time is 0.085893 seconds.
+</pre><pre class="codeoutput">Elapsed time is 0.050516 seconds.
 ans =
         3788
 </pre><p>One might wonder why 'resampling on' is an option at all, but in fact, it introduces some very interesting possibilities.  What if the "function" being sampled is not actually a fixed function, but depends on the grid? For example, consider this prescription:</p><pre class="codeinput">  ff = @(x) length(x)*sin(2*x);
@@ -219,7 +229,7 @@ ans =
 </pre><pre class="codeoutput">ans =
     18
 ans =
-  33.000000000000014
+  32.999999999999993
 </pre><img vspace="5" hspace="5" src="guide8_12.png" alt=""> <p>This rather bizarre example encourages us to play further. What if we change length(x)*sin(2*x) to sin(length(x)*x)? Now there is no convergence, for no matter how fine the grid is, the function is underresolved.</p><pre class="codeinput">  hh = @(x) sin(length(x)*x);
   h = chebfun(hh,<span class="string">'sampletest'</span>,0,<span class="string">'resampling'</span>,<span class="string">'on'</span>);
 </pre><pre class="codeoutput">Warning: Function not resolved, using 65537 pts. Have you tried 'splitting on'? 
@@ -235,8 +245,7 @@ ans =
 </pre><p>However, one can change this with a command like chebfunpref('eps',1e-6).</p><p>There are cases where weakening the tolerance makes a big difference. For example, this happens in certain applications in 2D and in certain applications involving differential equations.  (Indeed, the Chebfun differential equations commands have their own tolerance control strategies.) However, Chebfun does such a good job at resolving many functions that the eps-adjustment feature is not as useful as you might imagine, and we recommend that users not change eps unless they are having real problems with standard precision.</p><h2>8.9 Additional preferences<a name="50"></a></h2><p>Information about additional Chebfun preferences can be found by typing help chebfunpref.  Here is a quick summary.  In most cases various keywords are permitted such as 'on' or 1 or true, 'off' or 0 or false.</p><p>'sampletest' controls whether a function is evaluated at an extra point as a safety check of convergence.  With the default 'on' value, this test is indeed carried out.</p><p>'blowup' relates to the construction of chebfuns that diverge to infinity, as described in Chapter 9. blowup=0 is used for no singularities, blowup=1 if for functions with poles (blowups with a negative integer power) and blowup=2 for functions with branch points (blowups with an arbitrary power).</p><p>'chebkind' is set by default to 2, but can be changed to 1 to force Chebfun to use Chebyshev points of the first kind (i.e., roots of Chebyshev polynomials) rather than the second kind (extrema). This feature is experimental and may not do what you expect.</p><p>'extrapolate" can be turned on to avoid evaluating functions at endpoints if this may lead to trouble with NaN or inf. For example, here we get a warning message because the value is 0 at the x=0 and 1 elsewhere,</p><pre class="codeinput">f = chebfun(<span class="string">'sign(x)'</span>,[0 1]);
 </pre><pre class="codeoutput">Warning: Function not resolved, using 65537 pts. Have you tried 'splitting on'? 
 </pre><p>whereas here there is no difficulty:</p><pre class="codeinput">f = chebfun(<span class="string">'sign(x)'</span>,[0 1],<span class="string">'extrapolate'</span>,<span class="string">'on'</span>);
-</pre><p>'plot_numpts', set by default to 2001, controls how many points a function is sampled at for plotting.</p><p>'ADdepth' stands for 'automatic differentiation depth', and limits how deep an automatic differentiation stack can go in order to limit memory use.</p><p class="footer"><br>
-      Published with MATLAB&reg; 7.14<br></p></div><!--
+</pre><p>'plot_numpts', set by default to 2001, controls how many points a function is sampled at for plotting.</p><p>'ADdepth' stands for 'automatic differentiation depth', and limits how deep an automatic differentiation stack can go in order to limit memory use.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CHEBFUN GUIDE 8: CHEBFUN PREFERENCES
 % Lloyd N. Trefethen, November 2009, revised February 2011

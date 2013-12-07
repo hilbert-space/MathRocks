@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example geom/Sinai.m)
+% [Tags: #piecewise, #concatentation, #trajectory, #intersection, #geometry]
 function Sinai
 
 %%

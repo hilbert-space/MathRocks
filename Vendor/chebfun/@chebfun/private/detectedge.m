@@ -51,7 +51,7 @@ while maxd(nder) ~= inf && ~isnan(maxd(nder)) &&  diff(ends) > eps*hs
     [na,nb,maxd] = maxder(f, ends(1), ends(2), nder, N, der);   % compute maximum derivatives and interval
     nder = find( (maxd > (5.5-(1:nder)').*maxd1) & (maxd > 10*vs./hs.^(1:nder)') , 1, 'first' );      % find proper nder
     if isempty(nder)
-        return                                          % derivatives are not gowing, return edge =[]
+        return                                          % derivatives are not growing, return edge =[]
     elseif nder == 1 && diff(ends) < 1e-3*hs
         edge = findjump(f, ends(1) ,ends(2), hs, vs, der);  % blow up in first derivative, use findjump
         return
@@ -87,7 +87,7 @@ maxd = abs(ya-yb)/((b-a).*der((b+a)/2));                    % estimate max abs o
 if maxd < 1e-5 * vs/hs
     return
 end
-cont = 0;                                   % keep track how many times derivative stoped growing
+cont = 0;                                   % keep track how many times derivative stopped growing
 e1 = (b+a)/2;                               % estimate edge location
 e0 = e1+1;                                  % force loop
 
@@ -100,7 +100,7 @@ while (cont < 2 || maxd == inf) && e0 ~= e1
     maxd1 = maxd;                           % keep track of maximum value
     if dy1 > dy2
        b = c; yb = yc;                      % blow-up seems to be in [a,c]
-       maxd = dy1/(b-a);                       % upddate maxd
+       maxd = dy1/(b-a);                       % update maxd
     else
        a = c; ya = yc;                      % blow-up seems to be in [c,b]
        maxd = dy2/(b-a);
@@ -131,7 +131,7 @@ dx = (b-a)/(N-1);
 x = [a+(0:N-2)*dx b].';  
 dy = f(x);
 
-% main loop (through derivatives), undivided differenes
+% main loop (through derivatives), undivided differences
 for j = 1:nder
     dy = diff(dy);
     x = (x(1:end-1)+x(2:end))/2;    

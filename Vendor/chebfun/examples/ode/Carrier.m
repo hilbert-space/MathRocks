@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/Carrier.m)
+% [Tags: #nonlinearODE]
 
 %% 1. The original problem
 % The Carrier equation can be found in Section 9.7 of the well-known

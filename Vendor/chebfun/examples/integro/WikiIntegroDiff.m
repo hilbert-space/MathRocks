@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example integro/WikiIntegroDiff.m)
+% [Tags: #linear, #backslash, #wikipedia]
 
 %%
 % Here, we solve a first order linear integro-differential equation 

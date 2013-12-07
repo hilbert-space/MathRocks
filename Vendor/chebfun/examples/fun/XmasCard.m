@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example fun/XmasCard.m)
+% [Tags: #Xmas, #gift, #fun]
 
 %%
 % Chebfun has long been a popular medium for sending birthday wishes [1],

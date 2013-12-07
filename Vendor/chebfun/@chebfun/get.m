@@ -23,7 +23,7 @@ function val = get(f, propName)
 val = [];
 
 if numel(f) > 1
-    val = cell(length(f),1);
+    val = cell(numel(f),1);
     for k = 1:numel(f)
         val{k} = get(f(k), propName);
     end

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun Example ode-eig/DoubleWell.m)
+% [Tags: #eigenvalues, #piecewise, #quantum]
 %%
 
 %%

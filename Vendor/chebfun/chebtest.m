@@ -31,6 +31,7 @@ function varargout = chebtest(dirname)
 %   linops:   Tests involving linear operators (linops).
 %   chebop:   Tests involving non-linear chebops (chebops)
 %   ad:       Tests involving automatic differentiation (AD).
+%   chebfun2: Tests involving 2D computations.
 %   misc:     Tests that don't fit elsewhere (BVP and IVP solvers, etc).
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
@@ -73,6 +74,8 @@ chbfundir = fileparts(which('chebtest.m'));
 if nargin < 1
     % Attempt to find "chebtests" directory.
     dirname = fullfile(chbfundir,'chebtests');
+else
+    dirname = fullfile(chbfundir,'chebtests',dirname);
 end
 
 % Deal with levelX input
@@ -107,12 +110,12 @@ userpref.dirname = dirname;
 addpath(dirname)
 
 % Get the chebtest directory names
-subdirlist = dir( fullfile(dirname) );
+subdirlist = dir( dirname );
 subdirnames = { subdirlist.name };
 numdirs = length(subdirnames);
 
 % Assign an order
-defaultOrder = {'basic','advanced','quasimatrices','linops','chebops','ad','misc'};
+defaultOrder = {'basic','advanced','quasimatrices','linops','chebops','ad','chebfun2','misc'};
 order = 1:numdirs;
 for i = 1:numdirs
     idx = find(strcmp(subdirnames(i),defaultOrder));
@@ -233,6 +236,9 @@ for j = 1:nr_tests
   % Print the test name
   if javacheck
       link = ['<a href="matlab: edit ''' whichfun '''">' fun '</a>'];
+  elseif any(strfind(fun, 'plot'))
+      % Don't test PLOT() tests is jvm is off.
+      continue
   else
       link = fun;
   end
@@ -276,7 +282,7 @@ for j = 1:nr_tests
     fprintf('CRASHED: ')
     msg = ME;
     lf = findstr(sprintf('\n'),msg.message); 
-    %if ~isempty(lf), msg.message(1:lf(end))=[]; end
+%     if ~isempty(lf), msg.message(1:lf(end))=[]; end
     fprintf([msg.message '\n'])
    
     % Create an error report entry for a crash
@@ -297,7 +303,7 @@ for j = 1:nr_tests
 end
 warning(warnstate)
 chebfunpref(pref);
-cheboppref(userpref.oppref);
+%cheboppref(userpref.oppref); % TODO: Add this.
 
 % Final output
 ts = sum(t); tm = ts/60;
@@ -387,7 +393,15 @@ if createreport && any(failed)
     % display first line of Java VM version info
     fprintf(fid,['Java VM Version: ',...
     char(strread(version('-java'),'%s',1,'delimiter','\n'))]);
-
+    % get the chebfun version
+    v = struct2cell(ver);
+    for k = 1:size(v,3)
+        if strcmpi(v(1,1,k),'Chebfun')
+            vstr = v(2,1,k);
+            if iscell(vstr), vstr = vstr{:};end
+            fprintf(fid,['Chebfun Version %s\n'],vstr);
+        end
+    end
     fclose(fid);
 elseif createreport && ~any(failed)
     delete(report);

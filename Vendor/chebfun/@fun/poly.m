@@ -20,7 +20,7 @@ else
   tnold1 = [0 1 zeros(1,n-2)];
   tnold2 = [1 zeros(1,n-1)];
   out = zeros(1,n);
-  out(1:2) = [0 v(end)*tnold2(1)]+v(end-1)*tnold1(2:-1:1);
+  out([1 2]) = [0 v(end)*tnold2(1)]+v(end-1)*tnold1([2 1]);
   % Recurrence
   for k = 3:n
     tn(1:k) = [0 2*tnold1(1:k-1)]-[tnold2(1:k-2) 0 0];

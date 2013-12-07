@@ -5,6 +5,7 @@ function Fout = besselj(nu,F)
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
+
 [r,c] = size(nu);
 if r > 1 && c > 1
     error('CHEBFUN:besselj:nu','The first argument of besselj must be a vector of real numbers');
@@ -28,11 +29,10 @@ else
         'vector and a column chebfun, or a column vector and a row chebfun.'])
 end
 
-
 for k = 1:numel(Fout)
     [Fnu(k) Fout(k)] = overlap(Fnu(k),Fout(k));
     for j = 1:Fnu(k).nfuns
-        if isreal(Fnu(k).funs(j).vals)
+        if nu~=0 && isreal(Fnu(k).funs(j).vals)
             Fout(k).funs(j) = real(Fout(k).funs(j));
         end
     end

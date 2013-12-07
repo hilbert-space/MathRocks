@@ -3,7 +3,7 @@ function [Vfun S] = null(A,varargin)
 % Z = NULL(A) is a chebfun quasimatrix orthonormal basis for the null space
 % of the linop A. That is, A*Z has negligible elements, size(Z,2) is the
 % nullity of A, and Z'*Z = I. A may contain linear boundary conditions, but
-% they will be treated as homogenous.
+% they will be treated as homogeneous.
 %
 % Example 1:
 %  d = domain(0,pi);
@@ -39,7 +39,7 @@ tol = 100*settings.eps;
 
 % Grab some info from A
 dom = domain(A);  breaks = dom.endsandbreaks;
-syssize = A.blocksize(2);  % Number of variabes in system
+syssize = A.blocksize(2);  % Number of variables in system
 
 % Initialise
 V = [];         % Initialise V so that the nested function overwrites it.
@@ -119,14 +119,14 @@ end
             'Nonsquare collocation currently not supported.')
     end
 
-    % Cmppute the discrete SVD
+    % Compute the discrete SVD
     [U,S,v] = svd(Amat);                    % Built-in SVD
     S = diag(S);
     nullity = length(find(S/S(1) < tol));   % Numerical nullity
     
     % Extract null vectors
     if nullity~=0
-        v = v(:,end+1-nullity:end);         % Numerical nullvectors
+        v = v(:,end+1-nullity:end);         % Numerical null vectors
         % Enforce additional boundary conditions and store for output
         V = v*null(B*v);                    % Store output in V
     else
@@ -147,7 +147,7 @@ end
         ii = csN(jj) + (1:N(jj));
         v(ii) = filter(v(ii),1e-8);
     end
-    v = {v};                  % Output as cell array for sytems constructor
+    v = {v};                  % Output as cell array for systems constructor
     Nout = N;
     nullity = size(V,2);
 

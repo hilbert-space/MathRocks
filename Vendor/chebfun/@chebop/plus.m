@@ -32,6 +32,11 @@ if isnumeric(N2)
     return
 end
 
+if isa(N1,'chebfun') || isa(N2,'chebfun')
+    error('CHEBOP:plus:chebfun',...
+        'Chebop/chebfun addition is not defined.') 
+end
+
 if ~all(N1.domain.ends == N2.domain.ends)
     error('CHEBOP:plus:domain',...
         'Domains of operators do not match');

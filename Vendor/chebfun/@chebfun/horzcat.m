@@ -1,7 +1,7 @@
 function Fout = horzcat(varargin)
-% HORZCAT   Chebfun vertical concatenation.
+% HORZCAT   Chebfun horizontal concatenation.
 %
-% [F1 F2] is the vertical concatenation of quasimatrices F1 and F2.
+% [F1 F2] is the horizontal concatenation of quasimatrices F1 and F2.
 %
 % For row chebfuns, F = HORZCAT(F1,F2,...) concatenates any number of
 % chebfuns by translating their domains to, in effect, create a piecewise

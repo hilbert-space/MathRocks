@@ -40,3 +40,11 @@ end
 function loadVariables(Fvar,Fwork)
 for i=1:length(Fvar), assignin('caller',Fvar{i},Fwork{i}), end
 end
+
+function isz = iszero(L)
+if isnumeric(L)
+    isz = L == 0;
+else
+    isz = L.iszero;
+end
+end

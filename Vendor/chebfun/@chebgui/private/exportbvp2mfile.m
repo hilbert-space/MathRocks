@@ -39,7 +39,7 @@ else
     indVarNameInit = {''};
 end
 
-% Make sure we don't have a disrepency in indVarNames
+% Make sure we don't have a discrepency in indVarNames
 if ~isempty(indVarNameInit{1}) && ~isempty(indVarNameDE{1})
     if strcmp(indVarNameDE{1},indVarNameInit{1})
         indVarNameSpace = indVarNameDE{1};

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example integro/FoxLi.m)
+% [Tags: #eigenvalues, #fredholm]
 
 %%
 % In the field of optics, integral operators arise that have a complex 

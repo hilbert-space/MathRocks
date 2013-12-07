@@ -46,8 +46,10 @@ classdef fun
                 % Do nothing
             elseif nargin == 1 && iscell( varargin{1} ),
                 data = varargin{1}; 
+                nfuns = length(data);
                 f0 = fun;                   % Create a dummy fun
-                for k = 1:length(data)      % Loop over 
+                g(nfuns) = fun();           % Allocate array
+                for k = 1:nfuns             % Loop over 
                     g(k) = ctor( f0 , data{k}{:} );
                 end
             else

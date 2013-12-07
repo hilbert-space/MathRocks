@@ -15,7 +15,7 @@ found = 0;
 foundHere = [0 0 0];
 foundBelow = [0 0 0];
 
-% Store the anon in the info field of the structure. To disply more
+% Store the anon in the info field of the structure. To display more
 % informative strings, we need to know the name of the input variable if
 % possible (otherwise, all first lines will be of the form diff(an,u) = ...
 
@@ -62,7 +62,7 @@ for counter = 1:numVariables
     end 
 end
 
-% Do if-elseing depending on how many chebfun variables we have in the
+% Do if-else depending on how many chebfun variables we have in the
 % workspace. As we might have doubles in the workspace, we need to subsref
 % the workspace using the information in the variablesVec vector, e.g. for
 % 2^x, we want the second variable in the workspace as a leaf, not the

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example pde/ReactDiffSys.m)
+% [Tags: #reactiondiffusion, #system, #linearPDE]
 
 %%
 % We model the concentrations of three chemicals u, v, and w contained 

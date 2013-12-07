@@ -1,8 +1,8 @@
 function Q = jacpoly(N,a,b,d,flag)
 %JACPOLY Jacobi polynomials.
-%   P = JACPOLY(N,ALPHA,BETA) computes a chebfun of the Jacobi polynomial 
-%   of degree N with parameters ALPHA. BETA on the interval [-1,1]. 
-%   N can be a vector of integers.
+%   P = JACPOLY(N,ALPHA,BETA) computes a chebfun of the Jacobi polynomial of
+%   degree N with parameters ALPHA and BETA, where the Jacobi weight function is
+%   defined by w(x) = (1-x)^ALPHA*(1+x)^BETA. N may be a vector of integers.
 %
 %   P = JACPOLY(N,ALPHA,BETA,D) computes the Jacobi polynomials as above,
 %   but on the interval given by the domain D, which must be bounded.

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example roots/BesselRoots.m)
+% [Tags: #roots, #Bessel]
 
 %%
 % Here is the Bessel function J0 on the interval [0,100].

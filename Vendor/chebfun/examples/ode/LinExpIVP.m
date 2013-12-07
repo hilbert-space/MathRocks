@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/LinExpIVP.m)
+% [Tags: #linearODE, #IVP]
 
 %%
 % This is an elementary example to illustrate how

@@ -1,8 +1,9 @@
-%% Chebyshev Coefficients
+%% Chebyshev coefficients
 % Nick Trefethen, September 2010
 
 %%
 % (Chebfun example approx/ChebCoeffs.m)
+% [Tags: #Chebyshev, #coefficients, #CHEBPOLYPLOT]
 
 %%
 % Every function defined on [-1,1], so long as it is at least Lipschitz

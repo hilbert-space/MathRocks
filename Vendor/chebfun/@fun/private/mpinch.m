@@ -68,18 +68,13 @@ phi = (theta(2:Np)-theta(1:Np-1))./(theta(3:Np+1)-theta(1:Np-1));
 yk = asin(2*phi-1);
 
 % solve parameter problem
-try
-    % fsolve
-    wq = warning('query','MATLAB:optimset:InvalidParamName');
-    warning('off','MATLAB:optimset:InvalidParamName');
-    options = optimset('Display','off','Algorithm','Levenberg-marquardt');
-    options = optimset(options, 'TolX',1e-3,'TolFun',(1e-3)*min(abs(imag(wk))));
-    yk = fsolve(@(yk) pfun2(yk,ginv_wk,wk),yk,options);
-    warning(wq,'MATLAB:optimset:InvalidParamName');
-catch no_fsolve
-    % nsold
-    yk = nsold(yk,@(v) pfun2(v,ginv_wk,wk),1e-3*[1 min(abs(imag(wk)))]);
-end
+% fsolve
+wq = warning('query','MATLAB:optimset:InvalidParamName');
+warning('off','MATLAB:optimset:InvalidParamName');
+options = optimset('Display','off','Algorithm','Levenberg-marquardt');
+options = optimset(options, 'TolX',1e-3,'TolFun',(1e-3)*min(abs(imag(wk))));
+yk = fsolve(@(yk) pfun2(yk,ginv_wk,wk),yk,options);
+warning(wq);
 [F rho zk a] = pfun2(yk,ginv_wk,wk);
 
 % inverse map
@@ -199,8 +194,7 @@ function w = newt(s,a,ginv,ginvp,wk)
         w = fsolve(@(ww) Ginv(ww,a,ginv)-s,s,options);
     catch no_fsolve
         % ode45 and Newton
-%         w = nsold(s,@(ww) Ginv(ww,a,ginv)-s,[tol tol],[40, 1, 1, 1, 1 1]);  
-        tol2 = min([1e-7 ; max(abs(imag(wk)),eps)])
+        tol2 = min([1e-7 ; max(abs(imag(wk)),eps)]);
         opts = odeset('abstol',tol,'reltol',tol2,'vectorized',1);
         [ignored w] = ode45(@(t,ww) 1./Ginvp(ww,a,ginvp),s,-1,opts);
         norm(Ginv(w,a,ginv)-s,inf)

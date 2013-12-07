@@ -1,6 +1,6 @@
-		      Chebfun system, Version 4.2
+		      Chebfun system, Version 4.3
 
-Chebfun Version 4.2 is compatible with MATLAB 7.6 (2008a) and above.
+Chebfun Version 4.3 is compatible with MATLAB 7.8 (2009a) and above.
 
 Installation instructions:
 
@@ -32,7 +32,7 @@ installation in order to read the user guides.
 
 Please see the file LICENSE.txt for licensing information.
 
-Chebfun can be found on the web at http://www.maths.ox.ac.uk/chebfun/
+Chebfun can be found on the web at http://www.chebfun.org/
 
 
 

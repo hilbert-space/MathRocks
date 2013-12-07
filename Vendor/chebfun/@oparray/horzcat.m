@@ -10,7 +10,11 @@ varargin(empty) = [];
 
 op = {};
 for k = 1:length(varargin)
-  opk = varargin{k}.op;
+  if isa(varargin{k},'function_handle')
+      opk = varargin(k);
+  else
+      opk = varargin{k}.op;
+  end
   op = horzcat(op,opk);
 end
 

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example roots/RandomPolynomials.m)
+% [Tags: #roots, #random]
 
 %%
 % If p(z) = a_0 + a_1 z + ... + a_n z^n is a polynomial with random

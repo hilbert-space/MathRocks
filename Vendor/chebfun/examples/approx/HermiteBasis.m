@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/HermiteBasis.m)
+% [Tags: #Hermite, #basis]
 
 %%
 % This script shows how one can use Chebfun to compute a polynomial basis

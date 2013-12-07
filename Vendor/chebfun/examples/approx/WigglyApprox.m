@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/WigglyApprox.m)
+% [Tags: #best, #REMEZ, #CHEBPOLY]
 
 %%
 % Ken Lord, whose doctoral supervisor was the Chebyshev technology wizard

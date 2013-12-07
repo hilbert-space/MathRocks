@@ -51,9 +51,6 @@ if isfield(pref,'syssize') && ~isempty(pref.syssize)
         end
         ends = repmat({ends},syssize);
     end
-%     if ~iscell(op)
-%         op = @(x) repmat({op(x)},syssize);
-%     end
 end   
 
 % Determine the size of the system and number of intervals
@@ -87,7 +84,7 @@ else
 end
 maxpower = max(minpower,floor(log2(maxn-1)));
 
-% We take integer powers up to 2^6 (=64), then integer and half-interger
+% We take integer powers up to 2^6 (=64), then integer and half-integer
 % powers (i.e. 2^6.5, 2^7, 2^7.5, ...) up to 2^maxpower.
 npn = max(min(maxpower,6),minpower);
 kk = 1 + round(2.^[ (minpower:npn) (2*npn+1:2*maxpower)/2 ]);
@@ -182,28 +179,6 @@ while any(~hpy) && all([NN{:}] < maxn) && all(ii <= numel(kk))
         end
     end
     
-    if isfield(pref,'map')
-        for j = 1:syssize
-            if ~all(NN{j} == NNold{j}),     
-                if numel(pref.map) == 1
-                    x{j} = pref.map.for(x{j}); 
-                else
-                    error
-%                     for l = 1:numel(pref.map)
-%                         mask = x{j} > pref.map(l).par(1) & x{j} < pref.map(1).par(2);
-%                         x{j}(mask) = pref.map(l).for(x{j}(mask));
-%                     end
-                end
-            end
-        end
-    end
-    
-    if ~pref.resampling
-        for j = 1:syssize
-            if all(NN{j}==NNold{j}), x{j} = x{j}([1 end]); end
-        end
-    end
-    
     % Get function values.
     if nargin(op) == 3
         v = op(x,NN,oldends);
@@ -233,7 +208,7 @@ while any(~hpy) && all([NN{:}] < maxn) && all(ii <= numel(kk))
             vjk = v{j}(indx).';
 
             % Set fun scales (horizontal and vertical).
-            sclv(l) = max(sclv(l), norm(vjk,inf));
+            sclv(l) = max(sclv(l), norm(v{j},inf));
             scl = struct('h',sclh(l),'v',sclv(l));
               
             % The new fun.
@@ -244,7 +219,7 @@ while any(~hpy) && all([NN{:}] < maxn) && all(ii <= numel(kk))
             fn = extrapolate(fn,pref);          % Extrapolate if need be
 
             % Happiness test.
-            [hpy(l),funs(l)] = ishappy(op,fn,pref);
+            [hpy(l),funs(l)] = ishappy(fn,pref);
 
             % If not happy, increase N.
             if ~hpy(l), ii(l) = ii(l) + 1;  end
@@ -257,13 +232,8 @@ while any(~hpy) && all([NN{:}] < maxn) && all(ii <= numel(kk))
 
 end 
 
-% if any(~hpy) && ~pref.splitting
-%     warning('CHEBFUN:chebsys',['Function not resolved, using ',num2str(maxn),' pts.']);
-% end
-
 % Set chebfuns
 fout = cell(1,syssize); l = 1; 
-% dom = zeros(syssize,2);
 for j = 1:syssize
     tmp = chebfun;
     for k = 1:bks(j)
@@ -272,31 +242,11 @@ for j = 1:syssize
         l = l+1;
     end
     fout{j} = tmp;
-%     dom(j,:) = get(tmp,'domain');
 end
 
-% % Return a chebfun or quasimatrix where possible. 
-% if syssize == 1, 
-%     fout = fout{:}; 
-% else
-%     if all(dom(:,1) == dom(1,1)) && all(dom(:,2) == dom(1,2))
-%         % Domains are the same, we can make a quasimatrix
-%         tmp = fout; fout = chebfun;
-%         for j = 1:syssize
-%             fout(:,j) = tmp{j};
-%         end   
-%     end
-% end
 
 
-
-function  [ish,g] = ishappy(op,g,pref)
-% ISHAPPY happiness test for funs
-%   [ISH,G2] = ISHAPPY(OP,G,X,PREF) tests if the fun G is a good approximation 
-%   to the function handle OP. ISH is either true or false. If ISH is true,
-%   G2 is the simplified version of G. PREF is the chebfunpref structure.
-
-% Calling the constructor with a 'scale' option overrides that from scl.v
+function  [ish,g] = ishappy(g,pref)
 if isfield(pref,'scale')
     g.scl.v = max(g.scl.v,pref.scale);
 end
@@ -305,19 +255,3 @@ n = g.n;                                    % Original length
 g = simplify(g,pref.eps,pref.chebkind);     % Attempt to simplify
 ish = g.n < n;                              % We're happy if this worked.
 
-% % Antialiasing procedure ('sampletest')
-% if ish && pref.sampletest 
-%     x = chebpts(g.n); % Points of 2nd kind (simplify returns vals at 2nd kind points)
-%     if g.n == 1
-%         xeval = 0.61; % Pseduo-random test value
-%     else
-%         % Test a point where the (finite difference) gradient of g is largest
-%         [ignored indx] = max(abs(diff(g.vals))./diff(x));
-%         xeval = (x(indx+1)+1.41*x(indx))/(2.41);
-%     end
-%     v = op(g.map.for(xeval)); 
-%     if norm(v-bary(xeval,g.vals,x),inf) > max(pref.eps,1e3*eps)*g.n*g.scl.v
-%     % If the fun evaluation differs from the op evaluation, sample test failed.
-%         ish =  false;
-%     end
-% end

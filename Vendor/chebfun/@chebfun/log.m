@@ -14,13 +14,29 @@ end
 function Fout = logcol(F)
 
 pref = chebfunpref;
+tol = 100*pref.eps;
 % Add breakpoints at roots
 if ~isreal(F)
-    r = roots(imag(F));
-    pref.extrapolate = true;
+    % Compelx Chebfun, separate real and imaginary functions
+    U = real(F); 
+    V = imag(F);
+    % pick the smaller function for root extraction
+    if( length(U) < length(V) )
+        r = roots(U);
+        % make sure it is a root of V as well
+        r = r(abs(feval(V,r)) < tol);
+    else
+        r = roots(V);
+        % make sure it is a root of V as well
+        r = r(abs(feval(U,r)) < tol);
+    end
 else
     r = roots(F);
 end
-F = add_breaks_at_roots(F,[],r);
+
+if( ~isempty(r) )
+    pref.extrapolate = true;
+    F = add_breaks_at_roots(F,tol,r);
+end
 
 Fout = comp(F, @(x) log(x), [], pref);

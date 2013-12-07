@@ -99,15 +99,9 @@ function [gout rho y] = slitmapm(wk,z,y,paramflag,derflag,plotflag) % Multiple s
 
     if paramflag
         fdat = {wk,n,tol,cmax};                % package data
-        try
-            % fsolve
-            opts = optimset('tolfun',tol,'tolx',tol,'display','off');
-            y = fsolve(@(x)mapfun(x,fdat),y,opts); % nonlinear system solver
-        catch no_fsolve
-            % nsold
-            y = nsold(y,@(x)mapfun(x,fdat),[tol tol]);
-        end
-
+        % fsolve
+        opts = optimset('tolfun',tol,'tolx',tol,'display','off');
+        y = fsolve(@(x)mapfun(x,fdat),y,opts); % nonlinear system solver
     end
 
     psi = (sin(y(2:n))+1)/2;

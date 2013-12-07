@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example linalg/LevelRepulsion.m)
+% [Tags: #linearalgebra, #eigenvalues]
 
 %%
 % If A and B are real symmetric matrices of dimension n, then each will

@@ -3,6 +3,7 @@
 
 %% 
 % (Chebfun example geom/DualCurves.m)
+% [Tags: #dual, #curve, #polygon, #geometry]
 
 function DualCurves
 %%

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHEBFUN GUIDE 9: INFINITE INTERVALS, INFINITE FUNCTION VALUES, AND SINGULARITIES</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="guide9.m"><style type="text/css">
+      --><title>CHEBFUN GUIDE 9: INFINITE INTERVALS, INFINITE FUNCTION VALUES, AND SINGULARITIES</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide9.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -54,6 +54,16 @@ span.syscmd { color:#B28C00 }
 
 .footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
 .footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
 
   </style></head><body><div class="content"><h1>CHEBFUN GUIDE 9: INFINITE INTERVALS, INFINITE FUNCTION VALUES, AND SINGULARITIES</h1><!--introduction--><p>Lloyd N. Trefethen, November 2009, revised February 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">9.1 Infinite intervals</a></li><li><a href="#20">9.2 Poles</a></li><li><a href="#29">9.3  Singularities other than poles</a></li><li><a href="#42">9.4 Another approach to singularities</a></li><li><a href="#46">9.5 References</a></li></ul></div><p>This chapter presents some features of Chebfun that are less robust than what is described in the first eight chapters.  With classic bounded chebfuns on a bounded interval [a,b], you can do amazingly complicated things often without encountering any difficulties. Now we are going to let the intervals and the functions diverge to infinity -- but please lower your expectations!  Partly because the software is relatively new, and partly for good mathematical reasons, one cannot expect the same reliability with these features.</p><h2>9.1 Infinite intervals<a name="2"></a></h2><p>If a function converges reasonably rapidly to a constant at infinity, you can define a corresponding chebfun.  Here are a couple of examples on [0,inf].  First we plot a function and find its maximum:</p><pre class="codeinput">f = chebfun(<span class="string">'0.75 + sin(10*x)./exp(x)'</span>,[0 inf]);
 plot(f)
@@ -64,16 +74,16 @@ maxf = max(f)
 sumg = sum(g)
 plot(g,<span class="string">'r'</span>)
 </pre><pre class="codeoutput">sumg =
-   2.266534507699849
+   2.266534507699848
 </pre><img vspace="5" hspace="5" src="guide9_02.png" alt=""> <p>Where do f and g intersect?  We can find out using roots:</p><pre class="codeinput">plot(f), hold <span class="string">on</span>, plot(g,<span class="string">'r'</span>)
 r = roots(f-g)
 plot(r,f(r),<span class="string">'.k'</span>)
 </pre><pre class="codeoutput">r =
    0.027639744894514
-   0.265714132607452
+   0.265714132607451
    0.706922132176980
    0.862331877000826
-   1.297442594652154
+   1.297442594652156
    1.594466987072372
    1.781855556974647
 </pre><img vspace="5" hspace="5" src="guide9_03.png" alt=""> <p>Here's an example on [-inf,inf] with a calculation of the location and value of the minimum:</p><pre class="codeinput">g = chebfun(@(x) tanh(x-1),[-inf inf]);
@@ -81,9 +91,9 @@ g = abs(g-1/3);
 clf, plot(g)
 [minval,minpos] = min(g)
 </pre><pre class="codeoutput">minval =
-  -1.333333333333336
+    -8.142417174761610e-16
 minpos =
-  -Inf
+   1.346573590279972
 </pre><img vspace="5" hspace="5" src="guide9_04.png" alt=""> <p>Notice that a function on an infinite domain is by default plotted on an interval like [0,10] or [-10,10].  You can use an extra 'interval' flag to plot on other intervals, as shown by this example of a function of small norm whose largest values are near x=30:</p><pre class="codeinput">hh = @(x) cos(x)./(1e5+(x-30).^6);
 h = chebfun(hh,[0 inf]);
 plot(h,<span class="string">'interval'</span>,[0 100])
@@ -110,13 +120,13 @@ vertical scale = 8.5
           erf               errorfun
    0.842700792949715   0.842700792949714
    0.995322265018953   0.995322265018952
-   0.999977909503001   0.999977909503001
-   0.999999984582742   0.999999984582741
-   0.999999999998463   0.999999999998462
+   0.999977909503001   0.999977909503002
+   0.999999984582742   0.999999984582742
+   0.999999999998463   0.999999999998463
    1.000000000000000   1.000000000000000
 </pre><p>One should be cautious in evaluating integrals over infinite intervals, however, for as mentioned in Section 1.5, the accuracy is sometimes disappointing, especially for functions that do not decay very quickly:</p><pre class="codeinput">sum(chebfun(<span class="string">'(1/pi)./(1+s.^2)'</span>,[-inf inf]))
 </pre><pre class="codeoutput">ans =
-   0.999999999998853
+   0.999999999997387
 </pre><p>Here's an example of a function that is too wiggly to be fully resolved:</p><pre class="codeinput">sinc = chebfun(<span class="string">'sin(pi*x)./(pi*x)'</span>,[-inf inf]);
 plot(sinc,<span class="string">'m'</span>,<span class="string">'interval'</span>,[-10 10])
 </pre><pre class="codeoutput">Warning: Function not resolved, using 65537 pts. Have you tried 'splitting on'? 
@@ -132,7 +142,7 @@ ans =
          imps: [1.128379167095513 0]
         trans: 0
      jacobian: [1x1 anon]
-           ID: [8931 73495852651]
+           ID: [4427 73556453729]
     funreturn: 0
 </pre><p>The first field, funs, indicates in this case that g consists of a single fun, that is, it is not split into pieces.  We can look at that fun like this:</p><pre class="codeinput">f = g.funs;
 struct(f)
@@ -254,7 +264,7 @@ sumf = sum(f)
 [     9.4,      13]       19        0        0   0.5  0.5   
 Total length = 76   vertical scale = 0.99 
 sumf =
-   9.585121877884733
+   9.585121877884728
 </pre><img vspace="5" hspace="5" src="guide9_16.png" alt=""> <p>If you have a function that blows up but you don't know the nature of the singularities, even whether they are poles or not, Chebfun will try to figure them out automatically if you run in 'blowup 2' mode.  Here's an example</p><pre class="codeinput">f = chebfun(<span class="string">'x.*(1+x).^(-exp(1)).*(1-x).^(-pi)'</span>,<span class="string">'blowup'</span>,2)
 </pre><pre class="codeoutput">f = 
    chebfun column (1 smooth piece)
@@ -287,8 +297,7 @@ plot(min(f1,1))
        interval       length   endpoint values   mapping 
 [      -1,       1]      103    -0.27     -0.5   sing 1  0.3 
 vertical scale = 1.3 
-</pre><img vspace="5" hspace="5" src="guide9_17.png" alt=""> <h2>9.5 References<a name="46"></a></h2><p>[Boyd 2001] J. P. Boyd, Chebyshev and Fourier Spectral Methods, 2nd ed., Dover, 2001.</p><p>[Richardson 2009] M. Richardson, Approximating Divergent Functions in the Chebfun System, thesis, MSc in Mathematical Modelling and Scientific Computing, Oxford University, 2009.</p><p class="footer"><br>
-      Published with MATLAB&reg; 7.14<br></p></div><!--
+</pre><img vspace="5" hspace="5" src="guide9_17.png" alt=""> <h2>9.5 References<a name="46"></a></h2><p>[Boyd 2001] J. P. Boyd, Chebyshev and Fourier Spectral Methods, 2nd ed., Dover, 2001.</p><p>[Richardson 2009] M. Richardson, Approximating Divergent Functions in the Chebfun System, thesis, MSc in Mathematical Modelling and Scientific Computing, Oxford University, 2009.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CHEBFUN GUIDE 9: INFINITE INTERVALS, INFINITE FUNCTION VALUES, AND SINGULARITIES
 % Lloyd N. Trefethen, November 2009, revised February 2011

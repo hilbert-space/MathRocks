@@ -3,7 +3,7 @@ function H = and(F,G)
 %
 % A & B performs a logical AND of chebfuns A and B and returns a
 % chebfun containing elements set to either logical 1 (TRUE) or logical
-% 0 (FALSE).  An element of the output chebfin is set to 0 if both
+% 0 (FALSE).  An element of the output chebfun is set to 0 if both
 % input chebfuns contains a non-zero element at that same point.
 % Otherwise, that element is set to 0.  A and B must have the same
 % dimensions unless one is a scalar.
@@ -71,7 +71,7 @@ end
 if tF, H = transpose(H); end
 
 function H = andcol(F,G)
-% operate on each of the columsn
+% operate on each of the columns
 H = all(horzcat(any(F,2),any(G,2)),2);
 
     

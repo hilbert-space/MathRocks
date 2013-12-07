@@ -77,8 +77,8 @@ strtmp = strrep(str,'(','+'); strtmp = strrep(strtmp,')','+');
 strtmp = strrep(strtmp,'''', '');
 varNames = symvar(strtmp);
 for k = numel(varNames):-1:1
-%     if ismember(varNames{k},{excludedNames})
-    if ismember(varNames(k),excludedNames)
+    %     if ismember(varNames{k},{excludedNames})
+        if ismember(varNames(k),excludedNames)
         varNames(k) = [];
     end
 end

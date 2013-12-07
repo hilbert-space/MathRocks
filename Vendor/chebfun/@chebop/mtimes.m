@@ -32,12 +32,14 @@ elseif isnumeric(A) || isnumeric(B)
     end
     
     C = B;  % change this if ID's are put in chebops!
-    
-    funString = func2str(C.op);
-    firstRightParLoc = min(strfind(funString,')'));
-    funArgs = funString(2:firstRightParLoc);
-    C.op = eval(['@',funArgs,'A*C.op',funArgs]);
-
+    if isa(C.op,'linop')
+        C.op = A*C.op;
+    else
+        funString = func2str(C.op);
+        firstRightParLoc = min(strfind(funString,')'));
+        funArgs = funString(2:firstRightParLoc);
+        C.op = eval(['@',funArgs,'A*C.op',funArgs]);
+    end
     C.opshow = cellfun(@(s) [num2str(A),' * (',s,')'],B.opshow,'uniform',false);
 elseif isa(A,'chebop') && isa(B,'chebop')
     if ~all(A.domain.ends == B.domain.ends)

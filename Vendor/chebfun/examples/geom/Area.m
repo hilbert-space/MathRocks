@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example geom/Area.m)
+% [Tags: #parameterized, #intersection, #trajectory, #geometry]
 
 %%
 % With Chebfun it is easy to compute with parametrized
@@ -19,7 +20,7 @@ y = (a+b)*sin(t) - b*sin((a+b)/b*t);
 % Such curves are called epicycloids, named by the Danish 
 % astronomer Ole Romer in 1674. Epicycloids can be produced 
 % by tracing a point on a circle which rolls out on a
-% larger circle. Rømer discovered that cog-wheels with 
+% larger circle. Romer discovered that cog-wheels with 
 % epicycloidal teeth turned with minimum friction. 
 % This is what our epicycloid looks like:
 
@@ -61,7 +62,7 @@ axis equal
 %% 
 % Because this curve is a perturbed unit circle, with
 % every perturbation occurring twice with opposite 
-% signs, the enclosed area should equal pi, as is 
+% signs, the enclosed area should be equal to pi, as is 
 % confirmed by Chebfun:
 
 A = sum(real(z).*diff(imag(z)));

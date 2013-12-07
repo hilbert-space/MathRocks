@@ -1031,6 +1031,8 @@ while ~valid
 end
 guidata(hObject, handles)
 
+% --------------------------------------------------------------------
+function menu_plotOpt_Callback(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function menu_showgrid_Callback(hObject, eventdata, handles)
@@ -1744,6 +1746,9 @@ set(handles.button_figsol,'Enable','on');
 set(handles.button_fignorm,'Enable','on');
 set(handles.button_exportsoln,'Enable','off');
 set(handles.menu_demos,'Enable','on');
+
+% --------------------------------------------------------------------
+
 
 % --------------------------------------------------------------------
 

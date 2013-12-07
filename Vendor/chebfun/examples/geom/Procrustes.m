@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun Example geom/Procrustes.m)
+% [Tags: #shapeanaylsis, #affinetransformations, #geometry]
 
 function procrustes
 close all
@@ -10,7 +11,7 @@ close all
 % Procrustes shape analysis is a statistical method for analysing the
 % distribution of sets of shapes (see [1]). Let's suppose we pick up a
 % pebble from the beach and want to know how close its shape matches the
-% outline of an frisbee. Here is a plot of the frisbee and the beach
+% outline of a frisbee. Here is a plot of the frisbee and the beach
 % pebble.
 
 figure(1);

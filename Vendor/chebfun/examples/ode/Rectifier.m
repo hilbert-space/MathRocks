@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/Rectifier.m)
+% [Tags: #nonlinearODE, #IVP]
 
 %%
 % The initial-value problem 

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example integro/FracCalc.m)
+% [Tags: #calculus]
 
 %%
 % We're all familiar with the standard definitions of differentiation 

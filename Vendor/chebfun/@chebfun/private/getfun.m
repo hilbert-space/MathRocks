@@ -1,11 +1,11 @@
 function [g, hpy, scl] = getfun(op, interval, pref, scl)
-%GETFUN controls the constructin of funs
+%GETFUN controls the construction of funs
 % [G, HPY, SCL] = GETFUN(OP, INTERVAL, PREF, SCL)
 %   GETFUN returns a fun G for OP. INTERVAL is the doamin. PREF the
-%   preference structure and SCL the scale structure -- horizonta and #
+%   preference structure and SCL the scale structure -- horizontal and #
 %    vertical scales in SCL (SCL.H and SCL.V).
 %
-%   The structure SCL gets uptdate within this function and is returned as
+%   The structure SCL gets updated within this function and is returned as
 %   an output.
 %
 %   HPY is true if the coefficients

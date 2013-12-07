@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHEBFUN GUIDE 4: CHEBFUN AND APPROXIMATION THEORY</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="guide4.m"><style type="text/css">
+      --><title>CHEBFUN GUIDE 4: CHEBFUN AND APPROXIMATION THEORY</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide4.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -54,6 +54,16 @@ span.syscmd { color:#B28C00 }
 
 .footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
 .footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
 
   </style></head><body><div class="content"><h1>CHEBFUN GUIDE 4: CHEBFUN AND APPROXIMATION THEORY</h1><!--introduction--><p>Lloyd N. Trefethen, November 2009, revised February 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">4.1  Chebyshev series and interpolants</a></li><li><a href="#10">4.2 chebpoly and poly</a></li><li><a href="#18">4.3 chebfun(...,N) and the Gibbs phenomenon</a></li><li><a href="#27">4.4 Smoothness and rate of convergence</a></li><li><a href="#39">4.5 Five theorems</a></li><li><a href="#54">4.6  Best approximations and the Remez algorithm</a></li><li><a href="#61">4.7  The Runge phenomenon</a></li><li><a href="#67">4.8  Rational approximations</a></li><li><a href="#77">4.9  References</a></li></ul></div><h2>4.1  Chebyshev series and interpolants<a name="1"></a></h2><p>Chebfun is founded on the mathematical subject of approximation theory, and in particular, on Chebyshev series and interpolants. Conversely, it provides a simple environment in which to demonstrate these approximants and other approximation ideas.</p><p>The history of "Chebyshev technology" goes back to the 19th century Russian mathematician P. L. Chebyshev (1821-1894) and his mathematical descendants such as Zolotarev and Bernstein (1880-1968).  These men realized that just as Fourier series provide an efficient way to represent a smooth periodic function, series of Chebyshev polynomials can do the same for a smooth nonperiodic function.  A number of excellent textbooks and monographs have been published on approximation theory, including [Davis 1963], [Cheney 1966], [Meinardus 1967], [Lorentz 1986], and Powell [Powell, 1981], and in addition there are books devoted entirely to Chebyshev polynomials, including [Rivlin 1974] and [Mason &amp; Handscomb 2003]. A Chebfun-based book on approximation theory and its computational applications is in preparation [Trefethen 2012].</p><p>From the dates of publication above it will be clear that approximation theory flourished in the early computer era, and in the 1950s and 1960s a number of numerical methods were developed based on Chebyshev polynomials by Lanczos [Lanczos 1957], Fox [Fox &amp; Parker 1966], Clenshaw, Elliott, Mason, Good, and others.  The Fast Fourier Transform came in 1965 and Salzer's barycentric interpolation formula for Chebyshev points in 1972 [Salzer 1972].  Then in the 1970s Orszag and Gottlieb introduced spectral methods, based on the application of Chebyshev and Fourier technology to the solution of PDEs.  The subject grew rapidly, and it is in the context of spectral methods that Chebyshev techniques are best known today [Boyd 2001], [Trefethen 2000], [Canuto et al. 2006/7].</p><p>We must be clear about terminology.  We shall rarely use the term <b>Chebyshev approximation</b>, for that expression refers specifically to an approximation that is optimal in the minimax sense. Chebyshev approximations are fascinating, and in Section 4.6 we shall see that Chebfun makes it easy to compute them, but the core of Chebfun is built on the different techniques of polynomial interpolation in Chebyshev points and expansion in Chebyshev polynomials.  These approximations are not quite optimal, but they are nearly optimal and much easier to compute.</p><p>By <b>Chebyshev points</b> we shall mean as usual the set of points in [-1,1] defined by</p><pre>       x(j) = -cos(j pi/N),    0 &lt;= j &lt;= N,</pre><p>where N is an integer &gt;= 1.  (If N=0, we take x(0)=0.) Through any data values f(j) at these points there is a unique polynomial interpolant p(x) of degree &lt;= N, which we call the <b>Chebyshev interpolant</b>. In particular, if the data are f(j) = (-1)^(n-j), then p(x) is T_N, the Nth Chebyshev polynomial, which can also be defined by the formula T_N(x) = cos(N acos(x)).  In Chebfun, the command "chebpoly(N)" returns a chebfun corresponding to T_N, and "poly" returns coefficients in the monomial basis 1,x,x^2,.... Thus we can print the coefficients of the first few Chebyshev polynomials like this:</p><pre class="codeinput">  <span class="keyword">for</span> N = 0:8
     disp(poly(chebpoly(N)))
@@ -95,7 +105,7 @@ c = chebpoly(x.^3)
 </pre><pre class="codeoutput">ans =
    1.0e+99 *
   Columns 1 through 3
-   0.000000000000386                   0  -0.000000000239601
+   0.000000000000385                   0  -0.000000000239601
   Columns 4 through 6
                    0   0.000000104985004                   0
   Columns 7 through 9
@@ -109,21 +119,21 @@ ctaylor = 1./gamma(1:length(cchebfun))';
 disp(<span class="string">'        chebfun              Taylor'</span>)
 disp([cchebfun ctaylor])
 </pre><pre class="codeoutput">        chebfun              Taylor
+   0.999999999999999   1.000000000000000
    1.000000000000000   1.000000000000000
-   1.000000000000001   1.000000000000000
-   0.500000000000005   0.500000000000000
-   0.166666666666635   0.166666666666667
-   0.041666666666629   0.041666666666667
-   0.008333333333643   0.008333333333333
-   0.001388888888968   0.001388888888889
-   0.000198412697004   0.000198412698413
-   0.000024801587344   0.000024801587302
-   0.000002755735291   0.000002755731922
-   0.000000275572862   0.000000275573192
-   0.000000025047742   0.000000025052108
-   0.000000002088009   0.000000002087676
-   0.000000000163485   0.000000000160590
-   0.000000000011426   0.000000000011471
+   0.500000000000006   0.500000000000000
+   0.166666666666637   0.166666666666667
+   0.041666666666639   0.041666666666667
+   0.008333333333673   0.008333333333333
+   0.001388888888937   0.001388888888889
+   0.000198412696806   0.000198412698413
+   0.000024801587262   0.000024801587302
+   0.000002755735745   0.000002755731922
+   0.000000275573269   0.000000275573192
+   0.000000025047292   0.000000025052108
+   0.000000002087511   0.000000002087676
+   0.000000000163648   0.000000000160590
+   0.000000000011621   0.000000000011471
 </pre><p>The fact that these differ is not an indication of an error in the Chebfun approximation.  On the contrary, the Chebfun coefficients do a better job of approximating than the truncated Taylor series.  If f were a function like 1/(1+25x^2), the Taylor series would not converge at all.</p><h2>4.3 chebfun(...,N) and the Gibbs phenomenon<a name="18"></a></h2><p>We can examine the approximation qualities of Chebyshev interpolants by means of a command of the form "chebfun(...,N)".  When an integer N is specified in this manner, it indicates that a Chebyshev interpolant is to be constructed of precisely length N rather than by the usual adaptive process.</p><p>Let us begin with a function that cannot be well approximated by polynomials, the step function sign(x).  To start with we interpolate it in 10 or 20 points, taking N to be even to avoid including a value 0 at the middle of the step.</p><pre class="codeinput">f = chebfun(<span class="string">'sign(x)'</span>,10);
 subplot(1,2,1), plot(f,<span class="string">'.-'</span>), grid <span class="string">on</span>
 f = chebfun(<span class="string">'sign(x)'</span>,20);
@@ -252,45 +262,44 @@ plot(f), hold <span class="string">on</span>, plot(p,<span class="string">'r'</s
 length(f)
 plot(f)
 </pre><pre class="codeoutput">ans =
-   350
+   354
 </pre><img vspace="5" hspace="5" src="guide4_19.png" alt=""> <p>We can use the command "chebpade", developed by Ricardo Pachon, to compute a Chebyshev-Pade approximant, defined by the condition that the Chebyshev series of p/q should match that of f as far as possible [Baker and Graves-Morris 1996].  (This is the so-called "Clenshaw-Lord" Chebyshev-Pade approximation; if the flag 'maehly' is specified the code alternatively computes the linearized variation known as the "Maehly" approximation.) Chebyshev-Pade approximation is the analogue for functions defined on an interval of Pade approximation for functions defined in a neighborhood of a point.</p><pre class="codeinput">[p,q] = chebpade(f,40,4);
 r = p./q;
 </pre><p>The functions f and r match to about 8 digits:</p><pre class="codeinput">norm(f-r)
 plot(f-r,<span class="string">'r'</span>)
 </pre><pre class="codeoutput">ans =
-     4.884651558905774e-09
+     4.884630938610459e-09
 </pre><img vspace="5" hspace="5" src="guide4_20.png" alt=""> <p>Mathematically, f has poles in the complex plane at +-i, +-3i, +5i, and so on. We can obtain approximations to these values by looking at the roots of q:</p><pre class="codeinput">roots(q,<span class="string">'complex'</span>)
 </pre><pre class="codeoutput">ans =
-                  0 - 1.000000750727759i
-                  0 + 1.000000750727759i
-                  0 - 3.004284960235364i
-                  0 + 3.004284960235364i
+  0.000000000000001 - 1.000000750728105i
+  0.000000000000001 + 1.000000750728105i
+  0.000000000000000 - 3.004284961261726i
+  0.000000000000000 + 3.004284961261726i
 </pre><p>A similar but perhaps faster and more robust approach to rational interpolation is encoded in the command "ratinterp", which computes a type (m,n) interpolant through m+n+1 Chebyshev points (or, optionally, a different set of points). This capability was developed by Ricardo Pachon and Pedro Gonnet [Pachon &amp; Gonnet 2010].  The results are similar:</p><pre class="codeinput">[p,q] = ratinterp(f,40,4);
 r = p./q;
 norm(f-r)
 plot(f-r,<span class="string">'m'</span>)
 </pre><pre class="codeoutput">ans =
-     3.501142322723392e-07
+     3.501373372400137e-07
 </pre><img vspace="5" hspace="5" src="guide4_21.png" alt=""> <p>Again the poles are not bad:</p><pre class="codeinput">roots(q,<span class="string">'complex'</span>)
 </pre><pre class="codeoutput">ans =
-                  0 - 1.000011080933511i
-                  0 + 1.000011080933511i
-                  0 - 3.010648606000841i
-                  0 + 3.010648606000841i
+  0.000000000000000 - 1.000011081633768i
+  0.000000000000000 + 1.000011081633768i
+  0.000000000000000 - 3.010649066208423i
+  0.000000000000000 + 3.010649066208423i
 </pre><p>The third and fourth options for rational approximation, as mentioned in Section 4.6, are best approximants computed by "remez" and Caratheodory-Fejer approximants computed by "cf" [Trefethen &amp; Gutknecht 1983, Van Deun &amp; Trefethen 2011]. As mentioned in Section 4.6, CF approximants often agree with best approximations to machine precision if f is smooth. We explore the same function yet again, and this time obtain an equioscillating error curve:</p><pre class="codeinput">[p,q] = cf(f,40,4);
 r = p./q;
 norm(f-r)
 plot(f-r,<span class="string">'c'</span>)
 </pre><pre class="codeoutput">ans =
-     2.999209244012242e-10
+     2.999254020929991e-10
 </pre><img vspace="5" hspace="5" src="guide4_22.png" alt=""> <p>And the poles:</p><pre class="codeinput">roots(q,<span class="string">'complex'</span>)
 </pre><pre class="codeoutput">ans =
- -0.000000000000002 - 1.000000066684930i
- -0.000000000000002 + 1.000000066684930i
-  0.000000000000009 - 3.001936139321728i
-  0.000000000000009 + 3.001936139321728i
-</pre><p>It is tempting to vary parameters and functions to explore more poles and what accuracy can be obtained for them.  But rational approximation and analytic continuation are very big subjects and we shall resist the temptation.</p><h2>4.9  References<a name="77"></a></h2><p>[Baker and Graves-Morris 1996] G. A. Baker, Jr. and P. Graves-Morris, Pade Approximants, 2nd ed., Cambridge U. Press, 1996.</p><p>[Battles &amp; Trefethen 2004] Z. Battles and L. N. Trefethen, "An extension of Matlab to continuous functions and operators", SIAM Journal on Scientific Computing 25 (2004), 1743-1770.</p><p>[Berrut &amp; Trefethen 2005] J.-P. Berrut and L. N. Trefethen, "Barycentric Lagrange interpolation", SIAM Review 46 (2004), 501-517.</p><p>[Boyd 2001] J. P. Boyd, Chebyshev and Fourier Spectral Methods, 2nd ed., Dover, 2001.</p><p>[Canuto et al. 2006/7] C. Canuto, M. Y. Hussaini, A. Quarteroni and T. A. Zang, Spectral Methods, 2 vols., Springer, 2006 and 2007.</p><p>[Cheney 1966] E. W. Cheney, Introduction to Approximation Theory, McGraw-Hill 1966 and AMS/Chelsea, 1999.</p><p>[Davis 1963] P. J. Davis, Interpolation and Approximation, Blaisdell, 1963 and Dover, 1975.</p><p>[Ehlich &amp; Zeller 1966] H. Ehlich and K. Zeller, "Auswertung der Normen von Interpolationsoperatoren," Math. Annalen 164 (1966), 105-112.</p><p>[Fox &amp; Parker 1966] L. Fox and I. B. Parker, Chebyshev Polynomials in Numerical Analysis, Oxford U. Press, 1968.</p><p>[Helmberg &amp; Wagner 1997] G. Helmberg &amp; P. Wagner, "Manipulating Gibbs' phenomenon for Fourier interpolation," Journal of Approximation Theory 89 (1997), 308-320.</p><p>[Higham 2004] N. J. Higham, "The numerical stability of barycentric Lagrange interpolation", IMA Journal of Numerical Analysis 24 (2004), 547-556.</p><p>[Lanczos 1956] C. Lanczos, Applied Analysis, Prentice-Hall, 1956 and Dover, 1988.</p><p>[Lorentz 1986] G. G. Lorentz, The Approximation of Functions, American Mathematical Society, 1986.</p><p>[Mason &amp; Handscomb 2003] J. C. Mason and D. C. Handscomb, Chebyshev Polynomials, CRC Press, 2003.</p><p>[Mastroianni &amp; Szabados 1995] G. Mastroianni and J. Szabados, "Jackson order of approximation by Lagrange interpolation," Acta. Math. Hungar. 69 (1995), 73-82.</p><p>[Meinardus 1967] G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer, 1967.</p><p>[Pachon &amp; Gonnet 2010] R. Pachon and P. Gonnet, manuscript in preparation.</p><p>[Pachon &amp; Trefethen 2009] R. Pachon and L. N. Trefethen, "Barycentric-Remez algorithms for best polynomial approximation in the chebfun system", BIT Numerical Mathematics 49 (2009), ?-?.</p><p>[Platte, Trefethen &amp; Kuijlaars 2011] R. P. Platte, L. N. Trefethen and A. B. J. Kuijlaars, "Impossibility of fast stable approximation of analytic functions from equispaced samples", SIAM Review, to appear.</p><p>[Powell 1981] M. J. D. Powell, Approximation Theory and Methods, Cambridge University Press, 1981.</p><p>[Rack &amp; Reimer 1982] H.-J. Rack and M. Reimer, "The numerical stability of evaluation schemes for polynomials based on the Lagrange interpolation form", BIT Numerical Mathematics 22 (1982), 101-107.</p><p>[Rivlin 1974] T. J. Rivlin, The Chebyshev Polynomials, Wiley, 1974 and 1990.</p><p>[Runge 1901] C. Runge, "Ueber empirische Funktionen und die Interpolation zwischen aequidistanten Ordinaten", Zeitschrift fuer Mathematik und Physik 46 (1901), 224-243.</p><p>[Salzer 1972] H. E. Salzer, "Lagrangian interpolation at the Chebyshev points cos(nu pi/n), nu = 0(1)n; some unnoted advantages", Computer Journal 15 (1972),156-159.</p><p>[Trefethen 2000] L. N. Trefethen, Spectral Methods in Matlab,  SIAM, 2000.</p><p>[Trefethen 2010] L. N. Trefethen, Approximation Theory and Approximation Practice, book in preparation.</p><p>[Trefethen &amp; Gutknecht 1983] L. N. Trefethen and M. H. Gutknecht, "The Caratheodory-Fejer method for real rational approximation", SIAM Journal on Numerical Analysis 20 (1983), 420-436.</p><p>[Van Deun &amp; Trefethen 2011] J. Van Deun and L. N. Trefethen, A robust implementation of the Caratheodory-Fejer method, BIT Numerical Mathematics, submitted.</p><p class="footer"><br>
-      Published with MATLAB&reg; 7.14<br></p></div><!--
+  0.000000000000007 - 1.000000066684758i
+  0.000000000000007 + 1.000000066684758i
+ -0.000000000000010 - 3.001936139318811i
+ -0.000000000000010 + 3.001936139318811i
+</pre><p>It is tempting to vary parameters and functions to explore more poles and what accuracy can be obtained for them.  But rational approximation and analytic continuation are very big subjects and we shall resist the temptation.</p><h2>4.9  References<a name="77"></a></h2><p>[Baker and Graves-Morris 1996] G. A. Baker, Jr. and P. Graves-Morris, Pade Approximants, 2nd ed., Cambridge U. Press, 1996.</p><p>[Battles &amp; Trefethen 2004] Z. Battles and L. N. Trefethen, "An extension of Matlab to continuous functions and operators", SIAM Journal on Scientific Computing 25 (2004), 1743-1770.</p><p>[Berrut &amp; Trefethen 2005] J.-P. Berrut and L. N. Trefethen, "Barycentric Lagrange interpolation", SIAM Review 46 (2004), 501-517.</p><p>[Boyd 2001] J. P. Boyd, Chebyshev and Fourier Spectral Methods, 2nd ed., Dover, 2001.</p><p>[Canuto et al. 2006/7] C. Canuto, M. Y. Hussaini, A. Quarteroni and T. A. Zang, Spectral Methods, 2 vols., Springer, 2006 and 2007.</p><p>[Cheney 1966] E. W. Cheney, Introduction to Approximation Theory, McGraw-Hill 1966 and AMS/Chelsea, 1999.</p><p>[Davis 1963] P. J. Davis, Interpolation and Approximation, Blaisdell, 1963 and Dover, 1975.</p><p>[Ehlich &amp; Zeller 1966] H. Ehlich and K. Zeller, "Auswertung der Normen von Interpolationsoperatoren," Math. Annalen 164 (1966), 105-112.</p><p>[Fox &amp; Parker 1966] L. Fox and I. B. Parker, Chebyshev Polynomials in Numerical Analysis, Oxford U. Press, 1968.</p><p>[Helmberg &amp; Wagner 1997] G. Helmberg &amp; P. Wagner, "Manipulating Gibbs' phenomenon for Fourier interpolation," Journal of Approximation Theory 89 (1997), 308-320.</p><p>[Higham 2004] N. J. Higham, "The numerical stability of barycentric Lagrange interpolation", IMA Journal of Numerical Analysis 24 (2004), 547-556.</p><p>[Lanczos 1956] C. Lanczos, Applied Analysis, Prentice-Hall, 1956 and Dover, 1988.</p><p>[Lorentz 1986] G. G. Lorentz, The Approximation of Functions, American Mathematical Society, 1986.</p><p>[Mason &amp; Handscomb 2003] J. C. Mason and D. C. Handscomb, Chebyshev Polynomials, CRC Press, 2003.</p><p>[Mastroianni &amp; Szabados 1995] G. Mastroianni and J. Szabados, "Jackson order of approximation by Lagrange interpolation," Acta. Math. Hungar. 69 (1995), 73-82.</p><p>[Meinardus 1967] G. Meinardus, Approximation of Functions: Theory and Numerical Methods, Springer, 1967.</p><p>[Pachon &amp; Gonnet 2010] R. Pachon and P. Gonnet, manuscript in preparation.</p><p>[Pachon &amp; Trefethen 2009] R. Pachon and L. N. Trefethen, "Barycentric-Remez algorithms for best polynomial approximation in the chebfun system", BIT Numerical Mathematics 49 (2009), ?-?.</p><p>[Platte, Trefethen &amp; Kuijlaars 2011] R. P. Platte, L. N. Trefethen and A. B. J. Kuijlaars, "Impossibility of fast stable approximation of analytic functions from equispaced samples", SIAM Review, to appear.</p><p>[Powell 1981] M. J. D. Powell, Approximation Theory and Methods, Cambridge University Press, 1981.</p><p>[Rack &amp; Reimer 1982] H.-J. Rack and M. Reimer, "The numerical stability of evaluation schemes for polynomials based on the Lagrange interpolation form", BIT Numerical Mathematics 22 (1982), 101-107.</p><p>[Rivlin 1974] T. J. Rivlin, The Chebyshev Polynomials, Wiley, 1974 and 1990.</p><p>[Runge 1901] C. Runge, "Ueber empirische Funktionen und die Interpolation zwischen aequidistanten Ordinaten", Zeitschrift fuer Mathematik und Physik 46 (1901), 224-243.</p><p>[Salzer 1972] H. E. Salzer, "Lagrangian interpolation at the Chebyshev points cos(nu pi/n), nu = 0(1)n; some unnoted advantages", Computer Journal 15 (1972),156-159.</p><p>[Trefethen 2000] L. N. Trefethen, Spectral Methods in Matlab,  SIAM, 2000.</p><p>[Trefethen 2010] L. N. Trefethen, Approximation Theory and Approximation Practice, book in preparation.</p><p>[Trefethen &amp; Gutknecht 1983] L. N. Trefethen and M. H. Gutknecht, "The Caratheodory-Fejer method for real rational approximation", SIAM Journal on Numerical Analysis 20 (1983), 420-436.</p><p>[Van Deun &amp; Trefethen 2011] J. Van Deun and L. N. Trefethen, A robust implementation of the Caratheodory-Fejer method, BIT Numerical Mathematics, submitted.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CHEBFUN GUIDE 4: CHEBFUN AND APPROXIMATION THEORY
 % Lloyd N. Trefethen, November 2009, revised February 2011

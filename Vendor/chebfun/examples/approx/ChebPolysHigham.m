@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example approx/ChebPolysHigham.m)
+% [Tags: #Higham, #Chebyshevpolynomial, #PLOT3, #CHEBPOLY]
 
 %%
 % On p. 259 of their Matlab Guide, 2nd ed. [1], Higham and Higham

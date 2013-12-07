@@ -1,5 +1,5 @@
 function dom = domain(A)
-%DOMAIN   Domain of function defintion.
+%DOMAIN   Domain of function definition.
 % DOMAIN(A) returns the domain of the functions on which the linop A
 % operates, (Note that this isn't quite the "domain of A", which would be
 % the space in which the functions it could act upon live).

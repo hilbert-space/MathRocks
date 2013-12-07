@@ -38,15 +38,23 @@ function varargout = plot(varargin)
 % Besides the usual parameters that control the specifications of lines
 % (see linespec), the parameters JumpLine and JumpMarker determine the type
 % of line and style of markers respectively for discontinuities of the
-% chebfun. For example, PLOT(F,'JumpLine','-r')  will plot discontinuities
-% as a solid red line, and PLOT(F,'-or','JumpMarker,'.k') will plot the
+% chebfun F. For example, PLOT(F,'JumpLine','-r')  will plot discontinuities
+% as solid red lines, and PLOT(F,'-or','JumpMarker,'.k') will plot the
 % jump values with black dots. By default the plotting styles for jumplines
-% and jumpmarkers are ':' and 'x' respectively with colours chosen to match
+% and jumpmarkers are ':' and 'x' respectively. Colours are chosen to match
 % the lines they correspond to, and jump values are only plotted when the
 % Chebyshev points are also plotted, unless an input 'JumpMarker','x' is
 % passed. It is possible to modify other properties of jumplines and
 % jumpmarkers with syntax like PLOT(F,'JumpLine',{'r','LineWidth',5}).
 % Jumplines can be suppressed with the argument 'JumpLine','none'.
+%
+% Similarly, the parameters DeltaLine and DeltaMarker determine the 
+% type of line and markers for plotting delta functions in the chebfun F.
+% For example PLOT(F,'DeltaLine', '-.r', 'DeltaMarker', '*k') will
+% plot dashed red lines for delta functions with black * markers.
+% By default delta functions are plotted as solid lines with '^'
+% as the marker. The size of the DeltaMarker is always 6 which is
+% the default Matlab marker size.
 %
 % PLOT(F,'interval',[A B]) restricts the plot to the interval [A,B] which 
 % can be useful when the domain of F is infinite, or for 'zooming in' 
@@ -60,8 +68,11 @@ function varargout = plot(varargin)
 % H = PLOT(F, ...) returns a column vector of handles to line objects in
 % the plot. H(:,1) contains the handles for the 'curves' (i.e. the function),
 % H(:,2) contains handles for the 'marks', (i.e. the values at Chebyshev 
-% points), H(:,3) for the jump lines, H(:,4) for the jump vals, and H(:,5) 
-% contains the handle for a dummy plot used to supply correct legends.
+% points), H(:,3) for the jump lines, H(:,4) for the jump vals, H(:,5) for
+% delta function lines, H(:,6)/H(:,7) for positive/negative delta function
+% marker values when the marker is '^', otherwise H(:,6) contains the handles
+% for all delta function markers and H(:,7) contains dummy data. 
+% Finally, H(:,8) contains the handle for a dummy plot used to supply correct legends.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
@@ -75,7 +86,11 @@ if ~isempty(cax)
 end
 
 % Get jumpline style and jumpval markers
-jlinestyle = ':'; jmarker = 'x'; forcejmarks = false; 
+jlinestyle = ':'; jmarker = 'x'; forcejmarks = false;
+
+% Get delta style and deltaval markers for plotting delta functions
+dlinestyle = '-'; dmarker = '^'; forcedmarks = true;
+
 infy = false; interval = [];
 for k = length(varargin):-1:1
     if isa(varargin,'chebfun'), break, end
@@ -87,6 +102,13 @@ for k = length(varargin):-1:1
         elseif strcmpi(vk,'JumpMarker');      
             jmarker = varargin{k+1}; 
             forcejmarks = true;
+            varargin(k:k+1) = [];
+        elseif strcmpi(vk,'DeltaLine');
+            dlinestyle = varargin{k+1};
+            varargin(k:k+1) = [];
+        elseif strcmpi(vk,'DeltaMarker');
+            dmarker = varargin{k+1};
+            forcedmarks = true;
             varargin(k:k+1) = [];
         elseif strcmpi(vk,'NumPts');      
             numpts = varargin{k+1}; 
@@ -106,7 +128,8 @@ for k = length(varargin):-1:1
     end
 end
 
-linedata = {}; markdata = {}; jumpdata = {}; dummydata = {}; jvaldata = {}; LW = [];
+linedata = {}; markdata = {}; jumpdata = {}; jvaldata = {};
+deltadata = {}; dvaldata = {}; dummydata = {}; LW = [];
 bot = inf; top = -inf;
 while ~isempty(varargin)
     % grab the chebfuns
@@ -144,10 +167,11 @@ while ~isempty(varargin)
     
     % get plot data
     if ~isempty(g)
-        [lines marks jumps jumpval misc] = plotdata(f,g,[],numpts,interval);
+        [lines marks jumps jumpval deltas deltaval misc] = plotdata(f,g,[],numpts,interval);
     else
         linedata = [linedata s];  markdata = [markdata s];
         jumpdata = [jumpdata s];  jvaldata = [jvaldata s];
+        deltadata = [deltadata s]; dvaldata = [dvaldata s];
         continue
     end
     
@@ -165,8 +189,9 @@ while ~isempty(varargin)
             jumps = [jumps, {tmp{k},tmp{k+1}},jlinestyle];
         end
     elseif ~isempty(lines)
-            jumps = {NaN(1,size(lines{1},2)),NaN(1,size(lines{2},2))};
+        jumps = {NaN(1,size(lines{1},2)),NaN(1,size(lines{2},2))};
     end
+    
     if ~isempty(jumpval)
         tmp = jumpval;         jumpval = {};
         for k = 1:2:length(tmp)-1
@@ -175,7 +200,28 @@ while ~isempty(varargin)
     elseif ~isempty(lines)
         jumpval = {NaN(1,size(lines{1},2)),NaN(1,size(lines{2},2))};
     end
-
+    
+    % delta stuff
+    if ~isempty(deltas) && ~isempty(deltas{1})
+        tmp = deltas;          deltas = {};
+        for k = 1:2:length(tmp)-1
+            deltas = [deltas, {tmp{k},tmp{k+1}},dlinestyle];       
+        end
+    elseif ~isempty(lines)
+        deltas = {NaN(1,size(lines{1},2)),NaN(1,size(lines{2},2))};
+    end
+                
+    
+    if ~isempty(deltaval)
+        tmp = deltaval;         deltaval = {};
+        for k = 1:3:length(tmp)-1
+            % delta marker data:     x        y       sign     marker
+            deltaval = [deltaval, {tmp{k},tmp{k+1}, tmp{k+2}},dmarker];
+        end
+    elseif ~isempty(lines)
+        deltaval = {NaN(1,size(lines{1},2)),NaN(1,size(lines{2},2))};
+    end
+    
     if ~isempty(lines)
         linedata = [linedata, lines,s];
     end
@@ -184,6 +230,8 @@ while ~isempty(varargin)
     end
     jumpdata = [jumpdata, jumps, LW];
     jvaldata = [jvaldata, jumpval];
+    deltadata = [deltadata, deltas, LW];
+    dvaldata = [dvaldata, deltaval];
     if ~isempty(lines)
         dummydata = [dummydata, lines{1}(1), NaN*ones(size(lines{2},2),1), s];
     end        
@@ -197,6 +245,8 @@ if isempty(dummydata), dummydata = {[]}; end
 if isempty(linedata), linedata = {[]}; end
 if isempty(jumpdata), jumpdata = {[]}; end
 if isempty(jvaldata), jvaldata = {[]}; end
+if isempty(deltadata), deltadata = {[]}; end
+if isempty(dvaldata), dvaldata = {[]}; end
 
 % Are we holding the current axis?
 h = ishold;
@@ -216,10 +266,18 @@ end
 if isempty(jlinestyle) || (ischar(jlinestyle) && strcmpi(jlinestyle,'none'))
     jumpdata = {NaN, NaN};
 end
+% Do not plot deltalines
+if isempty(dlinestyle) || (ischar(dlinestyle) && strcmpi(dlinestyle,'none'))
+    deltadata = {NaN, NaN};
+end
 
+% Do not plot delta markers
+if isempty(dmarker) || (ischar(dmarker) && strcmpi(dmarker,'none'))
+    forcedmarks = false;
+end
 % Dummy plot for legends
 hdummy = plot(dummydata{:}); hold on
-% Plot lines, marks, jumplines, and jumpvals
+% Plot lines, marks, jumplines, jumpvals, deltalines and deltavals
 h1 = plot(linedata{:},'handlevis','off');
 h2 = plot(markdata{:},'linestyle','none','handlevis','off');
 h3 = plot(jumpdata{:},'handlevis','off');
@@ -228,19 +286,46 @@ if forcejmarks
 else
     h4 = NaN(size(h1));
 end
+h5 = plot(deltadata{:},'handlevis','off');
+if forcedmarks   % default setting for delta functions
+    % deal with the '^' marker for delta functions
+    dvaldata = makedvaldata(dvaldata);
+    % the delta marker is always of the default size 6
+    h6 = plot(dvaldata{:}, 'markersize', 6, 'linestyle','none','handlevis','off');
+    h7 = h6(2:2:end); % handles to negative delta markers
+    h6 = h6(1:2:end); % handles to positive delta markers
+else
+    h6 = NaN(size(h1));
+    h7 = NaN(size(h1));
+end
 
-% Colours of jumplines and val
-defjlcol = true;
+
+% Colours of jumplines and jumpval markers
+defjlcol = true; % use color of corresponding line?
 colours = {'b','g','r','c','m','y','k','w'};
 for k = 1:length(jlinestyle)
-    if ~isempty(strncmp(jlinestyle(k),colours,1))
+    if any(strncmp(jlinestyle(k),colours,1))
         defjlcol = false; break
     end
 end
-defjmcol = true;
+defjmcol = true; % use color of corresponding line?
 for k = 1:length(jmarker)
-    if ~isempty(strncmp(jlinestyle(k),colours,1))
-        defjmcol = false; break
+   if any(strncmp(jmarker(k),colours,1))
+       defjmcol = false; break
+   end
+end
+
+% Colours of deltalines and delta markers
+defdlcol = true; % use color of corresponding line?
+for k = 1:length(dlinestyle)
+    if any(strncmp(dlinestyle(k),colours,1))
+        defdlcol = false; break
+    end
+end
+defdmcol = true; % use color of corresponding line?
+for k = 1:length(dmarker)
+    if any(strncmp(dmarker(k),colours,1))
+        defdmcol = false; break
     end
 end
 
@@ -255,20 +340,28 @@ if numel(h2) == numel(h1)  % This should always be the case??
         if defjlcol && numel(h3) == numel(h1)
             set(h3(k),'color',h1color);
         end
-        if forcejmarks && numel(h4) == numel(h1)
-            if defjmcol
-                set(h4(k),'color',h1color);
-            end
-            if strcmp(h1marker,'none') && ~forcejmarks
-                set(h4(k),'marker','none');
-            end
+        
+        if forcejmarks && numel(h4) == numel(h1) && defjmcol
+            set(h4(k),'color',h1color);
+        end        
+              
+        if defdlcol && numel(h5) == numel(h1)
+            set(h5(k),'color',h1color);
         end
+          
+        if forcedmarks && numel(h6) == numel(h1) && numel(h7) == numel(h1)
+            if(defdmcol)
+                % if no marker color is provided, use default
+                set(h6(k),'color',h1color, 'MarkerFaceColor', h1color);
+                set(h7(k),'color',h1color, 'MarkerFaceColor', h1color);
+            else
+                % fill the delta markers with the provided colour
+                set(h6(k),'MarkerFaceColor',get(h6(k),'color'));
+                set(h7(k),'MarkerFaceColor',get(h7(k),'color')); 
+            end
+        end               
     end
 end
-
-% if ~h && ~isempty(interval)
-%     set(gca,'xlim',interval)
-% end
 
 % Set the axis limits
 if length(interval) == 4
@@ -286,10 +379,59 @@ if ~h, hold off; end
 
 % Output handles
 if nargout == 1
-    varargout = {[h1 h2 h3 h4 hdummy]};
+    % lines markers jumplines jumpvals deltalines deltavals+ deltavasl-
+    % dummy
+    varargout = {[h1 h2 h3 h4 h5 h6 h7 hdummy]};
+end
 end
 
+function newdvaldata = makedvaldata(dvaldata)
+% MAKEDVALDATA handles the case when '^' is used as delta
+% marker. The number of handles for plotting delta data
+% are doubled as a result of the formatting, regardless
+% of the marker type.
+% 
+% Input  format: [xdelta] [ydelta] [sign] [marker]
+% Output format: [xdelta] [positive delta] [marker],
+%                [xdelta] [negative delta] [marker]
 
-
-
-
+n = length(dvaldata);
+if n < 4, newdvaldata = dvaldata; return; end
+% check the format
+if(n/4 ~= round(n/4))
+    error('CHEBFUN:plot:makedvaldata','delta data does not have the expected format');
+end
+% set the length of newdvaldata
+newdvaldata = cell(1,2*(n-n/4));
+for k = 1:4:n
+    % index mapping from 4-block to 6-block
+    kk = (3*k-1)/2;
+    if(dvaldata{k+3}=='^')
+        x1 = dvaldata{k};
+        y1 = dvaldata{k+1};
+        sgn = dvaldata{k+2};
+        % keep the positive deltas and nan's in one cell
+        idx =(sgn>=0|isnan(y1));
+        newdvaldata{kk}=x1(idx);
+        newdvaldata{kk+1}=y1(idx);
+        newdvaldata{kk+2}= '^';
+        % if there are no neagtive deltas
+        if(all(idx))
+            % add dummy data
+            newdvaldata(kk+3:kk+4)={NaN NaN};
+            newdvaldata{kk+5} = '';
+        else
+            % copy negative deltas with 'v' marker
+            newdvaldata{kk+3}=x1(~idx);
+            newdvaldata{kk+4}=y1(~idx);
+            newdvaldata{kk+5}='v';
+        end
+    else
+        % keep the original marker and data
+        newdvaldata(kk:kk+2) = {dvaldata{k:k+1}, dvaldata{k+3}};
+        % attach NaNs and a dummy marker
+        newdvaldata(kk+3:kk+4) = {NaN NaN};
+        newdvaldata{kk+5} = '';
+    end  
+end
+end % newdeltaval()

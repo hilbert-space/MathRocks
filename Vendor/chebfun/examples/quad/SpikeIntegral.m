@@ -3,7 +3,7 @@
 
 %%
 % (Chebfun example quad/SpikeIntegral.m)
-
+% [Tags: #quadrature, #spike]
 %%
 % We demonstrate the adaptive capabilities of Chebfun 
 % by integrating the 'spike function'

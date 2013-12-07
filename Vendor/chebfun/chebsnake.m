@@ -16,14 +16,22 @@ function chebsnake(nodes,alpha)
 %
 %   To prevent you from neglecting your actual work, the game speed
 %   increases with the total number of achieved points...
+%
+% See also CHEBTUNE.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
     % get some constants right
+    W = warning; 
     if nargin < 2, alpha = 1; end
-    if nargin > 0 && strcmp(nodes,'equi'), nodes = 0; 
-    elseif nargin > 0 && strcmp(nodes,'fh'), nodes = 2;  else nodes = 1; end
+    if nargin > 0 && strcmp(nodes,'equi'), 
+        nodes = 0; warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
+    elseif nargin > 0 && strcmp(nodes,'fh'), 
+        nodes = 2;  
+    else
+        nodes = 1; 
+    end
     LW = 'LineWidth'; lw = 2;
     res = 0.15; len = 5; dom = domain(-1,1); d = 1;
     food = @() res*(round((1.8*rand-.9)/res)+1i*round((1.8*rand-.9)/res));
@@ -31,7 +39,7 @@ function chebsnake(nodes,alpha)
     
     % keyboard interaction
     figure('KeyPressFcn',@keypress);
-    function keypress(~,evnt)
+    function keypress(ignored,evnt)
         dold = d;
         switch evnt.Key
             case 'leftarrow', d = -1;
@@ -42,24 +50,38 @@ function chebsnake(nodes,alpha)
         end;
         if d == -dold; d = dold; end
     end
-
-    alpha0 = alpha;                     % set base level for alpha
+    
+    lvl = 1;
+    pts = 0;
     fails = 0;                          % fail counter (no food eaten)
     failmax = 5;                        % number of consecutive fails before quit
+    lv = chebfun(@(x) exp(x),[0 pi]);
+    dd = chebfun(@(x) exp(-x),[-pi 0]);
+    grb = chebfun(@(x) 20*cos(x),[0 2*pi]);
+    kld = chebfun(@(x) exp(-.5*x).*(2+cos(10*x)),[-pi 0]);
     while ~(d==0), % until quit
         d = 1;
         clf; 
         s = linspace(res*(1-len),0,len) + 1i*eps;
         hs1 = plot(s(1:end-1),'b-',LW,lw); hold on
-        hs2 = plot(s(1:end-1),'bo',LW,lw);
+        hs2 = [plot(s(1:end-2),'bo','MarkerFaceColor','b'), ... 
+            plot(s(end-1),'bo',LW,lw)];
         f = food();
-        hf = plot(real(f),imag(f),'md','MarkerSize',10,'MarkerFaceColor','m');
-        ht = plot(8,0);                     % dummy handle
+        hf = plot(real(f),imag(f),'ro','MarkerSize',10);
+        if ~rem(pts+1,30) && pts
+            set(hf,'MarkerFaceColor','r','Color',[0,0.6,0]);
+        else
+            set(hf,'MarkerFaceColor',[0,0.6,0],'Color','r');
+        end
+        ht = plot(8,0); axis square;                % dummy handle
+        set(gca,'XTick',[]); set(gca,'YTick',[]); 
         title('Control the snake with arrow keys. Quit with any other key.');
         axis([-1,1,-1,1]); shg; pause(0.3);
-        pts = 0;                            % points counter
-        alpha = alpha0;                     % reset alpha (speed)
         t = 1;                              % convex factor for nodes
+        go = plot(.7*scribble('ready?'),'r',LW,lw);
+        shg; pause(.5); delete(go(~isnan(go)));
+        go = plot(.4*scribble('go!'),'r',LW,lw);
+        shg; pause(.5); delete(go(~isnan(go)));
         tic;
         while ~(d==0),                      % until game over or quit
             t = t + .2*alpha;
@@ -84,23 +106,47 @@ function chebsnake(nodes,alpha)
             end
             hs1 = plot(c,'b-',LW,lw);
             delete(hs2);
-            hs2 = plot(y,'bo',LW,lw);
+            hs2 = [plot(y(1:end-1),'bo','MarkerFaceColor','b'), ... 
+                plot(y(end),'bo',LW,lw)];
             shg; pause(max(0.01,0.03-toc)/alpha); tic;
 
             % check if the snake hits itself or the boundary
             if max(abs([real(y(end)),imag(y(end))])) > 1 || ...
                    min(abs(y(end)-y(1:end-1))) < res/2,
                 ht = plot(.8*scribble('game over'),'r',LW,lw); 
+                chebtune(dd,.5);
                 shg; pause(1); 
-                if pts == 0, fails = fails + 1; end
+                fails = fails + 1;
                 if fails > failmax, d = 0; end
                 break
             end
             if abs(y(end)-f) < res/2, % snake eats food ?
-                pts = pts + 1; alpha = alpha * 1.003; fails = 0;
-                title(['Points : ' num2str(pts)]);
+                pts = pts + 1;
+                chebtune(grb,.5);
+                if ~rem(pts,10)
+                    lvl = lvl + 1;
+                    alpha = alpha * 1.1;
+                    chebtune(10*chebpoly(pts));
+                end
+                if ~rem(pts,30) && (pts-1)
+                    chebtune(lv,1);
+                    fails = fails - 1;
+                    up = plot(.8*scribble('1 up!'),'r',LW,lw);
+                    shg; pause(1); 
+                    delete(up(~isnan(up)));
+                end
+                title(['Points : ' num2str(pts) '       Level : ' num2str(lvl) ...
+                    '       Lives: ' num2str(failmax-fails)],'color','k');
                 f = food();
+                while ( any( abs(f-y) < res/2) )
+                    f = food();
+                end
                 set(hf,'XData',real(f),'YData',imag(f));
+                if ~rem(pts+1,30) && (pts-1)
+                    set(hf,'MarkerFaceColor','r','Color',[0,0.6,0]);
+                else
+                    set(hf,'MarkerFaceColor',[0,0.6,0],'Color','r');
+                end
             end
         end
         for k = 1:numel(ht)
@@ -108,8 +154,9 @@ function chebsnake(nodes,alpha)
             delete(ht(k));
         end
     end;
-    plot(.8*scribble('goodbye'),'r',LW,lw);
+    plot(.8*scribble('goodbye'),'r',LW,lw); chebtune(kld,1);
     shg; pause(1); close(gcf);
+    warning(W);
 
     function w = weights(n,fhd) % weights for Floater-Hormann interpolation
         w = zeros(1,n+1);

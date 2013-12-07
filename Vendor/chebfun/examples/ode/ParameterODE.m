@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/ParameterODE.m)
+% [Tags: #linearODE, #piecewise, #parameter]
 
 %%
 % (This example is inspired by a discussion with Paul Constantine [1]).

@@ -39,7 +39,6 @@ elseif numel(A) == 1                    % A is a chebfun
                     'Cannot return two outputs for 1-norms');
             end
             absA = abs(A);
-            absA.imps = abs(A.imps);
             normA = sum(absA);
         case {2,'fro'}
             if nargout == 2

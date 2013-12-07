@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHEBFUN GUIDE 5: COMPLEX CHEBFUNS</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-03-30"><meta name="DC.source" content="guide5.m"><style type="text/css">
+      --><title>CHEBFUN GUIDE 5: COMPLEX CHEBFUNS</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-26"><meta name="DC.source" content="guide5.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -54,6 +54,16 @@ span.syscmd { color:#B28C00 }
 
 .footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
 .footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
 
   </style></head><body><div class="content"><h1>CHEBFUN GUIDE 5: COMPLEX CHEBFUNS</h1><!--introduction--><p>Lloyd N. Trefethen, November 2009, revised February 2011</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">5.1  Complex functions of a real variable</a></li><li><a href="#12">5.2 Analytic functions and conformal maps</a></li><li><a href="#20">5.3 Contour integrals</a></li><li><a href="#31">5.4 Cauchy integrals and locating zeros and poles</a></li><li><a href="#38">5.5 Alphabet soup</a></li><li><a href="#47">5.6  References</a></li></ul></div><h2>5.1  Complex functions of a real variable<a name="1"></a></h2><p>One of the attractive features of Matlab is that it handles complex arithmetic well. For example, here are 20 points on the upper half of the unit circle in the complex plane:</p><pre class="codeinput">s = linspace(0,pi,20);
 f = exp(1i*s);
@@ -74,10 +84,10 @@ subplot(1,2,2), h = exp(2i*s)+.3*exp(20i*s); plot(h), axis <span class="string">
 subplot(1,2,2), plot(exp(h)), axis <span class="string">equal</span>
 </pre><img vspace="5" hspace="5" src="guide5_05.png" alt=""> <p>Such plots make pretty pictures, but as always with Chebfun, the underlying operations involve precise mathematics carried out to many digits of accuracy.  For example, the integral of g is -pi*i/10,</p><pre class="codeinput">sum(g)
 </pre><pre class="codeoutput">ans =
- -0.000000000000003 - 0.314159265358979i
+ -0.000000000000003 - 0.314159265358980i
 </pre><p>and the integral of h is zero:</p><pre class="codeinput">sum(h)
 </pre><pre class="codeoutput">ans =
-      5.885778090389566e-16 + 1.462765971853599e-16i
+      4.237215245627674e-16 + 1.273853886985816e-16i
 </pre><p>Piecewise smooth complex chebfuns are also possible. For example, the following starts from a chebfun z defined as (1+0.5i)s for s on the interval [0,1] and 1+0.5i-2(s-1) for s on the interval [1,2].</p><pre class="codeinput">z = chebfun(<span class="string">'(1+.5i)*s'</span>,<span class="string">'1+.5i-2*(s-1)'</span>,[0 1 2]);
 subplot(1,2,1), plot(z), axis <span class="string">equal</span>, grid <span class="string">on</span>
 subplot(1,2,2), plot(z.^2), axis <span class="string">equal</span>, grid <span class="string">on</span>
@@ -164,9 +174,9 @@ I3 = sum(f.*diff(z))/(2i*pi)
 I = sum(f.*diff(z))
 Iexact = 4i*pi*log(pi/2)
 </pre><pre class="codeoutput">I =
-  0.000000000000005 + 5.674755637702241i
+ -0.000000000000001 + 5.674755637702210i
 Iexact =
-                  0 + 5.674755637702224i
+  0.000000000000000 + 5.674755637702224i
 </pre><h2>5.4 Cauchy integrals and locating zeros and poles<a name="31"></a></h2><p>Here are some further examples of computations with Cauchy integrals.  The Bernoulli number B_k is k! times the kth Taylor coefficient of z/((exp(z)-1). Here is B_10 compared with its exact value 5/66.</p><pre class="codeinput">k = 10;
 z = chebfun(<span class="string">'5*exp(1i*s)'</span>,[0 2*pi]);
 f = z./((exp(z)-1));
@@ -180,25 +190,25 @@ exact =
 f = z./((exp(z)-1));
 B10 = factorial(k)*sum((f./z.^(k+1)).*diff(z))/(2i*pi)
 </pre><pre class="codeoutput">B10 =
-  0.075757576022706 - 0.000000000309404i
+  0.075757575969199 - 0.000000000424280i
 </pre><p>This problem of numerical instability would arise no matter how one calculated the integral over the unit circle; it is not the fault of Chebfun.  For a study of how to pick the optimal radius, see [Bornemann 2009].</p><p>Another use of Cauchy integrals is to count zeros or poles of functions in specified regions.  According to the <b>principle of the argument</b>, the number of zeros minus the number of poles of f in a region is</p><pre class="language-matlab">N = (1/2i*pi) INT (f'/f) dz
 </pre><p>where the integral is taken over the boundary.  Since f' = df/dz = (df/ds)(ds/dz), we can rewrite this as</p><pre class="language-matlab">N = (1/2i*pi) INT (df/ds)/f ds.
 </pre><p>(What is really going on here is a calculation of the change of the argument of f as the boundary is traversed.  In principle it should be possible to calculate this by the Matlab commands "angle" and "unwrap", but these have not yet been overloaded for chebfuns.) For example, the function f(z) = sin(z)^3 + cos(z)^3 clearly has no poles; how many zeros does it have in the disk about 0 of radius 2? The following calculation shows that the answer is 3:</p><pre class="codeinput">z = chebfun(<span class="string">'2*exp(1i*s)'</span>,[0 2*pi]);
 f = sin(z).^3 + cos(z).^3;
 N = sum((diff(f)./f))/(2i*pi)
 </pre><pre class="codeoutput">N =
-  3.000000000000000 - 0.000000000000001i
+  2.999999999999999 - 0.000000000000001i
 </pre><p>Variations on this idea enable one to locate zeros and poles as well as count them.  For example, we can locate a single zero with the formula</p><pre class="language-matlab">r = (1/2i*pi) INT <span class="string">z</span> <span class="string">(df/ds)/f</span> <span class="string">ds</span>
 </pre><p>[McCune 1966].  Here is the zero of the function above in the unit disk:</p><pre class="codeinput">z = chebfun(<span class="string">'exp(1i*s)'</span>,[0 2*pi]);
 f = sin(z).^3 + cos(z).^3;
 r = sum(z.*(diff(f)./f))/(2i*pi)
 </pre><pre class="codeoutput">r =
- -0.785398163397447 + 0.000000000000001i
+ -0.785398163397447 + 0.000000000000000i
 </pre><p>We can check the result by a more ordinary Chebfun calculation:</p><pre class="codeinput">x = chebfun(<span class="string">'x'</span>);
 f = sin(x).^3 + cos(x).^3;
 r = roots(f)
 </pre><pre class="codeoutput">r =
-  -0.785398163397448
+  -0.785398163397447
 </pre><p>To find multiple zeros via Cauchy integrals, see [Delves &amp; Lyness 1967].</p><h2>5.5 Alphabet soup<a name="38"></a></h2><p>The Chebfun command "scribble" returns a piecewise linear complex chebfun corresponding to a word spelled out in capital letters.  For example:</p><pre class="codeinput">f = scribble(<span class="string">'Oxford University'</span>);
 LW = <span class="string">'linewidth'</span>; lw = 2;
 plot(f,LW,lw), xlim(1.1*[-1 1]), axis <span class="string">equal</span>
@@ -227,8 +237,7 @@ clf, plot(g(f),<span class="string">'r'</span>,LW,lw), axis <span class="string"
 circle = 1.12*chebfun(@(x) exp(2i*pi*x/L),[0 L]);
 ellipse = 1.2*(circle + 1./circle)/2 + 1i*mean(imag(f));
 hold <span class="string">on</span>, plot(g(ellipse),<span class="string">'b'</span>,LW,lw)
-</pre><img vspace="5" hspace="5" src="guide5_20.png" alt=""> <p>You can find an example "Birthday cards and analytic function" in the Complex Variables section of the Chebfun Examples collection, and further related explorations in the Geometry section.</p><h2>5.6  References<a name="47"></a></h2><p>[Bornemann 2009] F. Bornemann, "Accuracy and stability of computing high-order derivatives of analytic functions by Cauchy integrals", Foundations of Computational Mathematics 11 (2011), 1-63.</p><p>[Davis 1959] P. J. Davis, "On the numerical integration of periodic analytic functions", in R. E. Langer, ed., On Numerical Integration, Math. Res. Ctr., U. of Wisconsin, 1959, pp. 45-59.</p><p>[Delves &amp; Lyness 1967] L. M. Delves and J. N. Lyness, "A numerical method for locating the zeros of an analytic function", Mathematics of Computation 21 (1967), 543-560.</p><p>[Hale &amp; Trefethen 2008] N. Hale and L. N. Trefethen, "New quadrature formulas from conformal maps", SIAM Journal on Numerical Analysis 46 (2008), 930-948.</p><p>[McCune 1966] J. E. McCune, "Exact inversion of dispersion relations", Physics of Fluids 9 (1966), 2082-2084.</p><p>[Weideman 1994] J. A. C. Weideman, "Computation of the complex error function", SIAM Journal on Numerical Analysis 31 (1994), 1497-1518.</p><p class="footer"><br>
-      Published with MATLAB&reg; 7.14<br></p></div><!--
+</pre><img vspace="5" hspace="5" src="guide5_20.png" alt=""> <p>You can find an example "Birthday cards and analytic function" in the Complex Variables section of the Chebfun Examples collection, and further related explorations in the Geometry section.</p><h2>5.6  References<a name="47"></a></h2><p>[Bornemann 2009] F. Bornemann, "Accuracy and stability of computing high-order derivatives of analytic functions by Cauchy integrals", Foundations of Computational Mathematics 11 (2011), 1-63.</p><p>[Davis 1959] P. J. Davis, "On the numerical integration of periodic analytic functions", in R. E. Langer, ed., On Numerical Integration, Math. Res. Ctr., U. of Wisconsin, 1959, pp. 45-59.</p><p>[Delves &amp; Lyness 1967] L. M. Delves and J. N. Lyness, "A numerical method for locating the zeros of an analytic function", Mathematics of Computation 21 (1967), 543-560.</p><p>[Hale &amp; Trefethen 2008] N. Hale and L. N. Trefethen, "New quadrature formulas from conformal maps", SIAM Journal on Numerical Analysis 46 (2008), 930-948.</p><p>[McCune 1966] J. E. McCune, "Exact inversion of dispersion relations", Physics of Fluids 9 (1966), 2082-2084.</p><p>[Weideman 1994] J. A. C. Weideman, "Computation of the complex error function", SIAM Journal on Numerical Analysis 31 (1994), 1497-1518.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CHEBFUN GUIDE 5: COMPLEX CHEBFUNS
 % Lloyd N. Trefethen, November 2009, revised February 2011

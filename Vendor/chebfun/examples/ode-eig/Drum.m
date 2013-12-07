@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode-eig/Drum.m)
+% [Tags: #eigenvalues, #rootfinding]
 
 function Drum
 

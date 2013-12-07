@@ -13,6 +13,8 @@ if nargin == 1 || isempty(kind), kind = 2; end % 2nd kind is the default!
     
 if nargin < 3 && ~isempty(g.coeffs) && kind == 2
     out = g.coeffs; 
+    % chebpoly should always return a column vector
+    %out = out(:); 
     return
 end
 
@@ -41,6 +43,9 @@ else        % For values from Chebyshev points of the 1st kind
         out = realcoefs(real(gvals))+1i*realcoefs(imag(gvals));
     end
 end
+
+% chebpoly should always return a column vector
+out = out(:); 
 
 function c = realcoefs(v) % Real case - Chebyshev points of the 1st kind
 n = length(v);

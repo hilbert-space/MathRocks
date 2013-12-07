@@ -3,6 +3,8 @@
 
 %%
 % (Chebfun example roots/ComplexRoots.m)
+% [Tags: #roots, #complex, #Cauchy]
+
 function ComplexRoots
 
 %%

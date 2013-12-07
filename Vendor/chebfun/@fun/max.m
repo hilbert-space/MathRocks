@@ -8,13 +8,13 @@ function [out,idx] = max(g)
 
 if (g.exps(1) < 0 && g.vals(1) >= 0) 
     out = inf; 
-    idx = 1;
+    idx = g.ends(1);
     return
 end
 
 if (g.exps(2) < 0 && g.vals(end) >= 0) 
     out = inf;
-    idx = g.n;
+    idx = g.ends(end);
     return
 end
 
@@ -26,7 +26,7 @@ idx = r(idx);
 
 % Take the max of the computed max and the function values.
 if ~any(g.exps)
-    [vmax vidx] = max(g.vals);
+    [vmax, vidx] = max(g.vals);
     if vmax > out
         out = vmax;
         x = get(g,'points');

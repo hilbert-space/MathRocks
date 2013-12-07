@@ -29,7 +29,7 @@ elseif isa(F1,'chebfun')
     else
         for k = 1:numel(F1)
             Fout(k) = powercol(F1(k),F2);
-            Fout(k).jacobian = anon('diag1 = F2*diag(F1.^(F2-1)); der2 = diff(F1,u,''linop''); der = diag1*der2; nonConst = ~der2.iszero;',{'F1', 'F2'},{F1(k) F2},1,'power');
+            Fout(k).jacobian = anon('diag1 = F2*diag(F1.^(F2-1)); der2 = diff(F1,u,''linop''); der = diag1*der2; nonConst = ~iszero(der2);',{'F1', 'F2'},{F1(k) F2},1,'power');
             Fout(k).ID = newIDnum();
         end
     end
@@ -38,7 +38,7 @@ else
     Fout = F2;
     for k = 1:numel(F2)
         Fout(k) = powercol(F1,F2(k));
-        Fout(k).jacobian = anon('diag1 = diag(F1.^F2.*log(F1)); der2 = diff(F2,u,''linop''); der = diag1*der2; nonConst = ~der2.iszero;',{'F1', 'F2'},{F1 F2(k)},1,'power');
+        Fout(k).jacobian = anon('diag1 = diag(F1.^F2.*log(F1)); der2 = diff(F2,u,''linop''); der = diag1*der2; nonConst = ~iszero(der2);',{'F1', 'F2'},{F1 F2(k)},1,'power');
         Fout(k).ID = newIDnum();
     end
 end

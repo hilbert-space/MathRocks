@@ -3,7 +3,7 @@ function display(A,maxdepth,curdepth,ws)
 % DISPLAY is called automatically when a statement that results in an anon
 % output is not terminated with a semicolon.
 % DISPLAY(A,MAXDEPTH) will descend the anon tree upto MAXDEPTH levels and
-% pretty-print the correponding anons. By default MAXDEPTH is 1. Setting it
+% pretty-print the corresponding anons. By default MAXDEPTH is 1. Setting it
 % to INF will force DISPLAY to descend to the bottom of the tree.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
@@ -16,7 +16,7 @@ if nargin < 3, curdepth = 1; end
 % We don't want to go any further
 if curdepth > maxdepth, return, end
 
-% Initialise whitespace
+% Initialise white space
 if nargin < 4
     ws = ['   ' repmat('     ',1,curdepth-1)];
 elseif isempty(ws)
@@ -85,7 +85,7 @@ end
 % Grab the main function string
 funcStr = A.func;
 
-% Clean out 'linop' flags and break at semicolons for prettyprint
+% Clean out 'linop' flags and break at semicolons for pretty print
 idx = [0 strfind(funcStr,';')];
 idx = sort([idx [strfind(funcStr,'&&') strfind(funcStr,'||')]+1]);
 funcStrClean = {};
@@ -120,7 +120,7 @@ wsnew1 = [ws '|     '];
 wsnew2 = [ws '|---- '];
 wsnew3 = [ws '      '];
 
-% Get the indicies of the variables which have extra levels to display
+% Get the indices of the variables which have extra levels to display
 mask = zeros(numel(A.workspace),1);
 for k = 1:numel(A.workspace)
     fk = A.workspace{k};
@@ -136,7 +136,7 @@ idx = find(mask);
 % If there are no more levels, then quit
 if isempty(idx), return, end
 
-% Display the next levels for each bvariable in turn
+% Display the next levels for each variable in turn
 for k = idx(1:end-1)'
     if isempty(k), continue, end
     fk = A.workspace{k};

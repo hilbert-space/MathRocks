@@ -92,9 +92,8 @@ switch method
 end
 
 % Ensure P_n has length n+1
-if numel(n) > 1
-    p = simplify(p,1e-10,2,1);   % Final valid coeff will be O(1) anyway
-end
+% p = simplify(p,1e-14,'force');   % Final valid coeff will be O(1) anyway
+
 
 % Adjust orientation
 if size(n,1) > 1, p = p.'; end

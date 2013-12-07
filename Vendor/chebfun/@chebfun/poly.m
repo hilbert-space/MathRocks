@@ -6,6 +6,8 @@ function out = poly(f,n)
 % POLY(F,N) returns the polynomial coefficients of the Nth fun of F.
 % For numerical work, the Chebyshev polynomial coefficients returned
 % by CHEBPOLY are more useful.
+% 
+% See also DOMAIN/POLY.
 
 % Copyright 2011 by The University of Oxford and The Chebfun Developers. 
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.

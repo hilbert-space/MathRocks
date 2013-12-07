@@ -23,7 +23,9 @@ switch propName
     case 'scale'
         val = L.scale;
     case 'blocksize'
-        val = L.blocksize;
+        val = L.blocksize;    
+    case 'decoeffs'
+        val = L.decoeffs;
     case 'ID'
         val = L.ID;
     case 'jumpinfo'

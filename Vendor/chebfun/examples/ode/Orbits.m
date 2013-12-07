@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode/Orbits.m)
+% [Tags: #nonlinearODE, #astrophysics, #IVP]
 
 %%
 % Suppose a "star" of unit mass is fixed at the origin in the

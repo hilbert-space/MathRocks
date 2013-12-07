@@ -118,9 +118,9 @@ function hOpenMenuitemCallback(hObject, eventdata,handles,demoPath)
 handles.guifile = loaddemos(handles.guifile,demoPath);
 initSuccess = loadfields(handles.guifile,handles);
 if initSuccess, switchModeCM = 'demo'; else switchModeCM = 'notdemo'; end
-% Swith the mode of the GUI according to the type of the problem.
+% Switch the mode of the GUI according to the type of the problem.
 switchmode(handles.guifile,handles,handles.guifile.type,switchModeCM);
-% We no longer have a solutuion
+% We no longer have a solution
 handles.hasSolution = 0;
 set(handles.button_exportsoln,'Enable','off');
 % Update handle structure

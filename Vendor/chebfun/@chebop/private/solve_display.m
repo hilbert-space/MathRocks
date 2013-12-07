@@ -4,10 +4,10 @@ function solve_display(pref,handles,phase,u,du,nrmdu,nrmres,lambda)
 % Copyright 2011 by The University of Oxford and The Chebfun Developers.
 % See http://www.maths.ox.ac.uk/chebfun/ for Chebfun information.
 
-% Display for damped Newton is a bit different from the undamped (want to
+% Display for damped Newton is a bit different from the undampened (want to
 % show the stepsize as well).
 
-% Plot is now a seperate option (allowing both to show iter and plot).
+% Plot is now a separate option (allowing both to show iter and plot).
 mode = lower(pref.display);%lower(cheboppref('display'));
 plotMode = lower(pref.plotting);%lower(cheboppref('plotting'));
 persistent fig

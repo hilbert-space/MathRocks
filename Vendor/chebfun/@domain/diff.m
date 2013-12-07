@@ -88,7 +88,7 @@ function Dk = barydiffmat(x,w,k)
 %
 %  D = BARYDIFFMAT(X) assumes Chebyshev weights. 
 %
-%  DK = BARYDIFFMAT(X,W,K) returns the differentiation matrice of DK of order K.
+%  DK = BARYDIFFMAT(X,W,K) returns the differentiation matrix of DK of order K.
 %
 %  All inputs should be column vectors.
 %

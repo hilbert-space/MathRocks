@@ -56,7 +56,7 @@ end
 [xmin xmax] = domain(V);                           % domain of problem
 L = chebop([xmin xmax]); L.lbc = 0; L.rbc = 0;     % Dirichlet BCs
 L.op = @(x,u) -h^2*diff(u,2) + V.*u;               % Schroedinger operator
-[U,D] = eigs(L,n,'sm');                            % compute evals/efuns
+[U,D] = eigs(L,n,'sr');                            % compute evals/efuns
 d = diag(D);                                       % vector of evals
 [d,ii] = sort(d); U = U(:,ii);                     % sort them
 
@@ -94,7 +94,7 @@ if ~noplot
       if umm(2)<-umm(1), W(:,j) = -W(:,j); end
       W(:,j) = W(:,j) + d(j);
   end
-  plot(W,LW,1.2)
+  plot(W,LW,1.5)
   plot(V,'k',LW,2,'jumpline','-k')                 % Plot V(x) again
   if ymax>Vxmin                                    %   so that black ends 
       plot(xmin*[1 1],[ymax Vxmin],'k',LW,2)       %   up on top.

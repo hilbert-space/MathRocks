@@ -1,9 +1,9 @@
-%% The Mystery of Bernoulli Polynomials
+%% The mystery of Bernoulli polynomials
 % Stefan Güttel, 8th February 2012
 
 %%
 % (Chebfun example roots/BernoulliPolynomials.m)
-
+% [Tags: #roots, #Bernoulli, #Reimann]
 
 %% 
 % If there is another class of polynomials that is as fascinating and

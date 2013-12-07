@@ -8,13 +8,13 @@ function N = and(N,bc)
 %
 % The 'left', 'right', and 'other' fields, or the entire BC, may be single
 % item or a cell array for multiple conditions. Each item imposes a
-% condtion on the solution u depending on the item's type, as follows:
+% condition on the solution u depending on the item's type, as follows:
 %   
 %   scalar, r: u = r at the boundary (Dirichlet condition)
 %              (valid for 'left' and 'right' fields only).
 %
 %   keyword, 'dirichlet' or 'neumann': u=0 or u'=0 at the boundary
-%            'periodic': periodic boundary coditions
+%            'periodic': periodic boundary conditions
 %
 %   function, g: g(u) = 0 (when evaluated at boundary for 'left'/'right')
 %

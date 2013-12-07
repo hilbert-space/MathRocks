@@ -3,16 +3,17 @@
 
 %%
 % (Chebfun example approx/LebesgueConst.m)
+% [Tags: #Lebesgue]
 
 %%
-% Lebesgue constants are a standard notion of approximation theory.
-% Suppose we have n+1 points xj in an interval [a,b] with associated data
-% values fj with abs(fj)<=1, and we interpolate this data by a polynomial
-% p(x) of degree n. What's the maximum possible value of abs(p(x)) at each
-% point x? This function of x is called the Lebesgue function for the given
-% grid.  The Lebesgue constant is the the maximum of L(x) over the
-% interval. Equivalently, it is the infinity-norm of the linear operator
-% mapping data to interpolant on the given grid and interval.
+% Lebesgue constants are a standard notion of approximation theory. Suppose we
+% have $n+1$ points $x_j$ in an interval $[a,b]$ with associated data values
+% $f_j$ with $|f_j| \leq 1$, and we interpolate this data by a polynomial $p(x)$
+% of degree $n$. What's the maximum possible value of $|p(x)|$ at each point
+% $x$? This function of $x$ is called the Lebesgue function for the given grid.
+% The Lebesgue constant is the the maximum of $L(x)$ over the interval.
+% Equivalently, it is the $\infty$ of the linear operator mapping data to
+% interpolant on the given grid and interval.
 
 %%
 % Chebfun has a command LEBESGUE for working with these notions.
@@ -40,8 +41,8 @@ title(sprintf('40 equispaced points    Lambda = %5.2e',Lambda),FS,14)
 % This picture confirms the well-known fact (the Runge phenomenon) that
 % polynomial interpolation in equispaced points is terribly
 % ill-conditioned.  In fact it is known that as n increases to infinity,
-% the Lebesgue constant for n Chebyshev points is asymptotic to
-% (2/pi)log(n) whereas for n equispaced points it is 2^n/(e n log(n)).
+% the Lebesgue constant for $n$ Chebyshev points is asymptotic to
+% $(2/\pi)\log(n)$ whereas for $n$ equispaced points it is $2^n/(e n \log(n))$.
 
 %%
 % Here are results for 10 and 30 random points in [-1,1].  The reason for

@@ -13,7 +13,7 @@ if isfield(pref,'vectorcheck') && pref.vectorcheck == false
     return              % Skip the check
 end
 
-% Make a sligtly narrower domain to valuate on. (Endpoints can be tricky).
+% Make a slightly narrower domain to evaluate on. (Endpoints can be tricky).
 y = x;
 if y(1) > 0, y(1) = 1.01*y(1); else y(1) = .99*y(1); end
 if y(end) > 0, y(end) = .99*y(end); else y(end) = 1.01*y(end); end

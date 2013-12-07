@@ -181,9 +181,9 @@ u0trans = get(u0,'trans');
 if numel(u0trans) > 1, u0trans = u0trans{1}; end
 if u0trans, u0 = transpose(u0); end
 for k = 1:numel(u0)
-    if u0(:,k).nfuns > 1
-        u0(:,k) = merge(u0(:,k),'all',1025,tol);
-        if u0(:,k).nfuns > 1
+    if u0(k).nfuns > 1
+        u0(k) = merge(u0(k),'all',1025,tol);
+        if u0(k).nfuns > 1
             error('CHEBFUN:pde15s:piecewise',...
                 'piecewise initial conditions are not supported'); 
         end
@@ -194,7 +194,7 @@ if isnan(optN)
     u0 = simplify(u0,tol);
 else
     for k = 1:numel(u0)
-        u0(:,k).funs(1) = prolong(u0(:,k).funs(1),optN);
+        u0(k).funs(1) = prolong(u0(k).funs(1),optN);
     end
 end
 
@@ -470,12 +470,12 @@ end
 ucur = u0;
 % storage
 if syssize == 1
-    uu(:,1) = ucur;
+    uu(1) = ucur;
 else
     % for systems, each functions is stored as a quasimatrix in a cell array
     uu = cell(1,syssize);
     for k = 1:syssize
-        tmp(:,1) = ucur(:,k);
+        tmp(1) = ucur(k);
         uu{k} = tmp;
     end
 end
@@ -494,7 +494,7 @@ try
 
         % size of current length
         curlen = 0;
-        for k = 1:syssize, curlen = max(curlen,length(ucur(:,k))); end
+        for k = 1:syssize, curlen = max(curlen,length(ucur(k))); end
 
         % solve one chunk
         if isnan(optN)
@@ -506,7 +506,7 @@ try
         end
 
         % get chebfun of solution from this time chunk
-        for k = 1:syssize, ucur(:,k) = chebfun(unew(:,k),d); end
+        for k = 1:syssize, ucur(k) = chebfun(unew(:,k),d); end
 
         if isnan(optN) 
             ucur = simplify(ucur,tol);
@@ -514,10 +514,10 @@ try
 
         % store in uu
         if syssize == 1,  
-            uu(:,nt+1) = ucur;
+            uu(nt+1) = ucur;
         else
             for k = 1:syssize
-                uu{k}(:,nt+1) = ucur(:,k);           
+                uu{k}(nt+1) = ucur(k);           
             end
         end
 
@@ -545,10 +545,10 @@ try
             if strcmp(get(solveButton,'String'),'Solve')
                 tt = tt(1:nt+1);
                 if syssize == 1,  
-                    uu = uu(:,1:nt+1);
+                    uu = uu(1:nt+1);
                 else
                     for k = 1:syssize
-                        uu{k} = uu{k}(:,1:nt+1);
+                        uu{k} = uu{k}(1:nt+1);
                     end
                 end
                 break
@@ -556,7 +556,7 @@ try
                 defaultlinewidth = 2;
                 axes(axesNorm)
                 if ~iscell(uu)
-                    waterfall(uu(:,1:nt+1),tt(1:nt+1),'simple','linewidth',defaultlinewidth)
+                    waterfall(uu(1:nt+1),tt(1:nt+1),'simple','linewidth',defaultlinewidth)
                     xlabel(xLabel), ylabel(tlabel), zlabel(varnames)
                 else
                     cols = get(0,'DefaultAxesColorOrder');
@@ -577,7 +577,7 @@ try
     end
 
 catch ME % Fail gracefully.
-    ME.stack = ME.stack(1:end);
+%     ME.stack = ME.stack(1:end);
     rethrow(ME)
 end
 
@@ -969,8 +969,14 @@ end
     % This function allows the use of different variables in the anonymous 
     % function, rather than using the clunky quasi-matrix notation.
         tmpcell = cell(1,syssize);
-        for qk = 1:syssize
-            tmpcell{qk} = u(:,qk);
+        if ( isa(u, 'chebfun') )
+            for qk = 1:syssize
+                tmpcell{qk} = u(qk);
+            end
+        else
+            for qk = 1:syssize
+                tmpcell{qk} = u(:,qk);
+            end
         end
         newfun = oldfun(tmpcell{:},varargin{:});
     end

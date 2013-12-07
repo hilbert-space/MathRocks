@@ -6,7 +6,7 @@ function a = any(F,dim)
 % If DIM is the chebfun (continuous) dimension, then ANY returns a
 % logical column vector (or row) in which the Jth element is TRUE if 
 % any element of the Jth column (or row) is nonzero. Otherwise, ANY
-% returns a chebfun which takes the value 1 whereever any of the columns
+% returns a chebfun which takes the value 1 wherever any of the columns
 % (or rows) of X are nonzero, and zero everywhere else.
 %
 % See also CHEBFUN/ALL.

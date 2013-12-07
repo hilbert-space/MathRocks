@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example ode-eig/ThermoelasticRod.m)
+% [Tags: #eigenvalues, #linear, #nonstandard, #stability]
 
 %%
 % Suppose a thermoelastic rod is fixed to a wall at one end and may expand

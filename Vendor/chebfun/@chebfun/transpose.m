@@ -9,4 +9,4 @@ if numel(F) > 0, trans = not(F(1).trans); end
 for k = 1:numel(F)
     F(k).trans = trans; 
 end
-F = builtin('transpose',F);
+% F = builtin('transpose',F); % This breaks r2008a, so commenting.

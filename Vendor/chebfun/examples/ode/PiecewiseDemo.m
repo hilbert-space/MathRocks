@@ -1,8 +1,9 @@
-%% Piecewise Operators Demo
+%% Piecewise operators demo
 % Nick Hale, 25th November 2011
 
 %%
 % (Chebfun Example ode/PiecewiseDemo.m)
+% [Tags: #linearODE, #piecewise]
 
 %%
 % Here we demonstrate piecewise differential operators (incl. boundary

@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example complex/KeyholeContour.m)
+% [Tags: #complex, #contour]
 
 %%
 % Chebfun is able to represent complex functions of a real variable,

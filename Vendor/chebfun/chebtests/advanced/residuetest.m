@@ -2,7 +2,7 @@
 % Joris Van Deun, 7 December 2009
 function pass = residuetest
 
-tol = max(1e-13, chebfunpref('eps')*1e2);
+tol = max(5e-13, chebfunpref('eps')*1e2);
 
 f = chebfun('(x-1.1).*(x.^2+1).*(x-10i)');
 g = chebfun('x.^5');

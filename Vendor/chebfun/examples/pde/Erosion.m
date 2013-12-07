@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example pde/Erosion.m)
+% [Tags: #heatequation, #erosion, #linearPDE]
 
 %%
 % A well-known PDE problem is the heat equation initial

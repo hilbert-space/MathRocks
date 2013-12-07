@@ -3,6 +3,7 @@
 
 %%
 % (Chebfun example integro/VlasovPoisson.m)
+% [Tags: #eigenvalues, #volterra]
 
 %%
 % A Volterra integral operator A takes the form             

@@ -15,6 +15,9 @@ else
         L = linop(A);
         islA = 1;
     catch ME
+        if any(strfind(ME.identifier,'funhandleBCs') | strfind(ME.identifier,'semicolonBCs'))
+            rethrow(ME)
+        end
         islA = 0;
     end
     if islA
