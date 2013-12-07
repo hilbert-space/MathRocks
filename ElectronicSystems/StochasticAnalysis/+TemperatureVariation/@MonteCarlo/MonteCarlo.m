@@ -8,10 +8,6 @@ classdef MonteCarlo < TemperatureVariation.Base
         warning('Turning off the model order reduction.');
         temperatureOptions.remove('modelOrderReduction');
       end
-      if temperatureOptions.get('algorithm', 1) >= 3
-        warning('Switching the first version of the algorithm.');
-        temperatureOptions.algorithm = 1;
-      end
       options.temperatureOptions = temperatureOptions;
 
       processOptions = options.processOptions.clone; % use a copy

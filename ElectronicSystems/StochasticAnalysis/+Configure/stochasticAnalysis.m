@@ -4,7 +4,11 @@ function options = stochasticAnalysis(varargin)
   %
   % Process variation
   %
-  function K = correlate(eta, lse, lou, s, t)
+  eta = 0.50;
+  lse = options.die.radius;
+  lou = options.die.radius;
+
+  function K = correlate(s, t)
     %
     % Squared exponential kernel
     %
@@ -20,10 +24,6 @@ function options = stochasticAnalysis(varargin)
     K = eta * Kse + (1 - eta) * Kou;
   end
 
-  eta = 0.50;
-  lse = 0.50 * sqrt(options.die.width^2 + options.die.height^2);
-  lou = lse;
-
   %
   % Process variation
   %
@@ -32,8 +32,9 @@ function options = stochasticAnalysis(varargin)
   parameterOptions = Options( ...
     'distribution', 'Beta', ...
     'transformation', 'Gaussian', ...
+    'correlation', @correlate, ...
     'globalContribution', 0.5, ...
-    'reductionThreshold', 0.96, ...
+    'reductionThreshold', 0.975, ...
     options.get('parameterOptions', []));
 
   for i = 1:length(processParameters)
@@ -43,7 +44,7 @@ function options = stochasticAnalysis(varargin)
     parameter.transformation = parameterOptions.transformation;
     parameter.expectation = parameter.nominal;
     parameter.variance = parameter.sigma^2;
-    parameter.correlation = { @correlate, eta, lse, lou };
+    parameter.correlation = parameterOptions.correlation;
     parameter.globalContribution = parameterOptions.globalContribution;
     parameter.reductionThreshold = parameterOptions.reductionThreshold;
 
