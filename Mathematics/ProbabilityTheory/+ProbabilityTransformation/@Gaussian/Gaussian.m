@@ -72,6 +72,7 @@ classdef Gaussian < ProbabilityTransformation.Base
 
       if this.variables.isIndependent, return; end
 
+      variance = this.variables.variance;
       if this.variables.isFamily('Gaussian');
         correlation = this.variables.correlation;
       else
@@ -80,10 +81,24 @@ classdef Gaussian < ProbabilityTransformation.Base
 
       assert(all(diag(correlation) == 1));
 
-      [ this.multiplier, this.importance ] = Utils.decomposeCorrelation( ...
-        correlation, options.get('reductionThreshold', 1));
-      this.multiplier = transpose(this.multiplier);
+      %
+      % We want the PCA to operate on the covariance matrix as, in this case,
+      % the variances of the random variables will be preperly taken into
+      % accound while reducing their dimensionality and providing the
+      % importance vector.
+      %
+      D = diag(sqrt(variance));
+      [ multiplier, this.importance ] = Utils.decorrelate( ...
+        D * correlation * D, options.get('reductionThreshold', 1));
 
+      % However, we want the variances to stay with the random variables and
+      % the computed multiplier to be responsible only for imposing
+      % the needed correlations.
+      %
+      D = diag(1 ./ sqrt(variance));
+      multiplier = D * multiplier;
+
+      this.multiplier = transpose(multiplier);
       dimensionCount = size(this.multiplier, 1);
     end
   end

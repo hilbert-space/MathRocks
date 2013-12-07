@@ -15,6 +15,10 @@ classdef RandomVariables < handle
       this.isIndependent = Utils.isIndependent(this.correlation);
     end
 
+    function variance = variance(this)
+      variance = cellfun(@(rv) rv.variance, this.distributions);
+    end
+
     function data = icdf(this, data)
       for i = 1:this.dimensionCount
         data(:, i) = this.distributions{i}.icdf(data(:, i));
