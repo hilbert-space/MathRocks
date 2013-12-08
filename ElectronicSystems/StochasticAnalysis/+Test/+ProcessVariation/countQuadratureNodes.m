@@ -16,8 +16,6 @@ function countQuadratureNodes(varargin)
 
   count('GaussHermite', 'sparse', ...
     polynomialOrders, processorCounts, dimensionCounts);
-  count('GaussHermite', 'tensor', ...
-    polynomialOrders, processorCounts, dimensionCounts);
 end
 
 function count(name, method, polynomialOrders, processorCounts, dimensionCounts)
