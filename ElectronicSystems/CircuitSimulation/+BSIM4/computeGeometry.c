@@ -19,13 +19,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	double *_Ad = mxGetPr(Ad);
 
 	(void)BSIM4PAeffGeo(
-		mxGetScalar(prhs[0]), // nf
-		mxGetScalar(prhs[1]), // geo
-		mxGetScalar(prhs[2]), // minSD
-		mxGetScalar(prhs[3]), // Weffcj
-		mxGetScalar(prhs[4]), // DMCG
-		mxGetScalar(prhs[5]), // DMCI
-		mxGetScalar(prhs[6]), // DMDG
+		mxGetScalar(prhs[0]), /* nf     */
+		mxGetScalar(prhs[1]), /* geo    */
+		mxGetScalar(prhs[2]), /* minSD  */
+		mxGetScalar(prhs[3]), /* Weffcj */
+		mxGetScalar(prhs[4]), /* DMCG   */
+		mxGetScalar(prhs[5]), /* DMCI   */
+		mxGetScalar(prhs[6]), /* DMDG   */
 		_Ps, _Pd, _As, _Ad);
 
 	plhs[0] = Ps;
