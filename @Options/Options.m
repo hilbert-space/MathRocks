@@ -1,55 +1,58 @@
-classdef Options < dynamicprops
+classdef Options < handle
   properties (Access = 'private')
+    values__
     names__
   end
 
   methods
     function this = Options(varargin)
+      this.values__ = containers.Map( ...
+        'KeyType', 'char', 'ValueType', 'any');
       this.names__ = {};
       this.update(varargin{:});
     end
 
     function this = add(this, name, value)
-      this.names__{end + 1} = name;
-      addprop(this, name);
-      this.(name) = value;
+      assert(~this.values__.isKey(name));
+      this.values__(name) = value;
+      this.names__ = [ this.names__, { name } ];
     end
 
     function this = remove(this, name)
       for i = 1:length(this.names__)
-        if strcmp(this.names__{i}, name)
-          this.names__(i) = [];
-          break;
-        end
+        if ~strcmpi(this.names__{i}, name), continue; end
+        remove(this.values__, name);
+        this.names__(i) = [];
+        return;
       end
-      delete(findprop(this, name));
+      assert(false);
     end
 
     function value = get(this, name, value)
       if isnumeric(name), name = this.names__{name}; end
-      if isprop(this, name)
-        value = this.(name);
+      if isKey(this.values__, name)
+        value = this.values__(name);
       end
     end
 
     function this = set(this, name, value)
-      if isa(name, 'cell')
+      if iscell(name)
         %
         % Multiple assignments
         %
-        if isa(value, 'cell')
+        if iscell(value)
           %
           % Each property has a separate value
           %
           for i = 1:length(name)
-            this.set(name{i}, value{i});
+            set(this, name{i}, value{i});
           end
         else
           %
           % All properties have the same value
           %
           for i = 1:length(name)
-            this.set(name{i}, value);
+            set(this, name{i}, value);
           end
         end
       else
@@ -57,37 +60,39 @@ classdef Options < dynamicprops
         % Singular assignemnt
         %
         if isnumeric(name), name = this.names__{name}; end
-        if isprop(this, name)
-          if isa(this.(name), 'Options') && isa(value, 'struct')
-            this.(name).update(value);
+        if isKey(this.values__, name)
+          oldValue = this.values__(name);
+          if isa(oldValue, 'Options') && isstruct(value)
+            oldValue.update(value);
+            this.values__(name) = oldValue;
           else
-            this.(name) = value;
+            this.values__(name) = value;
           end
         else
-          this.add(name, value);
+          add(this, name, value);
         end
       end
     end
 
     function value = fetch(this, name, value)
-      if isprop(this, name)
-        value = this.(name);
-        this.remove(name);
+      if isKey(this.values__, name)
+        value = this.values__(name);
+        remove(this, name);
       end
     end
 
     function value = ensure(this, name, value)
-      if isprop(this, name)
-        value = this.(name);
+      if isKey(this.values__, name)
+        value = this.values__(name);
       else
-        this.add(name, value);
+        add(this, name, value);
       end
     end
 
     function options = subset(this, names)
       options = Options;
       for i = 1:length(names)
-        options.add(names{i}, this.get(names{i}));
+        add(options, names{i}, get(this, names{i}));
       end
     end
 
@@ -102,24 +107,32 @@ classdef Options < dynamicprops
           continue;
         end
 
-        if isa(item, 'struct') || isobject(item)
-          if isa(item, 'struct')
-            names = fieldnames(item);
-          else
-            names = properties(item);
+        if isa(item, 'Options')
+          names = item.names__;
+          for j = 1:length(names)
+            set(this, names{j}, item.values__(names{j}));
           end
+          i = i + 1;
+        elseif isstruct(item)
+          names = fieldnames(item);
           for j = 1:length(names)
             if numel(item) == 1
-              this.set(names{j}, item.(names{j}));
+              set(this, names{j}, item.(names{j}));
             else
               value = cell(1, numel(item));
               [ value{:} ] = item.(names{j});
-              this.set(names{j}, value);
+              set(this, names{j}, value);
             end
           end
           i = i + 1;
+        elseif isobject(item)
+          names = properties(item);
+          for j = 1:length(names)
+            set(this, names{j}, item.(names{j}));
+          end
+          i = i + 1;
         else
-          this.set(item, varargin{i + 1});
+          set(this, item, varargin{i + 1});
           i = i + 2;
         end
       end
@@ -129,16 +142,16 @@ classdef Options < dynamicprops
       options = Options;
       for i = 1:length(this.names__)
         name = this.names__{i};
-        value = this.(name);
+        value = this.values__(name);
         if isa(value, 'Options')
           value = value.clone;
         end
-        options.set(name, value);
+        set(options, name, value);
       end
     end
 
     function result = has(this, name)
-      result = isprop(this, name);
+      result = isKey(this.values__, name);
     end
 
     function result = length(this)
@@ -147,11 +160,22 @@ classdef Options < dynamicprops
 
     function this = subsasgn(this, s, value)
       name = s(1).subs;
-      if isprop(this, name)
-        [ ~ ] = builtin('subsasgn', this, s, value);
+      if isKey(this.values__, name)
+        s(1).type = '()';
+        [ ~ ] = subsasgn(this.values__, s, value);
       else
-        this.set(name, value);
+        set(this, name, value);
       end
+    end
+
+    function result = subsref(this, s)
+      if s(1).type == '.' && ismethod(this, s(1).subs)
+        result = builtin('subsref', this, s);
+        return;
+      end
+      result = this.values__(s(1).subs);
+      if numel(s) == 1, return; end
+      result = subsref(result, s(2:end));
     end
 
     %
@@ -159,15 +183,19 @@ classdef Options < dynamicprops
     %
 
     function result = isfield(this, name)
-      result = isprop(this, name);
+      result = isKey(this.values__, name);
     end
 
     function result = fieldnames(this)
       result = this.names__;
     end
 
+    function result = isstruct(~)
+      result = true;
+    end
+
     function result = isa(this, class)
-      if strcmp(class, 'struct')
+      if strcmpi(class, 'struct')
         result = true;
       else
         result = builtin('isa', this, class);

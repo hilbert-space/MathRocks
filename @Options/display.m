@@ -2,7 +2,7 @@ function display(this, title, offset)
   if nargin > 1 && ~isempty(title), fprintf('%s:\n', title); end
   if nargin < 3, offset = 2; end
 
-  names = fieldnames(this);
+  names = this.names__;
   nameCount = length(names);
   displayNames = names;
 
@@ -15,7 +15,7 @@ function display(this, title, offset)
   nameOffset = sprintf([ '%', num2str(offset), 's' ], '');
 
   for i = 1:nameCount
-    value = this.(names{i});
+    value = this.values__(names{i});
 
     fprintf([ nameOffset, '%-', num2str(nameWidth), 's: ' ], ...
       displayNames{i});

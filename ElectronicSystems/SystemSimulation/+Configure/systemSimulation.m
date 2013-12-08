@@ -14,10 +14,10 @@ function options = systemSimulation(varargin)
     File.choose(options.assetPath, sprintf('%03d_%03d.tgff', ...
     processorCount, taskCount)));
 
-  readProcessorCount = length(options.platform.processors);
+  readProcessorCount = length(options.platform);
   assert(readProcessorCount == processorCount);
 
-  readTaskCount = length(options.application.tasks);
+  readTaskCount = length(options.application);
   if readTaskCount ~= taskCount
     %
     % NOTE: It is a rather common issue for TGFF.
