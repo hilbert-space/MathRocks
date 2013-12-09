@@ -7,7 +7,8 @@ classdef Linear < Fitting.Base
 
   methods (Access = 'protected')
     function evaluator = construct(~, grid, ~)
-      evaluator = griddedInterpolant(grid.parameterData{:}, grid.targetData);
+      evaluator = griddedInterpolant(grid.parameterData{:}, ...
+        grid.targetData, 'linear', 'nearest');
     end
   end
 end
