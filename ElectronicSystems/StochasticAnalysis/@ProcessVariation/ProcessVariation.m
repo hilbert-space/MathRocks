@@ -6,10 +6,6 @@ classdef ProcessVariation < handle
     dimensions
   end
 
-  properties (Access = 'private')
-    merging
-  end
-
   methods
     function this = ProcessVariation(varargin)
       options = Options(varargin{:});
@@ -18,16 +14,14 @@ classdef ProcessVariation < handle
       this.parameterCount = length(this.parameters);
 
       this.transformations = cell(1, this.parameterCount);
-      this.merging = false(1, this.parameterCount);
 
       this.dimensions = zeros(1, this.parameterCount);
       for i = 1:this.parameterCount
         parameter = this.parameters.get(i);
 
-        [ correlation, contribution, this.merging(i) ] = ...
-          this.correlate(parameter, options);
+        correlation = this.correlate(parameter, options);
         this.transformations{i} = this.transform( ...
-          parameter, correlation, contribution, options);
+          parameter, correlation, options);
 
         this.dimensions(i) = this.transformations{i}.dimensionCount;
       end
@@ -52,11 +46,7 @@ classdef ProcessVariation < handle
 
     function parameters = evaluate(this, parameters, varargin)
       for i = 1:this.parameterCount
-        data = this.transformations{i}.evaluate(parameters{i}, varargin{:});
-        if this.merging(i)
-          data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
-        end
-        parameters{i} = data;
+        parameters{i} = this.transformations{i}.evaluate(parameters{i}, varargin{:});
       end
     end
 
@@ -77,11 +67,7 @@ classdef ProcessVariation < handle
     function parameters = sample(this, sampleCount)
       parameters = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
-        data = this.transformations{i}.sample(sampleCount);
-        if this.merging(i)
-          data = bsxfun(@plus, data(:, end), data(:, 1:(end - 1)));
-        end
-        parameters{i} = data;
+        parameters{i} = this.transformations{i}.sample(sampleCount);
       end
     end
 
@@ -110,6 +96,6 @@ classdef ProcessVariation < handle
 
   methods (Access = 'protected')
     transformation = transform(this, parameter, correlation, contribution, options)
-    [ correlation, contribution, merging ] = correlate(this, parameter, options)
+    correlation = correlate(this, parameter, options)
   end
 end
