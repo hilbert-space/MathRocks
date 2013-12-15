@@ -161,8 +161,12 @@ classdef Options < handle
     function this = subsasgn(this, s, value)
       name = s(1).subs;
       if isKey(this.values__, name)
-        s(1).type = '()';
-        [ ~ ] = subsasgn(this.values__, s, value);
+        if numel(s) == 1
+          this.values__(name) = value;
+        else
+          result = this.values__(name);
+          subsasgn(result, s(2:end), value);
+        end
       else
         set(this, name, value);
       end
