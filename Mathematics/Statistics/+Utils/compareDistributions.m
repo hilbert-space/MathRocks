@@ -80,7 +80,7 @@ function [ globalError, localError ] = compare2D(Y1, Y2, options)
     case { 'tiles', 'separate' }
       Plot.title('Distribution %d: %s %.4f', i, ...
         options.distanceMetric, localError(i));
-      Plot.legend(options.names{:});
+      Plot.legend(options.names);
     end
   end
 
