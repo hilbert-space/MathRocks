@@ -95,6 +95,11 @@ classdef ThermalCycling < Fatigue.Base
 
     function Atc = computeAtc(this)
       %
+      % An example from [2]:
+      %
+      %   "The reference device MTTF is assumed to be 120 years at 60 C
+      %    and the supply voltage is 1.8 V."
+      %
       % Let us assume that a system running an application
       % having a period of...
       %

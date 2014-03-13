@@ -6,7 +6,7 @@
 .param Vdd = 1
 
 .data dataset mer
-+ file = 'ring_nangate_HP_T_Leff_Tox.param' T = 1 Leff = 2 Tox = 3
++ file = 'ring_nangate_HP_T_Leff.param' T = 1 Leff = 2
 .enddata
 
 .end

@@ -30,8 +30,10 @@ function [ surrogate, stats, output ] = construct(varargin)
     fprintf('%s: done in %.2f seconds.\n', name, toc(time));
   end
 
-  output.data = reshape(output.data, sampleCount, ...
-    options.processorCount, options.stepCount);
+  if isfield(output, 'data')
+    output.data = reshape(output.data, sampleCount, ...
+      options.processorCount, options.stepCount);
+  end
 
   if isempty(stats.expectation)
     stats.expectation = reshape(mean(output.data, 1), ...
