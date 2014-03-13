@@ -102,7 +102,7 @@ function [ globalError, localError ] = compare3D(Y1, Y2, options)
 
   localError = zeros(dimensionCount, codimensionCount);
 
-  if matlabpool('size') == 0
+  if isempty(gcp('nocreate'))
     h = Bar('Comparing the distributions at step %d out of %d...', codimensionCount);
     for i = 1:codimensionCount
       [ ~, localError(:, i) ] = compare2D(Y1(:, :, i), Y2(:, :, i), options);

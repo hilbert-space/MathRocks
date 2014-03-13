@@ -24,7 +24,8 @@ function line(x, y, varargin)
   end
 
   if options.has('style')
-    style = [ style, options.style{:} ];
+    additionalStyle = options.style;
+    style = [ style, additionalStyle{:} ];
   end
 
   line(x{:}, y, style{:});
