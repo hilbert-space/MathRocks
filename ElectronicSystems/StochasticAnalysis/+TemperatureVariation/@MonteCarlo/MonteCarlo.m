@@ -25,25 +25,7 @@ classdef MonteCarlo < TemperatureVariation.Base
     end
 
     function output = compute(this, Pdyn)
-      filename = sprintf('%s_%s.mat', class(this), ...
-        DataHash({ Pdyn, this.toString }));
-
-      if File.exist(filename)
-        fprintf('%s: loading %d samples from "%s"...\n', ...
-          class(this), this.surrogate.sampleCount, filename);
-        load(filename);
-      else
-        fprintf('%s: collecting %d samples...\n', ...
-          class(this), this.surrogate.sampleCount);
-
-        time = tic;
-        output = this.simulate(Pdyn);
-        time = toc(time);
-
-        save(filename, 'output', 'time', '-v7.3');
-      end
-
-      fprintf('%s: done in %.2f seconds.\n', class(this), time);
+      output = this.simulate(Pdyn);
     end
   end
 

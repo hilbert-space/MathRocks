@@ -28,7 +28,7 @@ function count(name, method, polynomialOrders, processorCounts, dimensionCounts)
     assert(false);
   end
 
-  fprintf('%10s%10s', 'PC order', 'QD order');
+  fprintf('%10s%10s', 'PC order', 'QD level');
   for i = 1:length(processorCounts)
     fprintf('%15s', sprintf('%d / %d', ...
       processorCounts(i), dimensionCounts(i)));
