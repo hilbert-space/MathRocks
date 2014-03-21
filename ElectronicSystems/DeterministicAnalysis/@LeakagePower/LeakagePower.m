@@ -17,7 +17,11 @@ classdef LeakagePower < handle
     function this = LeakagePower(varargin)
       options = Options(varargin{:});
 
-      referencePower = options.fetch('referencePower', NaN); % do not cache
+      %
+      % NOTE: Do not cache.
+      %
+      referencePower = options.fetch('referencePower', NaN);
+      parameters = options.fetch('parameters');
 
       this.toString = sprintf('%s(%s)', class(this), String(options));
 
@@ -47,7 +51,7 @@ classdef LeakagePower < handle
       this.reference = cell(1, this.parameterCount);
       for i = 1:this.parameterCount
         name = this.parameterNames{i};
-        this.reference{i} = options.parameters.(name).reference;
+        this.reference{i} = parameters.(name).reference;
       end
 
       %
