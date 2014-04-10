@@ -16,5 +16,17 @@ classdef Platform < handle
       processor = Processor(id);
       this.processors{end + 1} = processor;
     end
+
+    function power = computeAveragePower(this)
+      processorCount = length(this);
+
+      power = 0;
+
+      for i = 1:processorCount
+        power = power + mean(this.processors{i}.dynamicPower(:));
+      end
+
+      power = power / processorCount;
+    end
   end
 end
