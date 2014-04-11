@@ -7,23 +7,34 @@ function options = systemSimulation(varargin)
   %
   % Platform and application
   %
-  processorCount = options.ensure('processorCount', 4);
-  taskCount = options.ensure('taskCount', 20 * processorCount);
+  if options.has('tgffFilename')
+    [ options.platform, options.application ] = ...
+      Utils.parseTGFF(options.tgffFilename);
 
-  [ options.platform, options.application ] = Utils.parseTGFF( ...
-    File.choose(options.assetPath, sprintf('%03d_%03d.tgff', ...
-    processorCount, taskCount)));
+    processorCount = length(options.platform);
+    taskCount = length(options.application);
 
-  readProcessorCount = length(options.platform);
-  assert(readProcessorCount == processorCount);
-
-  readTaskCount = length(options.application);
-  if readTaskCount ~= taskCount
-    %
-    % NOTE: It is a rather common issue for TGFF.
-    %
-    taskCount = readTaskCount;
+    options.processorCount = processorCount;
     options.taskCount = taskCount;
+  else
+    processorCount = options.ensure('processorCount', 4);
+    taskCount = options.ensure('taskCount', 20 * processorCount);
+
+    [ options.platform, options.application ] = Utils.parseTGFF( ...
+      File.choose(options.assetPath, sprintf('%03d_%03d.tgff', ...
+        processorCount, taskCount)));
+
+    readProcessorCount = length(options.platform);
+    assert(readProcessorCount == processorCount);
+
+    readTaskCount = length(options.application);
+    if readTaskCount ~= taskCount
+      %
+      % NOTE: It is a rather common issue for TGFF.
+      %
+      taskCount = readTaskCount;
+      options.taskCount = taskCount;
+    end
   end
 
   %
