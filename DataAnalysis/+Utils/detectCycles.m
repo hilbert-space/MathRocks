@@ -11,6 +11,9 @@ function [ partitions, fractions, extrema ] = detectCycles(data, tolerance)
   for i = 1:componentCount
     extrema{i} = Utils.detectExtrema(data(i, :), tolerance);
     [ J, fractions{i} ] = Utils.countCycles(data(i, extrema{i}));
-    partitions{i} = extrema{i}(J);
+    %
+    % NOTE: reshape is to ensure the partitions are given in columns.
+    %
+    partitions{i} = reshape(extrema{i}(J), 2, []);
   end
 end
