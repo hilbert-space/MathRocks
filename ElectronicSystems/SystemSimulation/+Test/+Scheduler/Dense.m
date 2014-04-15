@@ -1,4 +1,4 @@
-function compute(varargin)
+function Dense(varargin)
   setup;
 
   options = Options(varargin{:});

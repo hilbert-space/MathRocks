@@ -2,6 +2,7 @@ classdef Base < handle
   properties (SetAccess = 'private')
     platform
     application
+    profile
   end
 
   methods
@@ -9,28 +10,14 @@ classdef Base < handle
       options = Options(varargin{:});
       this.platform = options.platform;
       this.application = options.application;
+      this.profile = SystemProfile.Average( ...
+        'platform', this.platform, ...
+        'application', this.application);
     end
 
-    function output = compute(this, mapping, priority, order)
-      taskCount = length(this.application);
-
-      if nargin < 2 || isempty(mapping)
-        mapping = zeros(1, taskCount);
-      end
-
-      if nargin < 3 || isempty(priority)
-        profile = SystemProfile.Average( ...
-          'platform', this.platform, ...
-          'application', this.application);
-        priority = profile.taskMobility;
-      end
-
-      if nargin < 4 || isempty(order)
-        order = zeros(1, taskCount);
-      end
-
+    function output = compute(this, varargin)
       [ mapping, priority, order, startTime, executionTime ] = ...
-        this.construct(mapping, priority, order);
+        this.construct(varargin{:});
 
       output = [ mapping; priority; order; startTime; executionTime ];
     end

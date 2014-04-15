@@ -4,7 +4,7 @@ classdef Base < handle
     application
   end
 
-  properties
+  properties (SetAccess = 'protected')
     %
     % About individual tasks
     %
@@ -16,11 +16,12 @@ classdef Base < handle
     taskALAP
 
     taskMobility
+    taskStaticCriticality
 
     %
     % About the whole application
     %
-    applicationExecutionTime
+    applicationASAP
   end
 
   methods
@@ -30,8 +31,10 @@ classdef Base < handle
       this.platform = options.platform;
       this.application = options.application;
 
-      zero = zeros(1, length(this.application));
-      infinity = Inf(1, length(this.application));
+      taskCount = length(this.application);
+
+      zero = zeros(1, taskCount);
+      infinity = Inf(1, taskCount);
 
       this.taskStartTime = zero;
       this.taskExecutionTime = zero;
@@ -42,11 +45,28 @@ classdef Base < handle
 
       this.taskMobility = zero;
 
-      this.applicationExecutionTime = 0;
-
+      %
+      % NOTE: Not nice, but the order matters!
+      %
       this.configure;
       this.assignTaskASAP;
+      this.assignApplicationASAP;
       this.assignTaskALAP;
+
+      %
+      % Static criticality
+      %
+      % Reference:
+      %
+      % Y. Xie et al. "Temperature-aware task allocation and scheduling
+      % for embedded MPSoC design." Journal of VLSI Signal Processing,
+      % 45(3):177–189, 2006.
+      %
+      this.taskStaticCriticality = zeros(1, taskCount);
+      for i = 1:taskCount
+        this.taskStaticCriticality(i) = ...
+          this.applicationASAP - this.taskASAP(i);
+      end
     end
   end
 
@@ -64,19 +84,18 @@ classdef Base < handle
       end
     end
 
-    function assignTaskALAP(this)
-      time = this.computeApplicationASAP();
-      for i = this.application.leaves
-        this.propagateTaskALAP(i, time);
-      end
-    end
-
-    function time = computeApplicationASAP(this)
+    function assignApplicationASAP(this)
       time = zeros(1, length(this.application));
       for i = this.application.leaves
         time(i) = this.taskASAP(i) + this.taskExecutionTime(i);
       end
-      time = max(time);
+      this.applicationASAP = max(time);
+    end
+
+    function assignTaskALAP(this)
+      for i = this.application.leaves
+        this.propagateTaskALAP(i, this.applicationASAP);
+      end
     end
   end
 end
