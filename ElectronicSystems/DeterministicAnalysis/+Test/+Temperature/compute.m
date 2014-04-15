@@ -36,14 +36,35 @@ function compute(varargin)
     P = Pdyn;
   end
 
-  T = T(:, :, 1);
-  P = P(:, :, 1);
-
   Plot.figure(800, 700);
-  subplot(2, 1, 1);
-  Plot.power(Pdyn, P - Pdyn, 'timeLine', options.timeLine, 'figure', false);
-  subplot(2, 1, 2);
-  Plot.temperature(T, 'timeLine', options.timeLine, 'figure', false);
+
+  switch options.temperatureOptions.analysis
+  case 'StaticSteadyState'
+    %
+    % NOTE: Take the first sample in case there are many.
+    %
+    T = T(:, 1);
+    P = P(:, 1);
+    Pdyn = mean(Pdyn, 2);
+
+    subplot(2, 1, 1);
+    Plot.power(Pdyn, P - Pdyn, 'figure', false, ...
+      'style', { 'Marker', 'o', 'MarkerSize', 10 });
+    subplot(2, 1, 2);
+    Plot.temperature(T, 'figure', false, ...
+      'style', { 'Marker', 'o', 'MarkerSize', 10 });
+  otherwise
+    %
+    % NOTE: Take the first sample in case there are many.
+    %
+    T = T(:, :, 1);
+    P = P(:, :, 1);
+
+    subplot(2, 1, 1);
+    Plot.power(Pdyn, P - Pdyn, 'timeLine', options.timeLine, 'figure', false);
+    subplot(2, 1, 2);
+    Plot.temperature(T, 'timeLine', options.timeLine, 'figure', false);
+  end
 
   Ptotal = mean(P(:));
   Pdyn = mean(Pdyn(:));

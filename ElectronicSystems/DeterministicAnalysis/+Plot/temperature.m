@@ -1,14 +1,16 @@
 function temperature(T, varargin)
   options = Options(varargin{:});
 
+  stepCount = size(T, 2);
+
   if options.has('timeLine')
     timeLine = options.timeLine;
     timeLabel = 'Time, s';
   elseif options.has('samplingInterval')
-    timeLine = (0:(size(T, 2) - 1)) * options.samplingInterval;
+    timeLine = (0:(stepCount - 1)) * options.samplingInterval;
     timeLabel = 'Time, s';
   else
-    timeLine = 0:(size(T, 2) - 1);
+    timeLine = 0:(stepCount - 1);
     timeLabel = 'Time, #';
   end
 
@@ -16,6 +18,6 @@ function temperature(T, varargin)
 
   Plot.title('Temperature profile');
   Plot.label(timeLabel, 'Temperature, C');
-  Plot.limit(timeLine);
+  if stepCount > 1, Plot.limit(timeLine); end
   Plot.lines(timeLine, Utils.toCelsius(T), options);
 end

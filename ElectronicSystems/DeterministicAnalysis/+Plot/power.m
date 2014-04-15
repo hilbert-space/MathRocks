@@ -1,14 +1,16 @@
 function power(Pdyn, Pleak, varargin)
   options = Options(varargin{:});
 
+  stepCount = size(Pdyn, 2);
+
   if options.has('timeLine')
     timeLine = options.timeLine;
     timeLabel = 'Time, s';
   elseif options.has('samplingInterval')
-    timeLine = (0:(size(Pdyn, 2) - 1)) * options.samplingInterval;
+    timeLine = (0:(stepCount - 1)) * options.samplingInterval;
     timeLabel = 'Time, s';
   else
-    timeLine = 0:(size(Pdyn, 2) - 1);
+    timeLine = 0:(stepCount - 1);
     timeLabel = 'Time, #';
   end
 
@@ -16,7 +18,7 @@ function power(Pdyn, Pleak, varargin)
 
   Plot.title('Power profile');
   Plot.label(timeLabel, 'Power, W');
-  Plot.limit(timeLine);
+  if stepCount > 1, Plot.limit(timeLine); end
   Plot.lines(timeLine, Pdyn, options);
 
   if isempty(Pleak), return; end

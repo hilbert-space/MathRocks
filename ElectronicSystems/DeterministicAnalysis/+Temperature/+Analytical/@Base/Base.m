@@ -23,6 +23,7 @@ classdef Base < Temperature.Base
     %   C = B^T.
     %
     A
+    B
     C
 
     %
@@ -124,6 +125,7 @@ classdef Base < Temperature.Base
       this.nodeCount = length(L);
 
       this.A = A;
+      this.B = B;
       this.C = C;
       this.D = D;
       this.L = L;
