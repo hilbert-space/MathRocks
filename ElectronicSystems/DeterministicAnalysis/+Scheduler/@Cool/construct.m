@@ -131,26 +131,7 @@ function [ mapping, priority, order, startTime, executionTime ] = construct(this
       %
       if ~ready, continue; end
 
-      %
-      % NOTE: We need to insert it in the right place in order
-      % to keep the pool sorted by the priority.
-      %
-      index = 1;
-      childPriority = priority(childId);
-      for competitorId = pool
-        if priority(competitorId) > childPriority
-          break;
-        end
-        index = index + 1;
-      end
-      if index > length(pool)
-        pool = [ pool, childId ];
-      elseif index == 1
-        pool = [ childId, pool ];
-      else
-        pool = [ pool(1:(index - 1)), childId, pool(index:end) ];
-      end
-
+      pool = [ pool, childId ];
       processed(childId) = true;
     end
   end
