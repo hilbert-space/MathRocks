@@ -24,6 +24,6 @@ classdef Dense < Scheduler.Base
 
   methods (Access = 'protected')
     [ mapping, priority, order, startTime, executionTime ] = ...
-      construct(this, mapping, priority, order)
+      construct(this, varargin)
   end
 end

@@ -1,4 +1,6 @@
-function [ mapping, priority, order, startTime, executionTime ] = construct(this, varargin)
+function [ mapping, priority, order, startTime, executionTime ] = ...
+  construct(this, penalize)
+
   processorCount = length(this.platform);
   taskCount = length(this.application);
 
@@ -34,7 +36,6 @@ function [ mapping, priority, order, startTime, executionTime ] = construct(this
   powerMapping = this.powerMapping;
   timeMapping = this.timeMapping;
   staticCriticality = this.profile.taskStaticCriticality;
-  penalize = this.penalize;
 
   %
   % NOTE: All input parameters are ignored.

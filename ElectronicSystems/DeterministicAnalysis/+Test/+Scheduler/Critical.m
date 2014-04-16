@@ -17,9 +17,8 @@ function Critical(varargin)
 
   scheduler = Scheduler.Critical( ...
     'platform', options.platform, ...
-    'application', options.application, ...
-    'penalize', @penalize);
+    'application', options.application);
 
-  schedule = scheduler.compute;
+  schedule = scheduler.compute(@penalize);
   plot(scheduler, schedule);
 end

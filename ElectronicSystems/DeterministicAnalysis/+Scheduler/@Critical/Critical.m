@@ -2,7 +2,6 @@ classdef Critical < Scheduler.Base
   properties (SetAccess = 'private')
     timeMapping
     powerMapping
-    penalize
   end
 
   methods
@@ -25,13 +24,11 @@ classdef Critical < Scheduler.Base
         this.timeMapping(:, pid) = ...
           this.platform.processors{pid}.executionTime(type);
       end
-
-      this.penalize = options.penalize;
     end
   end
 
   methods (Access = 'protected')
     [ mapping, priority, order, startTime, executionTime ] = ...
-      construct(this, mapping, priority, order)
+      construct(this, varargin)
   end
 end
