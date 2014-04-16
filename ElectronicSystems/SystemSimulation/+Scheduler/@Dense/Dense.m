@@ -1,7 +1,6 @@
 classdef Dense < Scheduler.Base
   properties (SetAccess = 'private')
     timeMapping
-    taskMobility
   end
 
   methods

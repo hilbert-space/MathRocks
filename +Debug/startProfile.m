@@ -1,5 +1,6 @@
 function time = startProfile
-  profile on;
+  profile off;
   profile clear;
+  profile on;
   time = tic;
 end

@@ -1,4 +1,4 @@
-function profile(time)
+function stopProfile(time)
   if nargin > 0
     time = toc(time);
   end

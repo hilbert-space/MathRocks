@@ -4,8 +4,6 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
   processorCount = length(this.platform);
   taskCount = length(this.application);
 
-  links = this.application.links;
-
   startTime = NaN(1, taskCount);
   executionTime = NaN(1, taskCount);
 
@@ -23,6 +21,9 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
 
   position = 0;
   processed(pool) = true;
+
+  childMapping = this.childMapping;
+  parentMapping = this.parentMapping;
 
   %
   % Static and dynamic criticality
@@ -102,7 +103,7 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
     %
     % Append the new tasks that are ready
     %
-    for childId = find(links(id, :)) % children
+    for childId = childMapping{id} % children
       taskTime(childId) = max(taskTime(childId), finish);
 
       %
@@ -114,7 +115,7 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
       % NOTE: All the parents should be ordered.
       %
       ready = true;
-      for parentId = transpose(find(links(:, childId))) % parents
+      for parentId = parentMapping{childId} % parents
         if ~ordered(parentId)
           ready = false;
           break;
