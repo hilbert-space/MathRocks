@@ -1,4 +1,4 @@
-function Cool(varargin)
+function Critical(varargin)
   setup;
 
   options = Configure.systemSimulation(varargin{:});
@@ -10,11 +10,15 @@ function Cool(varargin)
 
   temperature = Temperature(options.temperatureOptions);
 
-  scheduler = Scheduler.Cool( ...
+  function penalty = penalize(energy, time)
+    T = temperature.compute(energy / time);
+    penalty = 0.01 * max(T(:));
+  end
+
+  scheduler = Scheduler.Critical( ...
     'platform', options.platform, ...
     'application', options.application, ...
-    'temperature', temperature, ...
-    'criticalityScale', 0.01);
+    'penalize', @penalize);
 
   schedule = scheduler.compute;
   plot(scheduler, schedule);

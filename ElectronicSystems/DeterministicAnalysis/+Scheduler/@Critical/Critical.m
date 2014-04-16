@@ -1,14 +1,12 @@
-classdef Cool < Scheduler.Base
+classdef Critical < Scheduler.Base
   properties (SetAccess = 'private')
     timeMapping
     powerMapping
-
-    temperature
-    criticalityScale
+    penalize
   end
 
   methods
-    function this = Cool(varargin)
+    function this = Critical(varargin)
       options = Options(varargin{:});
 
       this = this@Scheduler.Base(options);
@@ -28,8 +26,7 @@ classdef Cool < Scheduler.Base
           this.platform.processors{pid}.executionTime(type);
       end
 
-      this.temperature = options.temperature;
-      this.criticalityScale = options.criticalityScale;
+      this.penalize = options.penalize;
     end
   end
 

@@ -31,11 +31,10 @@ function [ mapping, priority, order, startTime, executionTime ] = construct(this
   % for embedded MPSoC design." Journal of VLSI Signal Processing,
   % 45(3):177–189, 2006.
   %
-  temperature = this.temperature;
   powerMapping = this.powerMapping;
   timeMapping = this.timeMapping;
   staticCriticality = this.profile.taskStaticCriticality;
-  criticalityScale = this.criticalityScale;
+  penalize = this.penalize;
 
   %
   % NOTE: All input parameters are ignored.
@@ -53,22 +52,17 @@ function [ mapping, priority, order, startTime, executionTime ] = construct(this
       for pid = 1:processorCount
         % Time
         earliestTime = max(taskTime(id), processorTime(pid));
-        t = earliestTime + timeMapping(id, pid);
+        time = earliestTime + timeMapping(id, pid);
 
-        % Energy
-        E = processorEnergy;
-        E(pid) = E(pid) + ...
+        energy = processorEnergy;
+        energy(pid) = energy(pid) + ...
           timeMapping(id, pid) * powerMapping(id, pid);
-
-        % Temperature
-        T = temperature.compute(E / t);
-        T = max(T(:));
 
         dynamicCriticality(i, pid) = ...
           + staticCriticality(id) ...
           - timeMapping(id, pid) ...
           - earliestTime ...
-          - criticalityScale * T;
+          - penalize(energy, time);
       end
     end
 
