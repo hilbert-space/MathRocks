@@ -29,16 +29,11 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   eval(this.solverName);
 
-  I = isnan(iterationCount);
-  T(:, :, I) = NaN;
-  P(:, :, I) = NaN;
-
   output.P = P;
   output.iterationCount = iterationCount;
 
-  runawayCount = sum(I);
-  if runawayCount > 0
-    warning([ 'Detected ', num2str(runawayCount), ' thermal runaways.' ]);
+  if any(isnan(iterationCount))
+    warning('Detected a thermal runaway.');
   end
 
   return;
@@ -182,6 +177,73 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     end
 
     T = permute(T, [ 1, 3, 2 ]);
+    P = permute(P, [ 1, 3, 2 ]);
+  end
+
+  function condensedEquationMultiplePlain
+    Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
+      stepCount * this.L))) * this.V;
+
+    assert(Tindex == 1);
+
+    parameters = parameters(2:end);
+
+    for i = 1:(parameterCount - 1)
+      parameters{i} = repmat(parameters{i}, [ 1, 1, stepCount ]);
+      parameters{i} = reshape(parameters{i}, processorCount, []);
+    end
+
+    Pdyn = repmat(Pdyn, [ 1, 1, sampleCount ]);
+    Pdyn = permute(Pdyn, [ 1, 3, 2 ]);
+    Pdyn = reshape(Pdyn, processorCount, []);
+
+    T = Tamb * ones(processorCount, sampleCount * stepCount);
+    P = zeros(processorCount, sampleCount * stepCount);
+
+    FP = zeros(nodeCount, sampleCount, stepCount);
+    X = zeros(nodeCount, sampleCount, stepCount);
+
+    Tlast = T;
+
+    for i = 1:iterationLimit
+      P(:) = Pdyn + leak(T, parameters{:});
+
+      FP(:) = reshape(F * P, [ nodeCount, sampleCount, stepCount ]);
+
+      W = FP(:, :, 1);
+      for j = 2:stepCount
+        W = E * W + FP(:, :, j);
+      end
+
+      X(:, :, 1) = Z * W;
+      for j = 2:stepCount
+        X(:, :, j) = E * X(:, :, j - 1) + FP(:, :, j - 1);
+      end
+
+      T(:) = C * reshape(X, nodeCount, []) + D * P + Tamb;
+
+      %
+      % Thermal runaway
+      %
+      if max(T(:)) > Tmax
+        break;
+      end
+
+      %
+      % Successful convergence
+      %
+      if mean(abs(T(:) - Tlast(:)) ./ Tlast(:)) < errorThreshold
+        iterationCount(:) = i;
+        break;
+      end
+
+      Tlast(:) = T;
+    end
+
+    T = reshape(T, [ processorCount, sampleCount, stepCount ]);
+    T = permute(T, [ 1, 3, 2 ]);
+
+    P = reshape(P, [ processorCount, sampleCount, stepCount ]);
     P = permute(P, [ 1, 3, 2 ]);
   end
 
