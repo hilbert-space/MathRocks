@@ -112,7 +112,7 @@ classdef Base < handle
         for j = 1:size(partitions{i}, 2)
           range = partitions{i}(1, j):partitions{i}(2, j);
           damage(i, :) = damage(i, :) + weights{i}(j) * ...
-            this.computeDamage(shiftdim(T(i, range, :), 1));
+            this.computeDamage(permute(T(i, range, :), [ 2, 3, 1 ]));
         end
         factor = factor + damage(i, :).^this.beta;
       end
