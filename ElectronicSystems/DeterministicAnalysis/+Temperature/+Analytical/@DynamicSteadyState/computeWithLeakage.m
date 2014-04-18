@@ -184,6 +184,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
+    %
+    % NOTE: There is no error control; fixed number of iterations.
+    %
+    assert(isinf(errorThreshold));
+    iterationCount(:) = iterationLimit;
+
     assert(Tindex == 1);
 
     parameters = parameters(2:end);
@@ -203,8 +209,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     FP = zeros(nodeCount, sampleCount, stepCount);
     X = zeros(nodeCount, sampleCount, stepCount);
 
-    Tlast = T;
-
     for i = 1:iterationLimit
       P(:) = Pdyn + leak(T, parameters{:});
 
@@ -221,23 +225,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       end
 
       T(:) = C * reshape(X, nodeCount, []) + D * P + Tamb;
-
-      %
-      % Thermal runaway
-      %
-      if max(T(:)) > Tmax
-        break;
-      end
-
-      %
-      % Successful convergence
-      %
-      if mean(abs(T(:) - Tlast(:)) ./ Tlast(:)) < errorThreshold
-        iterationCount(:) = i;
-        break;
-      end
-
-      Tlast(:) = T;
     end
 
     T = reshape(T, [ processorCount, sampleCount, stepCount ]);
