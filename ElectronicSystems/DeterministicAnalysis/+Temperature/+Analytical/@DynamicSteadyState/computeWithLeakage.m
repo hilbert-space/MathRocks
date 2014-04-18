@@ -201,7 +201,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     Pdyn = repmat(Pdyn, [ 1, 1, sampleCount ]);
     Pdyn = permute(Pdyn, [ 1, 3, 2 ]);
-    Pdyn = reshape(Pdyn, processorCount, []);
+    Pdyn = reshape(Pdyn, processorCount, sampleCount * stepCount);
 
     T = Tamb * ones(processorCount, sampleCount * stepCount);
     P = zeros(processorCount, sampleCount * stepCount);
@@ -224,7 +224,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
         X(:, :, j) = E * X(:, :, j - 1) + FP(:, :, j - 1);
       end
 
-      T(:) = C * reshape(X, nodeCount, []) + D * P + Tamb;
+      T(:) = C * reshape(X, nodeCount, sampleCount * stepCount) + D * P + Tamb;
     end
 
     T = reshape(T, [ processorCount, sampleCount, stepCount ]);
