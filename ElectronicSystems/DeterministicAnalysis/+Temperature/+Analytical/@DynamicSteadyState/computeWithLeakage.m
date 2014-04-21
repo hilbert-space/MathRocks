@@ -52,7 +52,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
-    T = Tamb * ones(processorCount, stepCount, sampleCount);
+    if options.has('T')
+      T = repmat(options.T, [ 1, 1, sampleCount ]);
+    else
+      T = Tamb * ones(processorCount, stepCount, sampleCount);
+    end
+
     P = zeros(processorCount, stepCount, sampleCount);
 
     X = zeros(nodeCount, stepCount);
@@ -119,7 +124,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
 
     Pdyn = reshape(Pdyn, [ processorCount, 1, stepCount ]);
 
-    T = Tamb * ones(processorCount, sampleCount, stepCount);
+    if options.has('T')
+      T = repmat(permute(options.T, [ 1, 3, 2 ]), [ 1, sampleCount, 1 ]);
+    else
+      T = Tamb * ones(processorCount, sampleCount, stepCount);
+    end
+
     P = zeros(processorCount, sampleCount, stepCount);
 
     FP = zeros(nodeCount, sampleCount, stepCount);
@@ -214,8 +224,13 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
     assert(isinf(errorThreshold));
     iterationCount(:) = iterationLimit;
 
-    T = reshape(repmat(permute(options.T, [ 1, 3, 2 ]), ...
-      [ 1, sampleCount, 1 ]), processorCount, sampleCount * stepCount);
+    if options.has('T')
+      T = reshape(repmat(permute(options.T, [ 1, 3, 2 ]), ...
+        [ 1, sampleCount, 1 ]), processorCount, sampleCount * stepCount);
+    else
+      T = Tamb * ones(processorCount, sampleCount * stepCount);
+    end
+
     P = zeros(processorCount, sampleCount * stepCount);
 
     FP = zeros(nodeCount, sampleCount, stepCount);
@@ -253,7 +268,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
       A(:, :, i) = inv(A(:, :, i));
     end
 
-    T = Tamb * ones(processorCount, stepCount, sampleCount);
+    if options.has('T')
+      T = repmat(options.T, [ 1, 1, sampleCount ]);
+    else
+      T = Tamb * ones(processorCount, stepCount, sampleCount);
+    end
+
     P = zeros(processorCount, stepCount, sampleCount);
 
     X = zeros(nodeCount, stepCount);
@@ -318,7 +338,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
 
     Pdyn = reshape(Pdyn, [ processorCount, 1, stepCount ]);
 
-    T = Tamb * ones(processorCount, sampleCount, stepCount);
+    if options.has('T')
+      T = repmat(permute(options.T, [ 1, 3, 2 ]), [ 1, sampleCount, 1 ]);
+    else
+      T = Tamb * ones(processorCount, sampleCount, stepCount);
+    end
+
     P = zeros(processorCount, sampleCount, stepCount);
 
     B = zeros(nodeCount, sampleCount, stepCount);
@@ -429,7 +454,12 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
         [ 1, 3, 2 ]), [ 1, stepCount, 1 ]);
     end
 
-    T = Tamb * ones(processorCount, stepCount, sampleCount);
+    if options.has('T')
+      T = repmat(options.T, [ 1, 1, sampleCount ]);
+    else
+      T = Tamb * ones(processorCount, stepCount, sampleCount);
+    end
+
     P = zeros(processorCount, stepCount, sampleCount);
 
     B = zeros(nodeCount * stepCount, sampleCount);
