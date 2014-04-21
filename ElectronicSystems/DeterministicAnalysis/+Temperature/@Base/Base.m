@@ -86,7 +86,7 @@ classdef Base < handle
   end
 
   methods (Access = 'protected')
-    function [ parameters, sampleCount, Tindex ] = ...
+    function [ parameters, sampleCount, temperatureIndex ] = ...
       prepareParameters(this, parameters)
 
       if nargin < 2, parameters = struct; end
@@ -98,7 +98,7 @@ classdef Base < handle
       % matrix, the (i, j)th element corresponds to the ith sample
       % assigned to the jth processing element.
       %
-      [ parameters, dimensions, Tindex ] = this.leakage.assign( ...
+      [ parameters, dimensions, temperatureIndex ] = this.leakage.assign( ...
         parameters, [ NaN, this.processorCount ]);
 
       %
@@ -107,10 +107,10 @@ classdef Base < handle
       parameters = cellfun(@transpose, parameters, 'UniformOutput', false);
 
       %
-      % Tindex is the position of the temperature parameter among
-      % the leakage parameters.
+      % temperatureIndex is the position of the temperature parameter
+      % among the leakage parameters.
       %
-      assert(isscalar(Tindex));
+      assert(isscalar(temperatureIndex));
 
       sampleCount = dimensions(1);
     end

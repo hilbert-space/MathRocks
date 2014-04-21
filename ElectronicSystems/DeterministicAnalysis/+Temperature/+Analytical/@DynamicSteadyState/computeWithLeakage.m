@@ -1,6 +1,13 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
+function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
   nodeCount = this.nodeCount;
   [ processorCount, stepCount ] = size(Pdyn);
+
+  if nargin < 3, parameters = struct; end
+  if nargin > 3
+    options = Options(varargin{:});
+  else
+    options = Options;
+  end
 
   C = this.C;
   D = this.D;
@@ -8,9 +15,11 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   F = this.F;
   Tamb = this.ambientTemperature;
   Tmax = this.maximalTemperature;
-  errorMetric = this.errorMetric;
-  errorThreshold = this.errorThreshold;
-  iterationLimit = this.iterationLimit;
+
+  algorithm = options.get('algorithm', this.algorithm);
+  errorMetric = options.get('errorMetric', this.errorMetric);
+  errorThreshold = options.get('errorThreshold', this.errorThreshold);
+  iterationLimit = options.get('iterationLimit', this.iterationLimit);
 
   %
   % NOTE: If the model-order reduction is not performed, or
@@ -19,15 +28,16 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   hasD = nnz(D) > 0;
 
   leak = this.leakage.evaluate;
+
+  [ parameters, sampleCount, temperatureIndex ] = ...
+    this.prepareParameters(parameters);
   parameterCount = this.leakage.parameterCount;
-
-  [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
-
-  Pindex = [ 1:(Tindex - 1), (Tindex + 1):parameterCount ];
+  parameterIndex = [ 1:(temperatureIndex - 1), ...
+    (temperatureIndex + 1):parameterCount ];
 
   iterationCount = NaN(1, sampleCount);
 
-  eval(this.solverName);
+  eval(algorithm);
 
   output.P = P;
   output.iterationCount = iterationCount;
@@ -49,14 +59,14 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     param = cell(1, parameterCount);
     for i = 1:sampleCount
-      for j = Pindex
+      for j = parameterIndex
         param{j} = repmat(parameters{j}(:, i), [ 1, stepCount ]);
       end
 
       Tlast = Tamb;
 
       for j = 1:iterationLimit
-        param{Tindex} = T(:, :, i);
+        param{temperatureIndex} = T(:, :, i);
 
         P(:, :, i) = Pdyn + leak(param{:});
 
@@ -103,7 +113,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
-    for i = Pindex
+    for i = parameterIndex
       parameters{i} = repmat(parameters{i}, [ 1, 1, stepCount ]);
     end
 
@@ -121,7 +131,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     leftCount = sampleCount;
 
     for i = 1:iterationLimit
-      parameters{Tindex} = T(:, I, :);
+      parameters{temperatureIndex} = T(:, I, :);
       P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(parameters{:});
 
       FP(:, I, :) = reshape( ...
@@ -168,7 +178,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       leftCount = length(I);
       if leftCount == 0, break; end
 
-      for j = Pindex
+      for j = parameterIndex
         parameters{j}(:, M, :) = [];
       end
 
@@ -180,17 +190,11 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     P = permute(P, [ 1, 3, 2 ]);
   end
 
-  function condensedEquationMultiplePlain
+  function condensedEquationMultipleSimplified
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
-    %
-    % NOTE: There is no error control; fixed number of iterations.
-    %
-    assert(isinf(errorThreshold));
-    iterationCount(:) = iterationLimit;
-
-    assert(Tindex == 1);
+    assert(temperatureIndex == 1);
 
     parameters = parameters(2:end);
 
@@ -203,7 +207,15 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     Pdyn = permute(Pdyn, [ 1, 3, 2 ]);
     Pdyn = reshape(Pdyn, processorCount, sampleCount * stepCount);
 
-    T = Tamb * ones(processorCount, sampleCount * stepCount);
+    %
+    % NOTE: There is no error control; the number of iterations is fixed;
+    % and the initial temperature is assumed to be given.
+    %
+    assert(isinf(errorThreshold));
+    iterationCount(:) = iterationLimit;
+
+    T = reshape(repmat(permute(options.T, [ 1, 3, 2 ]), ...
+      [ 1, sampleCount, 1 ]), processorCount, sampleCount * stepCount);
     P = zeros(processorCount, sampleCount * stepCount);
 
     FP = zeros(nodeCount, sampleCount, stepCount);
@@ -248,14 +260,14 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
     param = cell(1, parameterCount);
     for i = 1:sampleCount
-      for j = Pindex
+      for j = parameterIndex
         param{j} = repmat(parameters{j}(:, i), [ 1, stepCount ]);
       end
 
       Tlast = Tamb;
 
       for j = 1:iterationLimit
-        param{Tindex} = T(:, :, i);
+        param{temperatureIndex} = T(:, :, i);
 
         P(:, :, i) = Pdyn + leak(param{:});
 
@@ -300,7 +312,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       A(:, :, i) = inv(A(:, :, i));
     end
 
-    for i = Pindex
+    for i = parameterIndex
       parameters{i} = repmat(parameters{i}, [ 1, 1, stepCount ]);
     end
 
@@ -318,7 +330,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     leftCount = sampleCount;
 
     for i = 1:iterationLimit
-      parameters{Tindex} = T(:, I, :);
+      parameters{temperatureIndex} = T(:, I, :);
       P(:, I, :) = repmat(Pdyn, [ 1, leftCount, 1 ]) + leak(parameters{:});
 
       X(:, I, :) = reshape( ...
@@ -363,7 +375,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       leftCount = length(I);
       if leftCount == 0, break; end
 
-      for j = Pindex
+      for j = parameterIndex
         parameters{j}(:, M, :) = [];
       end
 
@@ -412,7 +424,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     A = permute(A, [ 2, 1, 3 ]);
     A = reshape(A(:, :, [ 1, end:-1:2 ]), nodeCount, nodeCount * stepCount);
 
-    for i = Pindex
+    for i = parameterIndex
       parameters{i} = repmat(permute(parameters{i}, ...
         [ 1, 3, 2 ]), [ 1, stepCount, 1 ]);
     end
@@ -429,7 +441,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     leftCount = sampleCount;
 
     for i = 1:iterationLimit
-      parameters{Tindex} = T(:, :, I);
+      parameters{temperatureIndex} = T(:, :, I);
       P(:, :, I) = repmat(Pdyn, [ 1, 1, leftCount ]) + leak(parameters{:});
 
       B(:, I) = reshape( ...
@@ -471,7 +483,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
       leftCount = length(I);
       if leftCount == 0, break; end
 
-      for j = Pindex
+      for j = parameterIndex
         parameters{j}(:, :, M) = [];
       end
 

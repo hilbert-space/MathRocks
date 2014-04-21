@@ -1,6 +1,6 @@
 classdef DynamicSteadyState < Temperature.Analytical.Base
   properties (SetAccess = 'protected')
-    solverName
+    algorithm
     maximalTemperature
     errorMetric
     errorThreshold
@@ -12,8 +12,7 @@ classdef DynamicSteadyState < Temperature.Analytical.Base
       options = Options(varargin{:});
       this = this@Temperature.Analytical.Base(options);
 
-      this.solverName = String.hungarianize(options.get( ...
-        'algorithm', 'condensed-equation-single'));
+      this.algorithm = options.get('algorithm', 'condensedEquationSingle');
       this.maximalTemperature = options.get( ...
         'maximalTemperature', Utils.toKelvin(450));
       this.errorMetric = options.get('errorMetric', 'NRMSE');
