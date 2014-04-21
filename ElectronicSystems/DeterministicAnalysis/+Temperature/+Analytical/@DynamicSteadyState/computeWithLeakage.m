@@ -200,7 +200,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, parameters, varargin)
     P = permute(P, [ 1, 3, 2 ]);
   end
 
-  function condensedEquationMultipleSimplified
+  function condensedEquationMultipleFixed
     Z = this.U * diag(1 ./ (1 - exp(this.samplingInterval * ...
       stepCount * this.L))) * this.V;
 
