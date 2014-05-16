@@ -73,5 +73,5 @@ function compute(varargin)
   fprintf('Total power: %.2f W\n', Ptotal);
   fprintf('Dynamic power: %.2f W\n', Pdyn);
   fprintf('Leakage power: %.2f W\n', Pleak);
-  fprintf('Leakage to dynamic ratio: %.2f\n', Pleak / Pdyn);
+  fprintf('Leakage to total ratio: %.2f\n', Pleak / Ptotal);
 end
