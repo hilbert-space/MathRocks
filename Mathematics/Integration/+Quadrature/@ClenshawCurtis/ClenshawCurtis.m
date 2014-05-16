@@ -28,7 +28,7 @@ classdef ClenshawCurtis < Quadrature.Base
 
     function [ nodes, weights ] = rule(this, order)
       if order == 1 % special case
-        nodes = 0;
+        nodes = 0.5;
         weights = 2;
         return;
       end
