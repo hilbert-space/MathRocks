@@ -8,7 +8,7 @@ function [path, file, name, line] = trace(offset)
     error('The depth of the stack is not sufficient.');
   else
     [path, name, extension] = fileparts(stack(index).file);
-    file =  name, extension];
+    file = [name, extension];
     name = stack(index).name;
     line = stack(index).line;
   end
