@@ -1,1 +1,1 @@
-# MLib Probability Theory
+# MR Probability Theory
