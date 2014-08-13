@@ -1,4 +1,4 @@
-# MLib Vendor
+# MR Vendor
 
 * `Chebfun` — [Chebfun](http://www.chebfun.org/),
 * `CustomizableHeatMaps` — [Customizable Heat Maps](http://www.mathworks.com/matlabcentral/fileexchange/24253-customizable-heat-maps),
