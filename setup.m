@@ -3,5 +3,5 @@ function setup
   use('LinearAlgebra');
   use('Interaction');
 
-  use('Vendor', 'dace');
+  use('Vendor', 'DACE');
 end
