@@ -7,5 +7,4 @@ function setup
   use('Statistics');
 
   use('Vendor', 'DataHash');
-  use('Vendor', 'dace');
 end
