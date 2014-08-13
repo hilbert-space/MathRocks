@@ -1,4 +1,4 @@
-vendors=Chebfun CustomizableHeatMaps DACE DataHash
+vendors=Chebfun CustomizableHeatMaps DACE DataHash SANDIA_RULES
 
 all: $(vendors)
 
