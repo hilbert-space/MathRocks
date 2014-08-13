@@ -6,6 +6,6 @@ function setup
   use('Statistics');
 
   use('Vendor', 'DataHash');
-  use('Vendor', 'chebfun');
-  use('Vendor', 'heatmaps');
+  use('Vendor', 'Chebfun');
+  use('Vendor', 'CustomizableHeatMaps');
 end
