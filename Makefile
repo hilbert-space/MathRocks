@@ -1,4 +1,4 @@
-vendors=Chebfun CustomizableHeatMaps DACE DataHash SANDIA_RULES SANDIA_SPARSE
+vendors=$(shell find . -maxdepth 1 ! -path . -type d)
 
 all: $(vendors)
 
