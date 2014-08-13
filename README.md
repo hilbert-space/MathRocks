@@ -1,11 +1,11 @@
 # MLib Vendor
 
-* [DataHash](http://www.mathworks.com/matlabcentral/fileexchange/31272-datahash),
-* [Sparse Grids for Sandia (SANDIA_SPARSE)](http://people.sc.fsu.edu/~jburkardt/m_src/sandia_sparse/sandia_sparse.html),
-* [Sparse Grids for Uniform and Normal Weights Heiss and Winschel (SPARSE_GRID_HW)](http://people.sc.fsu.edu/~jburkardt/m_src/sparse_grid_hw/sparse_grid_hw.html),
-* [Chebfun](http://www.chebfun.org/),
-* [Design and Analysis of Computer Experiments (DACE)](http://www.imm.dtu.dk/~hbni/dace/),
-* [Quadrature Rules of Gaussian Type (SANDIA_RULES)](http://people.sc.fsu.edu/~jburkardt/m_src/sandia_rules/sandia_rules.html),
-* [Sparse Grid Mixed Growth Anisotropic Rules (SGMGA)](http://people.sc.fsu.edu/~jburkardt/m_src/sgmga/sgmga.html),
-* [Testing Multidimensional Integration Routines (TESTPACK)](http://people.sc.fsu.edu/~jburkardt/m_src/testpack/testpack.html),
-* [Customizable Heat Maps](http://www.mathworks.com/matlabcentral/fileexchange/24253-customizable-heat-maps).
+* `Chebfun` — [Chebfun](http://www.chebfun.org/),
+* `CustomizableHeatMaps` — [Customizable Heat Maps](http://www.mathworks.com/matlabcentral/fileexchange/24253-customizable-heat-maps),
+* `DACE` — [Design and Analysis of Computer Experiments](http://www.imm.dtu.dk/~hbni/dace/),
+* `DataHash` — [DataHash](http://www.mathworks.com/matlabcentral/fileexchange/31272-datahash),
+* `SANDIA_RULES` — [Quadrature Rules of Gaussian Type](http://people.sc.fsu.edu/~jburkardt/m_src/sandia_rules/sandia_rules.html),
+* `SANDIA_SPARSE` — [Sparse Grids for Sandia](http://people.sc.fsu.edu/~jburkardt/m_src/sandia_sparse/sandia_sparse.html),
+* `SGMGA` — [Sparse Grid Mixed Growth Anisotropic Rules](http://people.sc.fsu.edu/~jburkardt/m_src/sgmga/sgmga.html),
+* `SPARSE_GRID_HW` — [Sparse Grids for Uniform and Normal Weights](http://people.sc.fsu.edu/~jburkardt/m_src/sparse_grid_hw/sparse_grid_hw.html),
+* `TESTPACK` — [Testing Multidimensional Integration Routines](http://people.sc.fsu.edu/~jburkardt/m_src/testpack/testpack.html).
