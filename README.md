@@ -1,5 +1,9 @@
 # MR Vendor
 
+A part of [MathRocks](https://github.com/MathRocks/MathRocks).
+
+## Contents
+
 * `Chebfun` — [Chebfun](http://www.chebfun.org/),
 * `CustomizableHeatMaps` — [Customizable Heat Maps](http://www.mathworks.com/matlabcentral/fileexchange/24253-customizable-heat-maps),
 * `DACE` — [Design and Analysis of Computer Experiments](http://www.imm.dtu.dk/~hbni/dace/),
