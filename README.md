@@ -4,19 +4,14 @@ The core of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 ## Contents
 
-* `Debug` — shortcuts for profiling.
-
-* `File` — helper functions for working with files.
-
-* `String` — helper functions for working with strings and converting objects
-  into strings.
-
-* `Options` — a class to streamline the treatment of arbitrary options passed
+* `+Debug` — shortcuts for profiling.
+* `+File` — helper functions for working with files.
+* `String` — helper functions for working with strings.
+* `+Utils` — various helper functions.
+* `@Options` — a class to streamline the treatment of arbitrary options passed
   to functions.
-
 * `Include` — C++ headers for MEX files.
-
-* `Utils` — various helper functions.
+* `String` — a function converting arbitrary objects into strings.
 
 ## Contributing
 
