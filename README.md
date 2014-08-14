@@ -16,7 +16,7 @@ The core of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 * `Include` — C++ headers for MEX files.
 
-* `Utils` — various helper routines.
+* `Utils` — various helper functions.
 
 ## Contributing
 
