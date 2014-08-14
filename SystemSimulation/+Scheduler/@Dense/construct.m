@@ -1,11 +1,8 @@
-function [ mapping, priority, order, startTime, executionTime ] = ...
-  construct(this, mapping, priority, order)
+function [mapping, priority, order, startTime, executionTime] = ...
+  construct(this, mapping, priority, order, startTime, executionTime)
 
   processorCount = length(this.platform);
   taskCount = length(this.application);
-
-  startTime = NaN(1, taskCount);
-  executionTime = NaN(1, taskCount);
 
   if nargin < 2 || isempty(mapping)
     mapping = zeros(1, taskCount);
@@ -19,11 +16,21 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
     order = zeros(1, taskCount);
   end
 
+  if nargin < 5 || isempty(startTime)
+    startTime = NaN(1, taskCount);
+  else
+    assert(false);
+  end
+
+  if nargin < 6 || isempty(executionTime)
+    executionTime = NaN(1, taskCount);
+  end
+
   %
   % Initialize the scheduling pool
   %
   pool = this.application.roots;
-  [ ~, I ] = sort(priority(pool));
+  [~, I] = sort(priority(pool));
   pool = pool(I);
 
   processed = false(1, taskCount);
@@ -121,11 +128,11 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
         index = index + 1;
       end
       if index > length(pool)
-        pool = [ pool, childId ];
+        pool = [pool, childId];
       elseif index == 1
-        pool = [ childId, pool ];
+        pool = [childId, pool];
       else
-        pool = [ pool(1:(index - 1)), childId, pool(index:end) ];
+        pool = [pool(1:(index - 1)), childId, pool(index:end)];
       end
 
       processed(childId) = true;

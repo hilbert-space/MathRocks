@@ -27,11 +27,11 @@ function plot(this, output)
     y0 = i;
 
     ids = find(output.mapping == i);
-    [ ~, I ] = sort(output.order(ids));
+    [~, I] = sort(output.order(ids));
     ids = ids(I);
 
-    x = [ 0 ];
-    y = [ y0 ];
+    x = [0];
+    y = [y0];
     for j = ids
       startTime = output.startTime(j);
       executionTime = output.executionTime(j);
@@ -52,7 +52,7 @@ function plot(this, output)
       y(end + 1) = y0;
 
       text(startTime + 0.2 * executionTime, y0 + 0.3 * maxHeight, ...
-        [ 'T', num2str(j) ]);
+        ['T', num2str(j)]);
     end
 
     x(end + 1) = last;
@@ -63,10 +63,10 @@ function plot(this, output)
 
     line(x, y, 'Color', Color.pick(i));
 
-    processorNames{end + 1} = [ 'PE', num2str(i) ];
+    processorNames{end + 1} = ['PE', num2str(i)];
   end
 
   set(gca, 'YTickLabel', processorNames);
   set(gca, 'YTick', (1:processorCount) + maxHeight / 2);
-  set(gca, 'XLim', [ 0 last ]);
+  set(gca, 'XLim', [0 last]);
 end

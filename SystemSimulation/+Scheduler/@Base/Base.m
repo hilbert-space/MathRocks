@@ -34,10 +34,10 @@ classdef Base < handle
     end
 
     function output = compute(this, varargin)
-      [ mapping, priority, order, startTime, executionTime ] = ...
+      [mapping, priority, order, startTime, executionTime] = ...
         this.construct(varargin{:});
 
-      output = [ mapping; priority; order; startTime; executionTime ];
+      output = [mapping; priority; order; startTime; executionTime];
     end
 
     function schedule = decode(~, output)
@@ -51,7 +51,7 @@ classdef Base < handle
   end
 
   methods (Abstract, Access = 'protected')
-    [ mapping, priority, order, startTime, executionTime ] = ...
+    [mapping, priority, order, startTime, executionTime] = ...
       construct(this, varargin);
   end
 end
