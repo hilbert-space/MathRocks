@@ -1,6 +1,6 @@
 function setup
   use('Interaction');
-  use('Mathematics', 'UncertaintyQuantification');
+  use('UncertaintyQuantification');
 
   use('ElectronicSystems', 'SystemSimulation');
   use('ElectronicSystems', 'DeterministicAnalysis');
