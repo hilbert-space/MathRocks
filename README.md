@@ -4,7 +4,7 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 ## Contents
 
-* `Utils` — various helper routines.
+* `Utils` — various helper functions.
 
 ## Contributing
 
