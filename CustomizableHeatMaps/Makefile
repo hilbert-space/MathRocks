@@ -1,6 +1,12 @@
-all: heatmaps.zip
+include ../common.mk
 
-heatmaps.zip:
-	curl http://www.mathworks.com/matlabcentral/fileexchange/downloads/514540/akamai/heatmaps.zip -O
-	unzip heatmaps.zip
+filename := heatmaps.zip
+url := http://www.mathworks.com/matlabcentral/fileexchange/downloads/514540/download
+
+all: $(filename)
+
+$(filename):
+	curl -L $(url) -o $@
+	unzip $(filename)
 	mv ./heatmaps/* ./
+	rmdir ./heatmaps

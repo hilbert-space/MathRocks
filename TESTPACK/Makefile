@@ -1,4 +1,6 @@
-define files
+include ../common.mk
+
+define filenames
 	adapt.m
 	genz_function.m
 	genz_integral.m
@@ -13,9 +15,10 @@ define files
 	tuple_next.m
 endef
 
-files := $(shell echo $(files) | tr -d '\n')
+url := http://people.sc.fsu.edu/~jburkardt/m_src/testpack
+filenames := $(shell echo $(filenames) | tr -d '\n')
 
-all: $(files)
+all: $(filenames)
 
-$(files):
-	curl http://people.sc.fsu.edu/~jburkardt/m_src/testpack/$@ -O
+$(filenames):
+	curl $(url)/$@ -O

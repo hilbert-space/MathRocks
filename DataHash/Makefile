@@ -1,5 +1,10 @@
-all: DataHash_20120627.zip
+include ../common.mk
 
-DataHash_20120627.zip:
-	curl http://www.mathworks.com/matlabcentral/fileexchange/downloads/376978/akamai/DataHash_20120627.zip -O
-	unzip DataHash_20120627.zip
+url := http://www.mathworks.com/matlabcentral/fileexchange/downloads/376978/download
+filename := DataHash.zip
+
+all: $(filename)
+
+$(filename):
+	curl -L $(url) -o $(filename)
+	unzip $(filename)

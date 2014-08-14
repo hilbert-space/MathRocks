@@ -1,4 +1,6 @@
-define files
+include ../common.mk
+
+define filenames
 	cc.m
 	cce.m
 	cce_order.m
@@ -53,9 +55,10 @@ define files
 	timestamp.m
 endef
 
-files := $(shell echo $(files) | tr -d '\n')
+url := http://people.sc.fsu.edu/~jburkardt/m_src/sparse_grid_hw
+filenames := $(shell echo $(filenames) | tr -d '\n')
 
-all: $(files)
+all: $(filenames)
 
-$(files):
-	curl http://people.sc.fsu.edu/~jburkardt/m_src/sparse_grid_hw/$@ -O
+$(filenames):
+	curl $(url)/$@ -O

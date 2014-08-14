@@ -1,6 +1,11 @@
-all: imm1460.zip
+include ../common.mk
 
-imm1460.zip:
-	curl http://www.imm.dtu.dk/~hbni/dace/imm1460.zip -O
-	unzip imm1460.zip
+url := http://www.imm.dtu.dk/~hbni/dace/imm1460.zip
+filename := dace.zip
+
+all: $(filename)
+
+$(filename):
+	curl $(url) -o $(filename)
+	unzip $(filename)
 	mv ./dace/* ./

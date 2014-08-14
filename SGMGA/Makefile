@@ -1,4 +1,6 @@
-define files
+include ../common.mk
+
+define filenames
 	sgmga_aniso_balance.m
 	sgmga_aniso_balance_test.m
 	sgmga_aniso_balance_tests.m
@@ -48,9 +50,10 @@ define files
 	sgmga_write_tests.m
 endef
 
-files := $(shell echo $(files) | tr -d '\n')
+url := http://people.sc.fsu.edu/~jburkardt/m_src/sgmga
+filenames := $(shell echo $(filenames) | tr -d '\n')
 
-all: $(files)
+all: $(filenames)
 
-$(files):
-	curl http://people.sc.fsu.edu/~jburkardt/m_src/sgmga/$@ -O
+$(filenames):
+	curl $(url)/$@ -O

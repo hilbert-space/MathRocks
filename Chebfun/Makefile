@@ -1,6 +1,11 @@
-all: chebfun_v4.3.2987.zip
+include ../common.mk
 
-chebfun_v4.3.2987.zip:
-	curl http://www.chebfun.org/download/chebfun_v4.3.2987.zip -O
-	unzip chebfun_v4.3.2987.zip
+filename := chebfun.zip
+url := http://www.chebfun.org/download/chebfun_v4.3.2987.zip
+
+all: $(filename)
+
+$(filename):
+	curl $(url) -o $(filename)
+	unzip $(filename)
 	mv chebfun/* ./

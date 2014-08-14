@@ -1,4 +1,6 @@
-define files
+include ../common.mk
+
+define filenames
 	abscissa_level_closed_nd.m
 	abscissa_level_open_nd.m
 	cc_abscissa.m
@@ -67,9 +69,10 @@ define files
 	vec_colex_next2.m
 endef
 
-files := $(shell echo $(files) | tr -d '\n')
+url := http://people.sc.fsu.edu/~jburkardt/m_src/sandia_sparse
+filenames := $(shell echo $(filenames) | tr -d '\n')
 
-all: $(files)
+all: $(filenames)
 
-$(files):
-	curl http://people.sc.fsu.edu/~jburkardt/m_src/sandia_sparse/$@ -O
+$(filenames):
+	curl $(url)/$@ -O

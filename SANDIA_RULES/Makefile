@@ -1,4 +1,6 @@
-define files
+include ../common.mk
+
+define filenames
 	binary_vector_next.m
 	ccn_compute.m
 	ccn_compute_np.m
@@ -221,9 +223,10 @@ define files
 	vec_colex_next3.m
 endef
 
-files := $(shell echo $(files) | tr -d '\n')
+url := http://people.sc.fsu.edu/~jburkardt/m_src/sandia_rules
+filenames := $(shell echo $(filenames) | tr -d '\n')
 
-all: $(files)
+all: $(filenames)
 
-$(files):
-	curl http://people.sc.fsu.edu/~jburkardt/m_src/sandia_rules/$@ -O
+$(filenames):
+	curl $(url)/$@ -O
