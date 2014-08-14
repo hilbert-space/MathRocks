@@ -1,7 +1,7 @@
 function setup
   use('FunctionalAnalysis');
-  use('ProbabilityTheory');
   use('Interaction');
+  use('ProbabilityTheory');
 
   use('Vendor', 'DataHash');
   use('Vendor', 'SANDIA_RULES')
