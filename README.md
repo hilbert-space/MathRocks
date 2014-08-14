@@ -8,7 +8,7 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
   Legendre polynomial bases.
 
 * `StochasticCollocation` — stochastic collocation techniques based on
-  [Interpolation](https://github.com/MathRocks/Interpolation).
+  [Interpolation](https://github.com/MathRocks/Approximation).
 
 * `KarhunenLoeve` — the Karhunen–Loève decomposition.
 
