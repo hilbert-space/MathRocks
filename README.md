@@ -4,9 +4,8 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 ## Contents
 
-* `Norm` — functions for computing norms.
-
-* `Utils` — contains a function for computing the tensor product.
+* `+Norm` — functions for computing norms.
+* `+Utils` — contains a function for computing the tensor product.
 
 ## Contributing
 
