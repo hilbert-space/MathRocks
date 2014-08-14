@@ -54,7 +54,7 @@ classdef Questionnaire < handle
       if this.skip
         fprintf('%s\n', prompt);
       else
-        value = Terminal.request( ...
+        value = Console.request( ...
           'prompt', prompt, options, 'default', value);
       end
       this.dataMap(name) = value;
