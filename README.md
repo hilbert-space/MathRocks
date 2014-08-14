@@ -4,17 +4,13 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 ## Contents
 
-* `PolynomialChaos` — polynomial chaos expansions for Hermite, Jacobi, and
+* `+PolynomialChaos` — polynomial chaos expansions for Hermite, Jacobi, and
   Legendre polynomial bases.
-
-* `StochasticCollocation` — stochastic collocation techniques based on
+* `+StochasticCollocation` — stochastic collocation techniques based on
   [Interpolation](https://github.com/MathRocks/Approximation).
-
-* `KarhunenLoeve` — the Karhunen–Loève decomposition.
-
-* `MonteCarlo` — Monte Carlo sampling.
-
-* `Utils` — various helper functions.
+* `@KarhunenLoeve` — a class for the Karhunen–Loève decomposition.
+* `@MonteCarlo` — a class for Monte Carlo sampling.
+* `+Utils` — various helper functions.
 
 ## Contributing
 
