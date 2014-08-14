@@ -4,7 +4,7 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 ## Contents
 
-* `+ProbabilityDistribution` - contains classes representing a range of
+* `+ProbabilityDistribution` — contains classes representing a range of
   probability distributions.
 * `+ProbabilityTransformation` — probability transformations to target
   distributions.
