@@ -4,11 +4,9 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 
 ## Contents
 
-* `Plot` — routines for plotting cycles and extrema in a data set.
-
-* `Print` — routines for comparing data structures.
-
-* `Utils` — various helper functions.
+* `+Plot` — routines for plotting cycles and extrema in a data set.
+* `+Print` — routines for comparing data structures.
+* `+Utils` — various helper functions.
 
 ## Contributing
 
