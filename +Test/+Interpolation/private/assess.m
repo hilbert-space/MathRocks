@@ -36,17 +36,19 @@ function assess(target, varargin)
     z1 = target(x);
     z2 = surrogate.evaluate(output, x);
 
-    Plot.figure(1000, 600);
+    Plot.figure(1000, 400);
 
     subplot(1, 2, 1);
     Plot.line(x, z1);
     Plot.title('Exact');
+    Plot.limit(x, [z1, z2]);
 
     subplot(1, 2, 2);
     Plot.line(x, z2);
     Plot.title('Approximation');
+    Plot.limit(x, [z1, z2]);
 
-    Plot.figure(1000, 600);
+    Plot.figure(1000, 400);
 
     Plot.line(x, abs(z1 - z2), 'number', 1);
     Plot.title('Absolute error');
@@ -63,19 +65,22 @@ function assess(target, varargin)
     Z1 = zeros(size(X));
     Z2 = zeros(size(X));
 
-    Plot.figure(1000, 600);
-
     Z1(:) = target([X(:) Y(:)]);
+    Z2(:) = surrogate.evaluate(output, [X(:) Y(:)]);
+
+    Plot.figure(1000, 400);
+
     subplot(1, 2, 1);
     mesh(X, Y, Z1);
     Plot.title('Exact');
+    Plot.limit(X, Y);
 
-    Z2(:) = surrogate.evaluate(output, [X(:) Y(:)]);
     subplot(1, 2, 2);
     mesh(X, Y, Z2);
     Plot.title('Approximation');
+    Plot.limit(X, Y);
 
-    Plot.figure(1000, 600);
+    Plot.figure(1000, 400);
 
     mesh(X, Y, abs(Z1 - Z2));
     Plot.title('Absolute error');
