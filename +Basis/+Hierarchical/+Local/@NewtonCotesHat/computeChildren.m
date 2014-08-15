@@ -46,7 +46,7 @@ function [Ichild, Jchild] = computeChildren(~, Iparent, Jparent)
   % The child nodes have been identify, but they may not be unique.
   % Therefore, we need to filter out all duplicates.
   %
-  [~, I] = unique([Ichild, Jchild], 'rows');
+  [~, I] = unique([uint32(Ichild), Jchild], 'rows');
   Ichild = Ichild(I, :);
   Jchild = Jchild(I, :);
 end
