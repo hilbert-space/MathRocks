@@ -28,7 +28,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
         D = abs(nodes - points(j));
         J = D < limits;
         result(j, :) = result(j, :) + ...
-          sum(surpluses(range(J), :) * (1 - (orders - 1) * D(J, :)), 1);
+          sum(surpluses(range(J), :) .* (1 - (orders - 1) * D(J, :)), 1);
       end
     else
       for j = 1:pointCount
