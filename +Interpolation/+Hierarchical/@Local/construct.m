@@ -25,10 +25,10 @@ function output = construct(this, f, outputCount)
   maximalValue = -Inf(1, outputCount);
 
   %
-  % Preallocate some memory such that we do not need to reallocate
-  % it at low levels. For high levels, we reallocate the memory
-  % each time; however, since going from one high level to the
-  % next one does not happen too often, we do not lose too much.
+  % Preallocate some memory such that we do not need to reallocate it at low
+  % levels. For high levels, we reallocate the memory each time; however, since
+  % going from one high level to the next one does not happen too often, we do
+  % not lose too much.
   %
   bufferSize = 200 * inputCount;
 
@@ -94,8 +94,8 @@ function output = construct(this, f, outputCount)
     end
 
     %
-    % If the current level is the last one, we do not try to add any
-    % more nodes; just exit the loop.
+    % If the current level is the last one, we do not try to add any more
+    % nodes; just exit the loop.
     %
     if level >= maximalLevel, break; end
 
@@ -128,8 +128,8 @@ function output = construct(this, f, outputCount)
     activeRange = nodeCount + (1:activeCount);
 
     %
-    % The total number of nodes increases, and the buffers
-    % should be enlarged if needed.
+    % The total number of nodes increases, and the buffers should be enlarged
+    % if needed.
     %
     nodeCount = nodeCount + activeCount;
     resizeBuffers(nodeCount);
