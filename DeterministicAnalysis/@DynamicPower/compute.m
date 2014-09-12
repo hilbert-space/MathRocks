@@ -13,16 +13,16 @@ function power = compute(this, schedule)
   dt = this.samplingInterval;
 
   processorCount = length(processors);
+  taskCount = length(tasks);
   stepCount = floor(duration / dt);
 
   power = zeros(processorCount, stepCount);
 
-  for i = 1:processorCount
-    for j = find(mapping == i)
-      s = 1 + floor(startTime(j) / dt);
-      e = min(stepCount, floor((startTime(j) + executionTime(j)) / dt));
-      power(i, s:e) = processors{i}.dynamicPower(tasks{j}.type);
-    end
+  for i = 1:taskCount
+    j = mapping(i);
+    s = 1 + floor(startTime(i) / dt);
+    f = min(stepCount, floor((startTime(i) + executionTime(i)) / dt));
+    power(j, s:f) = processors{j}.dynamicPower(tasks{i}.type);
   end
 
   power = this.powerScale * power;
