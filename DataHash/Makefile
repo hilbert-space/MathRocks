@@ -1,6 +1,6 @@
 include ../common.mk
 
-url := http://www.mathworks.com/matlabcentral/fileexchange/downloads/376978/download
+url := http://mathworks.com/matlabcentral/fileexchange/submissions/31272/v/4/download/zip
 filename := DataHash.zip
 
 all: $(filename)
