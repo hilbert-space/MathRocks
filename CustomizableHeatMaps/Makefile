@@ -1,7 +1,7 @@
 include ../common.mk
 
 filename := heatmaps.zip
-url := http://se.mathworks.com/matlabcentral/fileexchange/submissions/24253/v/6/download/zip
+url := http://mathworks.com/matlabcentral/fileexchange/submissions/24253/v/6/download/zip
 
 all: $(filename)
 
