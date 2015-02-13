@@ -76,21 +76,52 @@ function KraichnanOrszag(varargin)
   end
 
   %
-  % A solution slice
+  % A stochastic slice
   %
   figure;
-
-  Y = transpose(squeeze(Y(end, :, :)));
-  y = surrogate.evaluate(surrogateOutput, (z + 1) / 2);
-  y = y(:, [ ...
-    outputCount - 2 * stepCount, ...
-    outputCount - 1 * stepCount, ...
-    outputCount - 0 * stepCount]);
-
   Plot.title('Solution');
   Plot.label('Uncertain parameter');
-  plotTransient(z, Y);
-  plotTransient(z, y, 'LineStyle', '--');
+  while true
+    i = randi(stepCount);
+
+    y1 = transpose(squeeze(Y(i, :, :)));
+
+    y2 = surrogate.evaluate(surrogateOutput, (z + 1) / 2);
+    y2 = y2(:, [i, stepCount + i, 2 * stepCount + i]);
+
+    plotTransient(z, y1);
+    plotTransient(z, y2, 'LineStyle', '--');
+
+    fprintf('Maximal error: %.4e\n', max(abs(y1(:) - y2(:))));
+
+    if input('Enter "y" to genereate another stochastic slice: ', 's') ~= 'y'
+      break;
+    end
+  end
+
+  %
+  % A temporal slice
+  %
+  figure;
+  Plot.title('Solution');
+  Plot.label('Time');
+  while true
+    i = randi(sampleCount);
+
+    y1 = Y(:, :, i);
+
+    y2 = surrogate.evaluate(surrogateOutput, (z(i) + 1) / 2);
+    y2 = reshape(y2, [stepCount, 3]);
+
+    plotTransient(time, y1);
+    plotTransient(time, y2, 'LineStyle', '--');
+
+    fprintf('Maximal error: %.4e\n', max(abs(y1(:) - y2(:))));
+
+    if input('Enter "y" to genereate another temporal slice: ', 's') ~= 'y'
+      break;
+    end
+  end
 end
 
 function y = solve(y0, timeSpan, innerTimeStep, outerTimeStep)
