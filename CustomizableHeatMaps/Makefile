@@ -1,12 +1,10 @@
 include ../common.mk
 
 filename := heatmaps.zip
-url := http://www.mathworks.com/matlabcentral/fileexchange/downloads/514540/download
+url := http://se.mathworks.com/matlabcentral/fileexchange/submissions/24253/v/6/download/zip
 
 all: $(filename)
 
 $(filename):
 	curl -L $(url) -o $@
 	unzip $(filename)
-	mv ./heatmaps/* ./
-	rmdir ./heatmaps
