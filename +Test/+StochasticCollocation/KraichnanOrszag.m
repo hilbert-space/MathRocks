@@ -70,8 +70,10 @@ function KraichnanOrszag(varargin)
   Plot.title('Variance');
   Plot.label('Time');
   plotTransient(time, var(Y, [], 3));
-  plotTransient(time, reshape(surrogateStats.variance, ...
-    [stepCount, 3]), 'LineStyle', '--');
+  if ~isempty(surrogateStats.variance)
+    plotTransient(time, reshape(surrogateStats.variance, ...
+      [stepCount, 3]), 'LineStyle', '--');
+  end
 
   %
   % A solution slice
