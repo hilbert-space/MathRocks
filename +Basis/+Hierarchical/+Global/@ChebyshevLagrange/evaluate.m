@@ -97,7 +97,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       % NOTE: Is it worth caching the result of this operation as it is
       % being repeated several times with the same arguments?
       %
-      I = builtin('_ismemberfirst', round(points(:, k) / epsilon), ...
+      [~, I] = ismember(round(points(:, k) / epsilon), ...
         round(quadratureNodes{level} / epsilon));
       present(:) = I > 0;
 
