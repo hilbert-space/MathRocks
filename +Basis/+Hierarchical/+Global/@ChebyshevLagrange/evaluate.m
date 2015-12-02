@@ -66,7 +66,7 @@ function result = evaluate(this, points, indexes, surpluses, offsets, range)
       level = index(k);
 
       %
-      % The same comment as before: the first level correspond to
+      % The same comment as before: the first level corresponds to
       % zero-order Lagrange polynomials, and, for a zero-order
       % polynomial, we do not need any complex interpolation: the
       % polynomial in the kth dimension is one.
