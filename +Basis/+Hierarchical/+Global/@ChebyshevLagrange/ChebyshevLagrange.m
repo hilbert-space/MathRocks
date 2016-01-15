@@ -13,7 +13,7 @@ classdef ChebyshevLagrange < Basis.Hierarchical.Global.Base
   methods (Access = 'protected')
     function [nodes, weights] = configure(this, ~)
       if this.maximalLevel > 20
-        warning('The maximal level is too high; changing to 10.');
+        warning('The maximal level is too high; changing to 20.');
         this.maximalLevel = 20;
       end
 
