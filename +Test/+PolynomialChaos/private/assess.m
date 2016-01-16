@@ -45,9 +45,7 @@ function assess(target, varargin)
 
   x = xlim(gca);
   x = linspace(x(1), x(2), 200);
-  h = line(x, exact.pdf(x), 'Color', Color.pick(5), 'LineStyle', '--');
+  line(x, exact.pdf(x), 'Color', Color.pick(5), 'LineStyle', '--');
 
-  set(h, 'erasemode', 'xor');
-  set(h, 'erasemode', 'background');
   Plot.legend('Monte Carlo', 'Polynomial chaos', 'Exact');
 end
