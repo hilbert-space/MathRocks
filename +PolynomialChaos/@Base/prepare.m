@@ -3,7 +3,7 @@ function [nodes, norm, projection, evaluation, rvPower, rvMap] = ...
 
   anisotropy = options.get('anisotropy', []);
 
-  x = sym('x%d', [1, inputCount]);
+  x = sym('x', [1, inputCount]);
   assume(x, 'real');
 
   indexes = MultiIndex.smolyakSpace(inputCount, order, anisotropy);
