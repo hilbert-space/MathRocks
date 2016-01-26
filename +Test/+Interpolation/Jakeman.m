@@ -2,7 +2,7 @@ function Jakeman(varargin)
   %
   % Reference:
   %
-  % J. Jackman and S. Roberts. "Local and Dimension Adaptive Stochastic
+  % J. Jakeman and S. Roberts. "Local and Dimension Adaptive Stochastic
   % Collocation for Uncertainty Quantification." 2013
   %
   setup;
