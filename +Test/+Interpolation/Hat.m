@@ -1,9 +1,9 @@
 function Hat(varargin)
   setup;
-  assess(@(x) problem(5 * x - 1), varargin{:});
+  assess(@(x) target(5 * x - 1), varargin{:});
 end
 
-function y = problem(x)
+function y = target(x)
   y = zeros(size(x));
   I = logical((0 <= x) .* (x < 1));
   y(I) = (1/2) * x(I).^2;

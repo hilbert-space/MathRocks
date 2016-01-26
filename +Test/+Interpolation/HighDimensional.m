@@ -13,7 +13,7 @@ function HighDimensional(varargin)
   %
   setup;
 
-  assess(@problem, ...
+  assess(@target, ...
     'support', 'Global', ...
     'basis', 'ChebyshevLagrange', ...
     'inputCount', 100, ...
@@ -25,7 +25,7 @@ function HighDimensional(varargin)
     varargin{:});
 end
 
-function y = problem(x)
+function y = target(x)
   d = size(x, 2);
   x = 2 * d^2 * x - d^2;
   y = sum((x - 1).^2, 2) - sum(x(:, 2:d) .* x(:, 1:(d - 1)), 2);
