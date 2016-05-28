@@ -29,7 +29,7 @@ function assess(varargin)
       range = parameters.get(i).range;
       grid{i} = linspace(min(range), max(range), 50);
     end
-    [ grid{:} ] = ndgrid(grid{:});
+    [grid{:}] = ndgrid(grid{:});
 
     I1 = leakageOne.evaluate(grid{:});
     I2 = leakageTwo.evaluate(grid{:});
@@ -59,7 +59,7 @@ function assess(varargin)
   end
 
   grids = cell(1, parameterCount);
-  [ grids{:} ] = ndgrid(parameterSweeps{:});
+  [grids{:}] = ndgrid(parameterSweeps{:});
 
   time = tic;
   for k = 1:iterationCount
@@ -80,11 +80,11 @@ function plotLeakage(leakageOne, leakageTwo, parameters, varargin)
   options = Options('logScale', true, ...
     'normalization', normalization, varargin{:});
 
-  combinations = [ ...
+  combinations = [...
     mat2cell(1:dimensionCount, ...
       1, ones(1, dimensionCount)), ...
     mat2cell(combnk(1:dimensionCount, 2), ...
-      ones(1, nchoosek(dimensionCount, 2)), 2).' ];
+      ones(1, nchoosek(dimensionCount, 2)), 2).'];
 
   for i = 1:length(combinations)
     fixedParameters = struct;
