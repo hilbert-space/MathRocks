@@ -28,8 +28,8 @@ classdef LeakagePower < handle
       %
       % Load or construct the surrogate
       %
-      filename = File.temporal([ class(this), '_', ...
-        DataHash(this.toString), '.mat' ]);
+      filename = File.temporal([class(this), '_', ...
+        DataHash(this.toString), '.mat']);
 
       if File.exist(filename)
         load(filename);
@@ -72,10 +72,10 @@ classdef LeakagePower < handle
         powerScale * surrogate.evaluate(varargin{:});
     end
 
-    function [ parameters, dimensions, index ] = ...
+    function [parameters, dimensions, index] = ...
       assign(this, assignments, dimensions)
 
-      [ parameters, dimensions, index ] = this.surrogate.assign( ...
+      [parameters, dimensions, index] = this.surrogate.assign( ...
         assignments, dimensions, this.reference);
     end
 
