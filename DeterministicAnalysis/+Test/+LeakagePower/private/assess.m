@@ -1,6 +1,4 @@
 function assess(varargin)
-  setup;
-
   options = Options(varargin{:});
   errorMetric = options.fetch('errorMetric', 'NRMSE');
   assessSpeed = options.fetch('assessSpeed', false);
