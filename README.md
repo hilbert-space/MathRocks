@@ -10,8 +10,8 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 * `Basis` — the entry point for `+Basis`.
 * `Interpolation` — the entry point for `+Interpolation`.
 
-## Contributing
+## Contribution
 
 1. Fork the project.
 2. Implement your idea.
-3. Create a pull request.
+3. Open a pull request.
