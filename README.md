@@ -10,7 +10,7 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 * StochasticAnalysis.
 * SystemSimulation.
 
-## Contributing
+## Contribution
 
 1. Fork the project.
 2. Implement your idea.
