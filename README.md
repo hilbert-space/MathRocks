@@ -13,3 +13,9 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 * `SGMGA` — [Sparse Grid Mixed Growth Anisotropic Rules](http://people.sc.fsu.edu/~jburkardt/m_src/sgmga/sgmga.html).
 * `SPARSE_GRID_HW` — [Sparse Grids for Uniform and Normal Weights](http://people.sc.fsu.edu/~jburkardt/m_src/sparse_grid_hw/sparse_grid_hw.html).
 * `TESTPACK` — [Testing Multidimensional Integration Routines](http://people.sc.fsu.edu/~jburkardt/m_src/testpack/testpack.html).
+
+## Contribution
+
+1. Fork the project.
+2. Implement your idea.
+3. Open a pull request.
