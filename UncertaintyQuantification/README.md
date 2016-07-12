@@ -1,8 +1,4 @@
-# MR Uncertainty Quantification
-
-A part of [MathRocks](https://github.com/MathRocks/MathRocks).
-
-## Contents
+# Uncertainty Quantification
 
 * `+PolynomialChaos` — polynomial chaos expansions for Hermite, Jacobi, and
   Legendre polynomial bases.
@@ -12,9 +8,3 @@ A part of [MathRocks](https://github.com/MathRocks/MathRocks).
 * `@MonteCarlo` — a class for Monte Carlo sampling.
 * `PolynomialChaos` — the entry point for `+PolynomialChaos`.
 * `StochasticCollocation` — the entry point for `+StochasticCollocation`.
-
-## Contribution
-
-1. Fork the project.
-2. Implement your idea.
-3. Open a pull request.
