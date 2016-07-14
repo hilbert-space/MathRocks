@@ -34,7 +34,8 @@ function construct(this, options)
         ... The row number of the die.
         i, ...
         ... The column number of the die.
-        j];
+        j ...
+      ];
     end
   end
 

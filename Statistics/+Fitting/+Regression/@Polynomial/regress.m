@@ -14,7 +14,7 @@ function [output, arguments, body] = regress(~, Z, XY, termPowers)
   % Normalization
   %
   E = [mean(X), mean(Y)];
-  S = [ std(X),  std(Y)];
+  S = [std(X),  std(Y)];
 
   X = (X - E(1)) / S(1);
   Y = (Y - E(2)) / S(2);

@@ -11,7 +11,7 @@ function compareIsotropicAnisotropic(varargin)
   display(options, 'Quadrature');
 
   quadrature1 = Quadrature(options);
-  quadrature2 = Quadrature(options, 'anisotropy', [ 0.5, 1, 1 ]);
+  quadrature2 = Quadrature(options, 'anisotropy', [0.5, 1, 1]);
 
   fprintf('Isotropic nodes:   %d\n', quadrature1.nodeCount);
   fprintf('Anisotropic nodes: %d\n', quadrature2.nodeCount);
