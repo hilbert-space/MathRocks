@@ -11,8 +11,8 @@ classdef Base < Temperature.Base
       nodeCount = this.nodeCount;
       processorCount = this.processorCount;
 
-      M = [ diag(ones(1, processorCount)); ...
-        zeros(nodeCount - processorCount, processorCount) ];
+      M = [diag(ones(1, processorCount)); ...
+        zeros(nodeCount - processorCount, processorCount)];
 
       Cm1 = diag(1 ./ this.capacitance);
 

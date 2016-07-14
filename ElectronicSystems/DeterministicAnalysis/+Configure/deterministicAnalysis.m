@@ -1,8 +1,8 @@
 function options = deterministicAnalysis(varargin)
   options = Options(varargin{:});
 
-  options.assetPath = [ options.get('assetPath', {}), ...
-    { File.join(File.trace, '..', 'Assets') } ];
+  options.assetPath = [options.get('assetPath', {}), ...
+    { File.join(File.trace, '..', 'Assets') }];
 
   %
   % Dynamic power

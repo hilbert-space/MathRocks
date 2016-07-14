@@ -12,7 +12,7 @@ function compute(varargin)
   T = temperature.compute(options.dynamicPower);
   plot(temperature, T);
 
-  [ expectation, output ] = fatigue.compute(T);
+  [expectation, output] = fatigue.compute(T);
 
   fprintf('Mean time to failure: %.2f years\n', Utils.toYears(expectation));
 

@@ -68,7 +68,7 @@ classdef ThermalCycling < Fatigue.Base
   methods (Access = 'protected')
     function output = partitionStress(this, T)
       output = struct;
-      [ output.partitions, output.weights, output.extrema ] = ...
+      [output.partitions, output.weights, output.extrema] = ...
         Utils.detectCycles(T, this.threshold);
     end
 

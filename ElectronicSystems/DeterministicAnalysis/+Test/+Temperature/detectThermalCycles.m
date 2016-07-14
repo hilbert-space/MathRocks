@@ -8,7 +8,7 @@ function detectThermalCycles(varargin)
   temperature = Temperature(options.temperatureOptions);
   T = temperature.compute(options.dynamicPower);
 
-  [ cycleIndex, cycleFractions, extremumIndex ] = Utils.detectCycles(T, 2);
+  [cycleIndex, cycleFractions, extremumIndex] = Utils.detectCycles(T, 2);
 
   Plot.extrema(Utils.toCelsius(T), extremumIndex, ...
     'labels', { 'Time, s', 'Temperature, C' }, ...

@@ -25,7 +25,7 @@ classdef Base < handle
       this.samplingInterval = options.samplingInterval;
     end
 
-    function [ expectation, output ] = compute(this, T, output)
+    function [expectation, output] = compute(this, T, output)
       %
       % How does it work?
       %
@@ -47,7 +47,7 @@ classdef Base < handle
       %
       % Each PE undergoes a number of stress levels. It can be shown that
       %
-      % R_i(t) = exp{ -[ (t / tau) * sum_j (dt_ij / eta_ij) ]^beta }
+      % R_i(t) = exp{ -[(t / tau) * sum_j (dt_ij / eta_ij)]^beta }
       %        = exp{ -(t / eta_i)^beta }
       %
       % where
@@ -63,7 +63,7 @@ classdef Base < handle
       %
       % R(t) = prod_i R_i(t)
       %      = exp{ -sum_i (t / eta_i)^beta }
-      %      = exp{ -[ (sum_i (1 / eta_i)^beta)^(1 / beta) }^beta t^beta }
+      %      = exp{ -[(sum_i (1 / eta_i)^beta)^(1 / beta)]^beta t^beta }
       %      = exp{ - (t / Eta)^beta }
       % where
       %
@@ -94,7 +94,7 @@ classdef Base < handle
       %
       % Theta  = tau / (sum_i (sum_j (1 / N_ij))^beta)^(1 / beta).
       %
-      [ processorCount, stepCount, profileCount ] = size(T);
+      [processorCount, stepCount, profileCount] = size(T);
 
       period = stepCount * this.samplingInterval;
 
@@ -112,7 +112,7 @@ classdef Base < handle
         for j = 1:size(partitions{i}, 2)
           range = partitions{i}(1, j):partitions{i}(2, j);
           damage(i, :) = damage(i, :) + weights{i}(j) * ...
-            this.computeDamage(permute(T(i, range, :), [ 2, 3, 1 ]));
+            this.computeDamage(permute(T(i, range, :), [2, 3, 1]));
         end
         factor = factor + damage(i, :).^this.beta;
       end

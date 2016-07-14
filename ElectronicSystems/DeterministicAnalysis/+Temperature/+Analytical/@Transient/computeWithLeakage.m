@@ -1,5 +1,5 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
-  [ processorCount, stepCount ] = size(Pdyn);
+function [T, output] = computeWithLeakage(this, Pdyn, varargin)
+  [processorCount, stepCount] = size(Pdyn);
 
   C = this.C;
   D = this.D;
@@ -10,7 +10,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   leakage = this.leakage;
   leak = leakage.evaluate;
 
-  [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
+  [parameters, sampleCount, Tindex] = this.prepareParameters(varargin{:});
 
   T = zeros(processorCount, stepCount, sampleCount);
   P = zeros(processorCount, stepCount, sampleCount);

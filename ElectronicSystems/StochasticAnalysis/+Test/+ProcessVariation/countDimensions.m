@@ -1,7 +1,7 @@
 function countDimensions(varargin)
   setup;
 
-  processorCounts  = [ 2 4 8 16 32 ];
+  processorCounts  = [2 4 8 16 32];
 
   fprintf('%15s%15s\n', 'Processors', 'Variables');
   for i = 1:length(processorCounts)

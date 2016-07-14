@@ -39,7 +39,7 @@ function sweep(varargin)
     parameters = process.evaluate(parameters, true);
     parameters = process.assign(parameters);
     Tdata = permute(temperature.computeWithLeakage( ...
-      options.dynamicPower, parameters), [ 3 1 2 ]);
+      options.dynamicPower, parameters), [3 1 2]);
   end
 
   parameters = options.processOptions.parameters;
@@ -57,7 +57,7 @@ function sweep(varargin)
 
   parameterLine = sweeps{1}; % for simplicity
 
-  [ ~, Imax ] = max(max(T, [], 1)); Imax = Imax(1);
+  [~, Imax] = max(max(T, [], 1)); Imax = Imax(1);
 
   Iparameter = 1;
   Ivariable = num2cell(ones(1, parameterCount));
@@ -71,8 +71,8 @@ function sweep(varargin)
     end
 
     for i = Iparameter
-      Ivariable{i} = askInteger([ 'variables for Parameter ', ...
-        num2str(i) ], dimensions(i), Ivariable{i});
+      Ivariable{i} = askInteger(['variables for Parameter ', ...
+        num2str(i)], dimensions(i), Ivariable{i});
       if isempty(Ivariable{i})
         Ivariable{i} = 1;
         continue;

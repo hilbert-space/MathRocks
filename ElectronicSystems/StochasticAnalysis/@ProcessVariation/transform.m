@@ -10,7 +10,7 @@ function transformation = transform(~, parameter, correlation, ~)
     % NOTE: When the a and b parameters of gaussianToBeta are not
     % specified, the support of the beta distribution will be
     %
-    %  [ a, b ] = gaussian.mu + [ -spread, spread ] * gaussian.sigma
+    %  [a, b] = gaussian.mu + [-spread, spread] * gaussian.sigma
     %
     % where spread is equal to three by default. Also, if the target
     % parameter is set to "pdf," the resulting variance will not match

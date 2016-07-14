@@ -1,5 +1,5 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
-  [ processorCount, stepCount ] = size(Pdyn);
+function [T, output] = computeWithLeakage(this, Pdyn, varargin)
+  [processorCount, stepCount] = size(Pdyn);
   if stepCount > 1, Pdyn = mean(Pdyn, 2); end
 
   R = this.R;
@@ -12,9 +12,9 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   leak = this.leakage.evaluate;
   parameterCount = this.leakage.parameterCount;
 
-  [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
+  [parameters, sampleCount, Tindex] = this.prepareParameters(varargin{:});
 
-  Pindex = [ 1:(Tindex - 1), (Tindex + 1):parameterCount ];
+  Pindex = [1:(Tindex - 1), (Tindex + 1):parameterCount];
 
   iterationCount = NaN(1, sampleCount);
 
@@ -28,7 +28,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   for i = 1:iterationLimit
     parameters{Tindex} = T(:, I);
-    P(:, I) = repmat(Pdyn, [ 1, leftCount ]) + leak(parameters{:});
+    P(:, I) = repmat(Pdyn, [1, leftCount]) + leak(parameters{:});
 
     Tcurrent = R * P(:, I) + Tamb;
     T(:, I) = Tcurrent;
@@ -67,6 +67,6 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
 
   runawayCount = sum(I);
   if runawayCount > 0
-    warning([ 'Detected ', num2str(runawayCount), ' thermal runaways.' ]);
+    warning(['Detected ', num2str(runawayCount), ' thermal runaways.']);
   end
 end

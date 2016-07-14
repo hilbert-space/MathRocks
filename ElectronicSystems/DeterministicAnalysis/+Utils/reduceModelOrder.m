@@ -1,4 +1,4 @@
-function [ A, B, C, D ] = reduceModelOrder(A, B, C, D, varargin)
+function [A, B, C, D] = reduceModelOrder(A, B, C, D, varargin)
   options = Options(varargin{:});
 
   threshold = options.threshold;
@@ -12,7 +12,7 @@ function [ A, B, C, D ] = reduceModelOrder(A, B, C, D, varargin)
   s = ss(A, B, C, D);
 
   options = hsvdOptions('Offset', offset);
-  [ L, baldata ] = hsvd(s, options);
+  [L, baldata] = hsvd(s, options);
 
   dimensionCount = size(A, 1);
   dimensionCount = max(Utils.countSignificant(L, threshold), ...

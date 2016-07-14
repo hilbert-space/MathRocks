@@ -10,18 +10,18 @@ function plot(this, index)
   X = DF(:, 3);
   Y = DF(:, 4);
 
-  figure('Position', [ 100, 100, 600, 600 ]);
+  figure('Position', [100, 100, 600, 600]);
 
   for i = 1:size(F, 1)
     if ismember(i, index), continue; end
 
     h = draw(F(i, 3), F(i, 4), DS, DS);
-    set(h, 'FaceColor', 0.90 * [ 1 1 1 ], ...
-      'EdgeColor', 0 * [ 1 1 1 ], 'LineWidth', 1);
+    set(h, 'FaceColor', 0.90 * [1 1 1], ...
+      'EdgeColor', 0 * [1 1 1], 'LineWidth', 1);
 
     for j = 1:size(DF, 1)
       h = draw(F(i, 1) + X(j), F(i, 2) + Y(j), W(j), H(j));
-      set(h, 'FaceColor', Color.alpha(Color.pick(j), [ 1, 1, 1 ], 0.8), ...
+      set(h, 'FaceColor', Color.alpha(Color.pick(j), [1, 1, 1], 0.8), ...
         'EdgeColor', 'None');
     end
   end
@@ -35,5 +35,5 @@ function plot(this, index)
 end
 
 function h = draw(x, y, w, h)
-  h = patch([ x, x, x + w, x + w ], [ y, y + h, y + h, y ], zeros(1, 4));
+  h = patch([x, x, x + w, x + w], [y, y + h, y + h, y], zeros(1, 4));
 end

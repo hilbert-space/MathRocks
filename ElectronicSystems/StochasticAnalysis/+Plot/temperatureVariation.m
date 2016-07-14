@@ -14,7 +14,7 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
   layout = options.get('layout', 'separate');
 
   setCount = length(expectationSet);
-  [ processorCount, stepCount ] = size(expectationSet{1});
+  [processorCount, stepCount] = size(expectationSet{1});
 
   names = options.get('names', cell(1, setCount));
 
@@ -69,9 +69,9 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
       if isempty(varianceSet{j}), continue; end
 
       if ~isempty(legend{end})
-        legend{end} = [ legend{end}, ': ' ];
+        legend{end} = [legend{end}, ': '];
       end
-      legend{end} = [ legend{end}, 'Expectation ', num2str(i) ];
+      legend{end} = [legend{end}, 'Expectation ', num2str(i)];
 
       Plot.line(time(I), Utils.toCelsius( ...
         expectationSet{j}(i, I) + sqrt(varianceSet{j}(i, I))), ...
@@ -79,9 +79,9 @@ function temperatureVariation(expectationSet, varianceSet, varargin)
 
       legend{end + 1} = names{j};
       if ~isempty(legend{end})
-        legend{end} = [ legend{end}, ': ' ];
+        legend{end} = [legend{end}, ': '];
       end
-      legend{end} = [ legend{end}, '+ Deviation', num2str(i) ];
+      legend{end} = [legend{end}, '+ Deviation', num2str(i)];
     end
 
     switch layout

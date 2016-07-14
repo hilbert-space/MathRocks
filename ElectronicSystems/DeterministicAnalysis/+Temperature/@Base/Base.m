@@ -61,11 +61,11 @@ classdef Base < handle
       this.nodeCount = this.circuit.nodeCount;
     end
 
-    function [ T, output ] = compute(this, varargin)
+    function [T, output] = compute(this, varargin)
       if isempty(this.leakage)
-        [ T, output ] = this.computeWithoutLeakage(varargin{:});
+        [T, output] = this.computeWithoutLeakage(varargin{:});
       else
-        [ T, output ] = this.computeWithLeakage(varargin{:});
+        [T, output] = this.computeWithLeakage(varargin{:});
       end
     end
 
@@ -81,12 +81,12 @@ classdef Base < handle
   end
 
   methods (Abstract)
-    [ T, output ] = computeWithoutLeakage(this, varargin)
-    [ T, output ] = computeWithLeakage(this, varargin)
+    [T, output] = computeWithoutLeakage(this, varargin)
+    [T, output] = computeWithLeakage(this, varargin)
   end
 
   methods (Access = 'protected')
-    function [ parameters, sampleCount, temperatureIndex ] = ...
+    function [parameters, sampleCount, temperatureIndex] = ...
       prepareParameters(this, parameters)
 
       if nargin < 2, parameters = struct; end
@@ -98,8 +98,8 @@ classdef Base < handle
       % matrix, the (i, j)th element corresponds to the ith sample
       % assigned to the jth processing element.
       %
-      [ parameters, dimensions, temperatureIndex ] = this.leakage.assign( ...
-        parameters, [ NaN, this.processorCount ]);
+      [parameters, dimensions, temperatureIndex] = this.leakage.assign( ...
+        parameters, [NaN, this.processorCount]);
 
       %
       % For convenience, we would like to have n-by-m matrices instead.
@@ -132,11 +132,11 @@ classdef Base < handle
       circuit.processorCount = processorCount;
       circuit.nodeCount = 4 * processorCount + 12;
 
-      [ circuit.A, circuit.B, circuit.G, Gamb ] = ...
+      [circuit.A, circuit.B, circuit.G, Gamb] = ...
         Utils.constructHotSpot(options.floorplan, options.hotspotConfig, ...
           options.get('hotspotLine', ''));
 
-      circuit.Gamb = [ zeros(3 * processorCount, 1); Gamb ];
+      circuit.Gamb = [zeros(3 * processorCount, 1); Gamb];
 
       assert(circuit.nodeCount == length(circuit.A));
       assert(circuit.nodeCount == length(circuit.Gamb));

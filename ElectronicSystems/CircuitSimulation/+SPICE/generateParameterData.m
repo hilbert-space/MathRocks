@@ -11,6 +11,6 @@ function data = generateParameterData(circuit, varargin)
   end
 
   data = cell(1, circuit.parameterCount);
-  [ data{:} ] = ndgrid(sweeps{:});
+  [data{:}] = ndgrid(sweeps{:});
   data = cellfun(@(x) x(:), data, 'UniformOutput', false);
 end

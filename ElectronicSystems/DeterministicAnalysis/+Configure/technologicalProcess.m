@@ -39,7 +39,7 @@ function options = technologicalProcess(options)
 
     parameter.nominal = nominal;
     parameter.sigma = 0.04 * nominal;
-    parameter.range = nominal + [ -3, 3 ] * parameter.sigma; % see above
+    parameter.range = nominal + [-3, 3] * parameter.sigma; % see above
     parameter.reference = nominal;
 
     processParameters.(names{i}) = parameter;

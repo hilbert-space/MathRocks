@@ -14,8 +14,8 @@ classdef MonteCarlo < TemperatureVariation.Base
       names = fieldnames(processOptions.parameters);
       for i = 1:length(names)
         if processOptions.parameters.(names{i}).reductionThreshold < 1
-          warning([ 'Turning off the process dimension reduction for ', ...
-            names{i}, '.' ]);
+          warning(['Turning off the process dimension reduction for ', ...
+            names{i}, '.']);
           processOptions.parameters.(names{i}).reductionThreshold = 1;
         end
       end

@@ -28,7 +28,7 @@ classdef Critical < Scheduler.Base
   end
 
   methods (Access = 'protected')
-    [ mapping, priority, order, startTime, executionTime ] = ...
+    [mapping, priority, order, startTime, executionTime] = ...
       construct(this, varargin)
   end
 end

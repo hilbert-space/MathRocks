@@ -49,7 +49,7 @@ classdef Base < Temperature.Base
 
     %
     % The solution of the system for a short time interval
-    % [ 0, t ] is based on the following recurrence:
+    % [0, t] is based on the following recurrence:
     %
     %   X(t) = E * X(0) + F * P(0).
     %
@@ -78,8 +78,8 @@ classdef Base < Temperature.Base
       Cth = this.circuit.A;
       Gth = this.circuit.B;
 
-      M = [ diag(ones(1, processorCount)); ...
-        zeros(nodeCount - processorCount, processorCount) ];
+      M = [diag(ones(1, processorCount)); ...
+        zeros(nodeCount - processorCount, processorCount)];
 
       T = diag(sqrt(1 ./ Cth));
 
@@ -94,14 +94,14 @@ classdef Base < Temperature.Base
       % Model order reduction
       %
       if ~isempty(options.get('modelOrderReduction', []))
-        [ A, B, C, D ] = Utils.reduceModelOrder( ...
+        [A, B, C, D] = Utils.reduceModelOrder( ...
           A, B, C, D, options.modelOrderReduction);
 
         %
         % NOTE: A is not necessarily a symmetric matrix; hence,
         % the eigenvectors might not be orthogonal.
         %
-        [ U, L ] = eig(A);
+        [U, L] = eig(A);
         V = inv(U);
         L = diag(L);
 
@@ -114,7 +114,7 @@ classdef Base < Temperature.Base
 
         assert(all(L < 0));
       else
-        [ U, L ] = eig(A);
+        [U, L] = eig(A);
         V = transpose(U); % due to the symmetry
         L = diag(L);
       end

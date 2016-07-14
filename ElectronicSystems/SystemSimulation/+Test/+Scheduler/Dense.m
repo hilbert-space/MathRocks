@@ -4,7 +4,7 @@ function Dense(varargin)
   options = Options(varargin{:});
   iterationCount = options.get('iterationCount', 100);
 
-  [ platform, application ] = Utils.parseTGFF( ...
+  [platform, application] = Utils.parseTGFF( ...
     File.join('Assets', '032_640.tgff'));
 
   processorCount = length(platform);

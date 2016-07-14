@@ -1,4 +1,4 @@
-function [ platform, application ] = parseTGFF(file)
+function [platform, application] = parseTGFF(file)
   fid = fopen(file);
 
   platform = Platform;

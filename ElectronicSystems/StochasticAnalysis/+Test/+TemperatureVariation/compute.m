@@ -5,7 +5,7 @@ function compute(varargin)
   options = Configure.deterministicAnalysis(options);
   options = Configure.stochasticAnalysis(options);
 
-  [ ~, stats ] = construct(options);
+  [~, stats] = construct(options);
 
   Plot.figure(800, 800);
 

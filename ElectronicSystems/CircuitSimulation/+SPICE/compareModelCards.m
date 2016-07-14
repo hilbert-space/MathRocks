@@ -4,7 +4,7 @@ function compareModelCards(cards)
 
   parameters = {};
   for i = 1:modelCount
-    parameters = [ parameters; fieldnames(cards.(modelNames{i})) ];
+    parameters = [parameters; fieldnames(cards.(modelNames{i}))];
   end
   parameters = sort(unique(parameters));
 

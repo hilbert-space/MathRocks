@@ -40,8 +40,8 @@ classdef Application < handle
       % The task is a new one; therefore, without additional
       % information, it appears to be both a root and a leaf.
       %
-      this.roots = uint16([ this.roots, id ]);
-      this.leaves = uint16([ this.leaves, id ]);
+      this.roots = uint16([this.roots, id]);
+      this.leaves = uint16([this.leaves, id]);
 
       %
       % Extend the link matrix by one row and one column.

@@ -21,8 +21,8 @@ function plot(this, output)
   for i = 1:processorCount
     timeHorizon = max(timeHorizon, ...
       max(drawOne(output.eta(i), 'Color', Color.pick(i))));
-    legend{end + 1} = [ 'Density ', num2str(i) ];
-    legend{end + 1} = [ 'Expectation ', num2str(i) ];
+    legend{end + 1} = ['Density ', num2str(i)];
+    legend{end + 1} = ['Expectation ', num2str(i)];
   end
   Plot.legend(legend{:});
 
@@ -35,5 +35,5 @@ function plot(this, output)
   Plot.legend('Density', 'Expectation');
 
   subplot(2, 1, 1);
-  xlim([ 0, Utils.toYears(timeHorizon) ]);
+  xlim([0, Utils.toYears(timeHorizon)]);
 end

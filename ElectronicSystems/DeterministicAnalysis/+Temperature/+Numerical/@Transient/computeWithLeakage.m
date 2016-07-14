@@ -1,5 +1,5 @@
-function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
-  [ processorCount, stepCount ] = size(Pdyn);
+function [T, output] = computeWithLeakage(this, Pdyn, varargin)
+  [processorCount, stepCount] = size(Pdyn);
   assert(processorCount == this.processorCount);
 
   At = this.At;
@@ -10,7 +10,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
   leakage = this.leakage;
   leak = leakage.evaluate;
 
-  [ parameters, sampleCount, Tindex ] = this.prepareParameters(varargin{:});
+  [parameters, sampleCount, Tindex] = this.prepareParameters(varargin{:});
 
   T = zeros(processorCount, stepCount, sampleCount);
   P = zeros(processorCount, stepCount, sampleCount);
@@ -24,7 +24,7 @@ function [ T, output ] = computeWithLeakage(this, Pdyn, varargin)
     T0 = Tamb * ones(1, this.nodeCount);
 
     for j = 1:stepCount
-      [ ~, T0 ] = ode45(@(t, Tt) target(j, Tt), [ 0, dt ], T0);
+      [~, T0] = ode45(@(t, Tt) target(j, Tt), [0, dt], T0);
 
       T0 = T0(end, :);
 

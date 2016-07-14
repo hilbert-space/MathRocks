@@ -2,7 +2,7 @@ function assessVariations(varargin)
   setup;
 
   sampleCount = 1e5;
-  processorCountSet = [ 2 4 8 16 32 ];
+  processorCountSet = [2 4 8 16 32];
 
   for processorCount = processorCountSet
     options = Configure.systemSimulation(varargin{:}, ...

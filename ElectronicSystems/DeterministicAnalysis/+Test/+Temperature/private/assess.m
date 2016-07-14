@@ -20,7 +20,7 @@ function assess(one, two, varargin)
 
   Plot.figure(1200, 400);
   for i = 1:options.processorCount
-    Plot.line(time, T0(i, :), 'style', { 'Color', 0.8 * [ 1, 1, 1 ] });
+    Plot.line(time, T0(i, :), 'style', { 'Color', 0.8 * [1, 1, 1] });
     Plot.line(time, T1(i, :), 'number', i);
     Plot.line(time, T2(i, :), 'number', i, 'auxiliary', true);
   end

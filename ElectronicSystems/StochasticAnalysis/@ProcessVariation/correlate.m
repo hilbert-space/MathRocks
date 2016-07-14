@@ -12,7 +12,7 @@ function correlation = correlate(~, parameter, options)
 
   I = Utils.constructPairIndex(size(D, 1));
   correlation = feval(parameter.correlation, ...
-    [ X(I(:, 1)).'; Y(I(:, 1)).' ], ...
-    [ X(I(:, 2)).'; Y(I(:, 2)).' ]);
+    [X(I(:, 1)).'; Y(I(:, 1)).'], ...
+    [X(I(:, 2)).'; Y(I(:, 2)).']);
   correlation = Utils.symmetrizePairIndex(correlation, I);
 end

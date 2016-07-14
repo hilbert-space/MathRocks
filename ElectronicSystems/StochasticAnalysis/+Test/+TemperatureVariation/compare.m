@@ -14,10 +14,10 @@ function compare(one, two, varargin)
   k = floor(timeSlice / options.samplingInterval);
 
   options = Configure.stochasticAnalysis(options, one);
-  [ ~, oneStats, oneOutput ] = construct(options);
+  [~, oneStats, oneOutput] = construct(options);
 
   options = Configure.stochasticAnalysis(options, two);
-  [ ~, twoStats, twoOutput ] = construct(options);
+  [~, twoStats, twoOutput] = construct(options);
 
   Plot.temperatureVariation( ...
     { oneStats.expectation, twoStats.expectation }, ...

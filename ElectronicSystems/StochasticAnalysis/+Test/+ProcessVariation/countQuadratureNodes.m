@@ -1,8 +1,8 @@
 function countQuadratureNodes(varargin)
   setup;
 
-  polynomialOrders = [ 1 2 3 4 ];
-  processorCounts  = [ 2 4 8 16 32 ];
+  polynomialOrders = [1 2 3 4];
+  processorCounts  = [2 4 8 16 32];
   dimensionCounts = zeros(length(processorCounts), 1);
 
   for i = 1:length(processorCounts)

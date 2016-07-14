@@ -1,4 +1,4 @@
-function [ T, output ] = computeWithoutLeakage(this, Pdyn, varargin)
+function [T, output] = computeWithoutLeakage(this, Pdyn, varargin)
   stepCount = size(Pdyn, 2);
 
   X = zeros(this.nodeCount, stepCount);

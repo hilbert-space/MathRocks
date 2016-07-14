@@ -1,4 +1,4 @@
-function [ surrogate, stats, output ] = construct(varargin)
+function [surrogate, stats, output] = construct(varargin)
   options = Options('sampleCount', 1e4, varargin{:});
 
   surrogate = TemperatureVariation(options);

@@ -29,6 +29,6 @@ function config = configure(L, W, card)
   %
   WeffCJ = Wnew - 2 * card.dwj;
 
-  [ config.Ps, config.Pd, config.As, config.Ad ] = BSIM4.computeGeometry( ...
+  [config.Ps, config.Pd, config.As, config.Ad] = BSIM4.computeGeometry( ...
     NF, card.geomod, card.min, WeffCJ, card.dmcg, card.dmci, card.dmdg);
 end

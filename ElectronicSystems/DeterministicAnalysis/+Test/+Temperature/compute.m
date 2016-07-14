@@ -24,7 +24,7 @@ function compute(varargin)
     class(temperature), iterationCount, sampleCount);
   time = tic;
   for i = 1:iterationCount
-    [ T, output ] = temperature.compute(Pdyn, assignments);
+    [T, output] = temperature.compute(Pdyn, assignments);
   end
   time = toc(time);
   fprintf('%s: done in %.2f seconds (average is %.2f seconds).\n', ...

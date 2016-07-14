@@ -1,4 +1,4 @@
-function [ mapping, priority, order, startTime, executionTime ] = ...
+function [mapping, priority, order, startTime, executionTime] = ...
   construct(this, penalize)
 
   processorCount = length(this.platform);
@@ -68,7 +68,7 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
       end
     end
 
-    [ ~, I ] = max(dynamicCriticality(:));
+    [~, I] = max(dynamicCriticality(:));
     pid = ceil(I / poolSize);
     i = I - poolSize * (pid - 1);
 
@@ -127,7 +127,7 @@ function [ mapping, priority, order, startTime, executionTime ] = ...
       %
       if ~ready, continue; end
 
-      pool = [ pool, childId ];
+      pool = [pool, childId];
       processed(childId) = true;
     end
   end

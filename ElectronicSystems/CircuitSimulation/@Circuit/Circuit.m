@@ -1,4 +1,4 @@
-classdef Circuit < handle  
+classdef Circuit < handle
   properties (SetAccess = 'protected')
     name
     filename
@@ -31,10 +31,10 @@ classdef Circuit < handle
       prefix = File.join(File.trace, '..', 'Assets', ...
         String.join('_', this.name, this.parameterNames));
 
-      this.filename = [ prefix, '.sp' ];
-      this.dataFilename = [ prefix, '.data' ];
-      this.targetFilename = [ prefix, '.sw0' ];
-      this.parameterFilename = [ prefix, '.param' ];
+      this.filename = [prefix, '.sp'];
+      this.dataFilename = [prefix, '.data'];
+      this.targetFilename = [prefix, '.sw0'];
+      this.parameterFilename = [prefix, '.param'];
     end
 
     function display(this)

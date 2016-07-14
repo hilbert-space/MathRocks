@@ -26,7 +26,7 @@ function data = loadParameterData(circuit, varargin)
 
     i = i + 1;
     if i > maximalDataCount
-      buffer = [ buffer; zeros(maximalDataCount, parameterCount) ];
+      buffer = [buffer; zeros(maximalDataCount, parameterCount)];
       maximalDataCount = 2 * maximalDataCount;
     end
 

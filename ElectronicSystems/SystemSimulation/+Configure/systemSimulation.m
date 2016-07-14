@@ -1,14 +1,14 @@
 function options = systemSimulation(varargin)
   options = Options(varargin{:});
 
-  options.assetPath = [ options.get('assetPath', {}), ...
-    { File.join(File.trace, '..', 'Assets') } ];
+  options.assetPath = [options.get('assetPath', {}), ...
+    { File.join(File.trace, '..', 'Assets') }];
 
   %
   % Platform and application
   %
   if options.has('tgffFilename')
-    [ options.platform, options.application ] = ...
+    [options.platform, options.application] = ...
       Utils.parseTGFF(options.tgffFilename);
 
     processorCount = length(options.platform);
@@ -20,7 +20,7 @@ function options = systemSimulation(varargin)
     processorCount = options.ensure('processorCount', 4);
     taskCount = options.ensure('taskCount', 20 * processorCount);
 
-    [ options.platform, options.application ] = Utils.parseTGFF( ...
+    [options.platform, options.application] = Utils.parseTGFF( ...
       File.choose(options.assetPath, sprintf('%03d_%03d.tgff', ...
         processorCount, taskCount)));
 
