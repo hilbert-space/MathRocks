@@ -41,14 +41,14 @@ function extrema(data, index, varargin)
   % Draw the minimal value
   %
   line([timeLine(1), timeLine(end)], [lowerBound, lowerBound], ...
-    'Line', '--', 'Color', 'k');
+    'LineStyle', '--', 'Color', 'k');
   legend{end + 1} = 'Minimum';
 
   %
   % Draw the maximal value
   %
   line([timeLine(1), timeLine(end)], [upperBound, upperBound], ...
-    'Line', '-.', 'Color', 'k');
+    'LineStyle', '-.', 'Color', 'k');
   legend{end + 1} = 'Maximum';
 
   set(gca, 'XLim', [0 timeLine(end)]);
