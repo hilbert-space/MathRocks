@@ -1,10 +1,10 @@
-# MathRocks
+# Math Rocks
 
 ## Installation
 
 ```bash
-git clone https://github.com/MathRocks/MathRocks.git
-cd MathRocks
+git clone https://github.com/math-rocks/math-rocks.git
+cd math-rocks
 make
 ```
 
